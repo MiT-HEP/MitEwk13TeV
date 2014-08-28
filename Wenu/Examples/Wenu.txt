@@ -1,0 +1,29 @@
+imax 1 number of bins
+jmax 2 number of processes
+kmax * number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes data_obs        Wenu                Wenu_pdfTemplates.root  combine_workspace:dataMet
+shapes sig             Wenu                Wenu_pdfTemplates.root  combine_workspace:we
+shapes EWK             Wenu                Wenu_pdfTemplates.root  combine_workspace:ewk
+shapes qcd             Wenu                Wenu_pdfTemplates.root  combine_workspace:pepe1Pdf_qcd
+----------------------------------------------------------------------------------------------------------------------------------
+bin                    Wenu
+observation            -1.0
+----------------------------------------------------------------------------------------------------------------------------------
+bin                              Wenu        Wenu        Wenu
+process                             0           1           2
+process                           sig         EWK         qcd
+#  integral of MET hist for sig, sig*cewk for EWK, and estimate used in Kevin's code for qcd
+rate                          79000.6      9258.1       43755
+# used in Kevin's code
+#rate                            73979      8670.2       43755
+# "answers" (output of Kevin's code, yields in 8 TeV AN)
+#rate                            75082      8800.0       61698
+----------------------------------------------------------------------------------------------------------------------------------
+lepton_eff              lnN     1.025       1.025           -
+pT_scale_res            lnN     1.005       1.005           -
+met_scale_res           lnN     1.008       1.008           -
+bkg_model               lnN     1.003       1.003           -
+lumi_8TeV               lnN     1.026       1.026           -
+newk                    lnN         -           -           -
+nqcd                    lnN         -           -        1.70
