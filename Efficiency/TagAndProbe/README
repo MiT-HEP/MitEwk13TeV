@@ -1,0 +1,291 @@
+@============================================================================
+|
+| Table of Contents
+|
++----------------------------------------------------------------------------
+
+(1) Description of plotEff.C
+(2) Auxiliary Files
+(3) Tutorial
+
+
+
+@============================================================================
+|
+| (1) Description of plotEff.C
+|
++----------------------------------------------------------------------------
+
+ [1.1] Introduction
+ -------------------
+       The plotEff.C macro performs fits of dilepton mass spectra to extract
+       lepton efficiencies. An efficiency is computed by dividing the probes
+       into those passing and those failing the requirement of interest:
+         
+	 efficiency = N_pass / (N_pass + N_fail)
+       
+       If no background (e.g. QCD jets faking leptons) is present, simply
+       counting the probes in the passing and failing categories would
+       suffice. In the presence of background, one needs to fit the mass
+       spectra for signal and background to obtain the number of probes
+       from Z decays. The fit is performed simultaneously on both categories 
+       to let RooFit handle the propagation of fit uncertainties to the
+       extracted efficiency.
+       
+       The code does not perform any Tag-and-Probe selection, but rather
+       takes as input a TTree of probes resulting from a Tag-and-Probe
+       selection. The data format is specified in EffData.h (see more
+       below in [1.4]). Details on how to set binnings, set fit models,
+       perform PU-reweighting, and other options are described below.
+
+ 
+ [1.2] Command line arguments
+ -----------------------------
+       Below is the ordered list of arguments to pass to plotEff.C. All 
+       arguments are mandatory unless stated otherwise.
+      
+         TString conf	       // input binning file
+         Int_t   sigModPass    // signal extraction method for PASS sample (see comments in plotEff.C for details)
+         Int_t   bkgModPass    // background model for PASS sample (see comments in plotEff.C for details)
+         Int_t   sigModFail    // signal extraction method for FAIL sample (see comments in plotEff.C for details)
+         Int_t   bkgModFail    // background model for FAIL sample (see comments in plotEff.C for details)
+         TString infilename    // ROOT file of probes
+         TString outputDir     // output directory
+         TString format	       // plot format: specify "png", "eps", or other format handled by ROOT; specify "all" for "png"+"eps"+"C" outputs 
+         Bool_t  doAbsEta      // bin in |eta| instead of eta?
+         Int_t   doPU	       // PU re-weighting mode (1,-1 = Run2011A, 2,-2 = Run2011B, 3,-3 = All 2011 data; use negative for weighting MC template only)
+         Int_t   charge	       // Charge requirement on the probe for efficiencies binned by charge: 0 (no requirement), -1, +1
+         TString mcfilename    // [Optional] ROOT file containing MC events to generate templates from (Default="")
+         UInt_t  runNumLo      // [Optional] lower bound of run range (Default=0)
+         UInt_t  runNumHi      // [Optional] upper bound of run range (Default=999999)
+
+ 
+ [1.3] Input binning file
+ -------------------------
+       The binning in pT, eta, phi, and N_PV is handled via a text file. Look
+       at example.bins for an example. The format of the file is divided into
+       sections; the end of a section is marked with a '%' character. Placing
+       a '#' character at the beginning of a indicates the line is a comment.
+       The format of the file must be followed with no blank lines, as the
+       parser in plotEff.C isn't very sophisticated.
+       
+       The upper and lower bounds which one sets for pT, eta, and phi are
+       always considered. For example, even if efficiencies binned in eta are 
+       not desired, if the eta binning is set for {-1.5, 0, 1.5}, when
+       calculating efficiencies in pT only barrel leptons will be considered.
+       The upper and lower bounds of N_PV are not considered when dividing
+       the probes into the specified kinematic bins. (N_PV bounds can be
+       taken into consideration by modifying a few lines in plotEff.C.)
+       
+ 
+ [1.4] Input data format
+ ------------------------
+       The input probes data to the plotEff.C macro is a ROOT file with a
+       "flat" TTree (containing only basic types). The selection of probes
+       must be performed elsewhere. The format is defined in EffData.hh, and
+       is implemented as a C-style structure. The variables in the data 
+       format and their meanings are:
+       
+       Float_t mass       // mass of the tag-probe pair
+       Float_t pt         // probe pT
+       Float_t eta        // probe eta
+       Float_t phi        // probe phi
+       Float_t weight     // event weight (useful for studies with MC but not used in plotEff.C at the moment)
+       Int_t   q          // charge of the probe
+       UInt_t  npv        // number of primary vertices
+       UInt_t  npu        // number of PU events (for MC)
+       UInt_t  pass       // flag for if the probe passed requirements
+       UInt_t  runNum     // event run number
+       UInt_t  lumiSec    // event lumi section
+       UInt_t  evtNum     // event number
+
+
+ [1.5] PU-reweighting
+ ---------------------
+       PU-reweighting can be applied and it can be specified whether to
+       reweight by the expected PU for Run2011A, Run2011B, or all 2011
+       data. However, even if PU-reweighting is activated, the weights are
+       only used in the cut-and-count calculation and not for fits. One
+       exception is when fitting with a signal model based on a MC template;
+       the MC template will have PU-reweighting applied.
+       
+       The file names of the PU-weights are hard-coded in the "Settings"
+       section of plotEff.C under the variables pufnameA, pufnameB, and
+       pufnameAll.
+       
+        
+ [1.6] Mass range
+ -----------------
+       The mass range for the signal extraction and for the fits are hard-
+       coded in the "Settings" section of plotEff.C. They can be chosen to
+       be different! The signal extraction region is [massLo, massHi] while
+       the fit region is [fitMassLo, fitMassHi].
+ 
+ 
+ [1.7] Other settings
+ ---------------------
+       The method for computing statistical uncertainties for cut-and-count 
+       can be specified in the "Settings" section of plotEff.C. The default 
+       is the Clopper-Pearson prescription.
+       
+       In the summary plots produced (see [1.8] about outputs), the range of
+       the y-axis can be specified in the "Settings" section by the variables
+       ylow and yhigh.
+       
+ 
+ [1.8] Output
+ -------------
+       Once the macro has finished running, the following output can be found
+       in the output directory (specified in a command line argument):
+       
+       (a) ROOT file called, eff.root, containing the TGraphs and/or TH2Ds
+           containing the results of the efficiency calculations
+	   
+       (b) A sub-directory called plots/ containing plots for each bin as
+           well as fit results (values and uncertainties of fit parameters
+	   and correlation matrix)
+	   
+       (c) A set of HTML files to browse the plots
+       
+       (d) A text file of efficiency values called, summary.txt
+ 
+ 
+ [1.9] Re-fitting
+ -----------------
+       Sometimes the fits may not converge properly and some tuning will be
+       needed to get a proper result. 
+ 
+ 
+ 
+@============================================================================
+|
+| (2) Auxiliary Files
+|
++----------------------------------------------------------------------------
+
+ There are some classes and files that plotEff.C depends on:
+ 
+
+ [2.1] Signal and background models
+ -----------------------------------
+       The classes for signal and background shapes are all defined in
+       ZSignals.hh and ZBackgrounds.hh. Most of the shapes are based on
+       predefined RooFit PDFs. There are two custom RooFit PDFs:
+       
+       (i)  RooVoigtianShape.* -- Signal shape from Breit-Wigner convolved with Crystal Ball function
+       (ii) RooCMSShape.*      -- Background shape from error function times exponential
+ 
+ 
+ [2.2] Graphical tools
+ ----------------------
+       The CPlot class (CPlot.hh and CPlot.cc) tries to encapsulate much of
+       the tedious ROOT commands when plotting (axis labels, colors, etc.).
+       MitStyleRemix.* sets the ROOT plotting style.
+       
+ 
+ [2.3] Wrappers for efficiency tables
+ -------------------------------------
+       Efficiency tables are stored as TGraphAsymmErrors (for 1D) and TH2D
+       (for 2D) in eff.root. The CEffUser1D and CEffUser2D classes are
+       meant to faciliate accessing efficiency values from these ROOT
+       objects. In plotEff.C, these classes are used only to aid in producing
+       summary.txt and is not an essential part of the code.
+
+
+ [2.4] Computing scale factors
+ ------------------------------
+       Two macros, printEff.C and plotDataMC.C, can be used to produce plots
+       and tables (plain text and LaTeX formats) of Data/MC scale factors. A
+       couple quick-and-dirty scripts, not well commented.
+   
+
+
+@============================================================================
+|
+| (3) Tutorial
+|
++----------------------------------------------------------------------------
+ 
+ Here is a walkthrough on running the efficiency calculations:
+ 
+    (I)  Get set up to use RooFit. At the command prompt,
+ 
+         []$ source roofitsetup.sh
+
+
+   (II)  Check binning. Take a look at example.bins. The options mask should
+         be all 1's, indicating we will compute all 1D and 2D efficiency maps.
+         Note that the eta binning goes from 0 - 2.5; we will be computing
+         efficiencies binned in |eta|.
+       
+       
+  (III)  Take a look at runExample.sh. The probes ntuples and PU weights are 
+         found in /data/blue/ksung/TagAndProbeExample. We will compute 
+	 efficiency maps for electron selection in MC and 2011A data.
+       
+         For MC efficiencies, we will use cut-and-count with PU-reweighted to
+         2011A expectations.
+       
+         For data efficiencies, we use MC-based signal templates, and for
+         background shapes we use exponential for the pass sample and Erf*Exp
+         for the fail sample. Note that we pass in the path of the MC probes 
+         ntuple, which will be used to generate the signal templates.
+       
+       
+   (IV)  Run the script. 
+       
+         []$ source runExample.sh
+       
+         (You should see lots of plots flash by. Takes about 10 mins.)
+
+
+    (V)  Inspect the outputs, MC/plots.html and Data/plots.html. Most 
+         importantly, check the plots for the fits in data. Some will not 
+	 have converged properly. We will need to fix these before computing 
+	 scale factors.
+	 
+	 For example, going to the "pT bins" link leads to the Data/pt.html
+	 page and I see that the background shape in the fail sample of the
+	 first pT bin is unphysical. To remedy this, I set tighter bounds
+	 on the 'beta' parameter of the Erf*Exp function that controls how 
+	 sharply the function is allowed to rise -- the higher the value of
+	 beta, the sharper the turn-on. There are several more examples of
+	 this case as you look through all the fits.
+	 
+	 In Data/etapt.html, I found in the 30<pT<40, 1.5<|eta|<2.5 bin
+	 that the fits in both the pass and fail samples look terrible. This
+	 happens when RooFit gets messed up and aborts the fit. I've found
+	 that to remedy this is to use MINUIT strategy 1 instead of the
+	 default strategy 2 hard-coded in plotEff.C.
+
+
+   (VI)  Let's perform refits of the messed up bins. I found 17 bad bins. 
+         The plotEff.C macro will only do a fit in a particular bin if the 
+	 corresponding fitres*.txt file is missing. The file names should be 
+	 easy to identify. In the two examples from (V), we would delete
+	 fitrespt_0.txt and fitresetapt_3.txt. Then we modify plotEff.C and
+	 address each of the problematic bins. I've made an example with 
+	 the necessary modifications in 
+	   
+	   /data/blue/ksung/TagAndProbeExample/plotEff.C.fix, 
+	 
+	 so you can see how it's done. Re-run runExample.sh (we can comment 
+	 out the line that computes MC efficiencies). Below are commands to 
+	 execute:
+         
+	 [] $ cd Data/plots
+	 [] $ rm Data/plots/fitrespt_0.txt Data/plots/fitrespt_3.txt Data/plots/fitresphi_0.txt Data/plots/fitresphi_1.txt Data/plots/fitresphi_6.txt Data/plots/fitresetapt_3.txt Data/plots/fitresetapt_6.txt Data/plots/fitresetaphi_1.txt Data/plots/fitresetaphi_2.txt Data/plots/fitresphi_6.txt Data/plots/fitresetaphi_4.txt Data/plots/fitresetaphi_6.txt Data/plots/fitresetaphi_8.txt Data/plots/fitresetaphi_11.txt Data/plots/fitresetaphi_15.txt Data/plots/fitresnpv_4.txt Data/plots/fitresnpv_6.txt 
+	 [] $ cd -
+	 [] $ cp plotEff.C plotEff.C.bak
+	 [] $ cp /data/blue/ksung/TagAndProbeExample/plotEff.C.fix plotEff.C
+	 [] $ source runExample.sh
+ 
+ 
+  (VII)  Check that all fits now look fine.
+ 
+ 
+ (VIII)  Compute scale factors:
+         
+	 [] $ root -l -q plotDataMC.C+; root -l -q printEff.C+
+	 
+	 The outputs should show up in Data/extra/

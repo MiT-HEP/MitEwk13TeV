@@ -1,0 +1,65 @@
+
+[1mRooFit v3.14 -- Developed by Wouter Verkerke and David Kirkby[0m 
+                Copyright (C) 2000-2010 NIKHEF, University of California & Stanford University
+                All rights reserved, please read http://roofit.sourceforge.net/license.txt
+
+28692 pts/1    00:00:00 root.exe
+(class RooVoigtianShape)220350736
+(class RooCMSShape)220463280
+(class CPlot)222552928
+ MIT root style REMIX($Author: ksung $$,$Modified by ksung $$).
+
+ Use: MakeCanvas(name,title)
+      InitSubPad(pad,nPad)
+      InitHist(hist,xTitle,yTitle,color)
+
+(class CEffUser1D)212989552
+(class CEffUser2D)213008512
+
+Processing getBinYield.C+...
+Bin 0 is -2.5 < eta < -1.5 and 30 < pt < 60
+Bin yield for bin 0 is 388598
+Bin uncertainty is -0.000249471
+Bin uncertainty time bin yield is -96.944
+Bin 1 is -1.5 < eta < -0.5 and 30 < pt < 60
+Bin yield for bin 1 is 730781
+Bin uncertainty is -0.000646183
+Bin uncertainty time bin yield is -472.219
+Bin 2 is -0.5 < eta < 0.5 and 30 < pt < 60
+Bin yield for bin 2 is 742617
+Bin uncertainty is -6.05365e-05
+Bin uncertainty time bin yield is -44.9554
+Bin 3 is 0.5 < eta < 1.5 and 30 < pt < 60
+Bin yield for bin 3 is 717954
+Bin uncertainty is -0.000564738
+Bin uncertainty time bin yield is -405.456
+Bin 4 is 1.5 < eta < 2.5 and 30 < pt < 60
+Bin yield for bin 4 is 411676
+Bin uncertainty is 0.000939264
+Bin uncertainty time bin yield is 386.673
+Bin 5 is -2.5 < eta < -1.5 and 60 < pt < 8000
+Bin yield for bin 5 is 21909
+Bin uncertainty is -0.00542781
+Bin uncertainty time bin yield is -118.918
+Bin 6 is -1.5 < eta < -0.5 and 60 < pt < 8000
+Bin yield for bin 6 is 49272
+Bin uncertainty is -0.00166553
+Bin uncertainty time bin yield is -82.0642
+Bin 7 is -0.5 < eta < 0.5 and 60 < pt < 8000
+Bin yield for bin 7 is 54007
+Bin uncertainty is -0.000287719
+Bin uncertainty time bin yield is -15.5389
+Bin 8 is 0.5 < eta < 1.5 and 60 < pt < 8000
+Bin yield for bin 8 is 47659
+Bin uncertainty is 7.38349e-05
+Bin uncertainty time bin yield is 3.5189
+Bin 9 is 1.5 < eta < 2.5 and 60 < pt < 8000
+Bin yield for bin 9 is 23632
+Bin uncertainty is -0.00189018
+Bin uncertainty time bin yield is -44.6688
+---------SUMMARY----------
+ total yield is 3188105
+EleGsfSelEff_Up overall uncertainty is 755.94
+
+ relative uncertainty is 0.0237113%
+

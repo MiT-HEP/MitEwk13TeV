@@ -1,0 +1,48 @@
+
+[1mRooFit v3.14 -- Developed by Wouter Verkerke and David Kirkby[0m 
+                Copyright (C) 2000-2010 NIKHEF, University of California & Stanford University
+                All rights reserved, please read http://roofit.sourceforge.net/license.txt
+
+12663 pts/1    00:00:00 root.exe
+(class RooVoigtianShape)102578704
+(class RooCMSShape)102691248
+(class CPlot)104780704
+ MIT root style REMIX($Author: ksung $$,$Modified by ksung $$).
+
+ Use: MakeCanvas(name,title)
+      InitSubPad(pad,nPad)
+      InitHist(hist,xTitle,yTitle,color)
+
+(class CEffUser1D)95226352
+(class CEffUser2D)95207024
+
+Processing getBinYield.C+...
+Bin 0 is 0 < eta < 0.8 and 30 < pt < 50
+Bin yield for bin 0 is 564378
+Bin uncertainty is -0.00283648
+Bin uncertainty time bin yield is -1600.85
+Bin 1 is 0.8 < eta < 1.2 and 30 < pt < 50
+Bin yield for bin 1 is 261971
+Bin uncertainty is 0.0162614
+Bin uncertainty time bin yield is 4260.01
+Bin 2 is 1.2 < eta < 2.1 and 30 < pt < 50
+Bin yield for bin 2 is 571635
+Bin uncertainty is 0.00937776
+Bin uncertainty time bin yield is 5360.66
+Bin 3 is 0 < eta < 0.8 and 50 < pt < 8000
+Bin yield for bin 3 is 87012
+Bin uncertainty is -0.0103979
+Bin uncertainty time bin yield is -904.74
+Bin 4 is 0.8 < eta < 1.2 and 50 < pt < 8000
+Bin yield for bin 4 is 38159
+Bin uncertainty is -0.0172169
+Bin uncertainty time bin yield is -656.979
+Bin 5 is 1.2 < eta < 2.1 and 50 < pt < 8000
+Bin yield for bin 5 is 76069
+Bin uncertainty is -0.0135666
+Bin uncertainty time bin yield is -1032
+---------SUMMARY----------
+ total yield is 1599224
+CB_MuStaEff_iso overall uncertainty is 7194.6
+
+ relative uncertainty is 0.44988%

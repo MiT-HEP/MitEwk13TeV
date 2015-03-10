@@ -1,0 +1,38 @@
+Fit options: 1 2 1 2
+
+NO_EVENTS 18906
+
+
+  RooFitResult: minimized FCN value: -81748.1, estimated distance to minimum: 2.2112e-05
+                covariance matrix quality: Approximation only, not accurate
+
+    Constant Parameter    Value     
+  --------------------  ------------
+              massFail    9.1188e+01
+              massPass    9.1188e+01
+              peakFail    9.1188e+01
+              peakPass    9.1188e+01
+             widthFail    2.4952e+00
+             widthPass    2.4952e+00
+
+    Floating Parameter  InitialValue    FinalValue (+HiError,-LoError)    GblCorr.
+  --------------------  ------------  ----------------------------------  --------
+              NbkgFail    5.0530e+02    4.7110e+03         +/-  7.07e+01  <none>
+              NbkgPass    5.0000e+01    1.8099e+03         +/-  5.72e+01  <none>
+                  Nsig    1.5125e+04    1.2385e+04         +/-  1.17e+02  <none>
+              alfaFail    5.0000e+01    1.8469e+02         +/-  1.37e+00  <none>
+              alfaPass    5.0000e+01    1.9884e+02         +/-  3.99e-01  <none>
+             alphaFail    5.0000e+00    1.5310e+01         +/-  1.46e+01  <none>
+             alphaPass    5.0000e+00    1.4191e+01         +/-  7.64e+00  <none>
+              betaFail    5.0000e-02    1.8875e-02         +/-  1.23e-04  <none>
+              betaPass    5.0000e-02    7.1011e-02         +/-  1.46e-04  <none>
+                   eff    9.0000e-01    9.7238e-01 (+6.11e-03,-6.77e-03)  <none>
+             gammaFail    1.0000e-01    6.3467e-02         +/-  8.89e-04  <none>
+             gammaPass    1.0000e-01    9.5693e-01         +/-  3.98e-03  <none>
+              meanFail    0.0000e+00    1.3478e+00         +/-  6.41e-01  <none>
+              meanPass    0.0000e+00    1.9023e-01         +/-  2.46e-02  <none>
+                 nFail    1.0000e+00    1.0005e+00         +/-  2.52e+00  <none>
+                 nPass    1.0000e+00    1.0421e+00         +/-  2.57e+00  <none>
+             sigmaFail    1.0000e+00    3.0906e+00         +/-  6.01e-01  <none>
+             sigmaPass    1.0000e+00    1.3242e+00         +/-  3.22e-02  <none>
+

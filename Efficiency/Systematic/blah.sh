@@ -1,0 +1,39 @@
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_0 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_1 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_2 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_3 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_4 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_5 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_6 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_7 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_8 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_EleEff etapt_9 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_EleEffResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_MuStaEff_iso etapt_0 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_MuStaEff_isoResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zmm_MuStaEff_iso/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_MuStaEff_iso etapt_1 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_MuStaEff_isoResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zmm_MuStaEff_iso/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_MuStaEff_iso etapt_2 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_MuStaEff_isoResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zmm_MuStaEff_iso/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_MuStaEff_iso etapt_3 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_MuStaEff_isoResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zmm_MuStaEff_iso/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_MuStaEff_iso etapt_4 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_MuStaEff_isoResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zmm_MuStaEff_iso/probes.root
+#./submitPseudoExperiments.sh /scratch/klawhorn/EffSysStore BK_MuStaEff_iso etapt_5 2 2 2 2 /scratch/klawhorn/EffSysStore/BK_MuStaEff_isoResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zmm_MuStaEff_iso/probes.root
+
+
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_0 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_1 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_2 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_3 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_4 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_5 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_6 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_7 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_8 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Up etapt_9 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_UpResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_0 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_1 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_2 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_3 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_4 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_5 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_6 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_7 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_8 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root
+#./submitPseudoExperiments.sh /scratch1/klawhorn EleGsfSelEff_Down etapt_9 2 2 2 2 /scratch1/klawhorn/EleGsfSelEff_DownResults 0 /scratch/klawhorn/EWKAnaR12a/Efficiency/Zee_EleGsfSelEff/probes.root

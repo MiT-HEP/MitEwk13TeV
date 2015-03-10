@@ -1,0 +1,23 @@
+Fit options: 2 4 2 4
+
+NO_EVENTS 38100
+
+
+  RooFitResult: minimized FCN value: -218823, estimated distance to minimum: 0.000398894
+                covariance matrix quality: Full matrix, but forced positive-definite
+
+    Floating Parameter  InitialValue    FinalValue +/-  Error     GblCorr.
+  --------------------  ------------  --------------------------  --------
+              NbkgFail    8.0092e-02    4.9833e-01 +/-  3.75e+01  <none>
+              NbkgPass    1.9217e+01    1.9217e+01 +/-  4.21e+00  <none>
+                  Nsig    3.8071e+04    3.8071e+04 +/-  7.17e+00  <none>
+                 aFail   -7.4303e-03   -7.4303e-03 +/-  4.92e-06  <none>
+                 aPass   -6.4852e-03   -6.4852e-03 +/-  2.08e-05  <none>
+                   eff    9.0811e-01    9.0811e-01 +/-  2.58e-04  <none>
+              meanFail   -1.7924e-01   -1.7924e-01 +/-  1.10e-02  <none>
+              meanPass   -1.1738e-01   -1.1738e-01 +/-  2.63e-03  <none>
+             sigmaFail    5.3509e-01    5.3509e-01 +/-  2.70e-02  <none>
+             sigmaPass    2.3477e-02    2.3477e-02 +/-  4.06e-03  <none>
+                 tFail   -1.2041e-04   -1.2041e-04 +/-  9.49e+00  <none>
+                 tPass   -5.6404e-03   -4.1073e-02 +/-  1.29e-02  <none>
+
