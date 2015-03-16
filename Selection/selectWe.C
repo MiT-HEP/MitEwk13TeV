@@ -26,14 +26,16 @@
 #include "../Utils/MyTools.hh"      // various helper functions
 
 // define structures to read in ntuple
-#include "../Ntupler/interface/EWKAnaDefs.hh"
-#include "../Ntupler/interface/TEventInfo.hh"
-#include "../Ntupler/interface/TGenInfo.hh"
-#include "../Ntupler/interface/TElectron.hh"
-#include "../Ntupler/interface/TVertex.hh"
+
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TElectron.hh"
+#include "BaconAna/DataFormats/interface/TPhoton.hh"
+#include "BaconAna/DataFormats/interface/TVertex.hh"
 
 // lumi section selection with JSON files
-#include "MitAna/DataCont/interface/RunLumiRangeMap.h"
+//#include "MitAna/DataCont/interface/RunLumiRangeMap.h"
 
 // helper functions for lepton ID selection
 #include "../Utils/LeptonIDCuts.hh"
@@ -103,10 +105,11 @@ void selectWe(const TString conf,        // input file
   LorentzVector *sc=0;
   
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info  = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen   = new mithep::TGenInfo();
-  TClonesArray *electronArr = new TClonesArray("mithep::TElectron");
-  TClonesArray *pvArr       = new TClonesArray("mithep::TVertex");
+  baconhep::TEventInfo *info  = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo   *gen   = new baconhep::TGenEventInfo();
+  TClonesArray *electronArr = new TClonesArray("baconhep::TElectron");
+  TClonesArray *scArr = new TClonesArray("baconhep::TPhoton");
+  //TClonesArray *pvArr       = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -183,23 +186,23 @@ void selectWe(const TString conf,        // input file
       infile = new TFile(samp->fnamev[ifile]); 
       assert(infile);
 
-      Bool_t hasJSON = kFALSE;
-      mithep::RunLumiRangeMap rlrm;
-      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
-        hasJSON = kTRUE;
-        rlrm.AddJSONFile(samp->jsonv[ifile].Data()); 
-      }
+      //Bool_t hasJSON = kFALSE;
+      //mithep::RunLumiRangeMap rlrm;
+      //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+      //  hasJSON = kTRUE;
+      //  rlrm.AddJSONFile(samp->jsonv[ifile].Data()); 
+      //}
   
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);  
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
-      eventTree->SetBranchAddress("PV",       &pvArr);       TBranch *pvBr       = eventTree->GetBranch("PV");
+      // eventTree->SetBranchAddress("PV",       &pvArr);       TBranch *pvBr       = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("Gen");
       TBranch *genBr=0;
       if(hasGen) {
-        eventTree->SetBranchAddress("Gen", &gen);
-	genBr = eventTree->GetBranch("Gen");
+        eventTree->SetBranchAddress("GenEvtInfo", &gen);
+	genBr = eventTree->GetBranch("GenEvtInfo");
       }
     
       // Compute MC event weight per 1/fb
@@ -217,18 +220,18 @@ void selectWe(const TString conf,        // input file
 	if(genBr) genBr->GetEntry(ientry);
      
         // check for certified lumi (if applicable)
-        mithep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
-        if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
+        //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
+        //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        ULong64_t trigger = kHLT_Ele22_CaloIdL_CaloIsoVL;
-	ULong64_t trigObj = kHLT_Ele22_CaloIdL_CaloIsoVL_EleObj;   
-        if(!(info->triggerBits & trigger)) continue;      
+        //ULong64_t trigger = kHLT_Ele22_CaloIdL_CaloIsoVL;
+	//ULong64_t trigObj = kHLT_Ele22_CaloIdL_CaloIsoVL_EleObj;   
+        //if(!(info->triggerBits & trigger)) continue;      
       
         // good vertex requirement
-        if(!(info->hasGoodPV)) continue;
-        pvArr->Clear();
-        pvBr->GetEntry(ientry);
+        //if(!(info->hasGoodPV)) continue;
+        //pvArr->Clear();
+        //pvBr->GetEntry(ientry);
       
         //
 	// SELECTION PROCEDURE:
@@ -238,10 +241,10 @@ void selectWe(const TString conf,        // input file
 	electronArr->Clear();
         electronBr->GetEntry(ientry);
 	Int_t nLooseLep=0;
-	const mithep::TElectron *goodEle=0;
+	const baconhep::TElectron *goodEle=0;
 	Bool_t passSel=kFALSE;	
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
-          const mithep::TElectron *ele = (mithep::TElectron*)((*electronArr)[i]);
+          const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
 	  
 	  // check ECAL gap
 	  if(fabs(ele->scEta)>=ECAL_GAP_LOW && fabs(ele->scEta)<=ECAL_GAP_HIGH) continue;
@@ -258,7 +261,7 @@ void selectWe(const TString conf,        // input file
 	  
 	  if(fabs(ele->scEta)   > 2.5) continue;                // loose lepton |eta| cut
           if(escale*(ele->scEt) < 20)  continue;                // loose lepton pT cut
-          if(passEleLooseID(ele,info->rhoLowEta)) nLooseLep++;  // loose lepton selection
+          if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;  // loose lepton selection
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
@@ -266,8 +269,8 @@ void selectWe(const TString conf,        // input file
           
           if(fabs(ele->scEta)   > ETA_CUT)    continue;  // lepton |eta| cut
           if(escale*(ele->scEt) < PT_CUT)     continue;  // lepton pT cut
-          if(!passEleID(ele,info->rhoLowEta)) continue;  // lepton selection
-          if(!(ele->hltMatchBits & trigObj))  continue;  // check trigger matching
+          if(!passEleID(ele,info->rhoIso)) continue;  // lepton selection
+          //if(!(ele->hltMatchBits & trigObj))  continue;  // check trigger matching
 	  
 	  passSel=kTRUE;
 	  goodEle = ele;  
@@ -299,7 +302,7 @@ void selectWe(const TString conf,        // input file
 	  runNum   = info->runNum;
 	  lumiSec  = info->lumiSec;
 	  evtNum   = info->evtNum;
-	  npv	   = pvArr->GetEntriesFast();
+	  npv	   = 0;// pvArr->GetEntriesFast();
 	  npu	   = info->nPU;
 	  genVPt   = 0;
 	  genVPhi  = 0;
@@ -309,7 +312,7 @@ void selectWe(const TString conf,        // input file
 	  genLepPhi= 0;
 	  u1       = 0;
 	  u2       = 0;
-	  if(hasGen) {
+	  /*if(hasGen) {
 	    genVPt   = gen->vpt;
             genVPhi  = gen->vphi;
 	    genVy    = gen->vy;
@@ -323,34 +326,34 @@ void selectWe(const TString conf,        // input file
 	    
 	    if(abs(gen->id_1)==EGenType::kElectron) { genLepPt = gen->vpt_1; genLepPhi = gen->vphi_1; }
 	    if(abs(gen->id_2)==EGenType::kElectron) { genLepPt = gen->vpt_2; genLepPhi = gen->vphi_2; }
-	  }
+	    }*/
 	  scale1fb = weight;
 	  met	   = info->pfMET;
 	  metPhi   = info->pfMETphi;
-	  sumEt    = info->pfSumET;
+	  sumEt    = 0;//info->pfSumET;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
 	  q        = goodEle->q;	  
 	  lep      = &vLep;	  
 	  
 	  ///// electron specific /////
-	  sc	    = &vSC;
-	  trkIso    = goodEle->trkIso03;
-	  emIso     = goodEle->emIso03;
-	  hadIso    = goodEle->hadIso03;
-	  pfChIso   = goodEle->pfChIso03;
-	  pfGamIso  = goodEle->pfGamIso03;
-	  pfNeuIso  = goodEle->pfNeuIso03;	
-	  pfCombIso = goodEle->pfChIso03 + TMath::Max(goodEle->pfNeuIso03 + goodEle->pfGamIso03 - (info->rhoLowEta)*getEffArea(goodEle->scEta), 0.);
-	  sigieie   = goodEle->sigiEtaiEta;
-	  hovere    = goodEle->HoverE;
-	  eoverp    = goodEle->EoverP;
-	  fbrem     = goodEle->fBrem;
-	  dphi      = goodEle->deltaPhiIn;
-	  deta      = goodEle->deltaEtaIn;
+	  // sc	    = &vSC;
+	  trkIso    = goodEle->trkIso;
+	  emIso     = goodEle->ecalIso;
+	  hadIso    = goodEle->hcalIso;
+	  pfChIso   = goodEle->chHadIso;
+	  pfGamIso  = goodEle->gammaIso;
+	  pfNeuIso  = goodEle->neuHadIso;	
+	  pfCombIso = goodEle->chHadIso + TMath::Max(goodEle->neuHadIso + goodEle->gammaIso - (info->rhoIso)*getEffArea(goodEle->scEta), 0.);
+	  sigieie   = goodEle->sieie;
+	  hovere    = goodEle->hovere;
+	  eoverp    = goodEle->eoverp;
+	  fbrem     = goodEle->fbrem;
+	  dphi      = goodEle->dPhiIn;
+	  deta      = goodEle->dEtaIn;
 	  d0        = goodEle->d0;
 	  dz        = goodEle->dz;
 	  isConv    = goodEle->isConv;
-	  nexphits  = goodEle->nExpHitsInner;
+	  nexphits  = goodEle->nMissingHits;
 	  typeBits  = goodEle->typeBits;
 	   
 	  outTree->Fill();
@@ -369,7 +372,7 @@ void selectWe(const TString conf,        // input file
   delete info;
   delete gen;
   delete electronArr;
-  delete pvArr;
+  //delete pvArr;
   
     
   //--------------------------------------------------------------------------------------------------------------
