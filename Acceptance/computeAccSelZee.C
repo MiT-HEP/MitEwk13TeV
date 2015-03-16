@@ -229,8 +229,8 @@ void computeAccSelZee(const TString conf,             // input file
     cout << endl;
     cout << "    *** Acceptance ***" << endl;
     cout << "     barrel-barrel: " << setw(12) << nSelBBv[ifile] << " / " << nEvtsv[ifile] << " = " << accBBv[ifile] << " +/- " << accErrBBv[ifile] << endl;
-    cout << "     barrel-endcap: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBBv[ifile] << endl;
-    cout << "     endcap-endcap: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
+    cout << "     barrel-endcap: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
+    cout << "     endcap-endcap: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
     cout << "             total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     cout << "     efficiency corrected: " << accv[ifile]*zEffScale;
     cout << " +/- " << accv[ifile]*zEffScale*sqrt(accErrv[ifile]*accErrv[ifile]/accv[ifile]/accv[ifile] + zEffScaleErr*zEffScaleErr/zEffScale/zEffScale) << endl;
@@ -259,8 +259,8 @@ void computeAccSelZee(const TString conf,             // input file
     txtfile << endl;
     txtfile << "    *** Acceptance ***" << endl;
     txtfile << "     barrel-barrel: " << setw(12) << nSelBBv[ifile] << " / " << nEvtsv[ifile] << " = " << accBBv[ifile] << " +/- " << accErrBBv[ifile] << endl;
-    txtfile << "     barrel-endcap: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBBv[ifile] << endl;
-    txtfile << "     endcap-endcap: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
+    txtfile << "     barrel-endcap: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
+    txtfile << "     endcap-endcap: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
     txtfile << "             total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     txtfile << "     efficiency corrected: " << accv[ifile]*zEffScale;
     txtfile << " +/- " << accv[ifile]*zEffScale*sqrt(accErrv[ifile]*accErrv[ifile]/accv[ifile]/accv[ifile] + zEffScaleErr*zEffScaleErr/zEffScale/zEffScale) << endl;
