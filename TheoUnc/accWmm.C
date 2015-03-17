@@ -1,4 +1,4 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) //|| defined(__MAKECINT__)
 #include <TROOT.h>                  // access to gROOT, entry point to ROOT system
 #include <TSystem.h>                // interface to OS
 #include <TFile.h>                  // file handle class
@@ -15,17 +15,24 @@
 #include <fstream>                  // functions for file I/O
 #include <TChain.h>
 #include <TH1.h>
-#include "Math/LorentzVector.h"     // 4-vector class
+#include "LHAPDF/LHAPDF.h"
 
 #include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
 #include "BaconAna/DataFormats/interface/TGenJet.hh"
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"
 
+using namespace std;
+
 #endif
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
+void accWmm(TString input="root://eoscms.cern.ch//store/user/jlawhorn/PYTHIA-CT10nlo/Wmm_bacon.root",
+	    TString pdfName="CT10nlo",
+	    Int_t iPdfSet=0) {
 
-void accWmm(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Wmm_bacon.root") {
+  LHAPDF::setVerbosity(LHAPDF::SILENT);
+
+  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(pdfName.Data(),0);
+  LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
   
   TChain chain("Events");
   chain.Add(input);
@@ -39,8 +46,10 @@ void accWmm(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Wmm
   chain.SetBranchAddress("GenEvtInfo",  &info);        TBranch *infoBr     = chain.GetBranch("GenEvtInfo");
   chain.SetBranchAddress("GenParticle", &part);        TBranch *partBr     = chain.GetBranch("GenParticle");
 
-  Float_t nPassPre=0;
-  Float_t nPassPost=0;
+  Float_t nPreBarr=0;
+  Float_t nPreEnd=0;
+  Float_t nPostBarr=0;
+  Float_t nPostEnd=0;
   Float_t nTotal=0;
   
   for (Int_t i=0; i<chain.GetEntries(); i++) {
@@ -54,8 +63,8 @@ void accWmm(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Wmm
     
     for (Int_t j=0; j<part->GetEntries(); j++) { 
       const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*part)[j]);
-      
-      if (genloop->pdgId==PDG_ID) {
+
+       if (genloop->pdgId==PDG_ID) {
 	if (genloop->status==3) iPre1=j;
 	
 	else if (genloop->status==1 && iPost1==-1) iPost1=j;
@@ -63,7 +72,12 @@ void accWmm(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Wmm
       }       
     }
 
-    nTotal+=1;
+    Int_t id_1 = ( (info->id_1==0) ? 21 : info->id_1 );
+    Int_t id_2 = ( (info->id_2==0) ? 21 : info->id_2 );
+
+    Float_t weight = testPdf->xfxQ(id_1, info->x_1, info->scalePDF)*testPdf->xfxQ(id_2, info->x_2, info->scalePDF)/(nomPdf->xfxQ(id_1, info->x_1, info->scalePDF)*nomPdf->xfxQ(id_2, info->x_2, info->scalePDF));
+
+    nTotal+=weight;
 
     if (iPre1==-1 || iPost1==-1) {
       cout << "?????" << endl;
@@ -72,20 +86,23 @@ void accWmm(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Wmm
     
     const baconhep::TGenParticle* pre1 = (baconhep::TGenParticle*) ((*part)[iPre1]);
     const baconhep::TGenParticle* post1 = (baconhep::TGenParticle*) ((*part)[iPost1]);
-
-    if (pre1->pt>25 && fabs(pre1->eta)<2.1) {
-      nPassPre+=1;
-    }
-    if (post1->pt>25 && fabs(post1->eta)<2.1) {
-      nPassPost+=1;
-    }
+    
+    if (pre1->pt>25 && fabs(pre1->eta)<1.2) nPreBarr+=weight;
+    else if (pre1->pt>25 && fabs(pre1->eta)>1.2 && fabs(pre1->eta)<2.1) nPreEnd+=weight;
+    
+    if (post1->pt>25 && fabs(post1->eta)<1.2) nPostBarr+=weight;
+    else if (post1->pt>25 && fabs(post1->eta)>1.2 && fabs(post1->eta)<2.1) nPostEnd+=weight;
     
   }
 
-  cout << "Pre-FSR:  " << nPassPre << ", " << nTotal << endl;
-  cout << "Post-FSR: " << nPassPost << ", " << nTotal << endl;
-  cout << "Pre-FSR:  " << nPassPre/nTotal << endl;
-  cout << "Post-FSR: " << nPassPost/nTotal << endl;
+  Float_t accB=nPostBarr/nTotal;
+  Float_t accE=nPostEnd/nTotal;
+  Float_t accT=(nPostBarr+nPostEnd)/nTotal;
+
+  
+  cout << "B: " << accB << " +/- " << sqrt((1-accB)*(accB)/nTotal) << " ( " << nPostBarr << "/" << nTotal << " )" << endl;
+  cout << "E: " << accE << " +/- " << sqrt((1-accE)*(accE)/nTotal) << " ( " << nPostEnd << "/" << nTotal << " )" << endl; 
+  cout << "Tot:  "  << accT << " +/- " << sqrt((1-accT)*(accT)/nTotal) << " ( " << nPostBarr+nPostEnd << "/" << nTotal << " )" << endl;
   
 }
 

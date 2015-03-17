@@ -1,4 +1,4 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined(__CINT__) //|| defined(__MAKECINT__)
 #include <TROOT.h>                  // access to gROOT, entry point to ROOT system
 #include <TSystem.h>                // interface to OS
 #include <TFile.h>                  // file handle class
@@ -15,17 +15,32 @@
 #include <fstream>                  // functions for file I/O
 #include <TChain.h>
 #include <TH1.h>
-#include "Math/LorentzVector.h"     // 4-vector class
+#include "TLorentzVector.h"
+#include "LHAPDF/LHAPDF.h"
 
 #include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
 #include "BaconAna/DataFormats/interface/TGenJet.hh"
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"
 
+using namespace std;
+
 #endif
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
+void accZee(TString input="root://eoscms.cern.ch//store/user/jlawhorn/PYTHIA-CT10nlo/Zee_bacon.root",
+	    TString pdfName="CT10nlo",
+	    Int_t iPdfSet=0) {
 
-void accZee(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Zee_bacon.root") {
+  const Double_t MASS_LOW   = 60;
+  const Double_t MASS_HIGH  = 120;
+  const Double_t PT_CUT     = 25;
+  const Double_t ETA_CUT    = 2.5;
+  const Double_t ETA_BARREL = 1.4442;
+  const Double_t ETA_ENDCAP = 1.566;
+  
+  LHAPDF::setVerbosity(LHAPDF::SILENT);
+  
+  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(pdfName.Data(),0);
+  LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
   
   TChain chain("Events");
   chain.Add(input);
@@ -40,13 +55,12 @@ void accZee(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Zee
   chain.SetBranchAddress("GenEvtInfo",  &info);        TBranch *infoBr     = chain.GetBranch("GenEvtInfo");
   chain.SetBranchAddress("GenParticle", &part);        TBranch *partBr     = chain.GetBranch("GenParticle");
 
-  Float_t nPassPre=0;
-  Float_t nPassPost=0;
+  Float_t nPreBB=0, nPreBE=0, nPreEE=0;
+  Float_t nPostBB=0, nPostBE=0, nPostEE=0;
   Float_t nTotal=0;
   
   for (Int_t i=0; i<chain.GetEntries(); i++) {
     infoBr->GetEntry(i);
-    
     part->Clear(); partBr->GetEntry(i);
     
     Int_t iPre1=-1, iPost1=-1;
@@ -59,58 +73,77 @@ void accZee(const TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN-SIM/Zee
       
       if (genloop->pdgId==PDG_ID) {
 	if (genloop->status==3) iPre1=j;
-	
 	else if (genloop->status==1 && iPost1==-1) iPost1=j;
 	else if (genloop->status==1 && genloop->parent==iPost1) iPost1=j;
-	
-      }       
-
+      }
+      
       if (genloop->pdgId==-PDG_ID) {
-	if (genloop->status==3) iPre2=j;
-
-	else if (genloop->status==1 && iPost2==-1) iPost2=j;
-	else if (genloop->status==1 && genloop->parent==iPost2) iPost2=j;
-	
-      }       
+        if (genloop->status==3) iPre2=j;
+        else if (genloop->status==1 && iPost2==-1) iPost2=j;
+        else if (genloop->status==1 && genloop->parent==iPost2) iPost2=j;
+      }
     }
+    
+    Int_t id_1 = ( (info->id_1==0) ? 21 : info->id_1 );
+    Int_t id_2 = ( (info->id_2==0) ? 21 : info->id_2 );
 
-    nTotal+=1;
-
-    const baconhep::TGenParticle* pre1 = (baconhep::TGenParticle*) ((*part)[iPre1]);
+    Float_t weight = testPdf->xfxQ(id_1, info->x_1, info->scalePDF)*testPdf->xfxQ(id_2, info->x_2, info->scalePDF)/(nomPdf->xfxQ(id_1, info->x_1, info->scalePDF)*nomPdf->xfxQ(id_2, info->x_2, info->scalePDF));
+    
     const baconhep::TGenParticle* post1 = (baconhep::TGenParticle*) ((*part)[iPost1]);
-    const baconhep::TGenParticle* pre2 = (baconhep::TGenParticle*) ((*part)[iPre2]);
     const baconhep::TGenParticle* post2 = (baconhep::TGenParticle*) ((*part)[iPost2]);
+    
+    Bool_t isB1=(fabs(post1->eta)<ETA_BARREL) ? kTRUE : kFALSE;
+    Bool_t isB2=(fabs(post2->eta)<ETA_BARREL) ? kTRUE : kFALSE;
 
-    //if (pre1->pt>25 && pre2->pt>25 && ( (fabs(pre1->eta)<1.4442) || (fabs(pre1->eta)>1.566 && fabs(pre1->eta)<2.5) ) && ( (fabs(pre2->eta)<1.4442) || (fabs(pre2->eta)>1.566 && fabs(pre2->eta)<2.5) ) ) {
-    if (pre1->pt>25 && pre2->pt>25 && fabs(pre1->eta)<2.5 && fabs(pre2->eta)<2.5) {
-      LorentzVector ele1(pre1->pt, pre1->eta, pre1->phi, ELE_MASS);
-      LorentzVector ele2(pre2->pt, pre2->eta, pre2->phi, ELE_MASS);
-      LorentzVector zee = ele1+ele2;
-      if (zee.M()>60 && zee.M()<120) nPassPre+=1;
+    TLorentzVector ele1(0,0,0,0);
+    ele1.SetPtEtaPhiM(post1->pt, post1->eta, post1->phi, ELE_MASS);
+    TLorentzVector ele2(0,0,0,0);
+    ele2.SetPtEtaPhiM(post2->pt, post2->eta, post2->phi, ELE_MASS);
+    TLorentzVector zee = ele1+ele2;
+
+    if ( fabs(post1->eta)>ETA_BARREL && fabs(post1->eta)<ETA_ENDCAP ) continue;
+    if ( fabs(post2->eta)>ETA_BARREL && fabs(post2->eta)<ETA_ENDCAP ) continue;
+    
+    nTotal+=weight;
+
+    if (post1->pt < PT_CUT) continue;
+    if (post2->pt < PT_CUT) continue;
+    if (fabs(post1->eta) > ETA_CUT) continue;
+    if (fabs(post2->eta) > ETA_CUT) continue;
+    if (zee.M()<MASS_LOW || zee.M()>MASS_HIGH) continue;
+
+    if (isB1 && isB2) {
+      nPostBB+=weight;
     }
-    //if (post1->pt>25 && post2->pt>25 && ( (fabs(post1->eta)<1.4442) || (fabs(post1->eta)>1.566 && fabs(post1->eta)<2.5) ) && ( (fabs(post2->eta)<1.4442) || (fabs(post2->eta)>1.566 && fabs(post2->eta)<2.5) ) ) {
-    if (post1->pt>25 && post2->pt>25 && fabs(post1->eta)<2.5 && fabs(post2->eta)<2.5) {
-      LorentzVector ele1(post1->pt, post1->eta, post1->phi, ELE_MASS);
-      LorentzVector ele2(post2->pt, post2->eta, post2->phi, ELE_MASS);
-      LorentzVector zee = ele1+ele2;
-      if (zee.M()>60 && zee.M()<120) nPassPost+=1;
+    else if (!isB1 && !isB2) {
+      nPostEE+=weight;
+    }
+    else {
+      nPostBE+=weight;
     }
     
   }
 
-  cout << "Pre-FSR: " << nPassPre/nTotal << endl;
-  cout << "Post-FSR: " << nPassPost/nTotal << endl;
+  Float_t accBB=nPostBB/nTotal; 
+  Float_t accBE=nPostBE/nTotal;
+  Float_t accEE=nPostEE/nTotal;
+  Float_t accT = (nPostBB+nPostBE+nPostEE)/nTotal;
+  
+  cout << "BB: " << accBB << " +/- " << sqrt(accBB*(1-accBB)/nTotal) << endl;
+  cout << "BE: " << accBE << " +/- " << sqrt(accBE*(1-accBE)/nTotal) << endl;
+  cout << "EE: " << accEE << " +/- " << sqrt(accEE*(1-accEE)/nTotal) << endl;
+  cout << "Tot: " << accT << " +/- " << sqrt(accT*(1-accT)/nTotal) << endl;
   
 }
 
 Float_t deltaR( const Float_t eta1, const Float_t eta2, const Float_t phi1, const Float_t phi2 ) {
-
+  
   const Float_t pi = 3.14159265358979;
-
+  
   Float_t etaDiff = (eta1-eta2);
   Float_t phiDiff = fabs(phi1-phi2);
   while ( phiDiff>pi ) phiDiff = fabs(phiDiff-2.0*pi);
-
+  
   Float_t deltaRSquared = etaDiff*etaDiff + phiDiff*phiDiff;
 
   return TMath::Sqrt(deltaRSquared);
