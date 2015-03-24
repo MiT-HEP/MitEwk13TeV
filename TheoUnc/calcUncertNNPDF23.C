@@ -15,13 +15,14 @@
 #include <fstream>                  // functions for file I/O
 #include <TChain.h>
 #include <TH1.h>
+#include <TLine.h>
 #include "Math/LorentzVector.h"     // 4-vector class
 
 using namespace std;
 
 #endif
 
-//void nnpdf(double *iA);
+void nnpdf(double *iA);
 
 void calcUncertNNPDF23(TString input="test2.txt") {
 
@@ -38,27 +39,60 @@ void calcUncertNNPDF23(TString input="test2.txt") {
     vAcc.push_back(acc);
   }
 
+  //TH1D* hTest = new TH1D("hTest", "", 30, 0.32, 0.35);
+  TH1D* hTest = new TH1D("hTest", "", 30, 0.46, 0.48);
+
+  Double_t avg=0, stdv=0;
   Double_t stdP=0, stdM=0;
+  Double_t stdP2=0, stdM2=0;
+
   Int_t nP=0, nM=0;
-  for (Int_t i=1; i<vAcc.size(); i++) {
-    Double_t diff=vAcc[i]-vAcc[0];
-    if (diff>0) { 
-      stdP+=diff*diff;
+  Int_t nP2=0, nM2=0;
+  for (Int_t i=0; i<vAcc.size(); i++) {
+    hTest->Fill(vAcc[i]);
+    avg+=vAcc[i];
+  }
+  avg/=double(vAcc.size());
+
+  for (Int_t i=0; i<vAcc.size(); i++) {
+    stdv+=(vAcc[i]-avg)*(vAcc[i]-avg);
+    if ((vAcc[i]-avg)>0) {
+      stdP+=(vAcc[i]-avg)*(vAcc[i]-avg);
       nP++;
     }
-    else if (diff<0) {
-      stdM+=diff*diff;
+    else if ((vAcc[i]-avg)<0) {
+      stdM+=(vAcc[i]-avg)*(vAcc[i]-avg);
       nM++;
     }
-  }
-  Double_t errP=sqrt(stdP/(nP-1.0));
-  Double_t errM=sqrt(stdM/(nM-1.0));
-  cout << "NNPDF err: + " << errP/vAcc[0]*100 << " - " << errM/vAcc[0]*100 << endl;
 
-  //nnpdf(&vAcc[0]);
+    if (i>0 && (vAcc[i]-vAcc[0])>0) {
+      stdP2+=(vAcc[i]-vAcc[0])*(vAcc[i]-vAcc[0]);
+      nP2++;
+    }
+    else if (i>0 && (vAcc[i]-vAcc[0])<0) {
+      stdM2+=(vAcc[i]-vAcc[0])*(vAcc[i]-vAcc[0]);
+      nM2++;
+    }
+  }
+  stdv=sqrt(stdv/sqrt(vAcc.size()-1));
+  stdP=sqrt(stdP/(nP-1));
+  stdM=sqrt(stdM/(nM-1));
+  stdP2=sqrt(stdP2/(nP2-1));
+  stdM2=sqrt(stdM2/(nM2-1));
+  cout << avg << " + " << stdP << " - " << stdM << endl;
+  cout << stdP/avg*100 << ", " << stdM/avg*100 << " " << nP << " " << nM << endl;
+  cout << vAcc[0] << " + " << stdP2 << " - " << stdM2 << endl;
+  cout << stdP2/vAcc[0]*100 << ", " << stdM2/vAcc[0]*100 << " " << nP2 << " " << nM2 << endl;
+
+  nnpdf(&vAcc[0]);
+
+    hTest->Draw();
+  TLine *l = new TLine(vAcc[0],0,vAcc[0],50);
+  l->SetLineColor(kRed);
+  l->Draw();
   
 }
-/*
+
 void nnpdf(double *iA) {
   double lA = iA[0];
   double lVal = lA;
@@ -82,5 +116,5 @@ void nnpdf(double *iA) {
   double lEMinus = sqrt(lNM/(lNM-1.)*lDiffM/lNM);//sqrt(lNM/(lNM-1.)*(lDiffM/lNM - lVal*lVal));                                                          
   double lEPlus  = sqrt(lNP/(lNP-1.)*lDiffP/lNP);
   cout << "NNPDF Error => +" <<  (lEPlus/lVal)*100  << " -" << (lEMinus/lVal)*100 << endl;
+  cout << lNP << " " << lNM << endl;
 }
-*/
