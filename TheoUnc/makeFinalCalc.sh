@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ACC_DIR=/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc
+ACC_DIR=/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-acc
 
 for CHAN in wme wpe wmm wpm zee zmm
 do

@@ -26,9 +26,10 @@ using namespace std;
 
 #endif
 
-void acczmm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/zmm-bacon.root",
-	    TString pdfName="CT10nlo_as_0117",
-	    Int_t iPdfSet=0) {
+void acczmm_deta(TString input="root://eoscms.cern.ch//store/user/jlawhorn/PYTHIA-CT10nlo-RW/zmm-bacon.root",
+		 TString outputDir="/afs/cern.ch/work/j/jlawhorn/public/wz-envelopes/",
+		 TString pdfName="CT10nlo_as_0117",
+		 Int_t iPdfSet=0) {
 
   const Double_t MASS_LOW   = 60;
   const Double_t MASS_HIGH  = 120;
@@ -36,6 +37,8 @@ void acczmm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/zm
   const Double_t ETA_CUT    = 2.1;
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
+
+  TString output=outputDir+"zmm_"+pdfName+".root";
 
   LHAPDF::setVerbosity(LHAPDF::SILENT);
 
@@ -54,6 +57,15 @@ void acczmm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/zm
   
   chain.SetBranchAddress("GenEvtInfo",  &info);        TBranch *infoBr     = chain.GetBranch("GenEvtInfo");
   chain.SetBranchAddress("GenParticle", &part);        TBranch *partBr     = chain.GetBranch("GenParticle");
+
+  TFile *outFile = new TFile(output, "update");
+
+  char histname[100];
+  sprintf(histname,"dEta_%s_%i",pdfName.Data(),iPdfSet);
+  TH1D* dEta = new TH1D(histname, "", 20, -5, 5); dEta->Sumw2();
+
+  sprintf(histname,"dPt_%s_%i",pdfName.Data(),iPdfSet);
+  TH1D* dPt = new TH1D(histname, "", 25, 0, 100); dPt->Sumw2();
 
   Float_t nPostBB=0, nPostBE=0, nPostEE=0;
   Float_t nTotal=0;
@@ -116,9 +128,14 @@ void acczmm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/zm
     else {
       nPostBE+=weight;
     }
+    dEta->Fill(zmm.Eta(),weight);
+    dPt->Fill(zmm.Pt(),weight);
   }
   
   cout << "Tot: " << (nPostBB+nPostBE+nPostEE)/nTotal << " " << nTotal/chain.GetEntries() << endl;
+
+  outFile->Write();
+  outFile->Close();
   
 }
 

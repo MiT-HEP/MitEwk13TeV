@@ -2,12 +2,13 @@
 
 SCRAM_DIR=$1
 IN_FILE=$2
-OUT_FILE=$3
-RUN_MACRO=$4
-SO_FILE=$5
-PDF=$6
-F_REP=$7
-L_REP=$8
+ENV_DIR=$3
+OUT_FILE=$4
+RUN_MACRO=$5
+SO_FILE=$6
+PDF=$7
+F_REP=$8
+L_REP=$9
 
 WORK_DIR=`pwd`
 echo `hostname`
@@ -28,8 +29,8 @@ echo ${IN_FILE} ${PDF} > ${OUT_FILE}
 
 for i in `seq $F_REP $L_REP`;
 do
-    echo root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${PDF}\",${i}\) >> ${OUT_FILE}
-    root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${PDF}\",${i}\) >> ${OUT_FILE}
+    echo root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${ENV_DIR}/\",\"${PDF}\",${i}\) >> ${OUT_FILE}
+    root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${ENV_DIR}/\",\"${PDF}\",${i}\) >> ${OUT_FILE}
 done
 
 status=`echo $?`

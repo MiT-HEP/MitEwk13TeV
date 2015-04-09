@@ -25,9 +25,12 @@ using namespace std;
 
 #endif
 
-void accwpm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/wpm-bacon.root",
-	    TString pdfName="CT10nlo_as_0117",
-	    Int_t iPdfSet=0) {
+void accwpm_deta(TString input="root://eoscms.cern.ch//store/user/jlawhorn/PYTHIA-CT10nlo-RW/wpm-bacon.root",
+		 TString outputDir="/afs/cern.ch/work/j/jlawhorn/public/wz-envelopes/",
+		 TString pdfName="CT10nlo_as_0117",
+		 Int_t iPdfSet=0) {
+
+  TString output=outputDir+"wpm_"+pdfName+".root";
 
   LHAPDF::setVerbosity(LHAPDF::SILENT);
 
@@ -45,6 +48,17 @@ void accwpm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/wp
   
   chain.SetBranchAddress("GenEvtInfo",  &info);        TBranch *infoBr     = chain.GetBranch("GenEvtInfo");
   chain.SetBranchAddress("GenParticle", &part);        TBranch *partBr     = chain.GetBranch("GenParticle");
+
+  TFile *outFile = new TFile(output, "update");
+
+  char histname[100];
+  sprintf(histname,"dEta_%s_%i",pdfName.Data(),iPdfSet);
+
+  TH1D* dEta = new TH1D(histname, "", 20, -5, 5); dEta->Sumw2();
+
+  sprintf(histname,"dPt_%s_%i",pdfName.Data(),iPdfSet);
+
+  TH1D* dPt = new TH1D(histname, "", 25, 25, 100); dPt->Sumw2();
 
   Double_t nPostBarr=0;
   Double_t nPostEnd=0;
@@ -75,8 +89,14 @@ void accwpm(TString input="/afs/cern.ch/work/j/jlawhorn/PYTHIA-GEN/CT10nlo_rw/wp
     if (post1->pt>25 && fabs(post1->eta)<1.2) nPostBarr+=weight;
     else if (post1->pt>25 && fabs(post1->eta)>1.2 && fabs(post1->eta)<2.1) nPostEnd+=weight;
 
+    dEta->Fill(post1->eta, weight);
+    dPt->Fill(post1->pt, weight);
+
   }
 
   cout << "Tot:  "  << (nPostBarr+nPostEnd)/nTotal << " " << nTotal/chain.GetEntries() << endl;
-  
+
+  outFile->Write();
+  outFile->Close();
+
 }
