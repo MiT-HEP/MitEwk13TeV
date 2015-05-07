@@ -28,16 +28,16 @@ void doInclusiveCalcs(TString incDir);
 void doDifferentialPlots(TString difDir, TString chan);
 
 // generating the replica lists needs to be done better for this sample.
-void getNNPDF23uncertainties(TString incDir="/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc",
+void getNNPDF30uncertainties(TString incDir="/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-acc",
 			     TString difDir="/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-envelopes") {
 
   doInclusiveCalcs(incDir);
-  doDifferentialPlots(difDir, "wme");
+  /*  doDifferentialPlots(difDir, "wme");
   doDifferentialPlots(difDir, "wpe");
   doDifferentialPlots(difDir, "wmm");
   doDifferentialPlots(difDir, "wpm");
   doDifferentialPlots(difDir, "zee");
-  doDifferentialPlots(difDir, "zmm");
+  doDifferentialPlots(difDir, "zmm");*/
 
 }
 
@@ -146,44 +146,44 @@ void doDifferentialPlots(TString difDir, TString chan) {
 }
 
 void doInclusiveCalcs(TString incDir) {
-  Double_t W_p_mu = xsecUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt");
+  Double_t W_p_mu = xsecUncert(incDir+"/wpm_parse_nnpdf30_nlo.txt");
   
-  Double_t W_m_mu = xsecUncert(incDir+"/wmm_parse_nnpdf23_nlo.txt");
+  Double_t W_m_mu = xsecUncert(incDir+"/wmm_parse_nnpdf30_nlo.txt");
   
-  Double_t W_pOverM_mu = chRatioUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
-				       incDir+"/wmm_parse_nnpdf23_nlo.txt");
+  Double_t W_pOverM_mu = chRatioUncert(incDir+"/wpm_parse_nnpdf30_nlo.txt",
+				       incDir+"/wmm_parse_nnpdf30_nlo.txt");
   
-  Double_t W_mu = chSumUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
-			      incDir+"/wmm_parse_nnpdf23_nlo.txt",
+  Double_t W_mu = chSumUncert(incDir+"/wpm_parse_nnpdf30_nlo.txt",
+			      incDir+"/wmm_parse_nnpdf30_nlo.txt",
 			      5.82288, 
 			      3.94813);
 
-  Double_t Z_mumu = xsecUncert(incDir+"/zmm_parse_nnpdf23_nlo.txt");
+  Double_t Z_mumu = xsecUncert(incDir+"/zmm_parse_nnpdf30_nlo.txt");
 
-  Double_t Z_W_mu = wzRatioUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
-				  incDir+"/wmm_parse_nnpdf23_nlo.txt",
-				  incDir+"/zmm_parse_nnpdf23_nlo.txt",
+  Double_t Z_W_mu = wzRatioUncert(incDir+"/wpm_parse_nnpdf30_nlo.txt",
+				  incDir+"/wmm_parse_nnpdf30_nlo.txt",
+				  incDir+"/zmm_parse_nnpdf30_nlo.txt",
 				  5.82288, 
 				  3.94813);
 
 
-  Double_t W_p_el = xsecUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt");
+  Double_t W_p_el = xsecUncert(incDir+"/wpe_parse_nnpdf30_nlo.txt");
 
-  Double_t W_m_el = xsecUncert(incDir+"/wme_parse_nnpdf23_nlo.txt");
+  Double_t W_m_el = xsecUncert(incDir+"/wme_parse_nnpdf30_nlo.txt");
 
-  Double_t W_pOverM_el = chRatioUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
-				       incDir+"/wme_parse_nnpdf23_nlo.txt");
+  Double_t W_pOverM_el = chRatioUncert(incDir+"/wpe_parse_nnpdf30_nlo.txt",
+				       incDir+"/wme_parse_nnpdf30_nlo.txt");
 
-  Double_t W_el = chSumUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
-			      incDir+"/wme_parse_nnpdf23_nlo.txt",
+  Double_t W_el = chSumUncert(incDir+"/wpe_parse_nnpdf30_nlo.txt",
+			      incDir+"/wme_parse_nnpdf30_nlo.txt",
 			      5.82288, 
 			      3.94813);
 
-  Double_t Z_elel = xsecUncert(incDir+"/zee_parse_nnpdf23_nlo.txt");
+  Double_t Z_elel = xsecUncert(incDir+"/zee_parse_nnpdf30_nlo.txt");
 
-  Double_t Z_W_el = wzRatioUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
-				  incDir+"/wme_parse_nnpdf23_nlo.txt",
-				  incDir+"/zee_parse_nnpdf23_nlo.txt",
+  Double_t Z_W_el = wzRatioUncert(incDir+"/wpe_parse_nnpdf30_nlo.txt",
+				  incDir+"/wme_parse_nnpdf30_nlo.txt",
+				  incDir+"/zee_parse_nnpdf30_nlo.txt",
 				  5.82288, 
 				  3.94813);
   

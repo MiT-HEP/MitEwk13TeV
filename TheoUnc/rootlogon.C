@@ -13,20 +13,13 @@
     }
     
     gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc481/libBaconAnaDataFormats.so");
-    //gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc481/libMitEwk13TeVNtupler.so");
     gSystem->Load("$LHAPDFSYS/lib/libLHAPDF.so");
     
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
-    //gROOT->Macro("../Utils/CPlot.cc++");
-    //gROOT->Macro("../Utils/MitStyleRemix.cc++");
+    gROOT->Macro("../Utils/MitStyleRemix.cc++");
+    gROOT->Macro("compare.cc++");
     gSystem->AddIncludePath("-I/afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/boost-1_55/boost/");
     gSystem->AddIncludePath("-I$LHAPDFSYS/include/");
 
-  } //else {
-    //gROOT->Macro("../Utils/CPlot.cc++");
-    //gROOT->Macro("../Utils/MitStyleRemix.cc++");  
-  //}
-               
-  // Show which process needs debugging
-  //gInterpreter->ProcessLine(".! ps |grep root.exe");
+  } 
 }
