@@ -1,11 +1,12 @@
 #!/bin/bash
-#-----------------------------------------------------------------
-# wrapper script for hadronizing events in LHE format to
-# CMSSW GEN format
-#-----------------------------------------------------------------
+
 SCRAM_DIR=$1
-IN_FILE=$2
-OUT_FILE=$3
+HAD_SCRIPT=$2
+IN_FILE=$3
+EOS_OUT=$4
+OUT_FILE=$5
+MAX_EVTS=$6
+SKIP_EVTS=$7
 
 WORK_DIR=`pwd`
 echo `hostname`
@@ -15,9 +16,11 @@ cd ${SCRAM_DIR}/src
 eval `scramv1 runtime -sh`
 cd ${WORK_DIR}
 
-cp ${SCRAM_DIR}/hadronizer.py .
+cp ${SCRAM_DIR}/${HAD_SCRIPT} .
 
-cmsRun hadronizer.py ${IN_FILE} ${OUT_FILE}
+cmsRun ${HAD_SCRIPT} ${IN_FILE} ${OUT_FILE} ${MAX_EVTS} ${SKIP_EVTS}
+
+xrdcp ${OUT_FILE} ${EOS_OUT}
 
 status=`echo $?`
 echo "Status - $status"
