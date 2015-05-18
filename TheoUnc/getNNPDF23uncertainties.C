@@ -18,7 +18,8 @@
 #include "Math/LorentzVector.h"     // 4-vector class
 
 #include "../Utils/MitStyleRemix.hh"
-#include "pdfUncertNNPDF23.hh"
+//#include "pdfUncertNNPDF23.hh"
+#include "PdfUncert.hh"
 
 using namespace std;
 
@@ -28,16 +29,16 @@ void doInclusiveCalcs(TString incDir);
 void doDifferentialPlots(TString difDir, TString chan);
 
 // generating the replica lists needs to be done better for this sample.
-void getNNPDF23uncertainties(TString incDir="/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc",
+void getNNPDF23uncertainties(TString incDir="/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-acc",
 			     TString difDir="/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-envelopes") {
 
   doInclusiveCalcs(incDir);
-  doDifferentialPlots(difDir, "wme");
+  /*  doDifferentialPlots(difDir, "wme");
   doDifferentialPlots(difDir, "wpe");
   doDifferentialPlots(difDir, "wmm");
   doDifferentialPlots(difDir, "wpm");
   doDifferentialPlots(difDir, "zee");
-  doDifferentialPlots(difDir, "zmm");
+  doDifferentialPlots(difDir, "zmm");*/
 
 }
 
@@ -146,60 +147,62 @@ void doDifferentialPlots(TString difDir, TString chan) {
 }
 
 void doInclusiveCalcs(TString incDir) {
-  Double_t W_p_mu = xsecUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt");
-  
-  Double_t W_m_mu = xsecUncert(incDir+"/wmm_parse_nnpdf23_nlo.txt");
-  
-  Double_t W_pOverM_mu = chRatioUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
-				       incDir+"/wmm_parse_nnpdf23_nlo.txt");
-  
-  Double_t W_mu = chSumUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
-			      incDir+"/wmm_parse_nnpdf23_nlo.txt",
-			      5.82288, 
-			      3.94813);
 
-  Double_t Z_mumu = xsecUncert(incDir+"/zmm_parse_nnpdf23_nlo.txt");
+  PdfNNPDF23 pdf;
 
-  Double_t Z_W_mu = wzRatioUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
+  Double_t W_p_mu = pdf.xsecUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt");
+
+  Double_t W_m_mu = pdf.xsecUncert(incDir+"/wmm_parse_nnpdf23_nlo.txt");
+  
+  Double_t W_pOverM_mu = pdf.chRatioUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
+					   incDir+"/wmm_parse_nnpdf23_nlo.txt");
+  
+  Double_t W_mu = pdf.chSumUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
 				  incDir+"/wmm_parse_nnpdf23_nlo.txt",
-				  incDir+"/zmm_parse_nnpdf23_nlo.txt",
-				  5.82288, 
-				  3.94813);
-
-
-  Double_t W_p_el = xsecUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt");
-
-  Double_t W_m_el = xsecUncert(incDir+"/wme_parse_nnpdf23_nlo.txt");
-
-  Double_t W_pOverM_el = chRatioUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
-				       incDir+"/wme_parse_nnpdf23_nlo.txt");
-
-  Double_t W_el = chSumUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
-			      incDir+"/wme_parse_nnpdf23_nlo.txt",
-			      5.82288, 
-			      3.94813);
-
-  Double_t Z_elel = xsecUncert(incDir+"/zee_parse_nnpdf23_nlo.txt");
-
-  Double_t Z_W_el = wzRatioUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
-				  incDir+"/wme_parse_nnpdf23_nlo.txt",
-				  incDir+"/zee_parse_nnpdf23_nlo.txt",
 				  5.82288, 
 				  3.94813);
   
-  cout << "W+    m " << W_p_mu << endl;
-  cout << "W-    m " << W_m_mu << endl;
-  cout << "W+/W- m " << W_pOverM_mu << endl;
-  cout << "W     m " << W_mu << endl;
-  cout << "Z     m " << Z_mumu << endl;
-  cout << "Z/W   m " << Z_W_mu << endl;
+  Double_t Z_mumu = pdf.xsecUncert(incDir+"/zmm_parse_nnpdf23_nlo.txt");
+
+  Double_t Z_W_mu = pdf.wzRatioUncert(incDir+"/wpm_parse_nnpdf23_nlo.txt",
+				      incDir+"/wmm_parse_nnpdf23_nlo.txt",
+				      incDir+"/zmm_parse_nnpdf23_nlo.txt",
+				      5.82288, 
+				      3.94813);
+
+  Double_t W_p_el = pdf.xsecUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt");
+
+  Double_t W_m_el = pdf.xsecUncert(incDir+"/wme_parse_nnpdf23_nlo.txt");
+
+  Double_t W_pOverM_el = pdf.chRatioUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
+					   incDir+"/wme_parse_nnpdf23_nlo.txt");
+
+  Double_t W_el = pdf.chSumUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
+				  incDir+"/wme_parse_nnpdf23_nlo.txt",
+				  5.82288, 
+				  3.94813);
+
+  Double_t Z_elel = pdf.xsecUncert(incDir+"/zee_parse_nnpdf23_nlo.txt");
+
+  Double_t Z_W_el = pdf.wzRatioUncert(incDir+"/wpe_parse_nnpdf23_nlo.txt",
+				      incDir+"/wme_parse_nnpdf23_nlo.txt",
+				      incDir+"/zee_parse_nnpdf23_nlo.txt",
+				      5.82288, 
+				      3.94813);
+  
+  cout << "W+    m " << setprecision(4) <<  W_p_mu << endl;
+  cout << "W-    m " << setprecision(4) <<  W_m_mu << endl;
+  cout << "W+/W- m " << setprecision(4) <<  W_pOverM_mu << endl;
+  cout << "W     m " << setprecision(4) <<  W_mu << endl;
+  cout << "Z     m " << setprecision(4) <<  Z_mumu << endl;
+  cout << "Z/W   m " << setprecision(4) <<  Z_W_mu << endl;
   cout << endl;
-  cout << "W+    e " << W_p_el << endl;
-  cout << "W-    e " << W_m_el << endl;
-  cout << "W+/W- e " << W_pOverM_el << endl;
-  cout << "W     e " << W_el << endl;
-  cout << "Z     e " << Z_elel << endl;
-  cout << "Z/W   e " << Z_W_el << endl;
+  cout << "W+    e " << setprecision(4) <<  W_p_el << endl;
+  cout << "W-    e " << setprecision(4) <<  W_m_el << endl;
+  cout << "W+/W- e " << setprecision(4) <<  W_pOverM_el << endl;
+  cout << "W     e " << setprecision(4) <<  W_el << endl;
+  cout << "Z     e " << setprecision(4) <<  Z_elel << endl;
+  cout << "Z/W   e " << setprecision(4) <<  Z_W_el << endl;
   cout << endl;
 
 }

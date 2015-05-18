@@ -35,22 +35,26 @@ void compareWmm() {
 
   vector<Config> conf_list;
 
-  conf_list.push_back(Config("baseComp-05-06/CT10-wmm-pythia6-powheg1-v2-bacon.root", "ct10", "CT10 + POWHEG-1 + PYTHIA 6"));
-  conf_list.push_back(Config("baseComp-05-06/wmm-pythia6-powheg1.root", "pow1py6", "POWHEG-1 + PYTHIA 6"));
-  conf_list.push_back(Config("baseComp-05-06/wmm-pythia8-powheg1.root", "pow1py8", "POWHEG-1 + PYTHIA 8"));
-  conf_list.push_back(Config("baseComp-05-06/wmmLOEWK-pythia8-powheg2.root", "loewk", "POWHEG-2 LO + PYTHIA 8"));
-  conf_list.push_back(Config("baseComp-05-06/wmmNLOEWK-pythia8-powheg2.root", "nloewk", "POWHEG-2 NLO + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/CT10-wmm-pythia6-powheg1-v2-bacon.root", "ct10", "CT10 + POWHEG-1 + PYTHIA 6"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wmm-pythia6-powheg1.root", "pow1py6", "POWHEG-1 + PYTHIA 6"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wmm-pythia8-powheg1.root", "pow1py8", "POWHEG-1 + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wmmLOEWK-pythia8-powheg2.root", "loewk", "POWHEG-2 LO + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wmmNLOEWK-pythia8-powheg2.root", "nloewk", "POWHEG-2 NLO + PYTHIA 8"));
   
-  Config tune4C("baseComp-05-06/wmm-tune4C-powheg1-bacon.root","tune4C","POWHEG-1 + PYTHIA 8 + 4C tune");
-  Config monash("baseComp-05-06/wmm-tuneMonash-bacon.root","monash","POWHEG-1 + PYTHIA 8 + Monash tune");
+  Config tune4C("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wmm-tune4C-powheg1-bacon.root","tune4C","POWHEG-1 + PYTHIA 8 + 4C tune");
+  Config monash("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wmm-tuneMonash-bacon.root","monash","POWHEG-1 + PYTHIA 8 + Monash tune");
+  Config ct10me("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/CT10-wme-pythia6-powheg1-v2-bacon.root", "ct10me", "CT10 + POWHEG-1 + PYTHIA 6");
 
-  Config amc("baseComp-05-06/WJets-bacon.root","amc","aMC@NLO + PYTHIA 8");
-   
+  Config amc("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/WJets-bacon.root","amc","aMC@NLO + PYTHIA 8");
+
   for (UInt_t i=0; i<conf_list.size(); i++) {
     calcAcc(wmm, conf_list[i]);
   }
   calcAcc(wmm, amc);
-
+  calcAcc(wme, amc);
+  calcAcc(wme, ct10me);
+  calcAcc(wmm, tune4C);
+  calcAcc(wmm, monash);
   /*
   Int_t nP=50, lP=0, hP=100;
   Int_t nE=20, lE=-10, hE=10;
@@ -78,22 +82,25 @@ void compareWpm() {
 
   vector<Config> conf_list;
 
-  conf_list.push_back(Config("baseComp-05-06/CT10-wpm-pythia6-powheg1-v2-bacon.root", "ct10", "CT10 + POWHEG-1 + PYTHIA 6"));
-  conf_list.push_back(Config("baseComp-05-06/wpm-pythia6-powheg1.root", "pow1py6", "POWHEG-1 + PYTHIA 6"));
-  conf_list.push_back(Config("baseComp-05-06/wpm-pythia8-powheg1.root", "pow1py8", "POWHEG-1 + PYTHIA 8"));
-  conf_list.push_back(Config("baseComp-05-06/wpmLOEWK-pythia8-powheg2.root", "loewk", "POWHEG-2 LO + PYTHIA 8"));
-  conf_list.push_back(Config("baseComp-05-06/wpmNLOEWK-pythia8-powheg2.root", "nloewk", "POWHEG-2 NLO + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/CT10-wpm-pythia6-powheg1-v2-bacon.root", "ct10", "CT10 + POWHEG-1 + PYTHIA 6"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wpm-pythia6-powheg1.root", "pow1py6", "POWHEG-1 + PYTHIA 6"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wpm-pythia8-powheg1.root", "pow1py8", "POWHEG-1 + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wpmLOEWK-pythia8-powheg2.root", "loewk", "POWHEG-2 LO + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wpmNLOEWK-pythia8-powheg2.root", "nloewk", "POWHEG-2 NLO + PYTHIA 8"));
   
   //Config tune4C("baseComp-05-06/wpm-tune4C-powheg1-bacon.root","tune4C","POWHEG-1 + PYTHIA 8 + 4C tune");
-  Config monash("baseComp-05-06/wpm-tuneMonash-bacon.root","monash","POWHEG-1 + PYTHIA 8 + Monash tune");  
-
-  Config amc("baseComp-05-06/WJets-bacon.root","amc","aMC@NLO + PYTHIA 8");
+  Config monash("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/wpm-tuneMonash-bacon.root","monash","POWHEG-1 + PYTHIA 8 + Monash tune");  
+  Config amc("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/WJets-bacon.root","amc","aMC@NLO + PYTHIA 8");
+  Config ct10pe("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/CT10-wpe-pythia6-powheg1-v2-bacon.root", "ct10pe", "CT10 + POWHEG-1 + PYTHIA 6");
 
   for (UInt_t i=0; i<conf_list.size(); i++) {
     calcAcc(wpm, conf_list[i]);
   }
   calcAcc(wpm, amc);
-  /* 
+  calcAcc(wpe, amc);
+  calcAcc(wpe, ct10pe);
+  calcAcc(wpm, monash);
+  /*
   Int_t nP=50, lP=0, hP=100;
   Int_t nE=20, lE=-10, hE=10;
 
@@ -120,30 +127,32 @@ void compareZmm() {
 
   vector<Config> conf_list;
 
-  conf_list.push_back(Config("baseComp-05-06/CT10-zmm-pythia6-powheg1-v2-bacon.root", "ct10", "CT10 + POWHEG-1 + PYTHIA 6"));
-  conf_list.push_back(Config("baseComp-05-06/zmm-pythia6-powheg1.root", "pow1py6", "POWHEG-1 + PYTHIA 6"));
-  conf_list.push_back(Config("baseComp-05-06/zmm-pythia8-powheg1.root", "pow1py8", "POWHEG-1 + PYTHIA 8"));
-  conf_list.push_back(Config("baseComp-05-06/zeeLOEWK-pythia8-powheg2.root", "loewk", "POWHEG-2 LO + PYTHIA 8"));
-  conf_list.push_back(Config("baseComp-05-06/zeeNLOEWK-pythia8-powheg2.root", "nloewk", "POWHEG-2 NLO + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/CT10-zmm-pythia6-powheg1-v2-bacon.root", "ct10", "CT10 + POWHEG-1 + PYTHIA 6"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/zmm-pythia6-powheg1.root", "pow1py6", "POWHEG-1 + PYTHIA 6"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/zmm-pythia8-powheg1.root", "pow1py8", "POWHEG-1 + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/zeeLOEWK-pythia8-powheg2.root", "loewkee", "POWHEG-2 LO + PYTHIA 8"));
+  conf_list.push_back(Config("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/zeeNLOEWK-pythia8-powheg2.root", "nloewkee", "POWHEG-2 NLO + PYTHIA 8"));
   
-  Config tune4C("baseComp-05-06/zmm-tune4C-bacon.root","tune4C","POWHEG-1 + PYTHIA 8 + 4C tune");
-  Config monash("baseComp-05-06/zmm-tuneMonash-bacon.root","monash","POWHEG-1 + PYTHIA 8 + Monash tune");
-
-  Config amc("baseComp-05-06/DYJets-bacon.root","amc","aMC@NLO + PYTHIA 8");
-  Config ct10("baseComp-05-06/CT10-zee-pythia6-powheg1-v2-bacon.root","ct10ee","CT10 + POWHEG-1 + PYTHIA 6");
+  Config tune4C("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/zmm-tune4C-bacon.root","tune4C","POWHEG-1 + PYTHIA 8 + 4C tune");
+  Config monash("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/zmm-tuneMonash-bacon.root","monash","POWHEG-1 + PYTHIA 8 + Monash tune");
+  Config amc   ("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/DYJets-bacon.root","amc","aMC@NLO + PYTHIA 8");
+  Config ct10  ("/afs/cern.ch/work/j/jlawhorn/baseComp-05-06/CT10-zee-pythia6-powheg1-v2-bacon.root","ct10ee","CT10 + POWHEG-1 + PYTHIA 6");
 
   for (UInt_t i=0; i<conf_list.size(); i++) {
-    if (i>2) calcAcc(zee, conf_list[i]);
-    else calcAcc(zmm, conf_list[i]);
+    calcAcc(zmm, conf_list[i]);
+    calcAcc(zee, conf_list[i]);
   }
 
   calcAcc(zmm, amc);
   calcAcc(zee, amc);
   calcAcc(zee, ct10);
-
+  calcAcc(zmm, tune4C);
+  calcAcc(zmm, monash);
   /*
   Int_t nP=50, lP=0, hP=100;
   Int_t nE=20, lE=-10, hE=10;
+
+  drawThreePt(zmm, "genVf_pt", conf_list[2], conf_list[1], tune4C, nP, lP, hP);
 
   for (UInt_t i=0; i<conf_list.size()-3; i++) {
     drawTwoPt(zmm, "genVf_pt", conf_list[i], conf_list[i+1], nP, lP, hP);

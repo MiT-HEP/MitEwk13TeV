@@ -18,7 +18,8 @@
 #include "Math/LorentzVector.h"     // 4-vector class
 
 #include "../Utils/MitStyleRemix.hh"
-#include "pdfUncertMSTW2008.hh"
+//#include "pdfUncertMSTW2008.hh"
+#include "PdfUncert.hh"
 
 using namespace std;
 
@@ -31,12 +32,12 @@ void getMSTW2008uncertainties(TString incDir="/afs/cern.ch/work/j/jlawhorn/publi
 			      TString difDir="/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-envelopes") {
 
   doInclusiveCalcs(incDir);
-  doDifferentialPlots(difDir, "wme");
+  /*  doDifferentialPlots(difDir, "wme");
   doDifferentialPlots(difDir, "wpe");
   doDifferentialPlots(difDir, "wmm");
   doDifferentialPlots(difDir, "wpm");
   doDifferentialPlots(difDir, "zee");
-  doDifferentialPlots(difDir, "zmm");
+  doDifferentialPlots(difDir, "zmm");*/
 
 }
 
@@ -207,132 +208,134 @@ void doDifferentialPlots(TString difDir, TString chan) {
 
 void doInclusiveCalcs(TString incDir) {
 
-  Double_t W_p_mu = xsecUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+  PdfMSTW2008 pdf;
 
-  Double_t W_m_mu = xsecUncert(incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+  Double_t W_p_mu = pdf.xsecUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
+				   incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+				   incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+				   incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+				   incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+
+  Double_t W_m_mu = pdf.xsecUncert(incDir+"/wmm_parse_mstw2008nlo68cl.txt",
+				   incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+				   incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+				   incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+				   incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
   
   Double_t W_pOverM_mu = 
-    chRatioUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+    pdf.chRatioUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
   
 
   Double_t W_mu = 
-    chSumUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		5.82288,
-		3.94813);
+    pdf.chSumUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
+		    incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		    incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		    incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		    incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		    incDir+"/wmm_parse_mstw2008nlo68cl.txt",
+		    incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		    incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		    incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		    incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		    5.82288,
+		    3.94813);
 
-  Double_t Z_mumu = xsecUncert(incDir+"/zmm_parse_mstw2008nlo68cl.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
-
+  Double_t Z_mumu = pdf.xsecUncert(incDir+"/zmm_parse_mstw2008nlo68cl.txt",
+				   incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+				   incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+				   incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+				   incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+  
   Double_t Z_W_mu = 
-    wzRatioUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  5.82288,
-		  3.94813);
+    pdf.wzRatioUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      incDir+"/zmm_parse_mstw2008nlo68cl.txt",
+		      incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      5.82288,
+		      3.94813);
 
-  Double_t W_p_el = xsecUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
-
-  Double_t W_m_el = xsecUncert(incDir+"/wme_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
-
+  Double_t W_p_el = pdf.xsecUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
+				   incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
+				   incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+				   incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
+				   incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+  
+  Double_t W_m_el = pdf.xsecUncert(incDir+"/wme_parse_mstw2008nlo68cl.txt",
+				   incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
+				   incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+				   incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
+				   incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+  
   Double_t W_pOverM_el = 
-    chRatioUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+    pdf.chRatioUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
 
   Double_t W_el = 
-    chSumUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		5.82288,
-		3.94813);
+    pdf.chSumUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
+		    incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		    incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		    incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		    incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		    incDir+"/wme_parse_mstw2008nlo68cl.txt",
+		    incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		    incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		    incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		    incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		    5.82288,
+		    3.94813);
 
-  Double_t Z_elel = xsecUncert(incDir+"/zee_parse_mstw2008nlo68cl.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
-
+  Double_t Z_elel = pdf.xsecUncert(incDir+"/zee_parse_mstw2008nlo68cl.txt",
+				   incDir+"/zee_parse_mstw2008nlo68cl_asmz+68cl.txt",
+				   incDir+"/zee_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+				   incDir+"/zee_parse_mstw2008nlo68cl_asmz-68cl.txt",
+				   incDir+"/zee_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+  
   Double_t Z_W_el = 
-    wzRatioUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  5.82288,
-		  3.94813);
+    pdf.wzRatioUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      incDir+"/zee_parse_mstw2008nlo68cl.txt",
+		      incDir+"/zee_parse_mstw2008nlo68cl_asmz+68cl.txt",
+		      incDir+"/zee_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
+		      incDir+"/zee_parse_mstw2008nlo68cl_asmz-68cl.txt",
+		      incDir+"/zee_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
+		      5.82288,
+		      3.94813);
 
   cout << "W+    m " << W_p_mu << endl;
   cout << "W-    m " << W_m_mu << endl;

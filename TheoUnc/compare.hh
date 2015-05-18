@@ -3,6 +3,7 @@
 
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TStyle.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TCanvas.h>
@@ -41,12 +42,13 @@ protected:
 enum Channel { wmm=0, wme, wpm, wpe, zmm, zee};
 
 TString chan_name[6]= {"wmm", "wme", "wpm", "wpe", "zmm", "zee"};
-
+void drawFourPt(Channel chan, TString var, Config fB, Config f1, Config f2, Config f3, Int_t nbinsPt, Int_t xminPt, Int_t xmaxPt);
 void drawThreePt(Channel chan, TString var, Config fB, Config f1, Config f2, Int_t nbinsPt, Int_t xminPt, Int_t xmaxPt);
 void drawTwoPt(Channel chan, TString var, Config fB, Config f1, Int_t nbinsPt, Int_t xminPt, Int_t xmaxPt);
 void drawThreeEta(Channel chan, TString var, Config fB, Config f1, Config f2, Int_t nbinsEta, Int_t xminEta, Int_t xmaxEta);
 void drawTwoEta(Channel chan, TString var, Config fB, Config f1, Int_t nbinsEta, Int_t xminEta, Int_t xmaxEta);
-void calcAcc(Channel chan, Config f);
+Double_t calcAcc(Channel chan, Config f);
 TH1D* returnPlot(Channel chan, Config f, Int_t nbins, Double_t xmin, Double_t xmax, TString var);
+TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name);
 
 #endif

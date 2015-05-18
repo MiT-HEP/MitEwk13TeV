@@ -1,4 +1,4 @@
-#if !defined(__CINT__) //|| defined(__MAKECINT__)
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TROOT.h>                  // access to gROOT, entry point to ROOT system
 #include <TSystem.h>                // interface to OS
 #include <TFile.h>                  // file handle class
@@ -18,335 +18,271 @@
 #include "Math/LorentzVector.h"     // 4-vector class
 
 #include "../Utils/MitStyleRemix.hh"
-#include "pdfUncertMSTW2008.hh"
 
 using namespace std;
 
 #endif
 
-void doInclusiveCalcs(TString incDir);
-void doDifferentialPlots(TString difDir, TString chan);
+enum PROC1 {wme=0, wpe, wmm, wpm};
+enum PROC2 {zee=0, zmm};
 
-void getMSTW2008uncertainties(TString incDir="/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc",
-			      TString difDir="/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-envelopes") {
+void calcAcceptance(TFile *f, TString chan, Int_t n, vector<Double_t> &scale, TString sname);
+void makeScaleVector(TString inDir, TString chan, Double_t &nom, vector<Double_t> &vScales, TString sname);
+Double_t uncert(vector<Double_t> &vScale, Double_t nom);
+Double_t uncert(vector<Double_t> &vScale, vector<Double_t> &vScaleAs);
 
-  doInclusiveCalcs(incDir);
-  doDifferentialPlots(difDir, "wme");
-  doDifferentialPlots(difDir, "wpe");
-  doDifferentialPlots(difDir, "wmm");
-  doDifferentialPlots(difDir, "wpm");
-  doDifferentialPlots(difDir, "zee");
-  doDifferentialPlots(difDir, "zmm");
+void getMMHT2014uncertainties() {
 
+  Double_t wmXsec = 8.35;
+  Double_t wpXsec = 11.20;
+  Double_t zXsec  = 1.92;
+
+  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-envelopes-new/";
+
+  cout << "MMHT2014 acceptances" << endl;
+
+  Double_t wmeNom, wmeNomA;
+  vector<Double_t> wmeScales, wmeScaleA;
+  makeScaleVector(inDir, "wme", wmeNom, wmeScales, "MMHT2014nlo68cl");
+  makeScaleVector(inDir, "wme", wmeNomA, wmeScaleA, "MMHT2014nlo_asmzsmallrange");
+
+  Double_t wpeNom, wpeNomA;
+  vector<Double_t> wpeScales, wpeScaleA;
+  makeScaleVector(inDir, "wpe", wpeNom, wpeScales, "MMHT2014nlo68cl");
+  makeScaleVector(inDir, "wpe", wpeNomA, wpeScaleA, "MMHT2014nlo_asmzsmallrange");
+
+  Double_t wmmNom, wmmNomA; 
+  vector<Double_t> wmmScales, wmmScaleA;
+  makeScaleVector(inDir, "wmm", wmmNom, wmmScales, "MMHT2014nlo68cl");
+  makeScaleVector(inDir, "wmm", wmmNomA, wmmScaleA, "MMHT2014nlo_asmzsmallrange");
+
+  Double_t wpmNom, wpmNomA;
+  vector<Double_t> wpmScales, wpmScaleA;
+  makeScaleVector(inDir, "wpm", wpmNom, wpmScales, "MMHT2014nlo68cl");
+  makeScaleVector(inDir, "wpm", wpmNomA, wpmScaleA, "MMHT2014nlo_asmzsmallrange");
+
+  Double_t zeeNom, zeeNomA;
+  vector<Double_t> zeeScales, zeeScaleA;
+  makeScaleVector(inDir, "zee", zeeNom, zeeScales, "MMHT2014nlo68cl");
+  makeScaleVector(inDir, "zee", zeeNomA, zeeScaleA, "MMHT2014nlo_asmzsmallrange");
+
+  Double_t zmmNom, zmmNomA;
+  vector<Double_t> zmmScales, zmmScaleA;
+  makeScaleVector(inDir, "zmm", zmmNom, zmmScales, "MMHT2014nlo68cl");
+  makeScaleVector(inDir, "zmm", zmmNomA, zmmScaleA, "MMHT2014nlo_asmzsmallrange");
+
+  if (wmeScales.size()!=wpeScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
+  if (wmeScales.size()!=wpmScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
+  if (wmmScales.size()!=wpmScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
+  if (zmmScales.size()!=wpmScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
+  if (zmmScales.size()!=zeeScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
+
+  Double_t wpmeNom=wpeNom/wmeNom; 
+  vector<Double_t> wpmeScales;
+  for (UInt_t i=0; i<wmeScales.size(); i++) { wpmeScales.push_back(wpeScales[i]/wmeScales[i]); }
+
+  Double_t wpmmNom=wpmNom/wmmNom; 
+  vector<Double_t> wpmmScales;
+  for (UInt_t i=0; i<wmmScales.size(); i++) { wpmmScales.push_back(wpmScales[i]/wmmScales[i]); }
+
+  Double_t weNom=(wpeNom*wpXsec+wmeNom*wmXsec)/(wpXsec+wmXsec); 
+  vector<Double_t> weScales;
+  for (UInt_t i=0; i<wpeScales.size(); i++) { weScales.push_back((wpeScales[i]*wpXsec+wmeScales[i]*wmXsec)/(wpXsec+wmXsec)); }
+
+  Double_t wmNom=(wpmNom*wpXsec+wmmNom*wmXsec)/(wpXsec+wmXsec); 
+  vector<Double_t> wmScales;
+  for (UInt_t i=0; i<wpmScales.size(); i++) { wmScales.push_back((wpmScales[i]*wpXsec+wmmScales[i]*wmXsec)/(wpXsec+wmXsec)); }
+
+  Double_t wzeNom=(wpeNom*wpXsec+wmeNom*wmXsec)/(zeeNom*zXsec)*((zXsec)/(wpXsec+wmXsec)); 
+  vector<Double_t> wzeScales;
+  for (UInt_t i=0; i<wpeScales.size(); i++) { wzeScales.push_back(((wpeScales[i]*wpXsec+wmeScales[i]*wmXsec)/(zeeScales[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
+
+  Double_t wzmNom=(wpmNom*wpXsec+wmmNom*wmXsec)/(zmmNom*zXsec)*((zXsec)/(wpXsec+wmXsec)); 
+  vector<Double_t> wzmScales;
+  for (UInt_t i=0; i<wpmScales.size(); i++) { wzmScales.push_back(((wpmScales[i]*wpXsec+wmmScales[i]*wmXsec)/(zmmScales[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
+
+  Double_t wpmeNomA=wpeNomA/wmeNomA; 
+  vector<Double_t> wpmeScaleA;
+  for (UInt_t i=0; i<wmeScaleA.size(); i++) { wpmeScaleA.push_back(wpeScaleA[i]/wmeScaleA[i]); }
+
+  Double_t wpmmNomA=wpmNomA/wmmNomA; 
+  vector<Double_t> wpmmScaleA;
+  for (UInt_t i=0; i<wmmScaleA.size(); i++) { wpmmScaleA.push_back(wpmScaleA[i]/wmmScaleA[i]); }
+
+  Double_t weNomA=(wpeNomA*wpXsec+wmeNomA*wmXsec)/(wpXsec+wmXsec); 
+  vector<Double_t> weScaleA;
+  for (UInt_t i=0; i<wpeScaleA.size(); i++) { weScaleA.push_back((wpeScaleA[i]*wpXsec+wmeScaleA[i]*wmXsec)/(wpXsec+wmXsec)); }
+
+  Double_t wmNomA=(wpmNomA*wpXsec+wmmNomA*wmXsec)/(wpXsec+wmXsec); 
+  vector<Double_t> wmScaleA;
+  for (UInt_t i=0; i<wpmScaleA.size(); i++) { wmScaleA.push_back((wpmScaleA[i]*wpXsec+wmmScaleA[i]*wmXsec)/(wpXsec+wmXsec)); }
+
+  Double_t wzeNomA=(wpeNomA*wpXsec+wmeNomA*wmXsec)/(zeeNomA*zXsec)*((zXsec)/(wpXsec+wmXsec)); 
+  vector<Double_t> wzeScaleA;
+  for (UInt_t i=0; i<wpeScaleA.size(); i++) { wzeScaleA.push_back(((wpeScaleA[i]*wpXsec+wmeScaleA[i]*wmXsec)/(zeeScaleA[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
+
+  Double_t wzmNomA=(wpmNomA*wpXsec+wmmNomA*wmXsec)/(zmmNomA*zXsec)*((zXsec)/(wpXsec+wmXsec)); 
+  vector<Double_t> wzmScaleA;
+  for (UInt_t i=0; i<wpmScaleA.size(); i++) { wzmScaleA.push_back(((wpmScaleA[i]*wpXsec+wmmScaleA[i]*wmXsec)/(zmmScaleA[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
+
+  /*
+  cout << "W+m : " << max(uncert(wpmScales, wpmNom), uncert(wpmScaleA, wpmNom)) << "%" << endl;
+  cout << "W-m : " << max(uncert(wmmScales, wmmNom), uncert(wmmScaleA, wmmNom)) << "%" << endl;
+  cout << "W+e : " << max(uncert(wpeScales, wpeNom), uncert(wpeScaleA, wpeNom)) << "%" << endl;
+  cout << "W-e : " << max(uncert(wmeScales, wmeNom), uncert(wmeScaleA, wmeNom)) << "%" << endl;
+  cout << "Zmm : " << max(uncert(zmmScales, zmmNom), uncert(zmmScaleA, zmmNom)) << "%" << endl;
+  cout << "Zee : " << max(uncert(zeeScales, zeeNom), uncert(zeeScaleA, zeeNom)) << "%" << endl;
+  */
+  cout << "uncertainties" << endl;
+  cout << "W+m:      " << setprecision(4) <<  uncert(wpmScales, wpmScaleA) << " %" << endl;
+  cout << "W-m:      " << setprecision(4) <<  uncert(wmmScales, wmmScaleA) << " %" << endl;
+  cout << "W+e:      " << setprecision(4) <<  uncert(wpeScales, wpeScaleA) << " %" << endl;
+  cout << "W-e:      " << setprecision(4) <<  uncert(wmeScales, wmeScaleA) << " %" << endl;
+  cout << "Zmm:      " << setprecision(4) <<  uncert(zmmScales, zmmScaleA) << " %" << endl;
+  cout << "Zee:      " << setprecision(4) <<  uncert(zeeScales, zeeScaleA) << " %" << endl;
+  cout << "W+/W-(m): " << setprecision(4) <<  uncert(wpmmScales, wpmmScaleA) << " %" << endl;
+  cout << "W+/W-(e): " << setprecision(4) <<  uncert(wpmeScales, wpmeScaleA) << " %" << endl;
+  cout << "W(m):     " << setprecision(4) <<  uncert(wmScales,     wmScaleA) << " %" << endl;
+  cout << "W(e):     " << setprecision(4) <<  uncert(weScales,     weScaleA) << " %" << endl;
+  cout << "W/Z(m):   " << setprecision(4) <<  uncert(wzmScales,   wzmScaleA) << " %" << endl;
+  cout << "W/Z(e):   " << setprecision(4) <<  uncert(wzeScales,   wzeScaleA) << " %" << endl;
+  /*
+  cout << "W+/W- (muons) : " << max(uncert(wpmmScales, wpmmNom), uncert(wpmmScaleA, wpmmNom)) << "%" << endl;
+  cout << "W+/W- (eles) :  " << max(uncert(wpmeScales, wpmeNom), uncert(wpmeScaleA, wpmeNom)) << "%" << endl;
+  cout << "W -> munu : "     << max(uncert(wmScales,   wmNom),   uncert(wmScaleA,   wmNom)) << "%" << endl;
+  cout << "W ->  enu : "     << max(uncert(weScales,   weNom),   uncert(weScaleA,   weNom)) << "%" << endl;
+  cout << "W/Z (muons) : "   << max(uncert(wzmScales,  wzmNom),  uncert(wzmScaleA,  wzmNom)) << "%" << endl;
+  cout << "W/Z (eles) :  "   << max(uncert(wzeScales,  wzeNom),  uncert(wzeScaleA,  wzeNom)) << "%" << endl;
+  */
 }
+void makeScaleVector(TString inDir, TString chan, Double_t &nom, vector<Double_t> &vScales, TString sname) {
 
-void doDifferentialPlots(TString difDir, TString chan) {
+  TString inFile = inDir+chan+"_"+sname+".root";
 
-  Int_t n=40;
-
-  TFile *f = new TFile(difDir+"/"+chan+"_MSTW2008nlo68cl_all.root");
-
-  TH1D* hEtaNom = (TH1D*) f->Get("dEta_MSTW2008nlo68cl_0");
-  TH1D* hEtaEnvU = new TH1D("hEtaEnvU","",20,-5,5);
-  TH1D* hEtaEnvL = new TH1D("hEtaEnvL","",20,-5,5);
-
-  TH1D* hPtNom =  (TH1D*) f->Get("dPt_MSTW2008nlo68cl_0");
-  TH1D* hPtEnvU;
-  if (chan=="zee" || chan=="zmm") hPtEnvU = new TH1D("hPtEnvU","",25,0,100);
-  else hPtEnvU = new TH1D("hPtEnvU","",25,25,100);
-  TH1D* hPtEnvL;
-  if (chan=="zee" || chan=="zmm") hPtEnvL = new TH1D("hPtEnvL","",25,0,100);
-  else hPtEnvL = new TH1D("hPtEnvL","",25,25,100);
-
-  for (Int_t j=0; j<20+1; j++) { hEtaEnvU->SetBinContent(j,1.0); }
-  for (Int_t j=0; j<20+1; j++) { hEtaEnvL->SetBinContent(j,1.0); }
-
-  for (Int_t j=0; j<25+1; j++) { hPtEnvU->SetBinContent(j,1.0); }
-  for (Int_t j=0; j<25+1; j++) { hPtEnvL->SetBinContent(j,1.0); }
-
-  char hname[150];
-  for (Int_t i=1; i<n; i++) {
-    sprintf(hname,"dEta_MSTW2008nlo68cl_%i",i);
-    TH1D* hEta =(TH1D*)f->Get(hname);
-    hEta->Divide(hEtaNom);
-    for (Int_t j=0; j<20+1; j++) {
-      if ( hEta->GetBinContent(j) > hEtaEnvU->GetBinContent(j) ) hEtaEnvU->SetBinContent(j,hEta->GetBinContent(j));
-      else if ( hEta->GetBinContent(j) < hEtaEnvL->GetBinContent(j) ) hEtaEnvL->SetBinContent(j,hEta->GetBinContent(j));
-    }
-    sprintf(hname,"dPt_MSTW2008nlo68cl_%i",i);
-    TH1D* hPt =(TH1D*)f->Get(hname);
-    hPt->Divide(hPtNom);
-    for (Int_t j=0; j<25+1; j++) {
-      if ( hPt->GetBinContent(j) > hPtEnvU->GetBinContent(j) ) hPtEnvU->SetBinContent(j,hPt->GetBinContent(j));
-      else if ( hPt->GetBinContent(j) < hPtEnvL->GetBinContent(j) ) hPtEnvL->SetBinContent(j,hPt->GetBinContent(j));
-    }
-  }
-
-  for (Int_t i=0; i<n; i++) {
-    sprintf(hname,"dEta_MSTW2008nlo68cl_asmz+68cl_%i",i);
-    TH1D* hEta =(TH1D*)f->Get(hname);
-    hEta->Divide(hEtaNom);
-    for (Int_t j=0; j<20+1; j++) {
-      if ( hEta->GetBinContent(j) > hEtaEnvU->GetBinContent(j) ) hEtaEnvU->SetBinContent(j,hEta->GetBinContent(j));
-      else if ( hEta->GetBinContent(j) < hEtaEnvL->GetBinContent(j) ) hEtaEnvL->SetBinContent(j,hEta->GetBinContent(j));
-    }
-    sprintf(hname,"dPt_MSTW2008nlo68cl_asmz+68cl_%i",i);
-    TH1D* hPt =(TH1D*)f->Get(hname);
-    hPt->Divide(hPtNom);
-    for (Int_t j=0; j<25+1; j++) {
-      if ( hPt->GetBinContent(j) > hPtEnvU->GetBinContent(j) ) hPtEnvU->SetBinContent(j,hPt->GetBinContent(j));
-      else if ( hPt->GetBinContent(j) < hPtEnvL->GetBinContent(j) ) hPtEnvL->SetBinContent(j,hPt->GetBinContent(j));
-    }
-  }
-
-  for (Int_t i=0; i<n; i++) {
-    sprintf(hname,"dEta_MSTW2008nlo68cl_asmz-68cl_%i",i);
-    TH1D* hEta =(TH1D*)f->Get(hname);
-    hEta->Divide(hEtaNom);
-    for (Int_t j=0; j<20+1; j++) {
-      if ( hEta->GetBinContent(j) > hEtaEnvU->GetBinContent(j) ) hEtaEnvU->SetBinContent(j,hEta->GetBinContent(j));
-      else if ( hEta->GetBinContent(j) < hEtaEnvL->GetBinContent(j) ) hEtaEnvL->SetBinContent(j,hEta->GetBinContent(j));
-    }
-    sprintf(hname,"dPt_MSTW2008nlo68cl_asmz-68cl_%i",i);
-    TH1D* hPt =(TH1D*)f->Get(hname);
-    hPt->Divide(hPtNom);
-    for (Int_t j=0; j<25+1; j++) {
-      if ( hPt->GetBinContent(j) > hPtEnvU->GetBinContent(j) ) hPtEnvU->SetBinContent(j,hPt->GetBinContent(j));
-      else if ( hPt->GetBinContent(j) < hPtEnvL->GetBinContent(j) ) hPtEnvL->SetBinContent(j,hPt->GetBinContent(j));
-    }
-  }
-
-  for (Int_t i=0; i<n; i++) {
-    sprintf(hname,"dEta_MSTW2008nlo68cl_asmz+68clhalf_%i",i);
-    TH1D* hEta =(TH1D*)f->Get(hname);
-    hEta->Divide(hEtaNom);
-    for (Int_t j=0; j<20+1; j++) {
-      if ( hEta->GetBinContent(j) > hEtaEnvU->GetBinContent(j) ) hEtaEnvU->SetBinContent(j,hEta->GetBinContent(j));
-      else if ( hEta->GetBinContent(j) < hEtaEnvL->GetBinContent(j) ) hEtaEnvL->SetBinContent(j,hEta->GetBinContent(j));
-    }
-    sprintf(hname,"dPt_MSTW2008nlo68cl_asmz+68clhalf_%i",i);
-    TH1D* hPt =(TH1D*)f->Get(hname);
-    hPt->Divide(hPtNom);
-    for (Int_t j=0; j<25+1; j++) {
-      if ( hPt->GetBinContent(j) > hPtEnvU->GetBinContent(j) ) hPtEnvU->SetBinContent(j,hPt->GetBinContent(j));
-      else if ( hPt->GetBinContent(j) < hPtEnvL->GetBinContent(j) ) hPtEnvL->SetBinContent(j,hPt->GetBinContent(j));
-    }
-  }
-
-  for (Int_t i=0; i<n; i++) {
-    sprintf(hname,"dEta_MSTW2008nlo68cl_asmz-68clhalf_%i",i);
-    TH1D* hEta =(TH1D*)f->Get(hname);
-    hEta->Divide(hEtaNom);
-    for (Int_t j=0; j<20+1; j++) {
-      if ( hEta->GetBinContent(j) > hEtaEnvU->GetBinContent(j) ) hEtaEnvU->SetBinContent(j,hEta->GetBinContent(j));
-      else if ( hEta->GetBinContent(j) < hEtaEnvL->GetBinContent(j) ) hEtaEnvL->SetBinContent(j,hEta->GetBinContent(j));
-    }
-    sprintf(hname,"dPt_MSTW2008nlo68cl_asmz-68clhalf_%i",i);
-    TH1D* hPt =(TH1D*)f->Get(hname);
-    hPt->Divide(hPtNom);
-    for (Int_t j=0; j<25+1; j++) {
-      if ( hPt->GetBinContent(j) > hPtEnvU->GetBinContent(j) ) hPtEnvU->SetBinContent(j,hPt->GetBinContent(j));
-      else if ( hPt->GetBinContent(j) < hPtEnvL->GetBinContent(j) ) hPtEnvL->SetBinContent(j,hPt->GetBinContent(j));
-    }
-  }
-
-  hEtaNom->Divide(hEtaNom);
-  hPtNom->Divide(hPtNom);
-
-  TCanvas *c1 = MakeCanvas("c1", "c1", 800, 600);
-
-  if (chan=="zee" || chan=="zmm") InitHist(hEtaNom, "Z #eta", "PDF uncertainties");
-  else InitHist(hEtaNom, "lepton #eta", "PDF uncertainties");
-  hEtaNom->SetLineWidth(2);
-  InitHist(hEtaEnvU, "", "");
-  hEtaEnvU->SetFillStyle(1001);
-  hEtaEnvU->SetFillColor(kAzure+6);
-  hEtaEnvU->SetLineColor(kAzure+6);
-  InitHist(hEtaEnvL, "", "");
-  hEtaEnvL->SetFillStyle(1001);
-  hEtaEnvL->SetFillColor(10);
-  hEtaEnvL->SetLineColor(10);
-
-  hEtaNom->GetYaxis()->SetRangeUser(0.9*hEtaEnvL->GetMinimum(),1.1*hEtaEnvU->GetMaximum());
-  hEtaNom->Draw("hist");
-  hEtaEnvU->Draw("histsame");
-  hEtaEnvL->Draw("histsame");
-  hEtaNom->Draw("histsame");
-
-  c1->RedrawAxis();
-  c1->SaveAs(difDir+"/"+chan+"_MSTW2008nlo68cl_eta_diff.png");
-
-  if (chan=="zee" || chan=="zmm") InitHist(hPtNom, "Z p_{T}", "PDF uncertainties");
-  else InitHist(hPtNom, "lepton p_{T}", "PDF uncertainties");
-  hPtNom->SetLineWidth(2);
-  InitHist(hPtEnvU, "", "");
-  hPtEnvU->SetFillStyle(1001);
-  hPtEnvU->SetFillColor(kAzure+6);
-  hPtEnvU->SetLineColor(kAzure+6);
-  InitHist(hPtEnvL, "", "");
-  hPtEnvL->SetFillStyle(1001);
-  hPtEnvL->SetFillColor(10);
-  hPtEnvL->SetLineColor(10);
-
-  hPtNom->GetYaxis()->SetRangeUser(0.9*hPtEnvL->GetMinimum(),1.1*hPtEnvU->GetMaximum());
-  hPtNom->Draw("hist");
-  hPtEnvU->Draw("histsame");
-  hPtEnvL->Draw("histsame");
-  hPtNom->Draw("histsame");
-
-  c1->RedrawAxis();
-  c1->SaveAs(difDir+"/"+chan+"_MSTW2008nlo68cl_pt_diff.png");
-
-  f->Close();
-
+  TFile *f = new TFile(inFile, "read");
+  if (sname == "MMHT2014nlo68cl") calcAcceptance(f, chan, 51, vScales, sname);
+  else calcAcceptance(f, chan, 5, vScales, sname);
   delete f;
-  delete c1;
+
+  nom=vScales[0];
 
 }
 
-
-void doInclusiveCalcs(TString incDir) {
-
-  Double_t W_p_mu = xsecUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
-
-  Double_t W_m_mu = xsecUncert(incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+void calcAcceptance(TFile *f, TString chan, Int_t n, vector<Double_t> &scale, TString sname) {
+  char hname[100];
   
-  Double_t W_pOverM_mu = 
-    chRatioUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
-  
+  for (Int_t i=0; i<n; i++) {
+    Bool_t prnt = kFALSE;
+    if (sname=="MMHT2014nlo68cl" && i==0) prnt = kTRUE;
+    //cout << sname << ", i = " << i << endl;
 
-  Double_t W_mu = 
-    chSumUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		5.82288,
-		3.94813);
+    if (prnt) cout << chan << " ";
+    sprintf(hname, "dTot_%s_%i", sname.Data(), i);
+    TH1D *tot = (TH1D*) f->Get(hname);
+    Double_t s = tot->Integral()/tot->GetEntries();
 
-  Double_t Z_mumu = xsecUncert(incDir+"/zmm_parse_mstw2008nlo68cl.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+    Double_t accept;
+    if (chan=="wmm" || chan=="wme" || chan=="wpe" || chan=="wpm") {
+      sprintf(hname, "dPostB_%s_%i", sname.Data(), i);
+      TH1D *bar = (TH1D*) f->Get(hname);
+      accept=bar->Integral()/(tot->Integral());
+      //cout << "Barrel Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-  Double_t Z_W_mu = 
-    wzRatioUncert(incDir+"/wpm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/zmm_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  5.82288,
-		  3.94813);
+      sprintf(hname, "dPostE_%s_%i", sname.Data(), i);
+      TH1D *end = (TH1D*) f->Get(hname);
+      accept=end->Integral()/(tot->Integral());
+      //cout << "Endcap Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-  Double_t W_p_el = xsecUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+      accept=(bar->Integral()+end->Integral())/(tot->Integral());
+    }
+    else if (chan=="zmm" || chan=="zee") {
+      sprintf(hname, "dPostBB_%s_%i", sname.Data(), i);
+      TH1D *bb = (TH1D*) f->Get(hname);
+      accept=bb->Integral()/(tot->Integral());
+      //cout << "Bar-bar Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-  Double_t W_m_el = xsecUncert(incDir+"/wme_parse_mstw2008nlo68cl.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+      sprintf(hname, "dPostBE_%s_%i", sname.Data(), i);
+      TH1D *be = (TH1D*) f->Get(hname);
+      accept=be->Integral()/(tot->Integral());
+      //cout << "Bar-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-  Double_t W_pOverM_el = 
-    chRatioUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+      sprintf(hname, "dPostEE_%s_%i", sname.Data(), i);
+      TH1D *ee = (TH1D*) f->Get(hname);
+      accept=ee->Integral()/(tot->Integral());
+      //cout << "End-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-  Double_t W_el = 
-    chSumUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		5.82288,
-		3.94813);
+      accept=(bb->Integral()+be->Integral()+ee->Integral())/(tot->Integral());
+    }
+    if (prnt) cout << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-  Double_t Z_elel = xsecUncert(incDir+"/zee_parse_mstw2008nlo68cl.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz+68cl.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz-68cl.txt",
-			       incDir+"/zee_parse_mstw2008nlo68cl_asmz-68clhalf.txt");
+    //cout << "Scale: " << tot->Integral()/tot->GetEntries() << endl;
 
-  Double_t Z_W_el = 
-    wzRatioUncert(incDir+"/wpe_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wpe_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/wme_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz+68cl.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz+68clhalf.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz-68cl.txt",
-		  incDir+"/zee_parse_mstw2008nlo68cl_asmz-68clhalf.txt",
-		  5.82288,
-		  3.94813);
+    //scale.push_back(s);
+    scale.push_back(accept);
+  }
+}
 
-  cout << "W+    m " << W_p_mu << endl;
-  cout << "W-    m " << W_m_mu << endl;
-  cout << "W+/W- m " << W_pOverM_mu << endl;
-  cout << "W     m " << W_mu << endl;
-  cout << "Z     m " << Z_mumu << endl;
-  cout << "Z/W   m " << Z_W_mu << endl;
-  cout << endl;
-  cout << "W+    e " << W_p_el << endl;
-  cout << "W-    e " << W_m_el << endl;
-  cout << "W+/W- e " << W_pOverM_el << endl;
-  cout << "W     e " << W_el << endl;
-  cout << "Z     e " << Z_elel << endl;
-  cout << "Z/W   e " << Z_W_el << endl;
-  cout << endl;
+Double_t uncert(vector<Double_t> &vScale, Double_t nom) {
+
+  Double_t nomScale=vScale[0];
+  Double_t prevDiff=0, thisDiff=0;
+  Double_t posUnc=0, negUnc=0;
+
+  for (UInt_t i=2; i<vScale.size(); i+=2) {
+    prevDiff=nomScale-vScale[i-1];
+    thisDiff=nomScale-vScale[i];
+
+    if (prevDiff*thisDiff>0) {
+      if (fabs(prevDiff)>thisDiff) thisDiff=prevDiff;
+      if (thisDiff>0) posUnc+=thisDiff*thisDiff;
+      else negUnc+=thisDiff*thisDiff;
+    }
+    else {
+      if (thisDiff>0) posUnc+=thisDiff*thisDiff;
+      else if (thisDiff<0) negUnc+=thisDiff*thisDiff;
+      
+      if (prevDiff>0) posUnc+=prevDiff*prevDiff;
+      if (prevDiff<0) negUnc+=prevDiff*prevDiff;
+    }
+  }
+
+  //cout << posUnc << ", " << negUnc << endl;
+
+  Double_t centralDiff=fabs(nom-nomScale);
+
+  return max((sqrt(posUnc)+centralDiff)/nomScale*100,
+	     (sqrt(negUnc)+centralDiff)/nomScale*100);
+
+}
+
+Double_t uncert(vector<Double_t> &vScale, vector<Double_t> &vScaleAs) {
+
+  Double_t nomScale=vScale[0];
+  Double_t prevDiff=0, thisDiff=0;
+  Double_t posUnc=0, negUnc=0;
+
+  for (UInt_t i=2; i<vScale.size(); i+=2) {
+    prevDiff=nomScale-vScale[i-1];
+    thisDiff=nomScale-vScale[i];
+
+    if (prevDiff*thisDiff>0) {
+      if (fabs(prevDiff)>thisDiff) thisDiff=prevDiff;
+      if (thisDiff>0) posUnc+=thisDiff*thisDiff;
+      else negUnc+=thisDiff*thisDiff;
+    }
+    else {
+      if (thisDiff>0) posUnc+=thisDiff*thisDiff;
+      else if (thisDiff<0) negUnc+=thisDiff*thisDiff;
+      
+      if (prevDiff>0) posUnc+=prevDiff*prevDiff;
+      if (prevDiff<0) negUnc+=prevDiff*prevDiff;
+    }
+  }
+
+  Double_t posUncAs=abs(vScaleAs[0]-vScaleAs[3])*(vScaleAs[0]-vScaleAs[3]);
+  Double_t negUncAs=(vScaleAs[0]-vScaleAs[4])*(vScaleAs[0]-vScaleAs[4]);
+
+  return max((sqrt(posUnc+posUncAs))/nomScale*100,
+	     (sqrt(negUnc+negUncAs))/nomScale*100);
 
 }
