@@ -1,8 +1,8 @@
-MitEwk/README.txt - Jay Lawhorn 8/28/13
+MitEwk/README.txt - Jay Lawhorn 5/25/15
 
 ------| INTRODUCTION |------
 
-This folder contains the various modules needed to go from BAMBU datasets to W/Z production cross section measurements. 
+This folder contains the various modules needed to go from BACON ntuples to W/Z production cross section measurements. 
 
 This code base has a twiki at: http://www.cmsaf.mit.edu/twiki/bin/view/CmsHep/WZBosonCrossSection and each module has its
 own README.txt included. The general intention is that the TWIKI page should be read first for an explanation of the 
@@ -12,9 +12,9 @@ data.
 
 ------| MODULES |------
 
-The order of modules is roughly as follows:
+The Bacon ntuples are produced with the BaconProd module and read using the BaconAna module.
 
-Ntupler:	     BAMBU		-> bacon ntuple
+The order of modules is roughly as follows:
 
 Selection:	     bacon ntuple	-> flat ntuple
 		     (e scale cor)
@@ -41,6 +41,8 @@ Summary Plots:	     signal yields	-> cross sections and plots
 The Tools folder contains a number of useful macros I needed along the way including ones for merging root files, merging and doing simple logic with json files, etc. I also used tools available at https://twiki.cern.ch/twiki/bin/viewauth/CMS/LumiCalc from the official CMS Luminosity calculation tools.
 
 -----| SETUP INFO |------
+
+Only relevant on MIT TIER 3, and also currently outdated.
 
 Commands to execute on start up for each terminal (or add to your ~/.bashrc):
 

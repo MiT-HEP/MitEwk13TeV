@@ -1,4 +1,8 @@
-MitEwk/Selection/README.txt - Jay Lawhorn 8/6/13
+MitEwk/Selection/README.txt - Jay Lawhorn 5/25/2015
+
+------| NOTE |------
+
+* Currently, only the four main selection macros are compatible with the 7_4 bacon ntuples. The other scripts need to be updated.
 
 ------| INTRODUCTION |------
 
