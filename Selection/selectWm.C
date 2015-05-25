@@ -155,17 +155,17 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
-    outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)                                         
-    outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)                                    
-    outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)                                      
-    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass                                        
-    outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)                
+    outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
+    outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
+    outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
+    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass
+    outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
-    outTree->Branch("lep_pt",     &lep_pt,     "lep_pt/F");      // pt of tag lepton                                           
-    outTree->Branch("lep_eta",    &lep_eta,    "lep_eta/F");     // eta of tag lepton                                          
-    outTree->Branch("lep_phi",    &lep_phi,    "lep_phi/F");     // phi of tag lepton                                          
-    outTree->Branch("lep_m",      &lep_m,      "lep_m/F");       // m of tag lepton 
+    outTree->Branch("lep_pt",     &lep_pt,     "lep_pt/F");      // pt of tag lepton
+    outTree->Branch("lep_eta",    &lep_eta,    "lep_eta/F");     // eta of tag lepton
+    outTree->Branch("lep_phi",    &lep_phi,    "lep_phi/F");     // phi of tag lepton
+    outTree->Branch("lep_m",      &lep_m,      "lep_m/F");       // m of tag lepton
     ///// muon specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");       // track isolation of lepton
     outTree->Branch("emIso",      &emIso,      "emIso/F");        // ECAL isolation of lepton
@@ -191,7 +191,7 @@ void selectWm(const TString conf="wm.conf", // input file
 
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
-      infile = new TFile(samp->fnamev[ifile]); 
+      infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
       
       //Bool_t hasJSON = kFALSE;
@@ -203,15 +203,14 @@ void selectWm(const TString conf="wm.conf", // input file
 
       const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
       UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
-      UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");                      
-      UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",                                             
+      UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");
+      UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",
       //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09");
 
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);  
       eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");
-      eventTree->SetBranchAddress("PV",   &pvArr);   TBranch *pvBr   = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -220,7 +219,13 @@ void selectWm(const TString conf="wm.conf", // input file
 	eventTree->SetBranchAddress("GenParticle",&genPartArr);
         genPartBr = eventTree->GetBranch("GenParticle");
       }
-    
+      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
+      TBranch *pvBr=0;
+      if (hasVer) {
+        eventTree->SetBranchAddress("Vertex",       &pvArr);
+        pvBr = eventTree->GetBranch("Vertex");
+      }    
+
       // Compute MC event weight per 1/fb
       Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
@@ -248,8 +253,10 @@ void selectWm(const TString conf="wm.conf", // input file
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-        pvArr->Clear();
-        pvBr->GetEntry(ientry);
+        if (hasVer) {
+	  pvArr->Clear();
+	  pvBr->GetEntry(ientry);
+	}
            
         //
 	// SELECTION PROCEDURE:
@@ -296,7 +303,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  runNum    = info->runNum;
 	  lumiSec   = info->lumiSec;
 	  evtNum    = info->evtNum;
-	  npv	    = pvArr->GetEntriesFast();
+	  npv	    = hasVer ? pvArr->GetEntriesFast() : 0;
 	  npu	    = info->nPU;
 	  genVPt    = -999;
 	  genVPhi   = -999;

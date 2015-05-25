@@ -233,7 +233,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
-      infile = new TFile(samp->fnamev[ifile]); 
+      infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
 
       const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
@@ -252,7 +252,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
       eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
       eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");
-      eventTree->SetBranchAddress("PV",   &pvArr);   TBranch *pvBr   = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -260,6 +259,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	genBr = eventTree->GetBranch("GenEvtInfo");
 	eventTree->SetBranchAddress("GenParticle",&genPartArr);
         genPartBr = eventTree->GetBranch("GenParticle");
+      }
+
+      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
+      TBranch *pvBr=0;
+      if (hasVer) {
+        eventTree->SetBranchAddress("Vertex",       &pvArr);
+        pvBr = eventTree->GetBranch("Vertex");
       }
     
       // Compute MC event weight per 1/fb
@@ -291,8 +297,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-        pvArr->Clear();
-        pvBr->GetEntry(ientry);
+        if (hasVer) {
+	  pvArr->Clear();
+	  pvBr->GetEntry(ientry);
+	}
 
         //
 	// SELECTION PROCEDURE:
@@ -411,7 +419,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    evtNum   = info->evtNum;
 	    matchGen = hasGenMatch ? 1 : 0;
 	    category = icat;
-	    npv      = pvArr->GetEntriesFast();
+	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
 	    npu      = info->nPU;
 	    scale1fb = weight;
 	    met      = info->pfMET;
