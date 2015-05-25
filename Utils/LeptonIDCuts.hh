@@ -69,19 +69,15 @@ Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho)
 
 //--------------------------------------------------------------------------------------------------
 Bool_t passEleID(const baconhep::TElectron *electron, const Double_t rho)
-{
+{ // CSA14 Medium working point
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
   if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
   
   if(!(electron->typeBits & baconhep::EEleType::kEcalDriven)) return kFALSE;
-  
-  if(fabs(electron->d0) > 0.02) return kFALSE;
-  if(fabs(electron->dz) > 0.1)  return kFALSE;
-  
+    
   // conversion rejection
-  if(electron->nMissingHits > 1)  return kFALSE;
   if(electron->isConv)            return kFALSE;
      
   Double_t ea = getEffArea(electron->scEta);
@@ -90,24 +86,31 @@ Bool_t passEleID(const baconhep::TElectron *electron, const Double_t rho)
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.15*(electron->pt)) return kFALSE;
-     
-    if(electron->sieie  	  > 0.01)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     > 0.06)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     > 0.004)                       return kFALSE;
-    if(electron->hovere 	  > 0.12)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.05*(electron->ecalEnergy)) return kFALSE;
-  
+    if(iso > 0.13*(electron->pt))  return kFALSE;
+    if(electron->nMissingHits > 2) return kFALSE;     
+
+    if(electron->sieie  	  > 0.011)                        return kFALSE;
+    if(fabs(electron->dPhiIn)     > 0.033)                        return kFALSE;
+    if(fabs(electron->dEtaIn)     > 0.0011)                       return kFALSE;
+    if(electron->hovere 	  > 0.091)                        return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.034*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0) > 0.012)                                return kFALSE;
+    if(fabs(electron->dz) > 0.39)                                 return kFALSE;
+
   } else {
     // endcap
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.15*(electron->pt)) return kFALSE;
+    if(iso > 0.13*(electron->pt)) return kFALSE;
+    if(electron->nMissingHits > 1) return kFALSE;
      
-    if(electron->sieie  	  > 0.03)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     > 0.03)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     > 0.007)                       return kFALSE;
-    if(electron->hovere 	  > 0.10)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.05*(electron->ecalEnergy)) return kFALSE;
+    if(electron->sieie  	  > 0.031)                        return kFALSE;
+    if(fabs(electron->dPhiIn)     > 0.047)                        return kFALSE;
+    if(fabs(electron->dEtaIn)     > 0.024)                        return kFALSE;
+    if(electron->hovere 	  > 0.099)                        return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.086*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0) > 0.016)                                return kFALSE;
+    if(fabs(electron->dz) > 0.78)                                 return kFALSE;
+
   }
 
   return kTRUE;
@@ -115,7 +118,7 @@ Bool_t passEleID(const baconhep::TElectron *electron, const Double_t rho)
 
 //--------------------------------------------------------------------------------------------------
 Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho)
-{
+{ // CSA14 Medium working point
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
@@ -123,11 +126,7 @@ Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho)
   
   if(!(electron->typeBits & baconhep::EEleType::kEcalDriven)) return kFALSE;
   
-  if(fabs(electron->d0) > 0.02) return kFALSE;
-  if(fabs(electron->dz) > 0.1)  return kFALSE;
-  
   // conversion rejection
-  if(electron->nMissingHits > 1)  return kFALSE;
   if(electron->isConv)            return kFALSE;
      
   Double_t ea = getEffArea(electron->scEta);
@@ -136,63 +135,80 @@ Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho)
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.15*(electron->pt)) return kFALSE;
+    if(iso > 0.13*(electron->pt))  return kFALSE;
+    if(electron->nMissingHits > 2) return kFALSE;
      
-    if(electron->sieie   	  > 0.01)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     < 0.06)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     < 0.004)                       return kFALSE;
-    if(electron->hovere 	  > 0.12)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.05*(electron->ecalEnergy)) return kFALSE;
-  
+    if(electron->sieie  	  > 0.011)                        return kFALSE;
+    if(fabs(electron->dPhiIn)     > 0.033)                        return kFALSE;
+    if(fabs(electron->dEtaIn)     > 0.0011)                       return kFALSE;
+    if(electron->hovere 	  > 0.091)                        return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.034*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0) > 0.012)                                return kFALSE;
+    if(fabs(electron->dz) > 0.39)                                 return kFALSE;
+
   } else {
     // endcap
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.15*(electron->pt)) return kFALSE;
+    if(iso > 0.13*(electron->pt))  return kFALSE;
+    if(electron->nMissingHits > 1) return kFALSE;
      
-    if(electron->sieie   	  > 0.03)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     < 0.03)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     < 0.007)                       return kFALSE;
-    if(electron->hovere 	  > 0.10)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.05*(electron->ecalEnergy)) return kFALSE;
-  }
+    if(electron->sieie  	  > 0.031)                        return kFALSE;
+    if(fabs(electron->dPhiIn)     > 0.047)                        return kFALSE;
+    if(fabs(electron->dEtaIn)     > 0.024)                        return kFALSE;
+    if(electron->hovere 	  > 0.099)                        return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.086*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0) > 0.016)                                return kFALSE;
+    if(fabs(electron->dz) > 0.78)                                 return kFALSE;
 
+  }
   return kTRUE;
 }
 
 
 //--------------------------------------------------------------------------------------------------
 Bool_t passEleLooseID(const baconhep::TElectron *electron, const Double_t rho)
-{
+{ // CSA14 Veto working point
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
   if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
   
   if(!(electron->typeBits & baconhep::EEleType::kEcalDriven)) return kFALSE;
-  
-  if(fabs(electron->d0) > 0.04) return kFALSE;
-  if(fabs(electron->dz) > 0.2)  return kFALSE;
-     
+
+  // conversion rejection
+  if(electron->isConv)            return kFALSE;
+       
   Double_t ea = getEffArea(electron->scEta);
      
   // barrel/endcap dependent requirments      
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.15*(electron->pt)) return kFALSE;
-     
-    if(electron->sieie        > 0.01)  return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.8)   return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.007) return kFALSE;
+    if(iso > 0.24*(electron->pt))  return kFALSE;
+    if(electron->nMissingHits > 2) return kFALSE;
+
+    if(electron->sieie        > 0.012)                           return kFALSE;
+    if(fabs(electron->dPhiIn) > 0.17)                            return kFALSE;
+    if(fabs(electron->dEtaIn) > 0.0015)                          return kFALSE;
+    if(electron->hovere       > 0.29)                            return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.23*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0)     > 0.037)                           return kFALSE;
+    if(fabs(electron->dz)     > 0.82)                            return kFALSE;
   
   } else {
     // endcap
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.15*(electron->pt)) return kFALSE;
-     
-    if(electron->sieie        > 0.03) return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.7)  return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.01) return kFALSE;
+    if(iso > 0.21*(electron->pt))  return kFALSE;
+    if(electron->nMissingHits > 3) return kFALSE;
+
+    if(electron->sieie        > 0.038)                           return kFALSE;
+    if(fabs(electron->dPhiIn) > 0.25)                            return kFALSE;
+    if(fabs(electron->dEtaIn) > 0.0026)                          return kFALSE;
+    if(electron->hovere       > 0.21)                            return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.17*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0)     > 0.28)                           return kFALSE;
+    if(fabs(electron->dz)     > 0.95)                            return kFALSE;
+  
   }
 
   return kTRUE;
