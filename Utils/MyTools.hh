@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include "TLorentzVector.h"
+#include "TClonesArray.h"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
 namespace toolbox 
 {
   Double_t deltaR(const Double_t eta1, const Double_t phi1, const Double_t eta2, const Double_t phi2);

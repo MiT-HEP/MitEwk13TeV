@@ -17,7 +17,7 @@
 #include <fstream>                        // functions for file I/O
 #include <string>                         // C++ string class
 #include <sstream>                        // class for parsing strings
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"               // 4-vector class
 
 #include "ConfParse.hh"                   // input conf file parser
 #include "../Utils/CSample.hh"            // helper class to handle samples
@@ -25,8 +25,6 @@
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -65,7 +63,7 @@ void plotZee(const TString  conf,            // input file
   // Main analysis code 
   //==============================================================================================================  
  
-  enum { eEleEle2HLT=1, eEleEle1HLT, eEleEleNoSel, eEleSC }; // event category enumeration
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC }; // event category enumeration
   
   vector<TString>  snamev;      // sample name (for output files)  
   vector<CSample*> samplev;     // data/MC samples
@@ -83,18 +81,18 @@ void plotZee(const TString  conf,            // input file
   //
   // Create histograms
   //
-  vector<TH1D*> hMassv[5], hPt1v[5], hPt2v[5], hyv[5], hPhiv[5], hDPhiv[5], hDRv[5];
-  vector<TH1D*> hTagPt1v[5], hTagPt2v[5], hTagEtav[5], hTagPhiv[5];
-  vector<TH1D*> hProbePt1v[5], hProbePt2v[5], hProbeEtav[5], hProbePhiv[5];
-  vector<TH1D*> hNPVv[5];
+  vector<TH1D*> hMassv[6], hPt1v[6], hPt2v[6], hyv[6], hPhiv[6], hDPhiv[6], hDRv[6];
+  vector<TH1D*> hTagPt1v[6], hTagPt2v[6], hTagEtav[6], hTagPhiv[6];
+  vector<TH1D*> hProbePt1v[6], hProbePt2v[6], hProbeEtav[6], hProbePhiv[6];
+  vector<TH1D*> hNPVv[6];
 
-  TH1D *hMassMC[5], *hPt1MC[5], *hPt2MC[5], *hyMC[5], *hPhiMC[5], *hDPhiMC[5], *hDRMC[5];
-  TH1D *hTagPt1MC[5], *hTagPt2MC[5], *hTagEtaMC[5], *hTagPhiMC[5];
-  TH1D *hProbePt1MC[5], *hProbePt2MC[5], *hProbeEtaMC[5], *hProbePhiMC[5];
-  TH1D *hNPVMC[5];
-  
+  TH1D *hMassMC[6], *hPt1MC[6], *hPt2MC[6], *hyMC[6], *hPhiMC[6], *hDPhiMC[6], *hDRMC[6];
+  TH1D *hTagPt1MC[6], *hTagPt2MC[6], *hTagEtaMC[6], *hTagPhiMC[6];
+  TH1D *hProbePt1MC[6], *hProbePt2MC[6], *hProbeEtaMC[6], *hProbePhiMC[6];
+  TH1D *hNPVMC[6];
+
   char hname[100];
-  for(UInt_t icat=0; icat<5; icat++) {
+  for(UInt_t icat=0; icat<6; icat++) {
     for(UInt_t isam=0; isam<samplev.size(); isam++) {
       sprintf(hname,"hMass_cat%i_%i",icat,isam);     hMassv[icat].push_back(new TH1D(hname,"",30,60,120));       hMassv[icat][isam]->Sumw2();
       sprintf(hname,"hPt1_cat%i_%i",icat,isam);      hPt1v[icat].push_back(new TH1D(hname,"",30,0,60));          hPt1v[icat][isam]->Sumw2();
@@ -140,10 +138,11 @@ void plotZee(const TString  conf,            // input file
   TH1D* hMassBBMC = new TH1D("hMassBBMC","",30,60,120); hMassBBMC->Sumw2();
   TH1D* hMassBEMC = new TH1D("hMassBEMC","",30,60,120); hMassBEMC->Sumw2();
   TH1D* hMassEEMC = new TH1D("hMassEEMC","",30,60,120); hMassEEMC->Sumw2();
-  
+
   //
   // Declare output ntuple variables
   //
+
   UInt_t  runNum, lumiSec, evtNum;
   UInt_t  matchGen;
   UInt_t  category;
@@ -152,7 +151,7 @@ void plotZee(const TString  conf,            // input file
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// electron specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
   Float_t pfChIso1, pfGamIso1, pfNeuIso1, pfCombIso1, pfChIso2, pfGamIso2, pfNeuIso2, pfCombIso2;
@@ -160,11 +159,11 @@ void plotZee(const TString  conf,            // input file
   Float_t dphi1, deta1, dphi2, deta2;
   Float_t d01, dz1, d02, dz2;
   UInt_t  isConv1, nexphits1, typeBits1, isConv2, nexphits2, typeBits2; 
-  LorentzVector *sc1=0, *sc2=0;
+  TLorentzVector *sc1=0, *sc2=0;
 
   TFile *infile=0;
   TTree *intree=0;
-        
+
   //
   // loop over samples
   //  
@@ -258,7 +257,6 @@ void plotZee(const TString  conf,            // input file
       if(isam!=0) {
         weight *= scale1fb*lumi;
       }
-      
       hMassv[category][isam]    ->Fill(dilep->M(),weight);
       hPt1v[category][isam]     ->Fill(dilep->Pt(),weight);
       hPt2v[category][isam]     ->Fill(dilep->Pt(),weight);
@@ -293,8 +291,7 @@ void plotZee(const TString  conf,            // input file
         hProbePhiMC[category]->Fill(lep2->Phi(),weight);
         hNPVMC[category]     ->Fill(npv,weight);
       }
-
-      if(category==eEleEle2HLT || category==eEleEle1HLT) {
+      if(category==eEleEle2HLT || category==eEleEle1HLT || category==eEleEle1HLT1L1) {
         hMassv[0][isam]    ->Fill(dilep->M(),weight);
         hPt1v[0][isam]     ->Fill(dilep->Pt(),weight);
         hPt2v[0][isam]     ->Fill(dilep->Pt(),weight);
@@ -362,7 +359,7 @@ void plotZee(const TString  conf,            // input file
   TH1D* hMassBBDiff = makeDiffHist(hMassBBv[0],hMassBBMC,"hMassDiffBB");
   TH1D* hMassBEDiff = makeDiffHist(hMassBEv[0],hMassBEMC,"hMassDiffBE");
   TH1D* hMassEEDiff = makeDiffHist(hMassEEv[0],hMassEEMC,"hMassDiffEE");
-  for(Int_t icat=0; icat<5; icat++) {
+  for(Int_t icat=0; icat<6; icat++) {
     sprintf(hname,"hMassDiff_cat%i",icat);      hMassDiffv.push_back(makeDiffHist(hMassv[icat][0],hMassMC[icat],hname));
     sprintf(hname,"hPt1Diff_cat%i",icat);       hPt1Diffv.push_back(makeDiffHist(hPt1v[icat][0],hPt1MC[icat],hname));
     sprintf(hname,"hPt2Diff_cat%i",icat);       hPt2Diffv.push_back(makeDiffHist(hPt2v[icat][0],hPt2MC[icat],hname));
@@ -886,7 +883,7 @@ void plotZee(const TString  conf,            // input file
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;  
-      
+
   gBenchmark->Show("plotZee"); 
 }
 

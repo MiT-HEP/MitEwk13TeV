@@ -17,7 +17,7 @@
 #include <fstream>                        // functions for file I/O
 #include <string>                         // C++ string class
 #include <sstream>                        // class for parsing strings
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"               // 4-vector class
 
 #include "ConfParse.hh"                   // input conf file parser
 #include "../Utils/CSample.hh"            // helper class to handle samples
@@ -25,8 +25,6 @@
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -65,7 +63,7 @@ void plotZmm(const TString  conf,            // input file
   // Main analysis code 
   //==============================================================================================================  
 
-  enum { eMuMu2HLT=1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
+  enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
 
   vector<TString>  snamev;      // sample name (for output files)  
   vector<CSample*> samplev;     // data/MC samples
@@ -83,18 +81,18 @@ void plotZmm(const TString  conf,            // input file
   //
   // Create histograms
   //
-  vector<TH1D*> hMassv[6], hPt1v[6], hPt2v[6], hyv[6], hPhiv[6], hDPhiv[6], hDRv[6];
-  vector<TH1D*> hTagPt1v[6], hTagPt2v[6], hTagEtav[6], hTagPhiv[6];
-  vector<TH1D*> hProbePt1v[6], hProbePt2v[6], hProbeEtav[6], hProbePhiv[6];
-  vector<TH1D*> hNPVv[6];
+  vector<TH1D*> hMassv[7], hPt1v[7], hPt2v[7], hyv[7], hPhiv[7], hDPhiv[7], hDRv[7];
+  vector<TH1D*> hTagPt1v[7], hTagPt2v[7], hTagEtav[7], hTagPhiv[7];
+  vector<TH1D*> hProbePt1v[7], hProbePt2v[7], hProbeEtav[7], hProbePhiv[7];
+  vector<TH1D*> hNPVv[7];
 
-  TH1D *hMassMC[6], *hPt1MC[6], *hPt2MC[6], *hyMC[6], *hPhiMC[6], *hDPhiMC[6], *hDRMC[6];
-  TH1D *hTagPt1MC[6], *hTagPt2MC[6], *hTagEtaMC[6], *hTagPhiMC[6];
-  TH1D *hProbePt1MC[6], *hProbePt2MC[6], *hProbeEtaMC[6], *hProbePhiMC[6];
-  TH1D *hNPVMC[6];
+  TH1D *hMassMC[7], *hPt1MC[7], *hPt2MC[7], *hyMC[7], *hPhiMC[7], *hDPhiMC[7], *hDRMC[7];
+  TH1D *hTagPt1MC[7], *hTagPt2MC[7], *hTagEtaMC[7], *hTagPhiMC[7];
+  TH1D *hProbePt1MC[7], *hProbePt2MC[7], *hProbeEtaMC[7], *hProbePhiMC[7];
+  TH1D *hNPVMC[7];
   
   char hname[100];
-  for(UInt_t icat=0; icat<6; icat++) {
+  for(UInt_t icat=0; icat<7; icat++) {
     for(UInt_t isam=0; isam<samplev.size(); isam++) {
       sprintf(hname,"hMass_cat%i_%i",icat,isam);     hMassv[icat].push_back(new TH1D(hname,"",30,60,120));       hMassv[icat][isam]->Sumw2();
       sprintf(hname,"hPt1_cat%i_%i",icat,isam);      hPt1v[icat].push_back(new TH1D(hname,"",30,0,60));          hPt1v[icat][isam]->Sumw2();
@@ -152,7 +150,7 @@ void plotZmm(const TString  conf,            // input file
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// muon specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
   Float_t pfChIso1, pfGamIso1, pfNeuIso1, pfCombIso1, pfChIso2, pfGamIso2, pfNeuIso2, pfCombIso2;
@@ -161,7 +159,7 @@ void plotZmm(const TString  conf,            // input file
   UInt_t nPixHits1, nTkLayers1, nPixHits2, nTkLayers2;
   UInt_t nValidHits1, nMatch1, nValidHits2, nMatch2;
   UInt_t typeBits1, typeBits2;
-  LorentzVector *sta1=0, *sta2=0;
+  TLorentzVector *sta1=0, *sta2=0;
 
   TFile *infile=0;
   TTree *intree=0;
@@ -355,7 +353,7 @@ void plotZmm(const TString  conf,            // input file
   TH1D* hMassBBDiff = makeDiffHist(hMassBBv[0],hMassBBMC,"hMassBBDiff");
   TH1D* hMassBEDiff = makeDiffHist(hMassBEv[0],hMassBEMC,"hMassBEDiff");
   TH1D* hMassEEDiff = makeDiffHist(hMassEEv[0],hMassEEMC,"hMassEEDiff");
-  for(Int_t icat=0; icat<6; icat++) {
+  for(Int_t icat=0; icat<7; icat++) {
     sprintf(hname,"hMassDiff_cat%i",icat);      hMassDiffv.push_back(makeDiffHist(hMassv[icat][0],hMassMC[icat],hname));
     sprintf(hname,"hPt1Diff_cat%i",icat);       hPt1Diffv.push_back(makeDiffHist(hPt1v[icat][0],hPt1MC[icat],hname));
     sprintf(hname,"hPt2Diff_cat%i",icat);       hPt2Diffv.push_back(makeDiffHist(hPt2v[icat][0],hPt2MC[icat],hname));

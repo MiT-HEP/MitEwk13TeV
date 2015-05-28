@@ -53,7 +53,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 25;
+  const Double_t PT_CUT    = 5;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
@@ -64,7 +64,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   // Main analysis code 
   //==============================================================================================================  
 
-  enum { eMuMu2HLT=1, eMuMu1HLT, eMuMu1HLT1L1, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
+  enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
   
   vector<TString>  snamev;      // sample name (for output files)  
   vector<CSample*> samplev;     // data/MC samples
@@ -90,14 +90,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
   UInt_t  id_1, id_2;
   Double_t x_1, x_2, xPDF_1, xPDF_2;
   Double_t scalePDF, weightPDF;
+  TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Int_t   q1, q2;
-  Float_t dilep_pt, dilep_eta, dilep_phi, dilep_m;
-  Float_t lep1_pt, lep1_eta, lep1_phi, lep1_m;
-  Float_t lep2_pt, lep2_eta, lep2_phi, lep2_m;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// muon specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
   Float_t pfChIso1, pfGamIso1, pfNeuIso1, pfCombIso1, pfChIso2, pfGamIso2, pfNeuIso2, pfCombIso2;
@@ -106,8 +105,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   UInt_t nPixHits1, nTkLayers1, nPixHits2, nTkLayers2;
   UInt_t nValidHits1, nMatch1, nValidHits2, nMatch2;
   UInt_t typeBits1, typeBits2;
-  Float_t sta1_pt, sta1_eta, sta1_phi, sta1_m;
-  Float_t sta2_pt, sta2_eta, sta2_phi, sta2_m;
+  TLorentzVector *sta1=0, *sta2=0;
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -156,6 +154,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("weightPDF",   &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("npv",         &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",         &npu,        "npu/i");         // number of in-time PU events (MC)
+    outTree->Branch("genV",        "TLorentzVector",  &genV);     // GEN boson 4-vector (signal MC)
     outTree->Branch("genVPt",      &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
     outTree->Branch("genVPhi",     &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
     outTree->Branch("genVy",       &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
@@ -173,18 +172,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("tkU2",        &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
     outTree->Branch("q1",          &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of probe lepton
-    outTree->Branch("dilep_pt",    &dilep_pt,   "dilep_pt/F");    // pt of di-lepton
-    outTree->Branch("dilep_eta",   &dilep_eta,  "dilep_eta/F");   // eta of di-lepton
-    outTree->Branch("dilep_phi",   &dilep_phi,  "dilep_phi/F");   // phi of di-lepton
-    outTree->Branch("dilep_m",     &dilep_m,    "dilep_m/F");     // m of di-lepton
-    outTree->Branch("lep1_pt",     &lep1_pt,    "lep1_pt/F");     // pt of tag lepton
-    outTree->Branch("lep1_eta",    &lep1_eta,   "lep1_eta/F");    // eta of tag lepton
-    outTree->Branch("lep1_phi",    &lep1_phi,   "lep1_phi/F");    // phi of tag lepton
-    outTree->Branch("lep1_m",      &lep1_m,     "lep1_m/F");      // m of tag lepton
-    outTree->Branch("lep2_pt",     &lep2_pt,    "lep2_pt/F");     // pt of probe lepton
-    outTree->Branch("lep2_eta",    &lep2_eta,   "lep2_eta/F");    // eta of probe lepton
-    outTree->Branch("lep2_phi",    &lep2_phi,   "lep2_phi/F");    // phi of probe lepton
-    outTree->Branch("lep2_m",      &lep2_m,     "lep2_m/F");      // m of probe lepton      
+    outTree->Branch("dilep",       "TLorentzVector", &dilep);     // di-lepton 4-vector
+    outTree->Branch("lep1",        "TLorentzVector", &lep1);      // tag lepton 4-vector
+    outTree->Branch("lep2",        "TLorentzVector", &lep2);      // probe lepton 4-vector
     ///// muon specific /////
     outTree->Branch("trkIso1",     &trkIso1,     "trkIso1/F");       // track isolation of tag lepton
     outTree->Branch("trkIso2",     &trkIso2,     "trkIso2/F");       // track isolation of probe lepton
@@ -216,14 +206,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("nValidHits2", &nValidHits2, "nValidHits2/i");   // number of valid muon hits of probe muon
     outTree->Branch("typeBits1",   &typeBits1,   "typeBits1/i");     // muon type of tag muon
     outTree->Branch("typeBits2",   &typeBits2,   "typeBits2/i");     // muon type of probe muon
-    outTree->Branch("sta1_pt",     &sta1_pt,     "sta1_pt/F");       // pt of tag standalone muon
-    outTree->Branch("sta1_eta",    &sta1_eta,    "sta1_eta/F");      // eta of tag standalone muon
-    outTree->Branch("sta1_phi",    &sta1_phi,    "sta1_phi/F");      // phi of tag standalone muon
-    outTree->Branch("sta1_m",      &sta1_m,      "sta1_m/F");        // m of tag standalone muon
-    outTree->Branch("sta2_pt",     &sta2_pt,     "sta2_pt/F");       // pt of probe standalone muon
-    outTree->Branch("sta2_eta",    &sta2_eta,    "sta2_eta/F");      // eta of probe standalone muon
-    outTree->Branch("sta2_phi",    &sta2_phi,    "sta2_phi/F");      // phi of probe standalone muon
-    outTree->Branch("sta2_m",      &sta2_m,      "sta2_m/F");        // m of probe standalone muon
+    outTree->Branch("sta1",        "TLorentzVector", &sta1);         // tag standalone muon 4-vector
+    outTree->Branch("sta2",        "TLorentzVector", &sta2);         // probe standalone muon 4-vector
     
     //
     // loop through files
@@ -348,16 +332,17 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      if(probe->hltMatchBits[trigObjHLT]) {
 	        if(i1>i2) continue;  // make sure we don't double count MuMu2HLT category
 		icat=eMuMu2HLT;
-		
-	      } else if (probe->hltMatchBits[trigObjL1]) {
-		icat=eMuMu1HLT1L1;
-	      } else {
-	        icat=eMuMu1HLT;
 	      }
-	    } 
-	    else if(probe->typeBits & baconhep::EMuType::kGlobal)    { icat=eMuMuNoSel; } 
-	    else if(probe->typeBits==baconhep::EMuType::kStandalone) { icat=eMuSta; } 
-	    else { icat=eMuTrk; }
+	      else if(probe->hltMatchBits[trigObjL1]) {
+		icat=eMuMu1HLT1L1;
+	      }
+	      else {
+		icat=eMuMu1HLT;
+	      }
+	    }
+	    else if(probe->typeBits & baconhep::EMuType::kGlobal) { icat=eMuMuNoSel; }
+	    else if(probe->typeBits & baconhep::EMuType::kStandalone) { icat=eMuMuNoSel; }
+
 	    if(icat==0) continue;
 	    
 	    /******** We have a Z candidate! HURRAY! ********/
@@ -377,12 +362,15 @@ void selectZmm(const TString conf="zmm.conf", // input file
                                 ((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.5) );
               if(match1 && match2) {
                 hasGenMatch = kTRUE;
+		genV     = fvec;
                 genVPt   = fvec->Pt();
                 genVPhi  = fvec->Phi();
                 genVy    = fvec->Rapidity();
                 genVMass = fvec->M();
               }
               else {
+		fvec = new TLorentzVector(0, 0, 0, 0); 
+		genV     = fvec;
                 genVPt   = -999;
                 genVPhi  = -999;
                 genVy    = -999;
@@ -428,20 +416,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    tkMet    = info->trkMET;
             tkMetPhi = info->trkMETphi;
             tkSumEt  = 0;
-	    lep1_pt  = vTag.Pt();
-            lep1_eta = vTag.Eta();
-            lep1_phi = vTag.Phi();
-            lep1_m   = vTag.M();
+	    lep1     = &vTag;
+	    lep2     = &vProbe;
+	    dilep    = &vDilep;
 	    q1       = tag->q;
-	    lep2_pt  = vProbe.Pt();
-            lep2_eta = vProbe.Eta();
-            lep2_phi = vProbe.Phi();
-            lep2_m   = vProbe.M();
 	    q2       = probe->q;
-	    dilep_pt = vDilep.Pt();
-            dilep_eta= vDilep.Eta();
-            dilep_phi= vDilep.Phi();
-            dilep_m  = vDilep.M();
 	    
 	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));        
             TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));        
@@ -455,10 +434,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
             tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 	  
 	    ///// muon specific /////
-	    sta1_pt     = vTagSta.Pt();
-            sta1_eta    = vTagSta.Eta();
-            sta1_phi    = vTagSta.Phi();
-            sta1_m      = vTagSta.M();
+	    sta1        = &vTagSta;
 	    trkIso1     = tag->trkIso;
 	    emIso1      = tag->ecalIso;	    
 	    hadIso1     = tag->hcalIso;
@@ -476,10 +452,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    nValidHits1 = tag->nValidHits;
 	    typeBits1   = tag->typeBits;
 
-	    sta2_pt     = vProbeSta.Pt();
-            sta2_eta    = vProbeSta.Eta();
-            sta2_phi    = vProbeSta.Phi();
-            sta2_m      = vProbeSta.M();	    
+	    sta2        = &vProbeSta;
 	    trkIso2     = probe->trkIso;
 	    emIso2      = probe->ecalIso;
 	    hadIso2     = probe->hcalIso;

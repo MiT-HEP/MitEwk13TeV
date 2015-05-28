@@ -46,7 +46,7 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectWe(const TString conf="we.conf", // input file
-              const TString outputDir="./", // output directory
+              const TString outputDir=".", // output directory
 	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
 ) {
   gBenchmark->Start("selectWe");
@@ -98,13 +98,14 @@ void selectWe(const TString conf="we.conf", // input file
   UInt_t  id_1, id_2;
   Double_t x_1, x_2, xPDF_1, xPDF_2;
   Double_t scalePDF, weightPDF;
+  TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Int_t   q;
-  Float_t lep_pt, lep_eta, lep_phi, lep_m;
+  TLorentzVector *lep=0;
   ///// electron specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
@@ -112,7 +113,7 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t dphi, deta;
   Float_t d0, dz;
   UInt_t  isConv, nexphits, typeBits;
-  Float_t sc_pt, sc_eta, sc_phi, sc_m;
+  TLorentzVector *sc=0;
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -157,6 +158,8 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
     outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
     outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
+    outTree->Branch("genV",      "TLorentzVector", &genV);       // GEN boson 4-vector (signal MC)
+    outTree->Branch("genLep",    "TLorentzVector", &genLep);     // GEN lepton 4-vector (signal MC)
     outTree->Branch("genVPt",     &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
     outTree->Branch("genVPhi",    &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
     outTree->Branch("genVy",      &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
@@ -177,10 +180,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
-    outTree->Branch("lep_pt",     &lep_pt,     "lep_pt/F");      // pt of tag lepton                                       
-    outTree->Branch("lep_eta",    &lep_eta,    "lep_eta/F");     // eta of tag lepton                                      
-    outTree->Branch("lep_phi",    &lep_phi,    "lep_phi/F");     // phi of tag lepton                                      
-    outTree->Branch("lep_m",      &lep_m,      "lep_m/F");       // m of tag lepton 
+    outTree->Branch("lep",       "TLorentzVector", &lep);        // lepton 4-vector
     ///// electron specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");      // track isolation of tag lepton
     outTree->Branch("emIso",      &emIso,      "emIso/F");       // ECAL isolation of tag lepton
@@ -201,10 +201,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("isConv",     &isConv,     "isConv/i");      // conversion filter flag of electron
     outTree->Branch("nexphits",   &nexphits,   "nexphits/i");    // number of missing expected inner hits of electron
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");    // electron type of electron
-    outTree->Branch("sc_pt",      &sc_pt,      "sc_pt/F");       // pt of tag supercluster                                 
-    outTree->Branch("sc_eta",     &sc_eta,     "sc_eta/F");      // eta of tag supercluster                                
-    outTree->Branch("sc_phi",     &sc_phi,     "sc_phi/F");      // phi of tag supercluster                                
-    outTree->Branch("sc_m",       &sc_m,       "sc_m/F");        // m of tag supercluster 
+    outTree->Branch("sc",        "TLorentzVector", &sc);         // supercluster 4-vector
     
     //
     // loop through files
@@ -340,8 +337,8 @@ void selectWe(const TString conf="we.conf", // input file
 	    }
 	  }
 	  
-	  TLorentzVector vLep(escale*(goodEle->pt), goodEle->eta, goodEle->phi, ELE_MASS);  
-	  TLorentzVector vSC(escale*(goodEle->scEt), goodEle->scEta, goodEle->scPhi, ELE_MASS); 	  
+	  TLorentzVector vLep; vLep.SetPtEtaPhiM(escale*(goodEle->pt), goodEle->eta, goodEle->phi, ELE_MASS);  
+	  TLorentzVector vSC; vSC.SetPtEtaPhiM(escale*(goodEle->scEt), goodEle->scEta, goodEle->scPhi, ELE_MASS); 	  
 	  
 	  //
 	  // Fill tree
@@ -351,6 +348,8 @@ void selectWe(const TString conf="we.conf", // input file
 	  evtNum    = info->evtNum;
 	  npv	    = hasVer ? pvArr->GetEntriesFast() : 0;
 	  npu	    = info->nPU;
+	  genV      = new TLorentzVector(0,0,0,0);
+	  genLep    = new TLorentzVector(0,0,0,0);
 	  genVPt    = -999;
 	  genVPhi   = -999;
 	  genVy     = -999;
@@ -373,6 +372,8 @@ void selectWe(const TString conf="we.conf", // input file
 	    TLorentzVector *vec=0, *fvec=0, *lep1=0, *lep2=0;
 	    toolbox::fillGen(genPartArr, BOSON_ID, LEPTON_ID, vec, fvec, lep1, lep2);
 	    if (fvec && lep1) {
+	      genV     = fvec;
+	      genLep   = lep1;
 	      genVPt   = fvec->Pt();
 	      genVPhi  = fvec->Phi();
 	      genVy    = fvec->Rapidity();
@@ -406,21 +407,15 @@ void selectWe(const TString conf="we.conf", // input file
 	  metPhi   = info->pfMETphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
-	  tkMet	   = info->pfMET;
-	  tkMetPhi = info->pfMETphi;
+	  tkMet	   = info->trkMET;
+	  tkMetPhi = info->trkMETphi;
 	  tkSumEt  = 0;
 	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
 	  q        = goodEle->q;
-	  lep_pt  = vLep.Pt();
-	  lep_eta = vLep.Eta();
-	  lep_phi = vLep.Phi();
-	  lep_m   = vLep.M();
+	  lep      = &vLep;
 	  
 	  ///// electron specific /////
-	  sc_pt  = vSC.Pt();
-	  sc_eta = vSC.Eta();
-	  sc_phi = vSC.Phi();
-	  sc_m   = vSC.M();
+	  sc       = &vSC;
 	  trkIso    = goodEle->trkIso;
 	  emIso     = goodEle->ecalIso;
 	  hadIso    = goodEle->hcalIso;

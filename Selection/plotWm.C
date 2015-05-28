@@ -17,7 +17,7 @@
 #include <fstream>                        // functions for file I/O
 #include <string>                         // C++ string class
 #include <sstream>                        // class for parsing strings
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"               // 4-vector class
 
 #include "ConfParse.hh"                   // input conf file parser
 #include "../Utils/CSample.hh"            // helper class to handle samples
@@ -25,8 +25,6 @@
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -171,7 +169,7 @@ void plotWm(const TString  conf,            // input file
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  LorentzVector *lep=0;
+  TLorentzVector *lep=0;
   ///// muon specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
