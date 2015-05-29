@@ -15,14 +15,11 @@
 #include <vector>                         // STL vector class
 #include <iostream>                       // standard I/O
 #include <iomanip>                        // functions to format standard I/O
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"               // 4-vector class
 
 // structure for output ntuple
 #include "EffData.hh" 
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -45,13 +42,13 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   // Main analysis code 
   //==============================================================================================================  
   
-  enum { eHLTEff, eSelEff, eTrkEff, eStaEff, eStaEff_iso, ePOGIDEff, ePOGIsoEff };
+  enum { eHLTEff, eL1Eff, eSelEff, eTrkEff, eStaEff, eStaEff_iso, ePOGIDEff, ePOGIsoEff };
   if(effType > ePOGIsoEff) {
     cout << "Invalid effType option! Exiting..." << endl;
     return;
   }
   
-  enum { eMuMu2HLT=1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
+  enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
   
   Double_t nProbes = 0;
   
@@ -61,21 +58,36 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   gSystem->mkdir(outputDir,kTRUE);
   TFile *outFile = new TFile(outputDir+TString("/probes.root"),"RECREATE"); 
   TTree *outTree = new TTree("Events","Events");
-  EffData data;
-  outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
+  //EffData data;
+  //outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
+  Float_t mass, pt, eta, phi, weight;
+  Int_t q;
+  UInt_t npv, npu, passes, runNum, lumiSec, evtNum;
+  outTree->Branch("mass",   &mass,   "mass/F");
+  outTree->Branch("pt",     &pt,     "pt/F");
+  outTree->Branch("eta",    &eta,    "eta/F");
+  outTree->Branch("phi",    &phi,    "phi/F");
+  outTree->Branch("weight", &weight, "weight/F");
+  outTree->Branch("q",      &q,      "q/I");
+  outTree->Branch("npv",    &npv,    "npv/i");
+  outTree->Branch("npu",    &npu,    "npu/i");
+  outTree->Branch("pass",   &passes, "pass/i");
+  outTree->Branch("runNum", &runNum, "runNum/i");
+  outTree->Branch("lumiSec",&lumiSec,"lumiSec/i");
+  outTree->Branch("evtNum", &evtNum, "evtNum/i");
 
   //
   // Declare output ntuple variables
   //
-  UInt_t  runNum, lumiSec, evtNum;
+  //UInt_t  runNum, lumiSec, evtNum;
   UInt_t  matchGen;
   UInt_t  category;
-  UInt_t  npv, npu;
+  //UInt_t  npv, npu;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
-  LorentzVector *sta1=0, *sta2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *sta1=0, *sta2=0;
   Float_t pfCombIso1, pfCombIso2;
   Float_t d01, dz1, d02, dz2;
   Float_t muNchi21,  muNchi22;
@@ -139,84 +151,105 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
     if(doGenMatch && !matchGen) continue;
     
     Bool_t  pass=kFALSE;
-    Float_t mass=0;
+    Float_t m=0;
     
     if(effType==eHLTEff) {
       //
       // probe = muon passing selection
       // pass  = matched to HLT
-      // * MuMu2HLT event means a passing probe, MuMu1HLT event means a failing probe
+      // * MuMu2HLT event means a passing probe, MuMu1HLT(1L1) event means a failing probe
       //   all other categories do not satisfy probe requirements
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kFALSE; }
-      else if(category==eMuMuNoSel) { continue; }
-      else if(category==eMuSta)     { continue; }
-      else                          { continue; }
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kFALSE; }
+      else if(category==eMuMu1HLT)    { pass=kFALSE; }
+      else if(category==eMuMuNoSel)   { continue; }
+      else if(category==eMuSta)       { continue; }
+      else                            { continue; }
       
-      mass = dilep->M();
+      m = dilep->M();
+
+    } else if(effType==eL1Eff) {
+      //
+      // probe = muon passing selection
+      // pass  = matched to HLT
+      // * MuMu2HLT, MuMu1HLT1L1 event means a passing probe, MuMu1HLT event means a failing probe
+      //   all other categories do not satisfy probe requirements
+      //    
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kFALSE; }
+      else if(category==eMuMuNoSel)   { continue; }
+      else if(category==eMuSta)       { continue; }
+      else                            { continue; }
+      
+      m = dilep->M();
     
     } else if(effType==eSelEff) {
       //
       // probe = GLB muon
       // pass  = passing selection
-      // * MuMu2HLT, MuMu1HLT event means a passing probe, MuMuNoSel event means a failing probe,
+      // * MuMu2HLT, MuMu1HLT(1L1) event means a passing probe, MuMuNoSel event means a failing probe,
       //   all other categories do not satisfy probe requirements
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kTRUE; }
-      else if(category==eMuMuNoSel) { pass=kFALSE; }
-      else if(category==eMuSta)     { continue; }
-      else                          { continue; }
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { pass=kFALSE; }
+      else if(category==eMuSta)       { continue; }
+      else                            { continue; }
       
-      mass = dilep->M();
+      m = dilep->M();
     
     } else if(effType==eTrkEff) {
       //
       // probe = STA muon
       // pass  = is also a GLB muon
-      // * MuMu2HLT, MuMu1HLT, MuMuNoSel event means a passing probe, MuSta event means a failing probe, 
+      // * MuMu2HLT, MuMu1HLT(1L1), MuMuNoSel event means a passing probe, MuSta event means a failing probe, 
       //   MuTrk event does not satisfy probe requirements
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kTRUE; }
-      else if(category==eMuMuNoSel) { pass=kTRUE; }
-      else if(category==eMuSta)     { pass=kFALSE; }
-      else                          { continue; }
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { pass=kTRUE; }
+      else if(category==eMuSta)       { pass=kFALSE; }
+      else                            { continue; }
       
       // compute mass using probe STA muon pT
-      LorentzVector tp = *lep1 + *sta2;
-      mass = tp.M();    
+      TLorentzVector tp = *lep1 + *sta2;
+      m = tp.M();    
     
     } else if(effType==eStaEff) {
       //
       // probe = tracker track
       // pass  = is also a GLB muon
-      // * MuMu2HLT, MuMu1HLT, MuMuNoSel event means a passing probe, MuTrk event means a failing probe, 
+      // * MuMu2HLT, MuMu1HLT(1L1), MuMuNoSel event means a passing probe, MuTrk event means a failing probe, 
       //   MuSta event does not satisfy probe requirements
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kTRUE; }
-      else if(category==eMuMuNoSel) { pass=kTRUE; }
-      else if(category==eMuSta)     { continue; }
-      else                          { pass=kFALSE; }
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { pass=kTRUE; }
+      else if(category==eMuSta)       { continue; }
+      else                            { pass=kFALSE; }
       
-      mass = dilep->M();
+      m = dilep->M();
     
     } else if(effType==eStaEff_iso) {
       //
       // probe = isolated tracker track
       // pass  = is also a GLB muon
-      // * MuMu2HLT, MuMu1HLT, isolated MuMuNoSel event means a passing probe, isolated MuTrk event means a failing probe, 
+      // * MuMu2HLT, MuMu1HLT(1L1), isolated MuMuNoSel event means a passing probe, isolated MuTrk event means a failing probe, 
       //   MuSta, non-isolated MuMuNoSel, and non-isolated MuTrk events do not satisfy probe requirements
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kTRUE; }
-      else if(category==eMuMuNoSel) { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kTRUE; }
-      else if(category==eMuSta)     { continue; }
-      else                          { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kTRUE; }
+      else if(category==eMuSta)       { continue; }
+      else                            { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
       
-      mass = dilep->M();
+      m = dilep->M();
     
     } else if(effType==ePOGIDEff) {
       //
@@ -224,9 +257,10 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       // pass  = passes "tight" muon ID
       // * 
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kTRUE; }
-      else if(category==eMuMuNoSel) { 
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { 
         
 	pass=kTRUE; 
         if(nTkLayers2  < 6)   pass=kFALSE;
@@ -242,7 +276,7 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       else if(category==eMuSta)     { continue; }
       else                          { pass=kFALSE; }
       
-      mass = dilep->M();    
+      m = dilep->M();    
     
     } else if(effType==ePOGIsoEff) {
       //
@@ -250,9 +284,10 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       // pass  = passes isolation
       // * 
       //    
-      if     (category==eMuMu2HLT)  { pass=kTRUE; }
-      else if(category==eMuMu1HLT)  { pass=kTRUE; }
-      else if(category==eMuMuNoSel) {
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { pass=kTRUE; }
+      else if(category==eMuMuNoSel)   {
         
 	if(nTkLayers2  < 6)   continue;
         if(nPixHits2   < 1)   continue;
@@ -269,24 +304,24 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       else if(category==eMuSta)     { continue; }
       else                          { continue; }
       
-      mass = dilep->M();    
+      m = dilep->M();    
     }
     
     nProbes += doWeighted ? scale1fb : 1;
 
     // Fill tree
-    data.mass	 = mass;
-    data.pt	 = (effType==eTrkEff) ? sta2->Pt()  : lep2->Pt();
-    data.eta	 = (effType==eTrkEff) ? sta2->Eta() : lep2->Eta();
-    data.phi	 = (effType==eTrkEff) ? sta2->Phi() : lep2->Phi();
-    data.weight  = doWeighted ? scale1fb : 1;
-    data.q	 = q2;
-    data.npv	 = npv;
-    data.npu	 = npu;
-    data.pass	 = (pass) ? 1 : 0;
-    data.runNum  = runNum;
-    data.lumiSec = lumiSec;
-    data.evtNum  = evtNum;
+    mass = m;
+    pt	 = (effType==eTrkEff) ? sta2->Pt()  : lep2->Pt();
+    eta	 = (effType==eTrkEff) ? sta2->Eta() : lep2->Eta();
+    phi	 = (effType==eTrkEff) ? sta2->Phi() : lep2->Phi();
+    weight  = doWeighted ? scale1fb : 1;
+    q	    = q2;
+    npv	    = npv;
+    npu	    = npu;
+    passes  = (pass) ? 1 : 0;
+    runNum  = runNum;
+    lumiSec = lumiSec;
+    evtNum  = evtNum;
     outTree->Fill();
     
     if(category==eMuMu2HLT) {
@@ -294,18 +329,18 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
 
       nProbes += doWeighted ? scale1fb : 1;
 
-      data.mass	   = mass;
-      data.pt	   = (effType==eTrkEff) ? sta1->Pt()  : lep1->Pt();
-      data.eta	   = (effType==eTrkEff) ? sta1->Eta() : lep1->Eta();
-      data.phi	   = (effType==eTrkEff) ? sta1->Phi() : lep1->Phi();
-      data.weight  = doWeighted ? scale1fb : 1;
-      data.q	   = q1;
-      data.npv	   = npv;
-      data.npu	   = npu;
-      data.pass	   = 1;
-      data.runNum  = runNum;
-      data.lumiSec = lumiSec;
-      data.evtNum  = evtNum;
+      mass	   = m;
+      pt	   = (effType==eTrkEff) ? sta1->Pt()  : lep1->Pt();
+      eta	   = (effType==eTrkEff) ? sta1->Eta() : lep1->Eta();
+      phi	   = (effType==eTrkEff) ? sta1->Phi() : lep1->Phi();
+      weight  = doWeighted ? scale1fb : 1;
+      q	   = q1;
+      npv	   = npv;
+      npu	   = npu;
+      passes	   = 1;
+      runNum  = runNum;
+      lumiSec = lumiSec;
+      evtNum  = evtNum;
       outTree->Fill();
     } 
   }  

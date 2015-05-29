@@ -64,15 +64,15 @@ void printEff(const TString outdir   = "Data/extra",
   for(Int_t ix=1; ix<=nx; ix++) {
     for(Int_t iy=1; iy<=ny; iy++) {    
 
-      Double_t mceff  = hMCEff->GetCellContent(ix,iy);
-      Double_t mcerrl = hMCErrl->GetCellContent(ix,iy);
-      Double_t mcerrh = hMCErrh->GetCellContent(ix,iy);
+      Double_t mceff  = hMCEff->GetBinContent(hMCEff->GetBin(ix,iy));
+      Double_t mcerrl = hMCErrl->GetBinContent(hMCErrl->GetBin(ix,iy));
+      Double_t mcerrh = hMCErrh->GetBinContent(hMCErrh->GetBin(ix,iy));
       
-      Double_t dataeff  = hDataEff->GetCellContent(ix,iy);
-      Double_t dataerrl = hDataErrl->GetCellContent(ix,iy);
-      Double_t dataerrh = hDataErrh->GetCellContent(ix,iy);
+      Double_t dataeff  = hDataEff->GetBinContent(hDataEff->GetBin(ix,iy));
+      Double_t dataerrl = hDataErrl->GetBinContent(hDataErrl->GetBin(ix,iy));
+      Double_t dataerrh = hDataErrh->GetBinContent(hDataErrh->GetBin(ix,iy));
             
-      Double_t scale     = (hDataEff->GetCellContent(ix,iy))/(hMCEff->GetCellContent(ix,iy));
+      Double_t scale     = (hDataEff->GetBinContent(hDataEff->GetBin(ix,iy)))/(hMCEff->GetBinContent(hMCEff->GetBin(ix,iy)));
       Double_t scaleerrl = scale*sqrt(mcerrl*mcerrl/mceff/mceff + dataerrl*dataerrl/dataeff/dataeff);
       Double_t scaleerrh = scale*sqrt(mcerrh*mcerrh/mceff/mceff + dataerrh*dataerrh/dataeff/dataeff);
 
@@ -146,15 +146,15 @@ void printEff(const TString outdir   = "Data/extra",
     dat_latex << "$" << setw(3) << hMCEff->GetYaxis()->GetBinLowEdge(iy) << " < p_T < " << setw(3) << hMCEff->GetYaxis()->GetBinLowEdge(iy+1) << "$";
     sf_latex  << "$" << setw(3) << hMCEff->GetYaxis()->GetBinLowEdge(iy) << " < p_T < " << setw(3) << hMCEff->GetYaxis()->GetBinLowEdge(iy+1) << "$";
     for(Int_t ix=1; ix<=nx; ix++) {
-      Double_t mceff  = hMCEff->GetCellContent(ix,iy);
-      Double_t mcerrl = hMCErrl->GetCellContent(ix,iy);
-      Double_t mcerrh = hMCErrh->GetCellContent(ix,iy);
+      Double_t mceff  = hMCEff->GetBinContent(hMCEff->GetBin(ix,iy));
+      Double_t mcerrl = hMCErrl->GetBinContent(hMCEffl->GetBin(ix,iy));
+      Double_t mcerrh = hMCErrh->GetBinContent(hMCEffh->GetBin(ix,iy));
       
-      Double_t dataeff  = hDataEff->GetCellContent(ix,iy);
-      Double_t dataerrl = hDataErrl->GetCellContent(ix,iy);
-      Double_t dataerrh = hDataErrh->GetCellContent(ix,iy);
+      Double_t dataeff  = hDataEff->GetBinContent(hDataEff->GetBin(ix,iy));
+      Double_t dataerrl = hDataErrl->GetBinContent(hDataEffl->GetBin(ix,iy));
+      Double_t dataerrh = hDataErrh->GetBinContent(hDataEffh->GetBin(ix,iy));
             
-      Double_t scale     = (hDataEff->GetCellContent(ix,iy))/(hMCEff->GetCellContent(ix,iy));
+      Double_t scale     = (hDataEff->GetBinContent(hDataEff->GetBin(ix,iy)))/(hMCEff->GetBinContent(hMCEff->GetBin(ix,iy)));
       Double_t scaleerrl = scale*sqrt(mcerrl*mcerrl/mceff/mceff + dataerrl*dataerrl/dataeff/dataeff);
       Double_t scaleerrh = scale*sqrt(mcerrh*mcerrh/mceff/mceff + dataerrh*dataerrh/dataeff/dataeff);
                      

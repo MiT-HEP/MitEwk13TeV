@@ -355,25 +355,36 @@ void plotEff(const TString conf,            // input binning file
   //
   TFile *infile    = new TFile(infilename);
   TTree *eventTree = (TTree*)infile->Get("Events");
-  EffData data;
-  eventTree->SetBranchAddress("Events",&data);
+
+  Float_t pt, eta, phi, weight;
+  Int_t q;
+  UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
+  eventTree->SetBranchAddress("mass",   &mass);
+  eventTree->SetBranchAddress("pt",     &pt);
+  eventTree->SetBranchAddress("eta",    &eta);
+  eventTree->SetBranchAddress("phi",    &phi);
+  eventTree->SetBranchAddress("weight", &weight);
+  eventTree->SetBranchAddress("q",      &q);
+  eventTree->SetBranchAddress("npv",    &npv);
+  eventTree->SetBranchAddress("npu",    &npu);
+  eventTree->SetBranchAddress("pass",   &pass);
+  eventTree->SetBranchAddress("runNum", &runNum);
+  eventTree->SetBranchAddress("lumiSec",&lumiSec);
+  eventTree->SetBranchAddress("evtNum", &evtNum);
   
   for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     eventTree->GetEntry(ientry);
-    
-    if((data.q)*charge < 0)    continue;
-    if(data.mass < fitMassLo)  continue;
-    if(data.mass > fitMassHi)  continue;
-    if(data.runNum < runNumLo) continue;
-    if(data.runNum > runNumHi) continue;
-    
-    mass = data.mass;
-    wgt  = data.weight;
-    if(doPU>0) wgt *= puWeights->GetBinContent(data.npu+1);
+    if((q)*charge < 0)    continue;
+    if(mass < fitMassLo)  continue;
+    if(mass > fitMassHi)  continue;
+    if(runNum < runNumLo) continue;
+    if(runNum > runNumHi) continue;
+    wgt  = weight;
+    if(doPU>0) wgt *= puWeights->GetBinContent(npu+1);
     
     Int_t ipt=-1;
     for(UInt_t ibin=0; ibin<ptNbins; ibin++)
-      if((data.pt >= ptBinEdgesv[ibin]) && (data.pt < ptBinEdgesv[ibin+1]))
+      if((pt >= ptBinEdgesv[ibin]) && (pt < ptBinEdgesv[ibin+1]))
         ipt = ibin;
     if(ipt<0) continue;
     
@@ -381,10 +392,10 @@ void plotEff(const TString conf,            // input binning file
     for(UInt_t ibin=0; ibin<etaNbins; ibin++) {
       if(doAbsEta) {
         assert(etaBinEdgesv[ibin]>=0);
-        if((fabs(data.eta) >= etaBinEdgesv[ibin]) && (fabs(data.eta) < etaBinEdgesv[ibin+1]))
+        if((fabs(eta) >= etaBinEdgesv[ibin]) && (fabs(eta) < etaBinEdgesv[ibin+1]))
           ieta = ibin;
       } else {
-        if((data.eta >= etaBinEdgesv[ibin]) && (data.eta < etaBinEdgesv[ibin+1]))
+        if((eta >= etaBinEdgesv[ibin]) && (eta < etaBinEdgesv[ibin+1]))
           ieta = ibin;
       }
     }
@@ -392,17 +403,17 @@ void plotEff(const TString conf,            // input binning file
 	
     Int_t iphi=-1;
     for(UInt_t ibin=0; ibin<phiNbins; ibin++)
-      if((data.phi >= phiBinEdgesv[ibin]) && (data.phi < phiBinEdgesv[ibin+1]))
+      if((phi >= phiBinEdgesv[ibin]) && (phi < phiBinEdgesv[ibin+1]))
         iphi = ibin;
     if(iphi<0) continue;
 
     Int_t inpv=-1;
     for(UInt_t ibin=0; ibin<npvNbins; ibin++)
-      if((data.npv >= npvBinEdgesv[ibin]) && (data.npv < npvBinEdgesv[ibin+1]))
+      if((npv >= npvBinEdgesv[ibin]) && (npv < npvBinEdgesv[ibin+1]))
         inpv = ibin;
     if(inpv<0) continue;
         
-    if(data.pass) {
+    if(pass) {
       passTreePtv[ipt]->Fill();
       passTreeEtav[ieta]->Fill();
       passTreePhiv[iphi]->Fill();
@@ -977,9 +988,9 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 		   name, massLo, massHi, format, doAbsEta,
 		   cpass, cfail);
       
-      hEff ->SetCellContent(ix+1, iy+1, eff);
-      hErrl->SetCellContent(ix+1, iy+1, errl);
-      hErrh->SetCellContent(ix+1, iy+1, errh);
+      hEff ->SetBinContent(hEff ->GetBin(ix+1, iy+1), eff);
+      hErrl->SetBinContent(hErrl->GetBin(ix+1, iy+1), errl);
+      hErrh->SetBinContent(hErrh->GetBin(ix+1, iy+1), errh);
     }    
   }  
   delete cpass;
@@ -1019,9 +1030,9 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 		   name, massLo, massHi, fitMassLo, fitMassHi,
 		   format, doAbsEta, cpass, cfail);
       }
-      hEff ->SetCellContent(ix+1, iy+1, eff);
-      hErrl->SetCellContent(ix+1, iy+1, errl);
-      hErrh->SetCellContent(ix+1, iy+1, errh);
+      hEff ->SetBinContent(hEff ->GetBin(ix+1, iy+1), eff);
+      hErrl->SetBinContent(hErrl->GetBin(ix+1, iy+1), errl);
+      hErrh->SetBinContent(hErrh->GetBin(ix+1, iy+1), errh);
     }    
   }  
   delete cpass;
@@ -1110,21 +1121,35 @@ void generateHistTemplates(const TString infilename,
     
   TFile infile(infilename);
   TTree *intree = (TTree*)infile.Get("Events");
-  EffData data;
-  intree->SetBranchAddress("Events",&data);
+
+  Float_t mass, pt, eta, phi, weight;
+  Int_t q;
+  UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
+  intree->SetBranchAddress("mass",   &mass);
+  intree->SetBranchAddress("pt",     &pt);
+  intree->SetBranchAddress("eta",    &eta);
+  intree->SetBranchAddress("phi",    &phi);
+  intree->SetBranchAddress("weight", &weight);
+  intree->SetBranchAddress("q",      &q);
+  intree->SetBranchAddress("npv",    &npv);
+  intree->SetBranchAddress("npu",    &npu);
+  intree->SetBranchAddress("pass",   &pass);
+  intree->SetBranchAddress("runNum", &runNum);
+  intree->SetBranchAddress("lumiSec",&lumiSec);
+  intree->SetBranchAddress("evtNum", &evtNum);
   
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
     
     Double_t puWgt=1;
     if(puWeights)
-      puWgt = puWeights->GetBinContent(data.npu+1);
+      puWgt = puWeights->GetBinContent(npu+1);
     
-    if((data.q)*charge < 0) continue;
+    if((q)*charge < 0) continue;
     
     Int_t ipt=-1;
     for(UInt_t ibin=0; ibin<ptNbins; ibin++)
-      if((data.pt >= ptEdgesv[ibin]) && (data.pt < ptEdgesv[ibin+1]))
+      if((pt >= ptEdgesv[ibin]) && (pt < ptEdgesv[ibin+1]))
         ipt = ibin;
     if(ipt<0) continue;
     
@@ -1132,10 +1157,10 @@ void generateHistTemplates(const TString infilename,
     for(UInt_t ibin=0; ibin<etaNbins; ibin++) {
       if(doAbsEta) {
         assert(etaEdgesv[ibin]>=0);
-        if((fabs(data.eta) >= etaEdgesv[ibin]) && (fabs(data.eta) < etaEdgesv[ibin+1]))
+        if((fabs(eta) >= etaEdgesv[ibin]) && (fabs(eta) < etaEdgesv[ibin+1]))
           ieta = ibin;
       } else {
-        if((data.eta >= etaEdgesv[ibin]) && (data.eta < etaEdgesv[ibin+1]))
+        if((eta >= etaEdgesv[ibin]) && (eta < etaEdgesv[ibin+1]))
           ieta = ibin;
       }
     }
@@ -1143,30 +1168,30 @@ void generateHistTemplates(const TString infilename,
 	
     Int_t iphi=-1;
     for(UInt_t ibin=0; ibin<phiNbins; ibin++)
-      if((data.phi >= phiEdgesv[ibin]) && (data.phi < phiEdgesv[ibin+1]))
+      if((phi >= phiEdgesv[ibin]) && (phi < phiEdgesv[ibin+1]))
         iphi = ibin;
     if(iphi<0) continue;
 
     Int_t inpv=-1;
     for(UInt_t ibin=0; ibin<npvNbins; ibin++)
-      if((data.npv >= npvEdgesv[ibin]) && (data.npv < npvEdgesv[ibin+1]))
+      if((npv >= npvEdgesv[ibin]) && (npv < npvEdgesv[ibin+1]))
         inpv = ibin;
     if(inpv<0) continue;
         
-    if(data.pass) {
-      passPt[ipt]->Fill(data.mass,puWgt);
-      passEta[ieta]->Fill(data.mass,puWgt);
-      passPhi[iphi]->Fill(data.mass,puWgt);
-      passEtaPt[ipt*etaNbins + ieta]->Fill(data.mass,puWgt);
-      passEtaPhi[iphi*etaNbins + ieta]->Fill(data.mass,puWgt);
-      passNPV[inpv]->Fill(data.mass,puWgt);
+    if(pass) {
+      passPt[ipt]->Fill(mass,puWgt);
+      passEta[ieta]->Fill(mass,puWgt);
+      passPhi[iphi]->Fill(mass,puWgt);
+      passEtaPt[ipt*etaNbins + ieta]->Fill(mass,puWgt);
+      passEtaPhi[iphi*etaNbins + ieta]->Fill(mass,puWgt);
+      passNPV[inpv]->Fill(mass,puWgt);
     } else {
-      failPt[ipt]->Fill(data.mass,puWgt);
-      failEta[ieta]->Fill(data.mass,puWgt);
-      failPhi[iphi]->Fill(data.mass,puWgt);
-      failEtaPt[ipt*etaNbins + ieta]->Fill(data.mass,puWgt);
-      failEtaPhi[iphi*etaNbins + ieta]->Fill(data.mass,puWgt);
-      failNPV[inpv]->Fill(data.mass,puWgt);
+      failPt[ipt]->Fill(mass,puWgt);
+      failEta[ieta]->Fill(mass,puWgt);
+      failPhi[iphi]->Fill(mass,puWgt);
+      failEtaPt[ipt*etaNbins + ieta]->Fill(mass,puWgt);
+      failEtaPhi[iphi*etaNbins + ieta]->Fill(mass,puWgt);
+      failNPV[inpv]->Fill(mass,puWgt);
     }    
   }
   infile.Close();
@@ -1310,21 +1335,36 @@ void generateDataTemplates(const TString infilename,
   
   TFile infile(infilename);
   TTree *intree = (TTree*)infile.Get("Events");
-  EffData data;
-  intree->SetBranchAddress("Events",&data);
+
+  Float_t pt, eta, phi, weight;
+  Int_t q;
+  UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
+
+  intree->SetBranchAddress("mass",   &mass);
+  intree->SetBranchAddress("pt",     &pt);
+  intree->SetBranchAddress("eta",    &eta);
+  intree->SetBranchAddress("phi",    &phi);
+  intree->SetBranchAddress("weight", &weight);
+  intree->SetBranchAddress("q",      &q);
+  intree->SetBranchAddress("npv",    &npv);
+  intree->SetBranchAddress("npu",    &npu);
+  intree->SetBranchAddress("pass",   &pass);
+  intree->SetBranchAddress("runNum", &runNum);
+  intree->SetBranchAddress("lumiSec",&lumiSec);
+  intree->SetBranchAddress("evtNum", &evtNum);
   
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
     
-    if((data.q)*charge < 0) continue;
-    if(data.mass < fitMassLo)  continue;
-    if(data.mass > fitMassHi)  continue;
+    if((q)*charge < 0) continue;
+    if(mass < fitMassLo)  continue;
+    if(mass > fitMassHi)  continue;
     
-    mass = data.mass;
+    mass = mass;
     
     Int_t ipt=-1;
     for(UInt_t ibin=0; ibin<ptNbins; ibin++)
-      if((data.pt >= ptEdgesv[ibin]) && (data.pt < ptEdgesv[ibin+1]))
+      if((pt >= ptEdgesv[ibin]) && (pt < ptEdgesv[ibin+1]))
         ipt = ibin;
     if(ipt<0) continue;
     
@@ -1332,10 +1372,10 @@ void generateDataTemplates(const TString infilename,
     for(UInt_t ibin=0; ibin<etaNbins; ibin++) {
       if(doAbsEta) {
         assert(etaEdgesv[ibin]>=0);
-        if((fabs(data.eta) >= etaEdgesv[ibin]) && (fabs(data.eta) < etaEdgesv[ibin+1]))
+        if((fabs(eta) >= etaEdgesv[ibin]) && (fabs(eta) < etaEdgesv[ibin+1]))
           ieta = ibin;
       } else {
-        if((data.eta >= etaEdgesv[ibin]) && (data.eta < etaEdgesv[ibin+1]))
+        if((eta >= etaEdgesv[ibin]) && (eta < etaEdgesv[ibin+1]))
           ieta = ibin;
       }
     }
@@ -1343,17 +1383,17 @@ void generateDataTemplates(const TString infilename,
 	
     Int_t iphi=-1;
     for(UInt_t ibin=0; ibin<phiNbins; ibin++)
-      if((data.phi >= phiEdgesv[ibin]) && (data.phi < phiEdgesv[ibin+1]))
+      if((phi >= phiEdgesv[ibin]) && (phi < phiEdgesv[ibin+1]))
         iphi = ibin;
     if(iphi<0) continue;
 	
     Int_t inpv=-1;
     for(UInt_t ibin=0; ibin<npvNbins; ibin++)
-      if((data.npv >= npvEdgesv[ibin]) && (data.npv < npvEdgesv[ibin+1]))
+      if((npv >= npvEdgesv[ibin]) && (npv < npvEdgesv[ibin+1]))
         inpv = ibin;
     if(inpv<0) continue;
         
-    if(data.pass) {
+    if(pass) {
       passPt[ipt]->Fill();
       passEta[ieta]->Fill();
       passPhi[iphi]->Fill();

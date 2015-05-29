@@ -3,13 +3,13 @@
 #==============================================================
 
 # directory of probes ntuples
-NTUPLEDIR=/scratch/klawhorn/EWKAnaStore/8TeV/Efficiency
-#OUTPUTDIR=/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults
+NTUPLEDIR=/afs/cern.ch/work/j/jlawhorn/public/wz-efficiency
 OUTPUTDIR="."
 
 #
 # Electron efficiencies
 #
+root -l -b -q plotEff.C+\(\"elhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/Zee_EleL1Eff/probes.root\",\"${OUTPUTDIR}/Zee_EleL1Eff/analysis\",\"png\",0,0,0\)
 #root -l -q plotEff.C+\(\"elhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/Zee_EleHLTEff/probes.root\",\"${OUTPUTDIR}/Zee_EleHLTEff/analysis\",\"png\",0,0,0\)
 #root -l -q plotEff.C+\(\"elhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/May23_EleHLTEff/probes.root\",\"${OUTPUTDIR}/May23_EleHLTEff/analysis\",\"png\",0,0,0\)
 ##root -l -q plotEff.C+\(\"elhlt_highpt.bins\",0,0,0,0,\"${NTUPLEDIR}/May23_EleHLTEff/probes.root\",\"May23_EleHLTEff/190949\",\"png\",0,0,0,\"\",190949,190949\)

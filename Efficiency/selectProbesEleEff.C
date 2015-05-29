@@ -15,14 +15,11 @@
 #include <vector>                         // STL vector class
 #include <iostream>                       // standard I/O
 #include <iomanip>                        // functions to format standard I/O
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"               // 4-vector class
 
 // structure for output ntuple
 #include "EffData.hh" 
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -45,13 +42,13 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   // Main analysis code 
   //==============================================================================================================  
   
-  enum { eHLTEff, eSelEff, eGsfEff, eGsfSelEff };  // event category enum
+  enum { eHLTEff, eL1Eff, eSelEff, eGsfEff, eGsfSelEff };  // event category enum
   if(effType > eGsfSelEff) {
     cout << "Invalid effType option! Exiting..." << endl;
     return;
   }
-  
-  enum { eEleEle2HLT=1, eEleEle1HLT, eEleEleNoSel, eEleSC };
+
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
   Double_t nProbes = 0;
   
@@ -61,21 +58,35 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   gSystem->mkdir(outputDir,kTRUE);
   TFile *outFile = new TFile(outputDir+TString("/probes.root"),"RECREATE"); 
   TTree *outTree = new TTree("Events","Events");
-  EffData data;
-  outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
-
+  //EffData data;
+  //outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
+  Float_t mass, pt, eta, phi, weight;
+  Int_t q;
+  UInt_t npv, npu, passes, runNum, lumiSec, evtNum;
+  outTree->Branch("mass",   &mass,   "mass/F");
+  outTree->Branch("pt",     &pt,     "pt/F");
+  outTree->Branch("eta",    &eta,    "eta/F");
+  outTree->Branch("phi",    &phi,    "phi/F");
+  outTree->Branch("weight", &weight, "weight/F");
+  outTree->Branch("q",      &q,      "q/I");
+  outTree->Branch("npv",    &npv,    "npv/i");
+  outTree->Branch("npu",    &npu,    "npu/i");
+  outTree->Branch("pass",   &passes, "pass/i");
+  outTree->Branch("runNum", &runNum, "runNum/i");
+  outTree->Branch("lumiSec",&lumiSec,"lumiSec/i");
+  outTree->Branch("evtNum", &evtNum, "evtNum/i");
   //
-  // Declare output ntuple variables
+  // Declare input ntuple variables
   //
-  UInt_t  runNum, lumiSec, evtNum;
+  //UInt_t  runNum, lumiSec, evtNum;
   UInt_t  matchGen;
   UInt_t  category;
-  UInt_t  npv, npu;
+  //UInt_t  npv, npu;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
-  LorentzVector *sc1=0, *sc2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *sc1=0, *sc2=0;
   
   // Read input file and get the TTrees
   cout << "Processing " << infilename << "..." << endl;
@@ -120,66 +131,83 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       //
       // probe = electron passing selection
       // pass  = matched to HLT
-      // * EleEle2HLT event means a passing probe, EleEle1HLT event means a failing probe
+      // * EleEle2HLT event means a passing probe, EleEle1HLT(1L1) event means a failing probe
       //   all other categories do not satisfy probe requirements
       //    
-      if     (category==eEleEle2HLT)  { pass=kTRUE; }
-      else if(category==eEleEle1HLT)  { pass=kFALSE; }
-      else if(category==eEleEleNoSel) { continue; }
-      else                            { continue; }
+      if     (category==eEleEle2HLT)    { pass=kTRUE; }
+      else if(category==eEleEle1HLT1L1) { pass=kFALSE; }
+      else if(category==eEleEle1HLT)    { pass=kFALSE; }
+      else if(category==eEleEleNoSel)   { continue; }
+      else                              { continue; }
+
+    } else if(effType==eL1Eff) {
+      //
+      // probe = electron passing selection
+      // pass  = matched to L1
+      // * EleEle2HLT, EleEle1HLT1L1  event means a passing probe, EleEle1HLT event means a failing probe
+      //   all other categories do not satisfy probe requirements
+      //    
+      if     (category==eEleEle2HLT)    { pass=kTRUE; }
+      else if(category==eEleEle1HLT1L1) { pass=kTRUE; }
+      else if(category==eEleEle1HLT)    { pass=kFALSE; }
+      else if(category==eEleEleNoSel)   { continue; }
+      else                              { continue; }
     
     } else if(effType==eSelEff) {
       //
       // probe = electron
       // pass  = passing selection
-      // * EleEle2HLT, EleEle1HLT event means a passing probe, EleEleNoSel event means a failing probe,
+      // * EleEle2HLT, EleEle1HLT(1L1) event means a passing probe, EleEleNoSel event means a failing probe,
       //   EleSC event does not satisfy probe requirements
       //    
-      if     (category==eEleEle2HLT)  { pass=kTRUE; }
-      else if(category==eEleEle1HLT)  { pass=kTRUE; }
-      else if(category==eEleEleNoSel) { pass=kFALSE; }
-      else                            { continue; }
+      if     (category==eEleEle2HLT)    { pass=kTRUE; }
+      if     (category==eEleEle1HLT1L1) { pass=kTRUE; }
+      else if(category==eEleEle1HLT)    { pass=kTRUE; }
+      else if(category==eEleEleNoSel)   { pass=kFALSE; }
+      else                              { continue; }
     
     } else if(effType==eGsfEff) {
       //
       // probe = supercluster
       // pass  = passing selection
-      // * EleEle2HLT, EleEle1HLT, EleEleNoSel event means a passing probe,
+      // * EleEle2HLT, EleEle1HLT(1L1), EleEleNoSel event means a passing probe,
       //   EleSC event means a failing probe
       //    
-      if     (category==eEleEle2HLT)  { pass=kTRUE; }
-      else if(category==eEleEle1HLT)  { pass=kTRUE; }
-      else if(category==eEleEleNoSel) { pass=kTRUE; }
-      else                            { pass=kFALSE; }  
+      if     (category==eEleEle2HLT)    { pass=kTRUE; }
+      else if(category==eEleEle1HLT1L1) { pass=kTRUE; }
+      else if(category==eEleEle1HLT)    { pass=kTRUE; }
+      else if(category==eEleEleNoSel)   { pass=kTRUE; }
+      else                              { pass=kFALSE; }  
     
     } else if(effType==eGsfSelEff) {
       //
       // probe = supercluster
       // pass  = passing selection
-      // * EleEle2HLT, EleEle1HLT, EleEleNoSel event means a passing probe,
+      // * EleEle2HLT, EleEle1HLT(1L1), EleEleNoSel event means a passing probe,
       //   EleSC event means a failing probe
       //    
-      if     (category==eEleEle2HLT)  { pass=kTRUE; }
-      else if(category==eEleEle1HLT)  { pass=kTRUE; }
-      else if(category==eEleEleNoSel) { pass=kFALSE; }
-      else                            { pass=kFALSE; }  
+      if     (category==eEleEle2HLT)    { pass=kTRUE; }
+      else if(category==eEleEle1HLT1L1) { pass=kTRUE; }
+      else if(category==eEleEle1HLT)    { pass=kTRUE; }
+      else if(category==eEleEleNoSel)   { pass=kFALSE; }
+      else                              { pass=kFALSE; }  
     }
     
     nProbes += doWeighted ? scale1fb : 1;
 
     // Fill tree
-    data.mass	 = dilep->M();
-    data.pt	 = sc2->Pt();
-    data.eta	 = sc2->Eta();
-    data.phi	 = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
-    data.weight  = doWeighted ? scale1fb : 1;
-    data.q	 = q2;
-    data.npv	 = npv;
-    data.npu	 = npu;
-    data.pass	 = (pass) ? 1 : 0;
-    data.runNum  = runNum;
-    data.lumiSec = lumiSec;
-    data.evtNum  = evtNum;
+    mass    = dilep->M();
+    pt	    = sc2->Pt();
+    eta	    = sc2->Eta();
+    phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
+    weight  = doWeighted ? scale1fb : 1;
+    q	    = q2;
+    npv	    = npv;
+    npu	    = npu;
+    passes  = (pass) ? 1 : 0;
+    runNum  = runNum;
+    lumiSec = lumiSec;
+    evtNum  = evtNum;
     outTree->Fill();
     
     if(category==eEleEle2HLT) {
@@ -187,18 +215,18 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       
       nProbes += doWeighted ? scale1fb : 1;
       
-      data.mass	   = dilep->M();
-      data.pt	   = sc1->Pt();
-      data.eta	   = sc1->Eta();
-      data.phi	   = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
-      data.weight  = doWeighted ? scale1fb : 1;
-      data.q	   = q1;
-      data.npv	   = npv;
-      data.npu	   = npu;
-      data.pass	   = 1;
-      data.runNum  = runNum;
-      data.lumiSec = lumiSec;
-      data.evtNum  = evtNum;
+      mass    = dilep->M();
+      pt      = sc1->Pt();
+      eta     = sc1->Eta();
+      phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
+      weight  = doWeighted ? scale1fb : 1;
+      q	      = q1;
+      npv     = npv;
+      npu     = npu;
+      passes  = 1;
+      runNum  = runNum;
+      lumiSec = lumiSec;
+      evtNum  = evtNum;
       outTree->Fill();
     }
   }  

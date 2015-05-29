@@ -62,7 +62,7 @@ Double_t RooVoigtianShape::voigtian(double iX) const {
   RooComplex v(0.) ;
 
   if (_doFast) {
-    v = RooMath::FastComplexErrFunc(z);
+    v = RooMath::ComplexErrFuncFast(z);
   } else {
     v = RooMath::ComplexErrFunc(z);
   }

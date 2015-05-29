@@ -172,16 +172,16 @@ void plotDataMC(const TString outdir   = "Data/extra",
           xerr[iy-1] = 25;
         }
 	
-        Double_t mceff  = hMCEff->GetCellContent(ix,iy);
-        Double_t mcerrl = hMCErrl->GetCellContent(ix,iy);
-        Double_t mcerrh = hMCErrh->GetCellContent(ix,iy);
+        Double_t mceff  = hMCEff->GetBinContent(hMCEff->GetBin(ix,iy));
+        Double_t mcerrl = hMCErrl->GetBinContent(hMCErrl->GetBin(ix,iy));
+        Double_t mcerrh = hMCErrh->GetBinContent(hMCErrh->GetBin(ix,iy));
 	mceffval[iy-1]  = mceff;
         mcefferrl[iy-1] = mcerrl;
         mcefferrh[iy-1] = mcerrh;
         
-        Double_t dataeff  = hDataEff->GetCellContent(ix,iy);
-        Double_t dataerrl = hDataErrl->GetCellContent(ix,iy);
-        Double_t dataerrh = hDataErrh->GetCellContent(ix,iy);
+        Double_t dataeff  = hDataEff->GetBinContent(hDataEff->GetBin(ix,iy));
+        Double_t dataerrl = hDataErrl->GetBinContent(hDataErrl->GetBin(ix,iy));
+        Double_t dataerrh = hDataErrh->GetBinContent(hDataErrh->GetBin(ix,iy));
         effval[iy-1]  = dataeff;
         efferrl[iy-1] = dataerrl;
         efferrh[iy-1] = dataerrh;

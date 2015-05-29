@@ -3,12 +3,13 @@
 #==============================================================
 
 # directory of probes ntuples
-NTUPLEDIR=/scratch/klawhorn/EWKAnaStore/8TeV/Efficiency
+NTUPLEDIR=/afs/cern.ch/work/j/jlawhorn/public/wz-efficiency
 
 #
 # Muon efficiencies
 #
-#root -l -q plotEff.C+\(\"muhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/Zmm_MuHLTEff/probes.root\",\"Zmm_MuHLTEff/analysis\",\"png\",0,0,0\)
+root -l -b -q plotEff.C+\(\"muhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/Zmm_MuL1Eff/probes.root\",\"Zmm_MuL1Eff/analysis\",\"png\",0,0,0\)
+#root -l -b -q plotEff.C+\(\"muhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/Zmm_MuHLTEff/probes.root\",\"Zmm_MuHLTEff/analysis\",\"png\",0,0,0\)
 #root -l -q plotEff.C+\(\"muhlt.bins\",0,0,0,0,\"${NTUPLEDIR}/May23_MuHLTEff/probes.root\",\"May23_MuHLTEff/analysis\",\"png\",0,0,0\)
 
 #root -l -q plotEff.C+\(\"musel.bins\",0,0,0,0,\"${NTUPLEDIR}/Zmm_MuSelEff/probes.root\",\"Zmm_MuSelEff/analysis\",\"png\",0,0,0\)
@@ -33,7 +34,7 @@ NTUPLEDIR=/scratch/klawhorn/EWKAnaStore/8TeV/Efficiency
 #root -l -q plotEff.C+\(\"musel.bins\",2,1,2,1,\"${NTUPLEDIR}/May23_MuSelEff/probes.root\",\"May23_MuSelEff_pos/analysis\",\"png\",0,0,1,\"${NTUPLEDIR}/Zmm_MuSelEff/probes.root\"\)
 
 #root -l -q plotEff.C+\(\"mutrk.bins\",0,0,0,0,\"${NTUPLEDIR}/Zmm_MuTrkEff/probes.root\",\"Zmm_MuTrkEff_pos/analysis\",\"png\",1,0,1\)
-root -l -q plotEff.C+\(\"mutrk.bins\",2,1,2,1,\"${NTUPLEDIR}/May23_MuTrkEff/probes.root\",\"May23_MuTrkEff_pos/analysis\",\"png\",1,0,1,\"${NTUPLEDIR}/Zmm_MuTrkEff/probes.root\"\)
+#root -l -q plotEff.C+\(\"mutrk.bins\",2,1,2,1,\"${NTUPLEDIR}/May23_MuTrkEff/probes.root\",\"May23_MuTrkEff_pos/analysis\",\"png\",1,0,1,\"${NTUPLEDIR}/Zmm_MuTrkEff/probes.root\"\)
 
 #root -l -q plotEff.C+\(\"musta.bins\",0,0,0,0,\"${NTUPLEDIR}/Zmm_MuStaEff/probes.root\",\"Zmm_MuStaEff_pos/analysis\",\"png\",1,0,1\)
 #root -l -q plotEff.C+\(\"musta.bins\",2,1,2,1,\"${NTUPLEDIR}/May23_MuStaEff/probes.root\",\"May23_MuStaEff_pos/analysis\",\"png\",1,0,1,\"${NTUPLEDIR}/Zmm_MuStaEff/probes.root\"\)
