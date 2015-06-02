@@ -25,17 +25,18 @@ using namespace std;
 #endif
 
 void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-GENSIM/wmm-pythia8-powheg1-bacon.root",
-	      TString output="test.root") {
+	      TString output="test.root",
+	      Int_t vid=23) {
   
   TChain chain("Events");
   chain.Add(input);
   
   // Data structures to store info from TTrees
   baconhep::TGenEventInfo *info = new baconhep::TGenEventInfo();
-  TClonesArray *part            = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray *genPartArr      = new TClonesArray("baconhep::TGenParticle");
   
   chain.SetBranchAddress("GenEvtInfo",  &info);        TBranch *infoBr     = chain.GetBranch("GenEvtInfo");
-  chain.SetBranchAddress("GenParticle", &part);        TBranch *partBr     = chain.GetBranch("GenParticle");
+  chain.SetBranchAddress("GenParticle", &genPartArr);  TBranch *partBr     = chain.GetBranch("GenParticle");
 
   //PDF info
   Double_t id_1,      id_2,       x_1,        x_2;
@@ -89,120 +90,133 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
   otree->Branch("genL2f_phi", &genL2f_phi, "genL2f_phi/d");
   otree->Branch("genL2f_m",   &genL2f_m,   "genL2f_m/d");
 
-  for (Int_t i=0; i<chain.GetEntries(); i++) {
-  //for (Int_t i=0; i<100; i++) {
-    infoBr->GetEntry(i);
-    part->Clear(); partBr->GetEntry(i);
-    if (part->GetEntries()==0) continue;
-    Int_t iv=-1, il1=-1, il2=-1;
+  Double_t ntot=0;
+  for (Int_t ie=0; ie<chain.GetEntries(); ie++) {
+  //for (Int_t ie=0; ie<10; ie++) {
+    infoBr->GetEntry(ie);
+    genPartArr->Clear(); partBr->GetEntry(ie);
+    if (genPartArr->GetEntries()==0) continue;
+    TLorentzVector *vec=0, *lepPos=0, *lepNeg=0;
+    TLorentzVector *preVec=0, *preLepPos=0, *preLepNeg=0;
+    Int_t flavor=0;
+    Int_t iv=-1, iv1=-1, iv2=-1;
 
-    genV_id=0; genL1_id=0; genL2_id=0;
-    genV_pt=0; genV_eta=0; genV_phi=0; genV_m=0;
-    genVf_pt=0; genVf_eta=0; genVf_phi=0; genVf_m=0;
-    genL1_pt=0; genL1_eta=0; genL1_phi=0; genL1_m=0;
-    genL1f_pt=0; genL1f_eta=0; genL1f_phi=0; genL1f_m=0;
-    genL2_pt=0; genL2_eta=0; genL2_phi=0; genL2_m=0;
-    genL2f_pt=0; genL2f_eta=0; genL2f_phi=0; genL2f_m=0;
-    
-    for (Int_t j=0; j<part->GetEntries(); j++) { 
-      const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*part)[j]);
-      if (il1==-1 && genloop->status==23 && (genloop->pdgId==-13 || genloop->pdgId==-11)) {
-	genL1_pt  = genloop->pt;
-	genL1_eta = genloop->eta;
-	genL1_phi = genloop->phi;
-	genL1_m   = genloop->mass;
-	genL1_id  = genloop->pdgId;
-	il1=j;
+    for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
+      const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
+      //cout << i << " " << genloop->pdgId << " " << genloop->parent << endl;
+      if (genloop->status==23 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11)) {
+	if (flavor==0) {
+	  flavor=genloop->pdgId;
+	}
+	if (genloop->pdgId<0 && lepPos==0) {
+	  lepPos=new TLorentzVector(0,0,0,0);
+	  lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	  preLepPos=new TLorentzVector(0,0,0,0);
+	  preLepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	  iv1=i;
+	}
+	else if (genloop->pdgId>0 && lepNeg==0) {
+	  lepNeg=new TLorentzVector(0,0,0,0);
+	  lepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	  preLepNeg=new TLorentzVector(0,0,0,0);
+	  preLepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	  iv2=i;
+	}
       }
-      else if (il2==-1 && genloop->status==23 && (genloop->pdgId==13 || genloop->pdgId==11)) {
-	genL2_pt  = genloop->pt;
-	genL2_eta = genloop->eta;
-	genL2_phi = genloop->phi;
-	genL2_m   = genloop->mass;
-	genL2_id  = genloop->pdgId;
-	il2=j;
-      }
-      if (iv==-1 && (fabs(genloop->pdgId)==24||fabs(genloop->pdgId)==23) && (genloop->status==3||genloop->status==22)) {
-	genV_pt  = genloop->pt;
-	genV_eta = genloop->eta;
-	genV_phi = genloop->phi;
-	genV_m   = genloop->mass;
-	genV_id  = genloop->pdgId;
-	iv=j;
+      else if (genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) {
+	preVec=new TLorentzVector(0,0,0,0);
+	preVec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	vec=new TLorentzVector(0,0,0,0);
+	vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	iv=i;
       }
       else if (iv!=-1 && genloop->parent==iv) {
-	if (genloop->pdgId==genV_id) { 
-	  genVf_pt  = genloop->pt;
-	  genVf_eta = genloop->eta;
-	  genVf_phi = genloop->phi;
-	  genVf_m   = genloop->mass;
-	  iv=j; 
+	if (genloop->pdgId==vid) {
+	  vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	  iv=i;
 	}
-	else if (genloop->pdgId==-13 || genloop->pdgId==-11) {
-	  genL1_pt  = genloop->pt;
-	  genL1_eta = genloop->eta;
-	  genL1_phi = genloop->phi;
-	  genL1_m   = genloop->mass;
-	  genL1_id  = genloop->pdgId;
-	  il1=j;
-	}
-	else if (genloop->pdgId==13 || genloop->pdgId==11) {
-	  genL2_pt  = genloop->pt;
-	  genL2_eta = genloop->eta;
-	  genL2_phi = genloop->phi;
-	  genL2_m   = genloop->mass;
-	  genL2_id  = genloop->pdgId;
-	  il2=j;
+	else if (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11) {
+	  if (flavor==0) {
+	    flavor=genloop->pdgId;
+	  }
+	  if (genloop->pdgId<0 && lepPos==0) {
+	    lepPos=new TLorentzVector(0,0,0,0);
+	    lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	    preLepPos=new TLorentzVector(0,0,0,0);
+	    preLepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	    iv1=i;
+	  }
+	  else if (genloop->pdgId>0 && lepNeg==0) {
+	    lepNeg=new TLorentzVector(0,0,0,0);
+	    lepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	    preLepNeg=new TLorentzVector(0,0,0,0);
+	    preLepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	    iv2=i;
+	  }
 	}
       }
-      else if (il1!=-1 && genloop->parent==il1 && genloop->pdgId==genL1_id) {
-	genL1f_pt  = genloop->pt;
-	genL1f_eta = genloop->eta;
-	genL1f_phi = genloop->phi;
-	genL1f_m   = genloop->mass;
-	il1=j;
+      else if (iv1!=-1 && genloop->parent==iv1) {
+	lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	iv1=i;
       }
-      else if (il2!=-1 && genloop->parent==il2 && genloop->pdgId==genL2_id) {
-	genL2f_pt  = genloop->pt;
-	genL2f_eta = genloop->eta;
-	genL2f_phi = genloop->phi;
-	genL2f_m   = genloop->mass;
-	il2=j;
+      else if (iv2!=-1 && genloop->parent==iv2) {
+	lepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	iv2=i;
       }
     }
 
-    if (genL1f_m==0 && genL1_m!=0) {
-      genL1f_pt  = genL1_pt;
-      genL1f_eta = genL1_eta;
-      genL1f_phi = genL1_phi;
-      genL1f_m   = genL1_m;
+    if (vec==0 && preLepNeg && preLepPos) {
+      TLorentzVector temp = *preLepNeg + *preLepPos;
+      vec=&temp;
+    }
+    
+    genV_id=vid;
+    genL1_id=-fabs(flavor);
+    genL2_id=fabs(flavor);
+    
+    if (preVec && preVec->M()>0) {
+      genV_pt  = preVec->Pt();
+      genV_eta = preVec->Eta();
+      genV_phi = preVec->Phi();
+      genV_m   = preVec->M();
+    }
+    else if (vec) {
+      genV_pt  = vec->Pt();
+      genV_eta = vec->Eta();
+      genV_phi = vec->Phi();
+      genV_m   = vec->M();
     }
 
-    if (genL2f_m==0 && genL2_m!=0) {
-      genL2f_pt  = genL2_pt;
-      genL2f_eta = genL2_eta;
-      genL2f_phi = genL2_phi;
-      genL2f_m   = genL2_m;
+    if (lepPos && lepNeg) {
+      TLorentzVector temp = *lepPos + *lepNeg;
+      genVf_pt  = temp.Pt();
+      genVf_eta = temp.Eta();
+      genVf_phi = temp.Phi();
+      genVf_m   = temp.M();
     }
-
-    if (genV_m==0 && genL1_m!=0 && genL2_m!=0) {
-      TLorentzVector l1(0,0,0,0); l1.SetPtEtaPhiM(genL1_pt, genL1_eta, genL1_phi, genL1_m);
-      TLorentzVector l2(0,0,0,0); l2.SetPtEtaPhiM(genL2_pt, genL2_eta, genL2_phi, genL2_m);
-      TLorentzVector v = l1+l2;
-      genV_pt  = v.Pt();
-      genV_eta = v.Eta();
-      genV_phi = v.Phi();
-      genV_m   = v.M();
+    if (lepPos) {
+      genL1f_pt  = lepPos->Pt();
+      genL1f_eta = lepPos->Eta();
+      genL1f_phi = lepPos->Phi();
+      genL1f_m   = lepPos->M();
     }
-
-    if (genVf_m==0 && genL1f_m!=0 && genL2f_m!=0) {
-      TLorentzVector l1(0,0,0,0); l1.SetPtEtaPhiM(genL1f_pt, genL1f_eta, genL1f_phi, genL1f_m);
-      TLorentzVector l2(0,0,0,0); l2.SetPtEtaPhiM(genL2f_pt, genL2f_eta, genL2f_phi, genL2f_m);
-      TLorentzVector v = l1+l2;
-      genVf_pt  = v.Pt();
-      genVf_eta = v.Eta();
-      genVf_phi = v.Phi();
-      genVf_m   = v.M();
+    if (lepNeg) {
+      genL2f_pt  = lepNeg->Pt();
+      genL2f_eta = lepNeg->Eta();
+      genL2f_phi = lepNeg->Phi();
+      genL2f_m   = lepNeg->M();
+    }
+    if (preLepPos) {
+      genL1_pt  = preLepPos->Pt();
+      genL1_eta = preLepPos->Eta();
+      genL1_phi = preLepPos->Phi();
+      genL1_m   = preLepPos->M();
+    }
+    if (preLepNeg) {
+      genL2_pt  = preLepNeg->Pt();
+      genL2_eta = preLepNeg->Eta();
+      genL2_phi = preLepNeg->Phi();
+      genL2_m   = preLepNeg->M();
     }
 
     id_1 = info->id_1;
@@ -213,11 +227,13 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
     xPDF_2 = info->xPDF_2;
     scalePDF = info->scalePDF;
     weight = info->weight;
-
+    if (fabs(flavor)==11) ntot+=weight;
     otree->Fill();
     
   }
-  
+
+  cout << ntot << endl;
+
   ofile->Write();
   ofile->Close();
   
