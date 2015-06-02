@@ -106,9 +106,23 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
     
     for (Int_t j=0; j<part->GetEntries(); j++) { 
       const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*part)[j]);
-      
-      if ((fabs(genloop->pdgId)==24||fabs(genloop->pdgId)==23) && (genloop->status==3||genloop->status==22)) {
-	//cout << "found " << genloop->pdgId << " at " << j << endl;
+      if (il1==-1 && genloop->status==23 && (genloop->pdgId==-13 || genloop->pdgId==-11)) {
+	genL1_pt  = genloop->pt;
+	genL1_eta = genloop->eta;
+	genL1_phi = genloop->phi;
+	genL1_m   = genloop->mass;
+	genL1_id  = genloop->pdgId;
+	il1=j;
+      }
+      else if (il2==-1 && genloop->status==23 && (genloop->pdgId==13 || genloop->pdgId==11)) {
+	genL2_pt  = genloop->pt;
+	genL2_eta = genloop->eta;
+	genL2_phi = genloop->phi;
+	genL2_m   = genloop->mass;
+	genL2_id  = genloop->pdgId;
+	il2=j;
+      }
+      if (iv==-1 && (fabs(genloop->pdgId)==24||fabs(genloop->pdgId)==23) && (genloop->status==3||genloop->status==22)) {
 	genV_pt  = genloop->pt;
 	genV_eta = genloop->eta;
 	genV_phi = genloop->phi;
@@ -122,10 +136,9 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
 	  genVf_eta = genloop->eta;
 	  genVf_phi = genloop->phi;
 	  genVf_m   = genloop->mass;
-	  iv=j; //cout << "found daughter " << genloop->pdgId << " at " << j << " with parent " << genloop->parent << endl; 
+	  iv=j; 
 	}
 	else if (genloop->pdgId==-13 || genloop->pdgId==-11) {
-	  //cout << "found -l at " << j << " with parent " << genloop->parent << endl;
 	  genL1_pt  = genloop->pt;
 	  genL1_eta = genloop->eta;
 	  genL1_phi = genloop->phi;
@@ -134,7 +147,6 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
 	  il1=j;
 	}
 	else if (genloop->pdgId==13 || genloop->pdgId==11) {
-	  //cout << "found +l at " << j << " with parent " << genloop->parent << endl;
 	  genL2_pt  = genloop->pt;
 	  genL2_eta = genloop->eta;
 	  genL2_phi = genloop->phi;
@@ -144,7 +156,6 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
 	}
       }
       else if (il1!=-1 && genloop->parent==il1 && genloop->pdgId==genL1_id) {
-	//cout << "found daughter -l at " << j << " with parent " << genloop->parent << endl;
 	genL1f_pt  = genloop->pt;
 	genL1f_eta = genloop->eta;
 	genL1f_phi = genloop->phi;
@@ -152,7 +163,6 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
 	il1=j;
       }
       else if (il2!=-1 && genloop->parent==il2 && genloop->pdgId==genL2_id) {
-	//cout << "found daughter +l at " << j << " with parent " << genloop->parent << endl;
 	genL2f_pt  = genloop->pt;
 	genL2f_eta = genloop->eta;
 	genL2f_phi = genloop->phi;
@@ -173,6 +183,26 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
       genL2f_eta = genL2_eta;
       genL2f_phi = genL2_phi;
       genL2f_m   = genL2_m;
+    }
+
+    if (genV_m==0 && genL1_m!=0 && genL2_m!=0) {
+      TLorentzVector l1(0,0,0,0); l1.SetPtEtaPhiM(genL1_pt, genL1_eta, genL1_phi, genL1_m);
+      TLorentzVector l2(0,0,0,0); l2.SetPtEtaPhiM(genL2_pt, genL2_eta, genL2_phi, genL2_m);
+      TLorentzVector v = l1+l2;
+      genV_pt  = v.Pt();
+      genV_eta = v.Eta();
+      genV_phi = v.Phi();
+      genV_m   = v.M();
+    }
+
+    if (genVf_m==0 && genL1f_m!=0 && genL2f_m!=0) {
+      TLorentzVector l1(0,0,0,0); l1.SetPtEtaPhiM(genL1f_pt, genL1f_eta, genL1f_phi, genL1f_m);
+      TLorentzVector l2(0,0,0,0); l2.SetPtEtaPhiM(genL2f_pt, genL2f_eta, genL2f_phi, genL2f_m);
+      TLorentzVector v = l1+l2;
+      genVf_pt  = v.Pt();
+      genVf_eta = v.Eta();
+      genVf_phi = v.Phi();
+      genVf_m   = v.M();
     }
 
     id_1 = info->id_1;
