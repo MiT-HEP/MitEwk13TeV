@@ -30,12 +30,12 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
 Bool_t acceptB(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 Bool_t acceptE(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 
-void acceptGenZ(TString input="flat_DY.root",
+void acceptGenZ(TString input="testZ.root",
 		TString outputDir="./",
 		TString pdfName="NNPDF30_nlo_as_0118",
 		Int_t setMin=0, 
 		Int_t setMax=0,
-		Int_t proc=0) {
+		Int_t proc=1) {
 
   TString procName[2]={"zee", "zmm"};
   char output[150];

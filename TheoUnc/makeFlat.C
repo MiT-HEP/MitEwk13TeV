@@ -24,9 +24,9 @@ using namespace std;
 
 #endif
 
-void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-GENSIM/wmm-pythia8-powheg1-bacon.root",
-	      TString output="test.root",
-	      Int_t vid=23) {
+void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/Ewk13TeV/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
+	      TString output="testWp.root",
+	      Int_t vid=24) {
   
   TChain chain("Events");
   chain.Add(input);
@@ -90,9 +90,9 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
   otree->Branch("genL2f_phi", &genL2f_phi, "genL2f_phi/d");
   otree->Branch("genL2f_m",   &genL2f_m,   "genL2f_m/d");
 
-  Double_t ntot=0;
-  for (Int_t ie=0; ie<chain.GetEntries(); ie++) {
-  //for (Int_t ie=0; ie<10; ie++) {
+  //for (Int_t ie=0; ie<chain.GetEntries(); ie++) {
+  for (Int_t ie=0; ie<10000000; ie++) {
+  //for (Int_t ie=0; ie<100; ie++) {
     infoBr->GetEntry(ie);
     genPartArr->Clear(); partBr->GetEntry(ie);
     if (genPartArr->GetEntries()==0) continue;
@@ -100,10 +100,16 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
     TLorentzVector *preVec=0, *preLepPos=0, *preLepNeg=0;
     Int_t flavor=0;
     Int_t iv=-1, iv1=-1, iv2=-1;
-
+    Int_t vidLoop=vid;
+    //cout << "-----" << endl;
     for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
       const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
-      //cout << i << " " << genloop->pdgId << " " << genloop->parent << endl;
+      //cout << i << ", " << genloop->pdgId << ", " << genloop->parent << ", " << genloop->pt << ", " << genloop->status << endl;
+      if (genloop->pdgId==-vidLoop) {
+	vec=0; lepPos=0; lepNeg=0;
+	vidLoop=-vid;
+	break;
+      }
       if (genloop->status==23 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11)) {
 	if (flavor==0) {
 	  flavor=genloop->pdgId;
@@ -165,12 +171,13 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
       }
     }
 
+    //if (vec==0 && lepPos==0 && lepNeg==0) continue;
+
     if (vec==0 && preLepNeg && preLepPos) {
       TLorentzVector temp = *preLepNeg + *preLepPos;
       vec=&temp;
     }
-    
-    genV_id=vid;
+    genV_id=vidLoop;
     genL1_id=-fabs(flavor);
     genL2_id=fabs(flavor);
     
@@ -194,29 +201,57 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
       genVf_phi = temp.Phi();
       genVf_m   = temp.M();
     }
+
     if (lepPos) {
       genL1f_pt  = lepPos->Pt();
       genL1f_eta = lepPos->Eta();
       genL1f_phi = lepPos->Phi();
       genL1f_m   = lepPos->M();
     }
+    else {
+      genL1f_pt  = 0;
+      genL1f_eta = 0;
+      genL1f_phi = 0;
+      genL1f_m   = 0;
+    }
+
     if (lepNeg) {
       genL2f_pt  = lepNeg->Pt();
       genL2f_eta = lepNeg->Eta();
       genL2f_phi = lepNeg->Phi();
       genL2f_m   = lepNeg->M();
     }
+    else {
+      genL2f_pt  = 0;
+      genL2f_eta = 0;
+      genL2f_phi = 0;
+      genL2f_m   = 0;
+    }
+
     if (preLepPos) {
       genL1_pt  = preLepPos->Pt();
       genL1_eta = preLepPos->Eta();
       genL1_phi = preLepPos->Phi();
       genL1_m   = preLepPos->M();
     }
+    else {
+      genL1_pt  = 0;
+      genL1_eta = 0;
+      genL1_phi = 0;
+      genL1_m   = 0;
+    }
+
     if (preLepNeg) {
       genL2_pt  = preLepNeg->Pt();
       genL2_eta = preLepNeg->Eta();
       genL2_phi = preLepNeg->Phi();
       genL2_m   = preLepNeg->M();
+    }
+    else {
+      genL2_pt  = 0;
+      genL2_eta = 0;
+      genL2_phi = 0;
+      genL2_m   = 0;
     }
 
     id_1 = info->id_1;
@@ -227,12 +262,9 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/NNPDF30-
     xPDF_2 = info->xPDF_2;
     scalePDF = info->scalePDF;
     weight = info->weight;
-    if (fabs(flavor)==11) ntot+=weight;
     otree->Fill();
     
   }
-
-  cout << ntot << endl;
 
   ofile->Write();
   ofile->Close();

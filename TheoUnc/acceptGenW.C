@@ -15,7 +15,7 @@
 #include <fstream>                  // functions for file I/O
 #include <TChain.h>
 #include <TH1.h>
-#include "LHAPDF/LHAPDF.h"
+//#include "LHAPDF/LHAPDF.h"
 
 using namespace std;
 
@@ -29,11 +29,11 @@ Bool_t acceptEndcap(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL
 
 Bool_t acceptBarrel(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id, Double_t genL1_pt, Double_t genL1_eta, Double_t genL2_pt, Double_t genL2_eta);
 
-void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/flat-05-14/WJets.root",
+void acceptGenW(TString input="testWm.root",
 		TString outputDir="./",
 		TString pdfName="NNPDF30_nlo_as_0118",
 		Int_t setMin=0, 
-		Int_t setMax=4,
+		Int_t setMax=0,
 		Int_t proc=0) {
 
   TString procName[4]={"wme", "wpe", "wmm", "wpm"};
@@ -92,11 +92,11 @@ void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/flat-05-14/WJets.roo
   chain.SetBranchAddress("genL2f_m",   &genL2f_m);
 
   TFile *outFile = new TFile(output, "recreate");
-  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
+  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
 
   for (Int_t iPdfSet=setMin; iPdfSet<setMax+1; iPdfSet++) {
     
-    LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
+    //LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
     
     char histname[100];
     sprintf(histname,"dEta_%s_%i",pdfName.Data(),iPdfSet);
@@ -118,17 +118,22 @@ void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/flat-05-14/WJets.roo
     TH1D* dTot = new TH1D(histname, "", 1, 0, 2); dTot->Sumw2();
     
     for (Int_t i=0; i<chain.GetEntries(); i++) {
+    //for (Int_t i=0; i<10; i++) {
       chain.GetEntry(i);
-      
+      //cout  << genV_id << ", " << genL1_id << ", " << genL2_id << ", " << genL1f_pt << ", " << genL1f_eta << endl;
       if (!isProc(proc, genV_id, genVf_m, genL1_id, genL2_id)) continue;
+      if ((proc==0||proc==2) && genL2f_pt==0 && genL2f_eta==0) continue;
+      if ((proc==1||proc==3) && genL1f_pt==0 && genL1f_eta==0) continue;
+
+
+      //Int_t fid_1 = ( id_1==0 ? 21 : id_1 );
+      //Int_t fid_2 = ( id_2==0 ? 21 : id_2 );
+      //cout << genV_id << ", " << genL1f_pt << ", " << genL2f_pt << endl;
+      //Double_t newWeight = weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(xPDF_1*xPDF_2);
+      Double_t newWeight = weight;
       
-      Int_t fid_1 = ( id_1==0 ? 21 : id_1 );
-      Int_t fid_2 = ( id_2==0 ? 21 : id_2 );
-      
-      Double_t newWeight = weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(xPDF_1*xPDF_2);
-      
-      if (fabs(newWeight)>10000000)
-	newWeight=weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
+      //if (fabs(newWeight)>10000000)
+      //newWeight=weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
       
       dTot->Fill(1.0,newWeight);
       
@@ -154,27 +159,36 @@ void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/flat-05-14/WJets.roo
 	}
       }
     }
+
+    cout << dPostB->Integral() << endl;
+    cout << dPostE->Integral() << endl;
+    cout << dTot->Integral() << endl;
+    cout << dPostB->Integral()/dTot->Integral() << endl;
+    cout << dPostE->Integral()/dTot->Integral() << endl;
+    cout << (dPostB->Integral()+dPostE->Integral())/dTot->Integral() << endl;
+    
     outFile->Write();
 
   }
+
   outFile->Close();
 }
 
 Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id) {
   if (proc==wme) {
-    if (genV_id==-24 && genL2_id==11 && genL1_id==0) return kTRUE;
+    if (genV_id==-24 && genL2_id==11) return kTRUE;
     else return kFALSE;
   }
   else if (proc==wpe) {
-    if (genV_id==24 && genL1_id==-11 && genL2_id==0) return kTRUE;
+    if (genV_id==24 && genL1_id==-11) return kTRUE;
     else return kFALSE;
   }
   if (proc==wmm) {
-    if (genV_id==-24 && genL2_id==13 && genL1_id==0) return kTRUE;
+    if (genV_id==-24 && genL2_id==13) return kTRUE;
     else return kFALSE;
   }
   else if (proc==wpm) {
-    if (genV_id==24 && genL1_id==-13 && genL2_id==0) return kTRUE;
+    if (genV_id==24 && genL1_id==-13) return kTRUE;
     else return kFALSE;
   }
   return kFALSE;
