@@ -21,9 +21,11 @@
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
 
+#include "../Utils/MyTools.hh"
+
 // define structures to read in ntuple
-#include "EWKAna/Ntupler/interface/EWKAnaDefs.hh"
-#include "EWKAna/Ntupler/interface/TGenInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
 #endif
 
 
@@ -44,6 +46,9 @@ void computeAccGenWm(const TString conf,             // input file
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
 
+  const Int_t BOSON_ID  = 24;
+  Int_t LEPTON_ID = 13;
+  if (charge==1) LEPTON_ID=-13;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -80,7 +85,8 @@ void computeAccGenWm(const TString conf,             // input file
   gSystem->mkdir(outputDir,kTRUE);
   
   // Data structures to store info from TTrees
-  mithep::TGenInfo *gen = new mithep::TGenInfo();
+  baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
+  TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -97,13 +103,13 @@ void computeAccGenWm(const TString conf,             // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); 
     assert(eventTree);
-    eventTree->SetBranchAddress("Gen", &gen);
-    TBranch *genBr = eventTree->GetBranch("Gen"); 
+    eventTree->SetBranchAddress("GenEvtInfo", &gen); TBranch *genBr = eventTree->GetBranch("GenEvtInfo"); 
+    eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *partBr = eventTree->GetBranch("GenParticle");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -113,33 +119,45 @@ void computeAccGenWm(const TString conf,             // input file
     //
     // loop over events
     //    
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<10000000; ientry++) {
       genBr->GetEntry(ientry);
-      if(charge==-1 && gen->id_1!= EGenType::kMuon) continue;  // check for W-
-      if(charge== 1 && gen->id_2!=-EGenType::kMuon) continue;  // check for W+     
-    
-      Double_t weight=1;
+      genPartArr->Clear(); partBr->GetEntry(ientry);
+
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) {
+        continue;
+      }
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) {
+        continue;
+      }
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) {
+        continue;
+      }
+
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
     
       Bool_t isBarrel=kTRUE;
-      if(gen->id_1 == EGenType::kMuon) {
-        if(gen->pt_1        < PT_CUT)  continue;
-        if(fabs(gen->eta_1) > ETA_CUT) continue;
-	isBarrel = (fabs(gen->eta_1)<ETA_BARREL) ? kTRUE : kFALSE;
-      
-      } else if(gen->id_2 == -EGenType::kMuon) {
-        if(gen->pt_2        < PT_CUT)  continue;
-        if(fabs(gen->eta_2) > ETA_CUT) continue;
-	isBarrel = (fabs(gen->eta_2)<ETA_BARREL) ? kTRUE : kFALSE;
-      
-      } else {
-        cout << "No muons generated!" << endl;
-	assert(0);
+      if (lep1) {
+        if (fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
+	
+        if (lep1->Pt() < PT_CUT) continue;
+        if (fabs(lep1->Eta()) > ETA_CUT) continue;
+        isBarrel = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
       }
-      
+      else if (lep2) {
+        if (fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
+
+        if (lep2->Pt() < PT_CUT) continue;
+        if (fabs(lep2->Eta()) > ETA_CUT) continue;
+        isBarrel = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+      }
+      else continue;
+
       nSelv[ifile]+=weight;
       if(isBarrel) nSelBv[ifile]+=weight;
-      else	   nSelEv[ifile]+=weight;
+      else         nSelEv[ifile]+=weight;
     }
     
     // compute acceptances

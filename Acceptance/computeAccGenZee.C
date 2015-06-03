@@ -20,10 +20,13 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
+#include <TLorentzVector.h>
+
+#include "../Utils/MyTools.hh"
 
 // define structures to read in ntuple
-#include "EWKAna/Ntupler/interface/EWKAnaDefs.hh"
-#include "EWKAna/Ntupler/interface/TGenInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
 #endif
 
 
@@ -44,8 +47,10 @@ void computeAccGenZee(const TString conf,             // input file
   const Double_t ETA_CUT    = 2.5; 
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
-  
 
+  const Int_t BOSON_ID  = 23;
+  const Int_t LEPTON_ID = 11;
+  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -81,7 +86,8 @@ void computeAccGenZee(const TString conf,             // input file
   gSystem->mkdir(outputDir,kTRUE);
   
   // Data structures to store info from TTrees
-  mithep::TGenInfo *gen = new mithep::TGenInfo();
+  baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
+  TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -98,13 +104,13 @@ void computeAccGenZee(const TString conf,             // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events");
     assert(eventTree);
-    eventTree->SetBranchAddress("Gen", &gen);
-    TBranch *genBr = eventTree->GetBranch("Gen");
+    eventTree->SetBranchAddress("GenEvtInfo", &gen); TBranch *genBr = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *partBr = eventTree->GetBranch("GenParticle");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -116,27 +122,40 @@ void computeAccGenZee(const TString conf,             // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=600; ientry<700; ientry++) {
       genBr->GetEntry(ientry);
-      if(gen->vmass<MASS_LOW || gen->vmass>MASS_HIGH) continue;
-      if(fabs(gen->eta_1)>ETA_BARREL && fabs(gen->eta_1)<ETA_ENDCAP) continue;  
-      if(fabs(gen->eta_2)>ETA_BARREL && fabs(gen->eta_2)<ETA_ENDCAP) continue;  
+      genPartArr->Clear(); partBr->GetEntry(ientry);
+
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+
+      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
+
+      //cout << "survives denominator cuts" << endl;
+      //if(fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
+      //if(fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
     
-      Double_t weight=1;
+      //Double_t weight=1;
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
 
-      if(gen->pt_1 < PT_CUT)         continue;
-      if(gen->pt_2 < PT_CUT)         continue;
-      if(fabs(gen->eta_1) > ETA_CUT) continue;
-      if(fabs(gen->eta_2) > ETA_CUT) continue;
-      if(gen->mass<MASS_LOW || gen->mass>MASS_HIGH) continue;
-      
-      Bool_t isB1 = (fabs(gen->eta_1)<ETA_BARREL) ? kTRUE : kFALSE;
-      Bool_t isB2 = (fabs(gen->eta_2)<ETA_BARREL) ? kTRUE : kFALSE;
+      if(lep1->Pt() < PT_CUT)         continue;
+      if(lep2->Pt() < PT_CUT)         continue;
+      if(fabs(lep1->Eta()) > ETA_CUT) continue;
+      if(fabs(lep2->Eta()) > ETA_CUT) continue;
+      if(fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
+      if(fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
+
+      TLorentzVector dilep=(*lep1)+(*lep2);
+
+      if(dilep.M()<MASS_LOW || dilep.M()>MASS_HIGH) continue;
+      Bool_t isB1 = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+      Bool_t isB2 = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
       
       nSelv[ifile]+=weight;
-      if(isB1 && isB2)        nSelBBv[ifile]+=weight;
-      else if(!isB1 && !isB2) nSelEEv[ifile]+=weight;
-      else		      nSelBEv[ifile]+=weight;  
+      if(isB1 && isB2)        { nSelBBv[ifile]+=weight; }
+      else if(!isB1 && !isB2) { nSelEEv[ifile]+=weight; }
+      else		      { nSelBEv[ifile]+=weight; } 
     }
     
     // compute acceptances
