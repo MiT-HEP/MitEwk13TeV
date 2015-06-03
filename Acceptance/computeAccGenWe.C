@@ -118,9 +118,8 @@ void computeAccGenWe(const TString conf,       // input file
     //
     // loop over events
     //
-    //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<10000000; ientry++) {
-    //for(UInt_t ientry=0; ientry<10000; ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<10000000; ientry++) {
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
