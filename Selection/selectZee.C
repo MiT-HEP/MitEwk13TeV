@@ -135,7 +135,8 @@ void selectZee(const TString conf="zee.conf", // input file
     if(isam==0 && !hasData) continue;
     
     // Assume signal sample is given name "zee"
-    // If it's the signal sample, toggle flag to store GEN W kinematics
+    // If it's the signal sample, toggle flag to store GEN Z kinematics
+    // and reject Z->tautau events. 
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
     
     CSample* samp = samplev[isam];
@@ -394,6 +395,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	    // mass window
 	    TLorentzVector vDilep = vTag + vProbe;
 	    if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
+
+	    //only for looking at low pT trigger efficiencies
 	    if (toolbox::deltaR(vTag.Eta(), vProbe.Eta(), vTag.Phi(), vProbe.Phi())<0.3) continue;
 
 	    // determine event category
@@ -413,6 +416,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	    else { icat=eEleSC; }
 
 	    if(icat==0) continue;
+
+	    // veto z decay to taus for signal, and z decay to signal mode for taus
+	    if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+	    else if (!(isSignal) && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
+
 	    /******** We have a Z candidate! HURRAY! ********/
 	    nsel+=weight;
             nselvar+=weight*weight;

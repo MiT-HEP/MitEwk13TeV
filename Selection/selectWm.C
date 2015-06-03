@@ -120,6 +120,10 @@ void selectWm(const TString conf="wm.conf", // input file
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
+
+    // Assume signal sample is given name "wm"                                                                                                      
+    // If it's the signal sample, toggle flag to reject W->tau events.
+    Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
   
     CSample* samp = samplev[isam];
   
@@ -283,10 +287,18 @@ void selectWm(const TString conf="wm.conf", // input file
 	  if(mu->pt < PT_CUT)                 continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
           if(!(mu->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+
+	  // veto w decay to taus for signal, and w decay to signal mode for taus                                                                                                            
+	  if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+	  else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
   
 	  passSel=kTRUE;
 	  goodMuon = mu;
 	}
+
+	// veto w decay to taus for signal, and w decay to signal mode for taus
+        if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+        else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
 	
 	if(passSel) {
 		  

@@ -134,6 +134,10 @@ void selectWe(const TString conf="we.conf", // input file
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
+
+    // Assume signal sample is given name "we"
+    // If it's the signal sample, toggle flag to reject W->tau events
+    Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
   
     CSample* samp = samplev[isam];
   
@@ -319,6 +323,10 @@ void selectWe(const TString conf="we.conf", // input file
 	  passSel=kTRUE;
 	  goodEle = ele;  
 	}
+
+	// veto w decay to taus for signal, and w decay to signal mode for taus
+        if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+        else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
 	
 	if(passSel) {
 	  

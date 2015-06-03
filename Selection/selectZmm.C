@@ -53,7 +53,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 5;
+  const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
@@ -127,7 +127,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
     if(isam==0 && !hasData) continue;
 
     // Assume signal sample is given name "zmm"
-    // If it's the signal sample, toggle flag to store GEN W kinematics
+    // If it's the signal sample, toggle flag to store GEN Z kinematics
+    // and reject Z->tautau events.
     Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);  
     
     CSample* samp = samplev[isam];
@@ -263,7 +264,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t nsel=0, nselvar=0;
 
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<100; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(genBr) {
@@ -344,6 +344,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    else if(probe->typeBits & baconhep::EMuType::kStandalone) { icat=eMuMuNoSel; }
 
 	    if(icat==0) continue;
+
+	    // veto z decay to taus for signal, and z decay to signal mode for taus
+            if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+            else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
 	    
 	    /******** We have a Z candidate! HURRAY! ********/
 	    
