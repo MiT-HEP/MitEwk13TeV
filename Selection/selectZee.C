@@ -148,7 +148,6 @@ void selectZee(const TString conf="zee.conf", // input file
     if(isam==0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
-
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
     outTree->Branch("lumiSec",    &lumiSec,    "lumiSec/i");     // event lumi section
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
@@ -276,7 +275,7 @@ void selectZee(const TString conf="zee.conf", // input file
       if (hasVer) {
 	eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
       }
-      
+
       // Compute MC event weight per 1/fb
       Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
@@ -287,10 +286,10 @@ void selectZee(const TString conf="zee.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<100; ientry++) {
+      //for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 	
-	if(genBr) {
+	if(hasGen) {
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
 	  genPartBr->GetEntry(ientry);
@@ -339,9 +338,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	      }
 	    }
 	  }
-	  if(escale1*(tag->scEt) < PT_CUT)      continue;  // lepton pT cut
-	  if(fabs(tag->scEta)    > ETA_CUT)     continue;  // lepton |eta| cut
-	  if(!passEleID(tag,info->rhoIso))      continue;  // lepton selection
+	  if(escale1*(tag->scEt) < PT_CUT)     continue;  // lepton pT cut
+	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
+	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
 	  if(!(tag->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
 
 	  TLorentzVector vTag;     vTag.SetPtEtaPhiM(escale1*(tag->pt),   tag->eta,   tag->phi,   ELE_MASS);
@@ -426,7 +425,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
-	    if(isSignal) {
+	    if(isSignal && hasGen) {
 	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
 	      // veto wrong flavor events for signal sample
 	      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
@@ -437,23 +436,34 @@ void selectZee(const TString conf="zee.conf", // input file
 				((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.3) );
 	      if(match1 && match2) {
 		hasGenMatch = kTRUE;
-		genV     = vec;
-		genVPt   = vec->Pt();
-		genVPhi  = vec->Phi();
-		genVy    = vec->Rapidity();
-		genVMass = vec->M();
+		if (vec!=0) {
+		  genV=new TLorentzVector(0,0,0,0);
+		  genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
+		  genVPt   = vec->Pt();
+		  genVPhi  = vec->Phi();
+		  genVy    = vec->Rapidity();
+		  genVMass = vec->M();
+		}
+		else {
+		  TLorentzVector tvec=*lep1+*lep2;
+		  genV=new TLorentzVector(0,0,0,0);
+		  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+		  genVPt   = tvec.Pt();
+		  genVPhi  = tvec.Phi();
+		  genVy    = tvec.Rapidity();
+		  genVMass = tvec.M();
+		}
 	      }
 	      else {
-		vec = new TLorentzVector(0,0,0,0);
-		genV     = vec;
+		genV     = new TLorentzVector(0,0,0,0);
 		genVPt   = -999;
 		genVPhi  = -999;
 		genVy    = -999;
 		genVMass = -999;
 	      }
 	    }
-
-	    if (gen) {
+	    
+	    if (hasGen) {
 	      id_1      = gen->id_1;
 	      id_2      = gen->id_2;
 	      x_1       = gen->x_1;
@@ -553,8 +563,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	    isConv2    = (eleProbe) ? eleProbe->isConv        : 0;
 	    nexphits2  = (eleProbe) ? eleProbe->nMissingHits  : 0;
 	    typeBits2  = (eleProbe) ? eleProbe->typeBits      : 0; 
-	    
+
 	    outTree->Fill();
+	    genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0;
 	  }
         }
       }

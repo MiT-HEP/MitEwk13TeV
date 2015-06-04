@@ -264,6 +264,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t nsel=0, nselvar=0;
 
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //for(UInt_t ientry=0; ientry<100; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(genBr) {
@@ -357,7 +358,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
-	    if(isSignal) {
+	    if(isSignal && hasGen) {
 	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
 	      // veto wrong flavor events for signal sample
               if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
@@ -368,15 +369,26 @@ void selectZmm(const TString conf="zmm.conf", // input file
                                 ((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.5) );
               if(match1 && match2) {
                 hasGenMatch = kTRUE;
-		genV     = vec;
-                genVPt   = vec->Pt();
-                genVPhi  = vec->Phi();
-                genVy    = vec->Rapidity();
-                genVMass = vec->M();
+		if (vec!=0) {
+                  genV=new TLorentzVector(0,0,0,0);
+                  genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
+                  genVPt   = vec->Pt();
+                  genVPhi  = vec->Phi();
+                  genVy    = vec->Rapidity();
+                  genVMass = vec->M();
+                }
+                else {
+                  TLorentzVector tvec=*lep1+*lep2;
+                  genV=new TLorentzVector(0,0,0,0);
+                  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+                  genVPt   = tvec.Pt();
+                  genVPhi  = tvec.Phi();
+                  genVy    = tvec.Rapidity();
+                  genVMass = tvec.M();
+                }
               }
               else {
-		vec = new TLorentzVector(0, 0, 0, 0); 
-		genV     = vec;
+		genV     = new TLorentzVector(0,0,0,0); 
                 genVPt   = -999;
                 genVPhi  = -999;
                 genVy    = -999;
@@ -477,6 +489,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    typeBits2   = probe->typeBits;
 	    
 	    outTree->Fill();
+	    genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
 	  }
         }
       }
