@@ -285,8 +285,8 @@ void selectZee(const TString conf="zee.conf", // input file
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<1000; ientry++) {
+      //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(hasGen) {
@@ -490,7 +490,10 @@ void selectZee(const TString conf="zee.conf", // input file
 	    runNum   = info->runNum;
 	    lumiSec  = info->lumiSec;
 	    evtNum   = info->evtNum;
-	    matchGen = hasGenMatch ? 1 : 0;
+
+	    if (hasGenMatch) matchGen=1;
+            else matchGen=0;
+
 	    category = icat;
 	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
 	    npu      = info->nPU;

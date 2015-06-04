@@ -126,8 +126,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
 
-    // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);
+    // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
+    Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
     // flag to reject Z->mm events for wrong flavor backgrounds
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);
     
@@ -264,7 +264,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t nsel=0, nselvar=0;
 
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<100; ientry++) {
+      //for(UInt_t ientry=0; ientry<500; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(genBr) {
@@ -369,6 +369,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
                                 ((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.5) );
               if(match1 && match2) {
                 hasGenMatch = kTRUE;
+
 		if (vec!=0) {
                   genV=new TLorentzVector(0,0,0,0);
                   genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
@@ -396,7 +397,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
               }
 	    }
 
-	    if (gen) {
+	    if (hasGen) {
               id_1      = gen->id_1;
               id_2      = gen->id_2;
               x_1       = gen->x_1;
@@ -423,7 +424,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    runNum   = info->runNum;
 	    lumiSec  = info->lumiSec;
 	    evtNum   = info->evtNum;
-	    matchGen = hasGenMatch ? 1 : 0;
+
+	    if (hasGenMatch) matchGen=1;
+	    else matchGen=0;
+	    
 	    category = icat;
 	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
 	    npu      = info->nPU;
@@ -439,7 +443,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    dilep    = &vDilep;
 	    q1       = tag->q;
 	    q2       = probe->q;
-	    
+
 	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));        
             TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));        
             TVector2 vU = -1.0*(vMet+vZPt);
