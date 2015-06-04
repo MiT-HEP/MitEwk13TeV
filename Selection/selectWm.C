@@ -121,10 +121,11 @@ void selectWm(const TString conf="wm.conf", // input file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
 
-    // Assume signal sample is given name "wm"                                                                                                      
-    // If it's the signal sample, toggle flag to reject W->tau events.
+    // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
-  
+    // flag to reject W->mnu events for wrong flavor backgrounds
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
+
     CSample* samp = samplev[isam];
   
     //
@@ -218,16 +219,13 @@ void selectWm(const TString conf="wm.conf", // input file
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
-        eventTree->SetBranchAddress("GenEvtInfo", &gen);
-	genBr = eventTree->GetBranch("GenEvtInfo");
-	eventTree->SetBranchAddress("GenParticle",&genPartArr);
-        genPartBr = eventTree->GetBranch("GenParticle");
+        eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
+	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
       Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
       TBranch *pvBr=0;
       if (hasVer) {
-        eventTree->SetBranchAddress("Vertex",       &pvArr);
-        pvBr = eventTree->GetBranch("Vertex");
+        eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
       }    
 
       // Compute MC event weight per 1/fb
@@ -288,22 +286,19 @@ void selectWm(const TString conf="wm.conf", // input file
           if(!passMuonID(mu))                 continue;  // lepton selection
           if(!(mu->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
 
-	  // veto w decay to taus for signal, and w decay to signal mode for taus                                                                                                            
-	  if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
-	  else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
-  
 	  passSel=kTRUE;
 	  goodMuon = mu;
 	}
 
-	// veto w decay to taus for signal, and w decay to signal mode for taus
-        if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
-        else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
+	// veto w -> munu decay for wrong flavor background samples (needed for inclusive WToLNu sample)
+        if (isWrongFlavor) {
+          TLorentzVector *vec=0, *lep1=0, *lep2=0;
+          if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
+        }
 	
 	if(passSel) {
 		  
 	  /******** We have a W candidate! HURRAY! ********/
-	    
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
@@ -337,16 +332,17 @@ void selectWm(const TString conf="wm.conf", // input file
           xPDF_2    = -999;
           scalePDF  = -999;
           weightPDF = -999;
-	  if(hasGen) {
-	    TLorentzVector *vec=0, *fvec=0, *lep1=0, *lep2=0;
-	    toolbox::fillGen(genPartArr, BOSON_ID, LEPTON_ID, vec, fvec, lep1, lep2);
-            if (fvec && lep1) {
-	      genV      = fvec;
+	  if(isSignal) {
+	    TLorentzVector *vec=0, *lep1=0, *lep2=0;
+	    // veto wrong flavor events for signal sample
+            if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+            if (vec && lep1) {
+	      genV      = vec;
 	      genLep    = lep1;
-              genVPt    = fvec->Pt();
-              genVPhi   = fvec->Phi();
-              genVy     = fvec->Rapidity();
-              genVMass  = fvec->M();
+              genVPt    = vec->Pt();
+              genVPhi   = vec->Phi();
+              genVy     = vec->Rapidity();
+              genVMass  = vec->M();
               genLepPt  = lep1->Pt();
               genLepPhi = lep1->Phi();
 	      
