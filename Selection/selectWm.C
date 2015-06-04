@@ -125,16 +125,15 @@ void selectWm(const TString conf="wm.conf", // input file
     Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
     // flag to reject W->mnu events for wrong flavor backgrounds
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
-
+    
     CSample* samp = samplev[isam];
-  
     //
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
+    cout << outfilename << endl;
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
-
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
     outTree->Branch("lumiSec",    &lumiSec,    "lumiSec/i");     // event lumi section
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
@@ -187,18 +186,16 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("nMatch",     &nMatch,     "nMatch/i");	  // number of matched segments of muon	 
     outTree->Branch("nValidHits", &nValidHits, "nValidHits/i");   // number of valid muon hits of muon 
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");     // number of valid muon hits of muon 
-   
     //
     // loop through files
     //
     const UInt_t nfiles = samp->fnamev.size();
     for(UInt_t ifile=0; ifile<nfiles; ifile++) {  
-
+      
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
       infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
-      
       //Bool_t hasJSON = kFALSE;
       //baconhep::RunLumiRangeMap rlrm;
       //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
@@ -238,6 +235,7 @@ void selectWm(const TString conf="wm.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(genBr) {
@@ -297,7 +295,6 @@ void selectWm(const TString conf="wm.conf", // input file
         }
 	
 	if(passSel) {
-		  
 	  /******** We have a W candidate! HURRAY! ********/
 	  nsel+=weight;
           nselvar+=weight*weight;
@@ -337,8 +334,10 @@ void selectWm(const TString conf="wm.conf", // input file
 	    // veto wrong flavor events for signal sample
             if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
             if (vec && lep1) {
-	      genV      = vec;
-	      genLep    = lep1;
+	      genV      = new TLorentzVector(0,0,0,0);
+	      genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
+	      genLep    = new TLorentzVector(0,0,0,0);
+	      genLep->SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),lep1->M());
               genVPt    = vec->Pt();
               genVPhi   = vec->Phi();
               genVy     = vec->Rapidity();
@@ -399,6 +398,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  typeBits   = goodMuon->typeBits;
 	  
 	  outTree->Fill();
+	  genV=0, genLep=0, lep=0;
         }
       }
       delete infile;
@@ -410,12 +410,14 @@ void selectWm(const TString conf="wm.conf", // input file
     }
     outFile->Write();
     outFile->Close();
+
+    //delete outTree; outTree=0;
+    //delete outFile; outFile=0;
   }
   delete info;
   delete gen;
   delete muonArr;
   delete pvArr;
-  
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

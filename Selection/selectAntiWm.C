@@ -89,7 +89,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
-
+  Float_t genLepPt, genLepPhi;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
@@ -154,6 +154,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     outTree->Branch("genVPhi",    &genVPhi,    "genVPhi/F");    // GEN boson phi (signal MC)
     outTree->Branch("genVy",      &genVy,      "genVy/F");      // GEN boson rapidity (signal MC)
     outTree->Branch("genVMass",   &genVMass,   "genVMass/F");   // GEN boson mass (signal MC)
+    outTree->Branch("genLepPt",   &genLepPt, "genLepPt/F");    // GEN lepton pT (signal MC)
+    outTree->Branch("genLepPhi",  &genLepPhi,"genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");   // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");        // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");     // phi(MET)
@@ -334,12 +336,16 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	    // veto wrong flavor events for signal sample
             if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
             if (vec && lep1) {
-              genV      = vec;
-              genLep    = lep1;
+	      genV      = new TLorentzVector(0,0,0,0);
+              genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
+              genLep    = new TLorentzVector(0,0,0,0);
+              genLep->SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),lep1->M());
               genVPt    = vec->Pt();
               genVPhi   = vec->Phi();
               genVy     = vec->Rapidity();
               genVMass  = vec->M();
+              genLepPt  = lep1->Pt();
+              genLepPhi = lep1->Phi();
 
 	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
               TVector2 vLepPt(vLep.Px(),vLep.Py());
@@ -394,6 +400,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	  typeBits   = goodMuon->typeBits;
 
 	  outTree->Fill();
+	  genV=0, genLep=0, lep=0;
         }
       }
       delete infile;
