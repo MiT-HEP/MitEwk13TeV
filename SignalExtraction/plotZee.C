@@ -22,15 +22,12 @@
 #include <sstream>                        // class for parsing strings
 #include <TRandom3.h>
 #include <TGaxis.h>
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -66,10 +63,10 @@ void plotZee(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/zee_select.root");  typev.push_back(eZee);
-  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/top_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zee/ntuples/zee_select.raw.root");  typev.push_back(eZee);
+//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/ewk_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/top_select.root");  typev.push_back(eEWK);
 
   //
   // Fit options
@@ -115,8 +112,8 @@ void plotZee(const TString  outputDir,   // output directory
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
-  LorentzVector *sc1=0, *sc2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *sc1=0, *sc2=0;
 
   TFile *infile=0;
   TTree *intree=0;
@@ -180,10 +177,10 @@ void plotZee(const TString  outputDir,   // output directory
 	
 	} else {
           
-	  LorentzVector slep1 = (*lep1);
+	  TLorentzVector slep1 = (*lep1);
 	  slep1 *= gRandom->Gaus(slep1.E(), getResCorr(sc1->Eta()))/slep1.E();
 	  
-	  LorentzVector slep2 = (*lep2);
+	  TLorentzVector slep2 = (*lep2);
 	  slep2 *= gRandom->Gaus(slep2.E(), getResCorr(sc2->Eta()))/slep2.E();
 	  
 	  mass = (slep1+slep2).M();	  
@@ -272,7 +269,6 @@ void plotZee(const TString  outputDir,   // output directory
   plotZee2.TransLegend(-0.35,-0.15);
   plotZee2.Draw(c,kTRUE,format,1);
 
-    
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
