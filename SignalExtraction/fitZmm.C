@@ -20,7 +20,7 @@
 #include <fstream>                        // functions for file I/O
 #include <string>                         // C++ string class
 #include <sstream>                        // class for parsing strings
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
@@ -48,8 +48,6 @@
 #include "RooMinuit.h"
 #include "RooFitResult.h"
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
 
 enum { eCount, eBWxCB, eMCxGaus };
 enum { eNone, eExp, eErfcExp, eDblExp, eLinExp, eQuadExp };
@@ -96,10 +94,10 @@ void fitZmm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/zmm_select.root");  typev.push_back(eZmm);
-  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zmumu/ntuples/zmm_select.root");  typev.push_back(eZmm);
+//  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
 
   //
   // Fit options
@@ -123,7 +121,7 @@ void fitZmm(const TString  outputDir,   // output directory
   const TString format("png");
   
   // pile-up re-weight file
-  const TString pufname("/scratch/ksung/EWKAna/test/Utils/PileupReweighting.Summer11DYmm_To_Run2011A.root");
+//  const TString pufname("/scratch/ksung/EWKAna/test/Utils/PileupReweighting.Summer11DYmm_To_Run2011A.root");
  
    
   //--------------------------------------------------------------------------------------------------------------
@@ -136,7 +134,7 @@ void fitZmm(const TString  outputDir,   // output directory
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
-  
+/*  
   // Get pile-up weights
   TFile *pufile    = 0;
   TH1D  *puWeights = 0;
@@ -146,7 +144,7 @@ void fitZmm(const TString  outputDir,   // output directory
     puWeights = (TH1D*)pufile->Get("puWeights");
     assert(puWeights);
   }
-    
+*/    
   //
   // Trees/histograms to store events in each category for
   // unbinned/binned fits
@@ -207,7 +205,7 @@ void fitZmm(const TString  outputDir,   // output directory
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   Float_t pfCombIso1, pfCombIso2;
 
   TFile *infile=0;
@@ -278,7 +276,7 @@ void fitZmm(const TString  outputDir,   // output directory
       // fill gen-matched Z events each category for MC templates and to compute MC efficiencies
       if(typev[ifile]==eZmm && matchGen) {
         Double_t w=1;
-	if(doPU>0) w *= puWeights->GetBinContent(npu+1);
+	//if(doPU>0) w *= puWeights->GetBinContent(npu+1);
 	if     (category == eMuMu2HLT)  { tmpltMuMu2HLT->Fill(mass,w); }
         else if(category == eMuMu1HLT)  { tmpltMuMu1HLT->Fill(mass,w); }
 	else if(category == eMuMuNoSel) { tmpltMuMuNoSel->Fill(mass,w); }
@@ -811,7 +809,6 @@ void fitZmm(const TString  outputDir,   // output directory
   plotZmumu2.TransLegend(-0.35,-0.15);
   plotZmumu2.Draw(c,kTRUE,format,1);
 
-    
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================

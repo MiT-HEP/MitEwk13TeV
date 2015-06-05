@@ -22,7 +22,7 @@
 #include <sstream>                        // class for parsing strings
 #include <TRandom3.h>
 #include <TGaxis.h>
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
@@ -40,9 +40,6 @@
 #include "RooAddPdf.h"
 #include "RooFitResult.h"
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -103,7 +100,7 @@ void fitWe(const TString  outputDir,   // output directory
 
   // file format for output plots
   const TString format("png"); 
-    
+/*
   // recoil correction
   RecoilCorrector recoilCorr("../Recoil/ZeeData/fits.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
                              //"../Recoil/WepMC/fits.root",
@@ -117,7 +114,7 @@ void fitWe(const TString  outputDir,   // output directory
   // NNLO boson pT k-factors
   TFile nnloCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Ratio.root");
   TH1D *hNNLOCorr = (TH1D*)nnloCorrFile.Get("RpT_B");
-  
+*/  
   //
   // input ntuple file names
   //
@@ -125,10 +122,10 @@ void fitWe(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Wenu/ntuples/we_select.raw.root");   typev.push_back(eWenu);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -162,8 +159,8 @@ void fitWe(const TString  outputDir,   // output directory
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  LorentzVector *lep=0;
-  LorentzVector *sc=0;
+  TLorentzVector *lep=0;
+  TLorentzVector *sc=0;
     
   TFile *infile=0;
   TTree *intree=0;
@@ -218,14 +215,14 @@ void fitWe(const TString  outputDir,   // output directory
 	
 	if(typev[ifile]==eWenu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-        
+/*        
 	  Double_t philcorr=1;
           for(Int_t ibin=1; ibin<=hPhilCorr->GetNbinsX(); ibin++) {
             if(fabs(sc->Eta()) >= hPhilCorr->GetBinLowEdge(ibin) &&
                fabs(sc->Eta()) < (hPhilCorr->GetBinLowEdge(ibin)+hPhilCorr->GetBinWidth(ibin)))
               philcorr = hPhilCorr->GetBinContent(ibin);
           }
-	  
+  
 	  // apply recoil corrections to W MC
 	  Double_t lepPt = philcorr*(lep->Pt());
 	  //Double_t lepPt = philcorr*(gRandom->Gaus((lep->Pt())*getScaleCorr(sc->Eta()),getResCorr(sc->Eta())));  // (!) uncomment to apply scale/res corrections to MC
@@ -238,7 +235,7 @@ void fitWe(const TString  outputDir,   // output directory
               nnlocorr = hNNLOCorr->GetBinContent(ibin);
           }
 	  //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-	  
+*/	  
 	  hWenuMet->Fill(corrMet,weight);
 	  if(q>0) { hWenuMetp->Fill(corrMet,weight); } 
 	  else    { hWenuMetm->Fill(corrMet,weight); }

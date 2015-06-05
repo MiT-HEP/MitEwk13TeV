@@ -22,7 +22,7 @@
 #include <sstream>                        // class for parsing strings
 #include <TRandom3.h>
 #include <TGaxis.h>
-#include "Math/LorentzVector.h"           // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
@@ -42,9 +42,6 @@
 #include "RooSimultaneous.h"
 #include "RooFitResult.h"
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -84,8 +81,7 @@ void fitWm(const TString  outputDir,   // output directory
 
   // file format for output plots
   const TString format("png"); 
-
-    
+/*
   // recoil correction
   RecoilCorrector recoilCorr("../Recoil/ZmmData/fits.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
                              //"../Recoil/WmpMC/fits.root",
@@ -95,7 +91,7 @@ void fitWm(const TString  outputDir,   // output directory
   // NNLO boson pT k-factors
   TFile nnloCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Ratio.root");
   TH1D *hNNLOCorr = (TH1D*)nnloCorrFile.Get("RpT_B");
-  
+*/  
   //
   // input ntuple file names
   //
@@ -103,15 +99,15 @@ void fitWm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/wm_select.root");   typev.push_back(eWmunu);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/top_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Wmunu/ntuples/wm_select.root");   typev.push_back(eWmunu);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wmunu/ntuples/top_select.root");  typev.push_back(eEWK);
   
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
+  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
+//  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/AntiWmunu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -154,7 +150,7 @@ void fitWm(const TString  outputDir,   // output directory
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  LorentzVector *lep=0;
+  TLorentzVector *lep=0;
   Float_t pfChIso, pfGamIso, pfNeuIso;
     
   TFile *infile=0;
@@ -219,7 +215,7 @@ void fitWm(const TString  outputDir,   // output directory
 	
 	if(typev[ifile]==eWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-        
+/*
 	  // apply recoil corrections to W MC
 	  Double_t lepPt = lep->Pt();
 	  //Double_t lepPt = gRandom->Gaus(lep->Pt(),0.5);  // (!) uncomment to apply scale/res corrections to MC
@@ -232,14 +228,14 @@ void fitWm(const TString  outputDir,   // output directory
               nnlocorr = hNNLOCorr->GetBinContent(ibin);
           }
 	  //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-	  
+*/	  
           hWmunuMet->Fill(corrMet,weight);
 	  if(q>0) { hWmunuMetp->Fill(corrMet,weight); } 
 	  else    { hWmunuMetm->Fill(corrMet,weight); }
         }
 	if(typev[ifile]==eAntiWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-        
+/*
 	  // apply recoil corrections to W MC
 	  Double_t lepPt = lep->Pt();//gRandom->Gaus(lep->Pt(),0.5);
 	  //Double_t lepPt = gRandom->Gaus(lep->Pt(),0.5);  // (!) uncomment to apply scale/res corrections to MC
@@ -252,7 +248,7 @@ void fitWm(const TString  outputDir,   // output directory
               nnlocorr = hNNLOCorr->GetBinContent(ibin);
           }
 	  //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-          
+*/          
 	  hAntiWmunuMet->Fill(corrMet,weight);
 	  if(q>0) { hAntiWmunuMetp->Fill(corrMet,weight); } 
 	  else    { hAntiWmunuMetm->Fill(corrMet,weight); }
