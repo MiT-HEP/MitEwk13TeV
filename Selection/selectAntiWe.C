@@ -132,9 +132,10 @@ void selectAntiWe(const TString conf="we.conf", // input file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
 
-    // Assume signal sample is given name "we"
-    // If it's the signal sample, toggle flag to reject W->tau events
+    // Assume signal sample is given name "we" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
+    // flag to reject W->enu events for wrong flavor backgrounds
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
   
     CSample* samp = samplev[isam];
   
@@ -237,8 +238,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
       Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
       TBranch *pvBr=0;
       if (hasVer) {
-        eventTree->SetBranchAddress("Vertex",       &pvArr);
-        pvBr = eventTree->GetBranch("Vertex");
+        eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
       }
     
       // Compute MC event weight per 1/fb
@@ -316,14 +316,14 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	  goodEle = ele;  
 	}
 
-	// veto w decay to taus for signal, and w decay to signal mode for taus
-        if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
-        else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
+	// veto w -> enu decay for wrong flavor background samples (needed for inclusive WToLNu sample)                                                
+        if (isWrongFlavor) {
+          TLorentzVector *vec=0, *lep1=0, *lep2=0;
+          if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
+        }
 	
 	if(passSel) {
-	  
 	  /******** We have a W candidate! HURRAY! ********/
-	    
 	  nsel+=weight;
           nselvar+=weight*weight;
 
@@ -368,17 +368,20 @@ void selectAntiWe(const TString conf="we.conf", // input file
           xPDF_2    = -999;
           scalePDF  = -999;
           weightPDF = -999;
-	  if(hasGen) {
-	    TLorentzVector *vec=0, *fvec=0, *lep1=0, *lep2=0;
-	    toolbox::fillGen(genPartArr, BOSON_ID, LEPTON_ID, vec, fvec, lep1, lep2);
-            if (fvec && lep1) {
-              genV     = fvec;
-              genLep   = lep1;
-              genVPt   = fvec->Pt();
-              genVPhi  = fvec->Phi();
-              genVy    = fvec->Rapidity();
-              genVMass = fvec->M();
-              genLepPt = lep1->Pt();
+	  if(isSignal) {
+	    TLorentzVector *vec=0, *lep1=0, *lep2=0;
+	    // veto wrong flavor events for signal sample
+            if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+            if (vec && lep1) {
+              genV      = new TLorentzVector(0,0,0,0);
+              genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
+              genLep    = new TLorentzVector(0,0,0,0);
+              genLep->SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),lep1->M());
+              genVPt    = vec->Pt();
+              genVPhi   = vec->Phi();
+              genVy     = vec->Rapidity();
+              genVMass  = vec->M();
+              genLepPt  = lep1->Pt();
               genLepPhi = lep1->Phi();
 
 	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
@@ -438,6 +441,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	  typeBits  = goodEle->typeBits;
 	   
 	  outTree->Fill();
+	  genV=0, genLep=0, lep=0, sc=0;
         }
       }
       delete infile;

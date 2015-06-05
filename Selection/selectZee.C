@@ -134,10 +134,10 @@ void selectZee(const TString conf="zee.conf", // input file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
     
-    // Assume signal sample is given name "zee"
-    // If it's the signal sample, toggle flag to store GEN Z kinematics
-    // and reject Z->tautau events. 
+    // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
+    // flag to reject Z->ee events for wrong flavor backgrounds
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);  
     
     CSample* samp = samplev[isam];
   
@@ -148,7 +148,6 @@ void selectZee(const TString conf="zee.conf", // input file
     if(isam==0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
-
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
     outTree->Branch("lumiSec",    &lumiSec,    "lumiSec/i");     // event lumi section
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
@@ -234,7 +233,7 @@ void selectZee(const TString conf="zee.conf", // input file
     for(UInt_t ifile=0; ifile<nfiles; ifile++) {  
 
       // Read input file and get the TTrees
-      cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
+      cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... " << endl; cout.flush();
       infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
 
@@ -267,19 +266,16 @@ void selectZee(const TString conf="zee.conf", // input file
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
-        eventTree->SetBranchAddress("GenEvtInfo", &gen);
-	genBr = eventTree->GetBranch("GenEvtInfo");
-	eventTree->SetBranchAddress("GenParticle",&genPartArr);
-	genPartBr = eventTree->GetBranch("GenParticle");
+        eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
+	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
 
       Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
       TBranch *pvBr=0;
       if (hasVer) {
-	eventTree->SetBranchAddress("Vertex",       &pvArr);
-	pvBr = eventTree->GetBranch("Vertex");
+	eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
       }
-      
+
       // Compute MC event weight per 1/fb
       Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
@@ -289,11 +285,11 @@ void selectZee(const TString conf="zee.conf", // input file
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<250; ientry++) {
+      //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 	
-	if(genBr) {
+	if(hasGen) {
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
 	  genPartBr->GetEntry(ientry);
@@ -342,9 +338,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	      }
 	    }
 	  }
-	  if(escale1*(tag->scEt) < PT_CUT)      continue;  // lepton pT cut
-	  if(fabs(tag->scEta)    > ETA_CUT)     continue;  // lepton |eta| cut
-	  if(!passEleID(tag,info->rhoIso))      continue;  // lepton selection
+	  if(escale1*(tag->scEt) < PT_CUT)     continue;  // lepton pT cut
+	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
+	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
 	  if(!(tag->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
 
 	  TLorentzVector vTag;     vTag.SetPtEtaPhiM(escale1*(tag->pt),   tag->eta,   tag->phi,   ELE_MASS);
@@ -397,7 +393,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	    if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
 
 	    //only for looking at low pT trigger efficiencies
-	    if (toolbox::deltaR(vTag.Eta(), vProbe.Eta(), vTag.Phi(), vProbe.Phi())<0.3) continue;
+	    //if (toolbox::deltaR(vTag.Eta(), vProbe.Eta(), vTag.Phi(), vProbe.Phi())<0.3) continue;
 
 	    // determine event category
 	    UInt_t icat=0;
@@ -417,18 +413,22 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    if(icat==0) continue;
 
-	    // veto z decay to taus for signal, and z decay to signal mode for taus
-	    if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
-	    else if (!(isSignal) && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
+	    // veto z -> ee decay for wrong flavor background samples (needed for inclusive DYToLL sample)
+	    if (isWrongFlavor) {
+	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+	      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
+	    }
 
 	    /******** We have a Z candidate! HURRAY! ********/
 	    nsel+=weight;
             nselvar+=weight*weight;
+
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
-	    if(isSignal) {
-	      TLorentzVector *vec=0, *fvec=0, *lep1=0, *lep2=0;
-	      toolbox::fillGen(genPartArr, BOSON_ID, LEPTON_ID, vec, fvec, lep1, lep2);
+	    if(isSignal && hasGen) {
+	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+	      // veto wrong flavor events for signal sample
+	      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
 	      Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, lep1->Eta(), lep1->Phi())<0.3) || 
 				((lep2) && toolbox::deltaR(tag->eta, tag->phi, lep2->Eta(), lep2->Phi())<0.3) );
 
@@ -436,23 +436,34 @@ void selectZee(const TString conf="zee.conf", // input file
 				((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.3) );
 	      if(match1 && match2) {
 		hasGenMatch = kTRUE;
-		genV     = fvec;
-		genVPt   = fvec->Pt();
-		genVPhi  = fvec->Phi();
-		genVy    = fvec->Rapidity();
-		genVMass = fvec->M();
+		if (vec!=0) {
+		  genV=new TLorentzVector(0,0,0,0);
+		  genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
+		  genVPt   = vec->Pt();
+		  genVPhi  = vec->Phi();
+		  genVy    = vec->Rapidity();
+		  genVMass = vec->M();
+		}
+		else {
+		  TLorentzVector tvec=*lep1+*lep2;
+		  genV=new TLorentzVector(0,0,0,0);
+		  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+		  genVPt   = tvec.Pt();
+		  genVPhi  = tvec.Phi();
+		  genVy    = tvec.Rapidity();
+		  genVMass = tvec.M();
+		}
 	      }
 	      else {
-		fvec = new TLorentzVector(0, 0, 0, 0);
-		genV     = fvec;
+		genV     = new TLorentzVector(0,0,0,0);
 		genVPt   = -999;
 		genVPhi  = -999;
 		genVy    = -999;
 		genVMass = -999;
 	      }
 	    }
-
-	    if (gen) {
+	    
+	    if (hasGen) {
 	      id_1      = gen->id_1;
 	      id_2      = gen->id_2;
 	      x_1       = gen->x_1;
@@ -479,7 +490,10 @@ void selectZee(const TString conf="zee.conf", // input file
 	    runNum   = info->runNum;
 	    lumiSec  = info->lumiSec;
 	    evtNum   = info->evtNum;
-	    matchGen = hasGenMatch ? 1 : 0;
+
+	    if (hasGenMatch) matchGen=1;
+            else matchGen=0;
+
 	    category = icat;
 	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
 	    npu      = info->nPU;
@@ -552,8 +566,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	    isConv2    = (eleProbe) ? eleProbe->isConv        : 0;
 	    nexphits2  = (eleProbe) ? eleProbe->nMissingHits  : 0;
 	    typeBits2  = (eleProbe) ? eleProbe->typeBits      : 0; 
-	    
+
 	    outTree->Fill();
+	    genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0;
 	  }
         }
       }

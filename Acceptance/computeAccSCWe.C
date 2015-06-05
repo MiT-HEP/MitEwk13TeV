@@ -20,18 +20,18 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
+#include <TLorentzVector.h>
 
-// various helper functions
-#include "EWKAna/Utils/MyTools.hh"
+#include "../Utils/MyTools.hh" // various helper functions
 
 // define structures to read in ntuple
-#include "EWKAna/Ntupler/interface/EWKAnaDefs.hh"
-#include "EWKAna/Ntupler/interface/TEventInfo.hh"
-#include "EWKAna/Ntupler/interface/TGenInfo.hh"
-#include "EWKAna/Ntupler/interface/TPhoton.hh"
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
+#include "BaconAna/DataFormats/interface/TPhoton.hh"
 
-// helper functions for lepton ID selection
-#include "EWKAna/Utils/LeptonIDCuts.hh"
+#include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #endif
 
 
@@ -57,6 +57,9 @@ void computeAccSCWe(const TString conf,             // input file
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
 
+  const Int_t BOSON_ID  = 24;
+  Int_t LEPTON_ID = 11;
+  if (charge==1) LEPTON_ID=-11;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -91,12 +94,12 @@ void computeAccSCWe(const TString conf,             // input file
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-
   
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen  = new mithep::TGenInfo();
-  TClonesArray *photonArr  = new TClonesArray("mithep::TPhoton");
+  baconhep::TEventInfo *info = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo *gen  = new baconhep::TGenEventInfo();
+  TClonesArray *photonArr = new TClonesArray("baconhep::TPhoton");
+  TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -113,12 +116,13 @@ void computeAccSCWe(const TString conf,             // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info",   &info);      TBranch *infoBr   = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("Gen",    &gen);       TBranch *genBr    = eventTree->GetBranch("Gen");
+    eventTree->SetBranchAddress("Info",   &info);    TBranch *infoBr   = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo", &gen); TBranch *genBr    = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *genPartBr  = eventTree->GetBranch("GenParticle");
     eventTree->SetBranchAddress("Photon", &photonArr); TBranch *photonBr = eventTree->GetBranch("Photon");
 
     nEvtsv.push_back(0);
@@ -130,21 +134,25 @@ void computeAccSCWe(const TString conf,             // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<1000; ientry++) {
+      infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);
-      if(charge==-1 && gen->id_1!= EGenType::kElectron) continue;  // check for W-
-      if(charge== 1 && gen->id_2!=-EGenType::kElectron) continue;  // check for W+
-      infoBr->GetEntry(ientry);     
-    
-      Double_t weight=1;
+      genPartArr->Clear(); genPartBr->GetEntry(ientry);
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID)  continue;
+
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;  
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
-      
+
       photonArr->Clear();
       photonBr->GetEntry(ientry);
       for(Int_t i=0; i<photonArr->GetEntriesFast(); i++) {
-        const mithep::TPhoton *sc = (mithep::TPhoton*)((*photonArr)[i]);
+        const baconhep::TPhoton *sc = (baconhep::TPhoton*)((*photonArr)[i]);
         
         // check ECAL gap
         if(fabs(sc->scEta)>=ETA_BARREL && fabs(sc->scEta)<=ETA_ENDCAP) continue;
@@ -152,9 +160,12 @@ void computeAccSCWe(const TString conf,             // input file
         if(sc->pt	   < PT_CUT)  continue;  // Supercluster ET cut corrected for PV
         if(fabs(sc->scEta) > ETA_CUT) continue;  // Supercluster |eta| cut
         
-	Double_t decRho  = sqrt((gen->decx)*(gen->decx) + (gen->decy)*(gen->decy));
-	Double_t ecaleta = (gen->id_1== EGenType::kElectron) ? ecalEta(gen->eta_1,gen->decz,decRho) : ecalEta(gen->eta_2,gen->decz,decRho);
-	Double_t dr      = (gen->id_1== EGenType::kElectron) ? toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta,gen->phi_1) : toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta,gen->phi_2);
+	Double_t decRho  = sqrt((info->pvx)*(info->pvx) + (info->pvy)*(info->pvy));
+	//if (lep1) cout << lep1->Eta() << " (1),";
+	//if (lep2) cout << lep2->Eta() << " (2),";
+	//cout << endl;
+	Double_t ecaleta = (lep1) ? ecalEta(lep1->Eta(),info->pvz,decRho) : ecalEta(lep2->Eta(),info->pvz,decRho);
+	Double_t dr      = (lep1) ? toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta,lep1->Phi()) : toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta,lep2->Phi());
 	if(dr>0.2) continue;
         
 	/******** We have a W candidate! HURRAY! ********/

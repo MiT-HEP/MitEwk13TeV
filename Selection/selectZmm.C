@@ -126,10 +126,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
 
-    // Assume signal sample is given name "zmm"
-    // If it's the signal sample, toggle flag to store GEN Z kinematics
-    // and reject Z->tautau events.
-    Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);  
+    // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
+    Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
+    // flag to reject Z->mm events for wrong flavor backgrounds
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
   
@@ -264,6 +264,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t nsel=0, nselvar=0;
 
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //for(UInt_t ientry=0; ientry<500; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(genBr) {
@@ -345,20 +346,22 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
 	    if(icat==0) continue;
 
-	    // veto z decay to taus for signal, and z decay to signal mode for taus
-            if (isSignal && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
-            else if (!(isSignal) && toolbox::flavor(genPartArr,BOSON_ID)==LEPTON_ID) continue;
-	    
+	    // veto z -> mm decay for wrong flavor background samples (needed for inclusive DYToLL sample)
+            if (isWrongFlavor) {
+              TLorentzVector *vec=0, *lep1=0, *lep2=0;
+              if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
+	    }
+
 	    /******** We have a Z candidate! HURRAY! ********/
-	    
 	    nsel+=weight;
             nselvar+=weight*weight;
 	    
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
-	    if(isSignal) {
-	      TLorentzVector *vec=0, *fvec=0, *lep1=0, *lep2=0;
-	      toolbox::fillGen(genPartArr, BOSON_ID, LEPTON_ID, vec, fvec, lep1, lep2);
+	    if(isSignal && hasGen) {
+	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+	      // veto wrong flavor events for signal sample
+              if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
               Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, lep1->Eta(), lep1->Phi())<0.5) ||
                                 ((lep2) && toolbox::deltaR(tag->eta, tag->phi, lep2->Eta(), lep2->Phi())<0.5) );
 	      
@@ -366,15 +369,27 @@ void selectZmm(const TString conf="zmm.conf", // input file
                                 ((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.5) );
               if(match1 && match2) {
                 hasGenMatch = kTRUE;
-		genV     = fvec;
-                genVPt   = fvec->Pt();
-                genVPhi  = fvec->Phi();
-                genVy    = fvec->Rapidity();
-                genVMass = fvec->M();
+
+		if (vec!=0) {
+                  genV=new TLorentzVector(0,0,0,0);
+                  genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
+                  genVPt   = vec->Pt();
+                  genVPhi  = vec->Phi();
+                  genVy    = vec->Rapidity();
+                  genVMass = vec->M();
+                }
+                else {
+                  TLorentzVector tvec=*lep1+*lep2;
+                  genV=new TLorentzVector(0,0,0,0);
+                  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+                  genVPt   = tvec.Pt();
+                  genVPhi  = tvec.Phi();
+                  genVy    = tvec.Rapidity();
+                  genVMass = tvec.M();
+                }
               }
               else {
-		fvec = new TLorentzVector(0, 0, 0, 0); 
-		genV     = fvec;
+		genV     = new TLorentzVector(0,0,0,0); 
                 genVPt   = -999;
                 genVPhi  = -999;
                 genVy    = -999;
@@ -382,7 +397,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
               }
 	    }
 
-	    if (gen) {
+	    if (hasGen) {
               id_1      = gen->id_1;
               id_2      = gen->id_2;
               x_1       = gen->x_1;
@@ -409,7 +424,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    runNum   = info->runNum;
 	    lumiSec  = info->lumiSec;
 	    evtNum   = info->evtNum;
-	    matchGen = hasGenMatch ? 1 : 0;
+
+	    if (hasGenMatch) matchGen=1;
+	    else matchGen=0;
+	    
 	    category = icat;
 	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
 	    npu      = info->nPU;
@@ -425,7 +443,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    dilep    = &vDilep;
 	    q1       = tag->q;
 	    q2       = probe->q;
-	    
+
 	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));        
             TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));        
             TVector2 vU = -1.0*(vMet+vZPt);
@@ -475,6 +493,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    typeBits2   = probe->typeBits;
 	    
 	    outTree->Fill();
+	    genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
 	  }
         }
       }

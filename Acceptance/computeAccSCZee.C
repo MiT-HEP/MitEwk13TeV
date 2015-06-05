@@ -20,20 +20,18 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
-#include "Math/LorentzVector.h"     // 4-vector class
+#include "TLorentzVector.h"         // 4-vector class
 
 // various helper functions
-#include "EWKAna/Utils/MyTools.hh"
+#include "../Utils/MyTools.hh"
 
 // define structures to read in ntuple
-#include "EWKAna/Ntupler/interface/EWKAnaDefs.hh"
-#include "EWKAna/Ntupler/interface/TEventInfo.hh"
-#include "EWKAna/Ntupler/interface/TGenInfo.hh"
-#include "EWKAna/Ntupler/interface/TPhoton.hh"
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
+#include "BaconAna/DataFormats/interface/TPhoton.hh"
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -59,11 +57,12 @@ void computeAccSCZee(const TString conf,       // input file
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
   
+  const Int_t BOSON_ID  = 23;
+  const Int_t LEPTON_ID = 11;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
-
   vector<TString> fnamev;  // file name per input file
   vector<TString> labelv;  // TLegend label per input file
   vector<Int_t>   colorv;  // plot color per input file
@@ -93,12 +92,12 @@ void computeAccSCZee(const TString conf,       // input file
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-
-  
+ 
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info  = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen   = new mithep::TGenInfo();
-  TClonesArray *photonArr   = new TClonesArray("mithep::TPhoton");
+  baconhep::TEventInfo *info  = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo   *gen   = new baconhep::TGenEventInfo();
+  TClonesArray *genPartArr  = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray *photonArr   = new TClonesArray("baconhep::TPhoton");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -115,12 +114,13 @@ void computeAccSCZee(const TString conf,       // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info",   &info);      TBranch *infoBr   = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("Gen",    &gen);       TBranch *genBr	 = eventTree->GetBranch("Gen");
+    eventTree->SetBranchAddress("Info",       &info);  TBranch *infoBr   = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo", &gen);   TBranch *genBr	 = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *genPartBr	 = eventTree->GetBranch("GenParticle");
     eventTree->SetBranchAddress("Photon", &photonArr); TBranch *photonBr = eventTree->GetBranch("Photon");   
 
     nEvtsv.push_back(0);
@@ -133,20 +133,24 @@ void computeAccSCZee(const TString conf,       // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<1000; ientry++) {
       genBr->GetEntry(ientry);
-      if(gen->vmass<MASS_LOW || gen->vmass>MASS_HIGH) continue;
+      infoBr->GetEntry(ientry);
+      genPartArr->Clear(); genPartBr->GetEntry(ientry);
 
-      infoBr->GetEntry(ientry);     
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+
+      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
     
-      Double_t weight=1;
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
-    
-      photonArr->Clear();
-      photonBr->GetEntry(ientry);
-      const mithep::TPhoton *ele1=0, *ele2=0;
+
+      photonArr->Clear(); photonBr->GetEntry(ientry);
+      const baconhep::TPhoton *ele1=0, *ele2=0;
       Double_t drMin1=0.2, drMin2=0.2;
       for(Int_t i=0; i<photonArr->GetEntriesFast(); i++) {
-  	const mithep::TPhoton *sc = (mithep::TPhoton*)((*photonArr)[i]);
+  	const baconhep::TPhoton *sc = (baconhep::TPhoton*)((*photonArr)[i]);
 	
 	// check ECAL gap
 	if(fabs(sc->scEta)>=ETA_BARREL && fabs(sc->scEta)<=ETA_ENDCAP) continue;
@@ -154,11 +158,11 @@ void computeAccSCZee(const TString conf,       // input file
 	if(sc->pt	   < PT_CUT)  continue;  // Supercluster ET cut corrected for PV
         if(fabs(sc->scEta) > ETA_CUT) continue;  // Supercluster |eta| cut
 	  
-	Double_t decRho = sqrt((gen->decx)*(gen->decx) + (gen->decy)*(gen->decy));
-	Double_t ecaleta1 = ecalEta(gen->eta_1,gen->decz,decRho);
-	Double_t ecaleta2 = ecalEta(gen->eta_2,gen->decz,decRho);
-	Double_t dr1 = toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta1,gen->phi_1);
-	Double_t dr2 = toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta2,gen->phi_2);
+	Double_t decRho = sqrt((info->pvx)*(info->pvx) + (info->pvy)*(info->pvy));
+	Double_t ecaleta1 = ecalEta(lep1->Eta(),info->pvz,decRho);
+	Double_t ecaleta2 = ecalEta(lep2->Eta(),info->pvz,decRho);
+	Double_t dr1 = toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta1,lep1->Phi());
+	Double_t dr2 = toolbox::deltaR(sc->scEta,sc->scPhi,ecaleta2,lep2->Phi());
 	
 	if(dr1<drMin1) {
 	  drMin1 = dr1;
@@ -174,21 +178,22 @@ void computeAccSCZee(const TString conf,       // input file
       if(!ele1 || !ele2) continue;
       
       // mass window
-      LorentzVector vEle1(ele1->pt, ele1->scEta, ele1->scPhi, ELE_MASS);
-      LorentzVector vEle2(ele2->pt, ele2->scEta, ele2->scPhi, ELE_MASS);
-      LorentzVector vDilep = vEle1 + vEle2;
+      TLorentzVector vEle1; vEle1.SetPtEtaPhiM(ele1->pt, ele1->scEta, ele1->scPhi, ELE_MASS);
+      TLorentzVector vEle2; vEle2.SetPtEtaPhiM(ele2->pt, ele2->scEta, ele2->scPhi, ELE_MASS);
+      TLorentzVector vDilep = vEle1 + vEle2;
       if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue; 
-	      
       
       /******** We have a Z candidate! HURRAY! ********/
-         
+      //cout << ele1->scEta << ", " << ele2->scEta << endl;
       Bool_t isB1 = (fabs(ele1->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
       Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
       
       nSelv[ifile]+=weight;
+
       if(isB1 && isB2)        nSelBBv[ifile]+=weight;
       else if(!isB1 && !isB2) nSelEEv[ifile]+=weight;
       else		      nSelBEv[ifile]+=weight;	  
+
     }
     
     // compute acceptances
