@@ -1,4 +1,1 @@
-Combine
-=======
-
-Code to get started using Combine in the W/Z cross section measurement
+Code to use CombinedLimit for signal extraction in the W/Z analysis
