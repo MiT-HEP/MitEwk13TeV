@@ -1,0 +1,35 @@
+Combination of sel=Wmunu_sel.txt  anti=Wmunu_anti.txt
+imax 2 number of bins
+jmax 2 number of processes minus 1
+kmax * number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes EWK       anti      Wmunu_pdfTemplates.root combine_workspace:aewkp
+shapes qcd       anti      Wmunu_pdfTemplates.root combine_workspace:pepe1Pdf_aqcdp
+shapes sig       anti      Wmunu_pdfTemplates.root combine_workspace:awmp
+shapes data_obs  anti      Wmunu_pdfTemplates.root combine_workspace:antiMetp
+
+shapes EWK       sel       Wmunu_pdfTemplates.root combine_workspace:ewkp
+shapes qcd       sel       Wmunu_pdfTemplates.root combine_workspace:pepe1Pdf_qcdp
+shapes sig       sel       Wmunu_pdfTemplates.root combine_workspace:wmp
+shapes data_obs  sel       Wmunu_pdfTemplates.root combine_workspace:dataMetp
+----------------------------------------------------------------------------------------------------------------------------------
+bin          sel   anti 
+observation  -1.0  -1.0 
+----------------------------------------------------------------------------------------------------------------------------------
+bin                    sel       sel      sel      anti     anti     anti   
+process                sig       EWK      qcd      sig      EWK      qcd    
+process                -1        1        2        0        3        4
+#  integral of MET hist for sig, sig*cewk for EWK, and estimate used in Kevin's code for qcd
+rate                   51530.5   3841.28  62.205   302.284  74.339   12168.4
+# used in Kevin's code
+#rate                   38804.0   2892.60  16630.0  627.25   154.21   11290.5
+# "answers" (output of Kevin's code, yields in 8 TeV AN)
+#rate                  47610.7   3549.07  4274.19  372.32   91.680   12081.0
+----------------------------------------------------------------------------------------------------------------------------------
+bkg_model        lnN   1.001     1.001    -        1.001    1.001    -         
+lepton_eff       lnN   1.01      1.01     -        1.01     1.01     -         
+lumi_8TeV        lnN   1.026     1.026    -        1.026    1.026    -         
+met_scale_res    lnN   1.005     1.005    -        1.005    1.005    -         
+pT_scale_res     lnN   1.003     1.003    -        1.003    1.003    -         
+newk             lnN   -         -        -        -        -        -
+nqcd             lnN   -         -        1.7      -        -        1.7

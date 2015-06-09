@@ -1,0 +1,27 @@
+imax 1 number of bins
+jmax 2 number of processes
+kmax * number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes data_obs        Wenu                Wenu_pdfTemplates.root  combine_workspace:dataMetm
+shapes sig             Wenu                Wenu_pdfTemplates.root  combine_workspace:wem
+shapes EWK             Wenu                Wenu_pdfTemplates.root  combine_workspace:ewkm
+shapes qcd             Wenu                Wenu_pdfTemplates.root  combine_workspace:pepe1Pdf_qcdm
+----------------------------------------------------------------------------------------------------------------------------------
+bin                    Wenu
+observation            -1.0
+----------------------------------------------------------------------------------------------------------------------------------
+bin                              Wenu        Wenu        Wenu
+process                             0           1           2
+process                           sig         EWK         qcd
+#  integral of MET hist for sig and EWK, integral(data)-integral(sig)-integral(EWK) for qcd
+rate                          33551.3      4419.5     27362.1
+# "answers" (output of Kevin's code, yields in 8 TeV AN)
+#rate                         30906.8      4071.2     30354.9
+----------------------------------------------------------------------------------------------------------------------------------
+lepton_eff              lnN     1.025       1.025           -
+pT_scale_res            lnN     1.007       1.007           -
+met_scale_res           lnN     1.007       1.007           -
+bkg_model               lnN     1.003       1.003           -
+lumi_8TeV               lnN     1.026       1.026           -
+newk                    lnN         -           -           -
+nqcd                    lnN         -           -        1.70

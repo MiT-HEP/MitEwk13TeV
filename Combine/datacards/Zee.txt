@@ -1,0 +1,21 @@
+imax 1 number of bins
+jmax 1 number of processes
+kmax * number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes data_obs   Zee   Zee_massDists.root hData
+shapes sig        Zee   Zee_massDists.root hZee
+shapes EWK        Zee   Zee_massDists.root hEWK
+----------------------------------------------------------------------------------------------------------------------------------
+bin                    Zee
+observation            -1.0
+----------------------------------------------------------------------------------------------------------------------------------
+bin                               Zee         Zee
+process                             0           1
+process                           sig         EWK
+rate                           4884.8      19.867
+# "answers" (output of Kevin's code, yields in 8 TeV AN)
+#rate                          4793.0  negligible
+----------------------------------------------------------------------------------------------------------------------------------
+lepton_eff              lnN     1.028       1.028
+bkg_model               lnN     1.004       1.004
+lumi_8TeV               lnN     1.026       1.026
