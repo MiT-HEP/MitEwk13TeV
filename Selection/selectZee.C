@@ -54,7 +54,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 10;
+  const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.5;
   const Double_t ELE_MASS  = 0.000511;
   
@@ -285,8 +285,8 @@ void selectZee(const TString conf="zee.conf", // input file
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-      //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      for(UInt_t ientry=0; ientry<1000; ientry++) {
+      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 	
 	if(hasGen) {
@@ -530,7 +530,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	    pfGamIso1  = tag->gammaIso;	    
 	    pfNeuIso1  = tag->neuHadIso;
 	    pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - 
-						    (info->rhoIso)*getEffArea(tag->scEta), 0.);
+						    (info->rhoIso)*getEffAreaEl(tag->scEta), 0.);
 	    sigieie1   = tag->sieie;
 	    hovere1    = tag->hovere;
 	    eoverp1    = tag->eoverp;
@@ -553,7 +553,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	    pfNeuIso2  = (eleProbe) ? eleProbe->neuHadIso     : -1;	    
 	    pfCombIso2 = (eleProbe) ? 
 	      eleProbe->chHadIso + TMath::Max(eleProbe->neuHadIso + eleProbe->gammaIso - 
-					      (info->rhoIso)*getEffArea(eleProbe->scEta), 0.) :  -1;
+					      (info->rhoIso)*getEffAreaEl(eleProbe->scEta), 0.) :  -1;
 	    sigieie2   = (eleProbe) ? eleProbe->sieie         : scProbe->sieie;
 	    hovere2    = (eleProbe) ? eleProbe->hovere        : scProbe->hovere;
 	    eoverp2    = (eleProbe) ? eleProbe->eoverp        : -1;

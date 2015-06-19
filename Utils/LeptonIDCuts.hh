@@ -82,33 +82,31 @@ Bool_t passEleID(const baconhep::TElectron *electron, const Double_t rho)
   if(electron->isConv)            return kFALSE;
      
   Double_t ea = getEffAreaEl(electron->scEta);
-  
+  Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+
   // barrel/endcap dependent requirments      
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
-    Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.158721*(electron->pt))  { return kFALSE; }
+    if(iso >= 0.158721*(electron->pt))  { return kFALSE; }
     if(electron->nMissingHits > 2) { return kFALSE; }
-    if(electron->sieie > 0.011586) { return kFALSE; }
-    if(fabs(electron->dPhiIn) > 0.230374) { return kFALSE; }
-    if(fabs(electron->dEtaIn) > 0.013625) { return kFALSE; }
-    if(electron->hovere > 0.181130) { return kFALSE; }
-    if(fabs(1.0-electron->eoverp) > 0.295751*(electron->ecalEnergy)) { return kFALSE; }
-    if(fabs(electron->d0) > 0.094095) { return kFALSE; }
-    if(fabs(electron->dz) > 0.713070) { return kFALSE; }
+    if(electron->sieie >= 0.011586) { return kFALSE; }
+    if(fabs(electron->dPhiIn) >= 0.230374) { return kFALSE; }
+    if(fabs(electron->dEtaIn) >= 0.013625) { return kFALSE; }
+    if(electron->hovere >= 0.181130) { return kFALSE; }
+    if(fabs(1.0-electron->eoverp) >= 0.295751*(electron->ecalEnergy)) { return kFALSE; }
+    if(fabs(electron->d0) >= 0.094095) { return kFALSE; }
+    if(fabs(electron->dz) >= 0.713070) { return kFALSE; }
   } else {
     // endcap
-    Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.177032*(electron->pt)) return kFALSE;
+    if(iso >= 0.177032*(electron->pt)) return kFALSE;
     if(electron->nMissingHits > 3) return kFALSE;
-    if(electron->sieie  	  > 0.031849)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     > 0.255450)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     > 0.011932)                        return kFALSE;
-    if(electron->hovere 	  > 0.223870)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.155501*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0) > 0.342293)                                return kFALSE;
-    if(fabs(electron->dz) > 0.953461)                                return kFALSE;
-
+    if(electron->sieie  	  >= 0.031849)                        return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.255450)                        return kFALSE;
+    if(fabs(electron->dEtaIn)     >= 0.011932)                        return kFALSE;
+    if(electron->hovere 	  >= 0.223870)                        return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.155501*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0) >= 0.342293)                                return kFALSE;
+    if(fabs(electron->dz) >= 0.953461)                                return kFALSE;
   }
 
   return kTRUE;
@@ -215,21 +213,23 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const Double_t rho)
 
 //--------------------------------------------------------------------------------------------------
 Double_t getEffAreaEl(const Double_t eta) {
-  if      (fabs(eta) < 0.08) return 0.1013;
+  if      (fabs(eta) < 0.8) return 0.1013;
   else if (fabs(eta) < 1.3)  return 0.0988;
   else if (fabs(eta) < 2.0)  return 0.0572;
   else if (fabs(eta) < 2.2)  return 0.0842;
   else if (fabs(eta) < 2.5)  return 0.1530;
+  else return -1; // This should never happen, a cut on |eta|<2.5 is applied before this function is used.
 }
 
 Double_t getEffAreaMu(const Double_t eta) {
   // not used, so i didn't update? 
   // well, ok this probably should be used....
-  if      (fabs(eta) < 0.08) return 0.0913;
+  if      (fabs(eta) < 0.8) return 0.0913;
   else if (fabs(eta) < 1.3)  return 0.0765;
   else if (fabs(eta) < 2.0)  return 0.0546;
   else if (fabs(eta) < 2.2)  return 0.0728;
   else if (fabs(eta) < 2.5)  return 0.1177;
+  else return -1; // This should never happen, a cut on |eta|<2.4 is applied in selection.
 }
 #endif
 
