@@ -435,7 +435,7 @@ void selectWe(const TString conf="we.conf", // input file
 	  pfGamIso  = goodEle->gammaIso;
 	  pfNeuIso  = goodEle->neuHadIso;	
 	  pfCombIso = goodEle->chHadIso + TMath::Max(goodEle->neuHadIso + goodEle->gammaIso - 
-						     (info->rhoIso)*getEffArea(goodEle->scEta), 0.);
+						     (info->rhoIso)*getEffAreaEl(goodEle->scEta), 0.);
 	  sigieie   = goodEle->sieie;
 	  hovere    = goodEle->hovere;
 	  eoverp    = goodEle->eoverp;
