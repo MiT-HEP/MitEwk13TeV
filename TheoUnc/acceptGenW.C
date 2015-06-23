@@ -15,7 +15,7 @@
 #include <fstream>                  // functions for file I/O
 #include <TChain.h>
 #include <TH1.h>
-//#include "LHAPDF/LHAPDF.h"
+#include "LHAPDF/LHAPDF.h"
 
 using namespace std;
 
@@ -29,12 +29,12 @@ Bool_t acceptEndcap(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL
 
 Bool_t acceptBarrel(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id, Double_t genL1_pt, Double_t genL1_eta, Double_t genL2_pt, Double_t genL2_eta);
 
-void acceptGenW(TString input="testWm.root",
+void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/WmJetsToLNu.root",
 		TString outputDir="./",
 		TString pdfName="NNPDF30_nlo_as_0118",
 		Int_t setMin=0, 
 		Int_t setMax=0,
-		Int_t proc=0) {
+		Int_t proc=2) {
 
   TString procName[4]={"wme", "wpe", "wmm", "wpm"};
   char output[150];
@@ -92,11 +92,11 @@ void acceptGenW(TString input="testWm.root",
   chain.SetBranchAddress("genL2f_m",   &genL2f_m);
 
   TFile *outFile = new TFile(output, "recreate");
-  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
+  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
 
   for (Int_t iPdfSet=setMin; iPdfSet<setMax+1; iPdfSet++) {
     
-    //LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
+    LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
     
     char histname[100];
     sprintf(histname,"dEta_%s_%i",pdfName.Data(),iPdfSet);
@@ -121,26 +121,23 @@ void acceptGenW(TString input="testWm.root",
     //for (Int_t i=0; i<10; i++) {
       chain.GetEntry(i);
       //cout  << genV_id << ", " << genL1_id << ", " << genL2_id << ", " << genL1f_pt << ", " << genL1f_eta << endl;
-      if (!isProc(proc, genV_id, genVf_m, genL1_id, genL2_id)) continue;
+      if (!isProc(proc, genV_id, genV_m, genL1_id, genL2_id)) continue;
       if ((proc==0||proc==2) && genL2f_pt==0 && genL2f_eta==0) continue;
       if ((proc==1||proc==3) && genL1f_pt==0 && genL1f_eta==0) continue;
 
-
-      //Int_t fid_1 = ( id_1==0 ? 21 : id_1 );
-      //Int_t fid_2 = ( id_2==0 ? 21 : id_2 );
+      Int_t fid_1 = ( id_1==0 ? 21 : id_1 );
+      Int_t fid_2 = ( id_2==0 ? 21 : id_2 );
       //cout << genV_id << ", " << genL1f_pt << ", " << genL2f_pt << endl;
-      //Double_t newWeight = weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(xPDF_1*xPDF_2);
-      Double_t newWeight = weight;
-      
-      //if (fabs(newWeight)>10000000)
-      //newWeight=weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
-      
+
+      Double_t newWeight = weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
+      if (newWeight < 3e-10) continue;
+
       dTot->Fill(1.0,newWeight);
       
-      Bool_t passBar =acceptBarrel(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
-      Bool_t passBarF=acceptBarrel(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
-      Bool_t passEnd =acceptEndcap(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
-      Bool_t passEndF=acceptEndcap(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
+      Bool_t passBar =acceptBarrel(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
+      Bool_t passBarF=acceptBarrel(proc, genV_id, genV_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
+      Bool_t passEnd =acceptEndcap(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
+      Bool_t passEndF=acceptEndcap(proc, genV_id, genV_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
       
       if      (passBar) dPreB->Fill(1.0, newWeight);
       else if (passEnd) dPreE->Fill(1.0, newWeight);
@@ -160,13 +157,16 @@ void acceptGenW(TString input="testWm.root",
       }
     }
 
-    cout << dPostB->Integral() << endl;
-    cout << dPostE->Integral() << endl;
-    cout << dTot->Integral() << endl;
+    Double_t acc=(dPreB->Integral()+dPreE->Integral())/(dTot->Integral());
+    cout << dPreB->Integral()/dTot->Integral() << endl;
+    cout << dPreE->Integral()/dTot->Integral() << endl;
+    cout << "Pre-FSR acceptance: " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
+    cout << endl;
+    acc=(dPostB->Integral()+dPostE->Integral())/(dTot->Integral());
     cout << dPostB->Integral()/dTot->Integral() << endl;
     cout << dPostE->Integral()/dTot->Integral() << endl;
-    cout << (dPostB->Integral()+dPostE->Integral())/dTot->Integral() << endl;
-    
+    cout << "Post-FSR acceptance: " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
+
     outFile->Write();
 
   }
@@ -196,8 +196,6 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
 
 Bool_t acceptEndcap(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id, Double_t genL1_pt, Double_t genL1_eta, Double_t genL2_pt, Double_t genL2_eta) {
   
-  if (!isProc(proc, genV_id, genV_m, genL1_id, genL2_id)) return kFALSE;
-  
   if (proc==wme) {
     if (genL2_pt>25 && fabs(genL2_eta)>1.566 && fabs(genL2_eta)<2.5) return kTRUE;
     else return kFALSE;
@@ -207,19 +205,17 @@ Bool_t acceptEndcap(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL
     else return kFALSE;
   }
   else if (proc==wmm) {
-    if (genL2_pt>25 && fabs(genL2_eta)>1.2 && fabs(genL2_eta)<2.1) return kTRUE;
+    if (genL2_pt>25 && fabs(genL2_eta)>1.2 && fabs(genL2_eta)<2.4) return kTRUE;
     else return kFALSE;
   }
   else if (proc==wpm) {
-    if (genL1_pt>25 && fabs(genL1_eta)>1.2 && fabs(genL1_eta)<2.1) return kTRUE;
+    if (genL1_pt>25 && fabs(genL1_eta)>1.2 && fabs(genL1_eta)<2.4) return kTRUE;
     else return kFALSE;
   }
   return kFALSE;
 }
 
 Bool_t acceptBarrel(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id, Double_t genL1_pt, Double_t genL1_eta, Double_t genL2_pt, Double_t genL2_eta) {
-  
-  if (!isProc(proc, genV_id, genV_m, genL1_id, genL2_id)) return kFALSE;
   
   if (proc==wme) {
     if (genL2_pt>25 && fabs(genL2_eta)<1.4442) return kTRUE;

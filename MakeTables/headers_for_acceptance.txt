@@ -1,0 +1,6 @@
+$W^+\rightarrow \mu^+\nu$
+$W^-\rightarrow \mu^-\bar{\nu}$
+$Z\rightarrow \mu\mu$
+$W^+\rightarrow e^+\nu$
+$W^-\rightarrow e^-\bar{\nu}$
+$Z\rightarrow ee$
