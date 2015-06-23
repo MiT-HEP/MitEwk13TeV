@@ -133,6 +133,10 @@ void plotEff(const TString conf,            // input binning file
 	     const Bool_t  doAbsEta,        // bin in |eta| instead of eta?
 	     const Int_t   doPU,            // PU re-weighting mode
 	     const Int_t   charge,          // 0 (no charge requirement), -1, +1
+             const TString xaxislabel="",   // cmedlock ('Supercluster' or 'Muon')
+             const TString yaxislabel="",   // cmedlock (use different labels for each efficiency)
+             const double ylow=0.5,         // cmedlock
+             const double yhigh=1.02,       // cmedlock
 	     const TString mcfilename="",   // ROOT file containing MC events to generate templates from
 	     const UInt_t  runNumLo=0,      // lower bound of run range
 	     const UInt_t  runNumHi=999999  // upper bound of run range
@@ -161,10 +165,6 @@ void plotEff(const TString conf,            // input binning file
   // method: 0 -> Clopper-Pearson
   //         1 -> Feldman-Cousins
   const Int_t method=0;
-  
-  // y-axis range
-  const Double_t yhigh = 1.03;
-  const Double_t ylow  = 0.6;
   
   // bin edges for kinematic variables
   vector<Double_t> ptBinEdgesv;
@@ -204,8 +204,6 @@ void plotEff(const TString conf,            // input binning file
   
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir + TString("/plots");
-  
-  
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -455,8 +453,10 @@ void plotEff(const TString conf,            // input binning file
     if(opts[0]) {
       grEffPt = makeEffGraph(ptBinEdgesv, passTreePtv, failTreePtv, method, "pt", massLo, massHi, format, doAbsEta);
       grEffPt->SetName("grEffPt");
-      CPlot plotEffPt("effpt","","probe p_{T} [GeV/c]","#varepsilon");    
-      plotEffPt.AddGraph(grEffPt,"",kBlack);
+//      CPlot plotEffPt("effpt","","probe p_{T} [GeV/c]","#varepsilon"); 
+      CPlot plotEffPt("effpt","",xaxislabel+" p_{T} [GeV]",yaxislabel+" efficiency"); // cmedlock   
+//      plotEffPt.AddGraph(grEffPt,"",kBlack);
+      plotEffPt.AddGraph(grEffPt,"MC","",kBlack); // cmedlock
       plotEffPt.SetYRange(ylow,yhigh);
       plotEffPt.SetXRange(0.9*(ptBinEdgesv[0]),1.1*(ptBinEdgesv[ptNbins-1]));
       plotEffPt.Draw(c,kTRUE,format);    
@@ -466,10 +466,12 @@ void plotEff(const TString conf,            // input binning file
     if(opts[1]) {
       grEffEta = makeEffGraph(etaBinEdgesv, passTreeEtav, failTreeEtav, method, "eta", massLo, massHi, format, doAbsEta);
       grEffEta->SetName("grEffEta");
-      CPlot plotEffEta("effeta","","probe #eta","#varepsilon");
+//      CPlot plotEffEta("effeta","","probe #eta","#varepsilon");
+      CPlot plotEffEta("effeta","",xaxislabel+" #eta",yaxislabel+" efficiency"); // cmedlock
       if(doAbsEta) plotEffEta.SetXTitle("probe |#eta|");
-      plotEffEta.AddGraph(grEffEta,"",kBlack);
-      plotEffEta.SetYRange(0.2,1.04);
+//      plotEffEta.AddGraph(grEffEta,"",kBlack);
+      plotEffEta.AddGraph(grEffEta,"MC","",kBlack); // cmedlock
+      plotEffEta.SetYRange(ylow,yhigh); // cmedlock
       plotEffEta.Draw(c,kTRUE,format);
     
       CPlot plotEffEta2("effeta2","","probe #eta","#varepsilon");
@@ -707,6 +709,13 @@ void plotEff(const TString conf,            // input binning file
   txtfile.open(txtfname);
   assert(txtfile.is_open());
 
+  // To make an eta-phi efficiency table using LaTex
+  ofstream latexfile;
+  char latexfname[100];    
+  sprintf(latexfname,"%s/latex.txt",outputDir.Data());
+  latexfile.open(latexfname);
+  assert(latexfile.is_open());
+
   CEffUser2D effetapt;
   CEffUser2D effetaphi;
  
@@ -721,6 +730,8 @@ void plotEff(const TString conf,            // input binning file
     effetapt.printErrLow(txtfile);  txtfile << endl;
     effetapt.printErrHigh(txtfile); txtfile << endl;
     txtfile << endl;
+
+    effetapt.printEffLatex(latexfile); latexfile << endl;
   }
   
   if(hEffEtaPhi->GetEntries()>0) {

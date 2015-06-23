@@ -81,6 +81,41 @@ void CEffUser2D::printErrHigh(ostream& os)
 }
 
 //--------------------------------------------------------------------------------------------------
+void CEffUser2D::printEffLatex(ostream& os)
+{
+  if(!(hEff && hErrl && hErrh)) {
+    cout << "Not all histograms loaded! Aborting..." << endl;
+    assert(0);
+  }
+  printHist2DLatex(hEff,hErrl,hErrh,os);
+}
+
+//--------------------------------------------------------------------------------------------------
+void CEffUser2D::printHist2DLatex(const TH2D* hEff,const TH2D* hErrl,const TH2D* hErrh, ostream& os) {
+  const Int_t nx = hEff->GetNbinsX();
+  const Int_t ny = hEff->GetNbinsY();
+  
+  for(Int_t iy=0; iy<=ny; iy++) {
+    for(Int_t ix=0; ix<=nx; ix++) {
+      if(ix==0 && iy==0) {
+        os << "& ";
+      } else if(ix==0) {
+        os << "& $" << hEff->GetYaxis()->GetBinLowEdge(iy) << "<p_{T}<" << hEff->GetYaxis()->GetBinLowEdge(iy+1) << "$ ";
+      } else if(iy==0) { 
+        os << "& $" << hEff->GetXaxis()->GetBinLowEdge(ix) << "<\\eta<" << hEff->GetXaxis()->GetBinLowEdge(ix+1) << "$ ";
+      } else {
+        ios_base::fmtflags flags = os.flags();
+	os.precision(4);
+	os << "& $" << fixed << hEff->GetBinContent(hEff->GetBin(ix,iy)) << " \\pm " << hErrl->GetBinContent(hErrl->GetBin(ix,iy)) << "$ " ;
+	os.flags(flags);
+      }
+
+    }
+    os << " \\\\" << endl;
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
 void CEffUser2D::printHist2D(const TH2D* h, ostream& os) {
   const Int_t nx = h->GetNbinsX();
   const Int_t ny = h->GetNbinsY();
