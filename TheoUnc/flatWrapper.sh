@@ -3,8 +3,9 @@
 SCRAM_DIR=$1
 IN_FILE=$2
 OUT_FILE=$3
-RUN_MACRO=$4
-SO_FILE=$5
+BOS_ID=$4
+RUN_MACRO=$5
+SO_FILE=$6
 
 WORK_DIR=`pwd`
 echo `hostname`
@@ -21,8 +22,8 @@ cp ${SCRAM_DIR}/${SO_FILE} .
 
 source lhapdf_init.sh
 
-echo root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${OUT_FILE}\"\)
-root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${OUT_FILE}\"\)
+echo root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${OUT_FILE}\",${BOS_ID}\)
+root -l -q ${RUN_MACRO}+\(\"${IN_FILE}\",\"${OUT_FILE}\",${BOS_ID}\)
 
 status=`echo $?`
 echo "Status - $status"

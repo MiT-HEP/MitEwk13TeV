@@ -25,8 +25,8 @@ using namespace std;
 #endif
 
 void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/Ewk13TeV/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
-	      TString output="testWp.root",
-	      Int_t vid=24) {
+	      TString output="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/WmJetsToLNu.root",
+	      Int_t vid=-24) {
   
   TChain chain("Events");
   chain.Add(input);
@@ -90,8 +90,8 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/Ewk13TeV
   otree->Branch("genL2f_phi", &genL2f_phi, "genL2f_phi/d");
   otree->Branch("genL2f_m",   &genL2f_m,   "genL2f_m/d");
 
-  //for (Int_t ie=0; ie<chain.GetEntries(); ie++) {
-  for (Int_t ie=0; ie<10000000; ie++) {
+  for (Int_t ie=0; ie<chain.GetEntries(); ie++) {
+  //for (Int_t ie=0; ie<10000000; ie++) {
   //for (Int_t ie=0; ie<100; ie++) {
     infoBr->GetEntry(ie);
     genPartArr->Clear(); partBr->GetEntry(ie);

@@ -31,19 +31,13 @@ void calcAcceptance(TFile *f, TString chan, Int_t n, Int_t as, vector<Double_t> 
 void makeScaleVector(TString inDir, TString chan, Double_t &nom, Double_t &nomAs, vector<Double_t> &vScales, vector<Double_t> &alphaS);
 Double_t uncert(vector<Double_t> &vScale, vector<Double_t> &vScaleAs, Double_t nom, Double_t nomAs);
 
-void getCT10uncertainties() {
+void getCT14uncertainties() {
 
   Double_t wmXsec = 8.35;
   Double_t wpXsec = 11.20;
   Double_t zXsec  = 1.92;
 
-  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/CT10_amc/";
-  //TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/CT10wNNPDF30/";
-  //TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/CT10wCT10/";
-
-  //cout << "CT10 acceptances" << endl;
-  //cout << "CT10 acceptances (CT10wNNPDF30)" << endl;
-  //cout << "CT10 acceptances (CT10wCT10)" << endl;
+  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/CT14_amc/";
 
   Double_t wmeNom, wmeNomAs;
   vector<Double_t> wmeScales, wmeScaleAs;
@@ -123,7 +117,7 @@ void getCT10uncertainties() {
   vector<Double_t> wzmScaleAs;
   for (UInt_t i=0; i<wpmScaleAs.size(); i++) { wzmScaleAs.push_back(((wpmScaleAs[i]*wpXsec+wmmScaleAs[i]*wmXsec)/(zmmScaleAs[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
 
-  cout << "PDF: CT10 " << endl;
+  cout << "PDF: CT14 " << endl;
   cout << "W+m:      " << setprecision(4) << uncert(wpmScales, wpmScaleAs, wpmNom, wpmNomAs) << "\\\% " << endl;
   cout << "W-m:      " << setprecision(4) << uncert(wmmScales, wmmScaleAs, wmmNom, wmmNomAs) << "\\\% " << endl;
   cout << "W(m):     " << setprecision(4) << uncert(wmScales,   wmScaleAs,   wmNom,   wmNomAs) << "\\\% " << endl;
@@ -140,7 +134,7 @@ void getCT10uncertainties() {
 
 }
 void makeScaleVector(TString inDir, TString chan, Double_t &nom, Double_t &nomAs, vector<Double_t> &vScales, vector<Double_t> &alphaS) {
-  TString inFile = inDir+chan+"_CT10nlo.root";
+  TString inFile = inDir+chan+"_CT14nlo.root";
 
   TFile *f = new TFile(inFile, "read");
   calcAcceptance(f, chan, 52, vScales);
@@ -148,12 +142,12 @@ void makeScaleVector(TString inDir, TString chan, Double_t &nom, Double_t &nomAs
 
   nom=vScales[0];
 
-  inFile = inDir+chan+"_CT10nlo_as_0116.root";
+  inFile = inDir+chan+"_CT14nlo_as_0116.root";
   f = new TFile(inFile, "read");
   calcAcceptance(f, chan, 1, 16, alphaS);
   delete f;
 
-  inFile = inDir+chan+"_CT10nlo.root";
+  inFile = inDir+chan+"_CT14nlo.root";
   f = new TFile(inFile, "read");
   calcAcceptance(f, chan, 1, alphaS);
   delete f;
@@ -161,7 +155,7 @@ void makeScaleVector(TString inDir, TString chan, Double_t &nom, Double_t &nomAs
   nomAs=alphaS[alphaS.size()-1];
   alphaS.pop_back();
 
-  inFile = inDir+chan+"_CT10nlo_as_0120.root";
+  inFile = inDir+chan+"_CT14nlo_as_0120.root";
   f = new TFile(inFile, "read");
   calcAcceptance(f, chan, 1, 20, alphaS);
   delete f;
@@ -173,17 +167,17 @@ void calcAcceptance(TFile *f, TString chan, Int_t n, Int_t as, vector<Double_t> 
   
   for (Int_t i=0; i<n; i++) {
 
-    sprintf(hname, "dTot_CT10nlo_as_01%i_%i", as, i);
+    sprintf(hname, "dTot_CT14nlo_as_01%i_%i", as, i);
     TH1D *tot = (TH1D*) f->Get(hname);
 
     Double_t accept;
     if (chan=="wmm" || chan=="wme" || chan=="wpe" || chan=="wpm") {
-      sprintf(hname, "dPostB_CT10nlo_as_01%i_%i", as, i);
+      sprintf(hname, "dPostB_CT14nlo_as_01%i_%i", as, i);
       TH1D *bar = (TH1D*) f->Get(hname);
       accept=bar->Integral()/(tot->Integral());
       //cout << "Barrel Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-      sprintf(hname, "dPostE_CT10nlo_as_01%i_%i", as, i);
+      sprintf(hname, "dPostE_CT14nlo_as_01%i_%i", as, i);
       TH1D *end = (TH1D*) f->Get(hname);
       accept=end->Integral()/(tot->Integral());
       //cout << "Endcap Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
@@ -191,17 +185,17 @@ void calcAcceptance(TFile *f, TString chan, Int_t n, Int_t as, vector<Double_t> 
       accept=(bar->Integral()+end->Integral())/(tot->Integral());
     }
     else if (chan=="zmm" || chan=="zee") {
-      sprintf(hname, "dPostBB_CT10nlo_as_01%i_%i", as, i);
+      sprintf(hname, "dPostBB_CT14nlo_as_01%i_%i", as, i);
       TH1D *bb = (TH1D*) f->Get(hname);
       accept=bb->Integral()/(tot->Integral());
       //cout << "Bar-bar Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-      sprintf(hname, "dPostBE_CT10nlo_as_01%i_%i", as, i);
+      sprintf(hname, "dPostBE_CT14nlo_as_01%i_%i", as, i);
       TH1D *be = (TH1D*) f->Get(hname);
       accept=be->Integral()/(tot->Integral());
       //cout << "Bar-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-      sprintf(hname, "dPostEE_CT10nlo_as_01%i_%i", as, i);
+      sprintf(hname, "dPostEE_CT14nlo_as_01%i_%i", as, i);
       TH1D *ee = (TH1D*) f->Get(hname);
       accept=ee->Integral()/(tot->Integral());
       //cout << "End-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
@@ -219,17 +213,17 @@ void calcAcceptance(TFile *f, TString chan, Int_t n, vector<Double_t> &scale) {
   
   for (Int_t i=0; i<n; i++) {
 
-    sprintf(hname, "dTot_CT10nlo_%i", i);
+    sprintf(hname, "dTot_CT14nlo_%i", i);
     TH1D *tot = (TH1D*) f->Get(hname);
 
     Double_t accept;
     if (chan=="wmm" || chan=="wme" || chan=="wpe" || chan=="wpm") {
-      sprintf(hname, "dPostB_CT10nlo_%i", i);
+      sprintf(hname, "dPostB_CT14nlo_%i", i);
       TH1D *bar = (TH1D*) f->Get(hname);
       accept=bar->Integral()/(tot->Integral());
       //if (i==0) cout << "Barrel Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-      sprintf(hname, "dPostE_CT10nlo_%i", i);
+      sprintf(hname, "dPostE_CT14nlo_%i", i);
       TH1D *end = (TH1D*) f->Get(hname);
       accept=end->Integral()/(tot->Integral());
       //if (i==0) cout << "Endcap Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
@@ -237,17 +231,17 @@ void calcAcceptance(TFile *f, TString chan, Int_t n, vector<Double_t> &scale) {
       accept=(bar->Integral()+end->Integral())/(tot->Integral());
     }
     else if (chan=="zmm" || chan=="zee") {
-      sprintf(hname, "dPostBB_CT10nlo_%i", i);
+      sprintf(hname, "dPostBB_CT14nlo_%i", i);
       TH1D *bb = (TH1D*) f->Get(hname);
       accept=bb->Integral()/(tot->Integral());
       //if (i==0) cout << "Bar-bar Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-      sprintf(hname, "dPostBE_CT10nlo_%i", i);
+      sprintf(hname, "dPostBE_CT14nlo_%i", i);
       TH1D *be = (TH1D*) f->Get(hname);
       accept=be->Integral()/(tot->Integral());
       //if (i==0) cout << "Bar-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-      sprintf(hname, "dPostEE_CT10nlo_%i", i);
+      sprintf(hname, "dPostEE_CT14nlo_%i", i);
       TH1D *ee = (TH1D*) f->Get(hname);
       accept=ee->Integral()/(tot->Integral());
       //if (i==0) cout << "End-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;

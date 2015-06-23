@@ -37,9 +37,9 @@ void getMMHT2014uncertainties() {
   Double_t wpXsec = 11.20;
   Double_t zXsec  = 1.92;
 
-  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-13tev-envelopes-new/";
+  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/MMHT2014_amc/";
 
-  cout << "MMHT2014 acceptances" << endl;
+  //cout << "MMHT2014 acceptances" << endl;
 
   Double_t wmeNom, wmeNomA;
   vector<Double_t> wmeScales, wmeScaleA;
@@ -60,7 +60,7 @@ void getMMHT2014uncertainties() {
   vector<Double_t> wpmScales, wpmScaleA;
   makeScaleVector(inDir, "wpm", wpmNom, wpmScales, "MMHT2014nlo68cl");
   makeScaleVector(inDir, "wpm", wpmNomA, wpmScaleA, "MMHT2014nlo_asmzsmallrange");
-
+  
   Double_t zeeNom, zeeNomA;
   vector<Double_t> zeeScales, zeeScaleA;
   makeScaleVector(inDir, "zee", zeeNom, zeeScales, "MMHT2014nlo68cl");
@@ -125,35 +125,21 @@ void getMMHT2014uncertainties() {
   vector<Double_t> wzmScaleA;
   for (UInt_t i=0; i<wpmScaleA.size(); i++) { wzmScaleA.push_back(((wpmScaleA[i]*wpXsec+wmmScaleA[i]*wmXsec)/(zmmScaleA[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
 
-  /*
-  cout << "W+m : " << max(uncert(wpmScales, wpmNom), uncert(wpmScaleA, wpmNom)) << "%" << endl;
-  cout << "W-m : " << max(uncert(wmmScales, wmmNom), uncert(wmmScaleA, wmmNom)) << "%" << endl;
-  cout << "W+e : " << max(uncert(wpeScales, wpeNom), uncert(wpeScaleA, wpeNom)) << "%" << endl;
-  cout << "W-e : " << max(uncert(wmeScales, wmeNom), uncert(wmeScaleA, wmeNom)) << "%" << endl;
-  cout << "Zmm : " << max(uncert(zmmScales, zmmNom), uncert(zmmScaleA, zmmNom)) << "%" << endl;
-  cout << "Zee : " << max(uncert(zeeScales, zeeNom), uncert(zeeScaleA, zeeNom)) << "%" << endl;
-  */
-  cout << "uncertainties" << endl;
-  cout << "W+m:      " << setprecision(4) <<  uncert(wpmScales, wpmScaleA) << " %" << endl;
-  cout << "W-m:      " << setprecision(4) <<  uncert(wmmScales, wmmScaleA) << " %" << endl;
-  cout << "W+e:      " << setprecision(4) <<  uncert(wpeScales, wpeScaleA) << " %" << endl;
-  cout << "W-e:      " << setprecision(4) <<  uncert(wmeScales, wmeScaleA) << " %" << endl;
-  cout << "Zmm:      " << setprecision(4) <<  uncert(zmmScales, zmmScaleA) << " %" << endl;
-  cout << "Zee:      " << setprecision(4) <<  uncert(zeeScales, zeeScaleA) << " %" << endl;
-  cout << "W+/W-(m): " << setprecision(4) <<  uncert(wpmmScales, wpmmScaleA) << " %" << endl;
-  cout << "W+/W-(e): " << setprecision(4) <<  uncert(wpmeScales, wpmeScaleA) << " %" << endl;
-  cout << "W(m):     " << setprecision(4) <<  uncert(wmScales,     wmScaleA) << " %" << endl;
-  cout << "W(e):     " << setprecision(4) <<  uncert(weScales,     weScaleA) << " %" << endl;
-  cout << "W/Z(m):   " << setprecision(4) <<  uncert(wzmScales,   wzmScaleA) << " %" << endl;
-  cout << "W/Z(e):   " << setprecision(4) <<  uncert(wzeScales,   wzeScaleA) << " %" << endl;
-  /*
-  cout << "W+/W- (muons) : " << max(uncert(wpmmScales, wpmmNom), uncert(wpmmScaleA, wpmmNom)) << "%" << endl;
-  cout << "W+/W- (eles) :  " << max(uncert(wpmeScales, wpmeNom), uncert(wpmeScaleA, wpmeNom)) << "%" << endl;
-  cout << "W -> munu : "     << max(uncert(wmScales,   wmNom),   uncert(wmScaleA,   wmNom)) << "%" << endl;
-  cout << "W ->  enu : "     << max(uncert(weScales,   weNom),   uncert(weScaleA,   weNom)) << "%" << endl;
-  cout << "W/Z (muons) : "   << max(uncert(wzmScales,  wzmNom),  uncert(wzmScaleA,  wzmNom)) << "%" << endl;
-  cout << "W/Z (eles) :  "   << max(uncert(wzeScales,  wzeNom),  uncert(wzeScaleA,  wzeNom)) << "%" << endl;
-  */
+  cout << "PDF: MMHT2014 " << endl;
+  cout << "W+m:      " << setprecision(4) <<  uncert(wpmScales,   wpmScaleA) << "\\\% " << endl;
+  cout << "W-m:      " << setprecision(4) <<  uncert(wmmScales,   wmmScaleA) << "\\\% " << endl;
+  cout << "W(m):     " << setprecision(4) <<  uncert(wmScales,     wmScaleA) << "\\\% " << endl;
+  cout << "W+/W-(m): " << setprecision(4) <<  uncert(wpmmScales, wpmmScaleA) << "\\\% " << endl;
+  cout << "Zmm:      " << setprecision(4) <<  uncert(zmmScales,   zmmScaleA) << "\\\% " << endl;
+  cout << "W/Z(m):   " << setprecision(4) <<  uncert(wzmScales,   wzmScaleA) << "\\\% " << endl;
+
+  cout << "W+e:      " << setprecision(4) <<  uncert(wpeScales,   wpeScaleA) << "\\\% " << endl;
+  cout << "W-e:      " << setprecision(4) <<  uncert(wmeScales,   wmeScaleA) << "\\\% " << endl;
+  cout << "W(e):     " << setprecision(4) <<  uncert(weScales,     weScaleA) << "\\\% " << endl;
+  cout << "W+/W-(e): " << setprecision(4) <<  uncert(wpmeScales, wpmeScaleA) << "\\\% " << endl;
+  cout << "Zee:      " << setprecision(4) <<  uncert(zeeScales,   zeeScaleA) << "\\\% " << endl;
+  cout << "W/Z(e):   " << setprecision(4) <<  uncert(wzeScales,   wzeScaleA) << "\\\% " << endl;
+
 }
 void makeScaleVector(TString inDir, TString chan, Double_t &nom, vector<Double_t> &vScales, TString sname) {
 
@@ -172,52 +158,46 @@ void calcAcceptance(TFile *f, TString chan, Int_t n, vector<Double_t> &scale, TS
   char hname[100];
   
   for (Int_t i=0; i<n; i++) {
-    Bool_t prnt = kFALSE;
-    if (sname=="MMHT2014nlo68cl" && i==0) prnt = kTRUE;
-    //cout << sname << ", i = " << i << endl;
+    Bool_t prnt = kTRUE;
+    if (sname!="MMHT2014nlo68cl") prnt=kFALSE;
+    if (sname=="MMHT2014nlo68cl" && i==0) cout << "Nominal ";
+    if (prnt) cout << "A (" << chan << "): ";
 
-    if (prnt) cout << chan << " ";
     sprintf(hname, "dTot_%s_%i", sname.Data(), i);
     TH1D *tot = (TH1D*) f->Get(hname);
-    Double_t s = tot->Integral()/tot->GetEntries();
 
     Double_t accept;
     if (chan=="wmm" || chan=="wme" || chan=="wpe" || chan=="wpm") {
       sprintf(hname, "dPostB_%s_%i", sname.Data(), i);
       TH1D *bar = (TH1D*) f->Get(hname);
       accept=bar->Integral()/(tot->Integral());
-      //cout << "Barrel Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
+      //if (prnt) cout << "Barrel Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
       sprintf(hname, "dPostE_%s_%i", sname.Data(), i);
       TH1D *end = (TH1D*) f->Get(hname);
       accept=end->Integral()/(tot->Integral());
-      //cout << "Endcap Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
-
+      //if (prnt) cout << "Endcap Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
       accept=(bar->Integral()+end->Integral())/(tot->Integral());
     }
     else if (chan=="zmm" || chan=="zee") {
       sprintf(hname, "dPostBB_%s_%i", sname.Data(), i);
       TH1D *bb = (TH1D*) f->Get(hname);
       accept=bb->Integral()/(tot->Integral());
-      //cout << "Bar-bar Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
+      //if (prnt) cout << "Bar-bar Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
       sprintf(hname, "dPostBE_%s_%i", sname.Data(), i);
       TH1D *be = (TH1D*) f->Get(hname);
       accept=be->Integral()/(tot->Integral());
-      //cout << "Bar-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
+      //if (prnt) cout << "Bar-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
       sprintf(hname, "dPostEE_%s_%i", sname.Data(), i);
       TH1D *ee = (TH1D*) f->Get(hname);
       accept=ee->Integral()/(tot->Integral());
-      //cout << "End-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
-
+      //if (prnt)cout << "End-end Acceptance: " << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
       accept=(bb->Integral()+be->Integral()+ee->Integral())/(tot->Integral());
     }
     if (prnt) cout << accept << " +/- " << sqrt(accept*(1-accept)/tot->GetEntries()) << endl;
 
-    //cout << "Scale: " << tot->Integral()/tot->GetEntries() << endl;
-
-    //scale.push_back(s);
     scale.push_back(accept);
   }
 }
@@ -245,8 +225,6 @@ Double_t uncert(vector<Double_t> &vScale, Double_t nom) {
       if (prevDiff<0) negUnc+=prevDiff*prevDiff;
     }
   }
-
-  //cout << posUnc << ", " << negUnc << endl;
 
   Double_t centralDiff=fabs(nom-nomScale);
 

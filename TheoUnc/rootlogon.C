@@ -16,8 +16,8 @@
     gSystem->Load("$LHAPDFSYS/lib/libLHAPDF.so");
     
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
-    gROOT->Macro("../Utils/MitStyleRemix.cc++");
-    gROOT->Macro("compare.cc++");
+    //gROOT->Macro("../Utils/MitStyleRemix.cc+");
+    //gROOT->Macro("compare.cc+");
     gSystem->AddIncludePath("-I/afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt/boost-1_55/boost/");
     gSystem->AddIncludePath("-I$LHAPDFSYS/include/");
 

@@ -1,0 +1,13 @@
+PDF Set
+$W^+\rightarrow \mu^+\nu$       
+$W^-\rightarrow \mu^-\bar{\nu}$ 
+$W\rightarrow \mu\nu$           
+$W^+/W^- (\mu)$                 
+$Z\rightarrow \mu\mu$           
+$W/Z (\mu)$                     
+$W^+\rightarrow e^+\nu$         
+$W^-\rightarrow e^-\bar{\nu}$   
+$W\rightarrow e\nu$             
+$W^+/W^- (e)$                   
+$Z\rightarrow ee$               
+$W/Z (e)$                       

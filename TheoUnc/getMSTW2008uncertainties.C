@@ -18,7 +18,6 @@
 #include "Math/LorentzVector.h"     // 4-vector class
 
 #include "../Utils/MitStyleRemix.hh"
-//#include "pdfUncertMSTW2008.hh"
 #include "PdfUncert.hh"
 
 using namespace std;
