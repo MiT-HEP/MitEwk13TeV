@@ -13,7 +13,7 @@ namespace toolbox
   
   Int_t roundToInt(const Double_t x);
   
-  Int_t flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2);
+  Int_t flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t absM);
   
   void fillGen(TClonesArray *genPartArr, Int_t vid, Int_t lid, TLorentzVector* &vec, TLorentzVector* &fvec, TLorentzVector* &lep1, TLorentzVector* &lep2);
 
@@ -54,7 +54,7 @@ Int_t toolbox::roundToInt(Double_t x)
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2) {
+Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t absM) {
 
   Int_t flavor=0;
 
@@ -82,17 +82,18 @@ Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 	iv2=i;
       }
     }
-    else if (genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) {
+    else if ((absM==0 && genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) || (absM==1 && fabs(genloop->pdgId)==fabs(vid) && (genloop->status==3||genloop->status==22))) {
       vec=new TLorentzVector(0,0,0,0);
       vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
       iv=i;
     }
     else if (iv!=-1 && genloop->parent==iv) {
-      if (genloop->pdgId==vid) {
+      if ((absM==0 && genloop->pdgId==vid)||(absM==1 && fabs(genloop->pdgId)==fabs(vid))) {
 	vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
         iv=i;
       }
       else if (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11) {
+	//cout << genloop->status << endl;
 	if (flavor==0) {
 	  flavor=genloop->pdgId;
 	}

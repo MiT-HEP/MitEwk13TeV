@@ -20,6 +20,7 @@
 #include <iomanip>                  // functions to format standard I/O
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
+#include "TH1D.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -115,8 +116,6 @@ void selectWe(const TString conf="we.conf", // input file
   UInt_t  isConv, nexphits, typeBits;
   TLorentzVector *sc=0;
 
-  cout << sc->Class() << endl;
-  
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
@@ -250,9 +249,17 @@ void selectWe(const TString conf="we.conf", // input file
         eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
       }
       // Compute MC event weight per 1/fb
-      Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
-      if(xsec>0) weight = 1000.*xsec/(Double_t)eventTree->GetEntries();     
+      Double_t totalWeight=0;
+
+      if (hasGen) {
+	TH1D *hall = new TH1D("hall", "", 1,0,1);
+	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
+	totalWeight=hall->Integral();
+      }
+
+      Double_t weight=1;
+      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
 
       //
       // loop over events
@@ -328,12 +335,12 @@ void selectWe(const TString conf="we.conf", // input file
 	// veto w -> enu decay for wrong flavor background samples (needed for inclusive WToLNu sample)
 	if (isWrongFlavor) {
 	  TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	  if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
+	  if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))==LEPTON_ID) continue;
 	}
 
 	if(passSel) {	  
-	  /******** We have a W candidate! HURRAY! ********/
-	  nsel+=weight;
+	  //******* We have a W candidate! HURRAY! ********
+	  nsel+=weight*gen->weight;
           nselvar+=weight*weight;
 	  
 	  Double_t escale=1;
@@ -380,7 +387,7 @@ void selectWe(const TString conf="we.conf", // input file
 	  if(isSignal) {
 	    TLorentzVector *vec=0, *lep1=0, *lep2=0;
 	    // veto wrong flavor events for signal sample
-	    if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+	    if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID) continue;
 	    if (vec && lep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
               genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
@@ -453,16 +460,19 @@ void selectWe(const TString conf="we.conf", // input file
 	  genV=0, genLep=0, lep=0, sc=0;
         }
       }
+
       delete infile;
       infile=0, eventTree=0;    
 
       cout << nsel  << " +/- " << sqrt(nselvar);
       if(isam!=0) cout << " per 1/fb";
       cout << endl;
+
     }
     outFile->Write();
     outFile->Close();
   }
+
   delete info;
   delete gen;
   delete electronArr;
@@ -486,6 +496,6 @@ void selectWe(const TString conf="we.conf", // input file
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;  
-      
+
   gBenchmark->Show("selectWe"); 
 }
