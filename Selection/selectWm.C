@@ -20,6 +20,7 @@
 #include <iomanip>                  // functions to format standard I/O
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
+#include "TH1D.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -226,14 +227,23 @@ void selectWm(const TString conf="wm.conf", // input file
       }    
 
       // Compute MC event weight per 1/fb
-      Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
-      if(xsec>0) weight = 1000.*xsec/(Double_t)eventTree->GetEntries();     
+      Double_t totalWeight=0;
+
+      if (hasGen) {
+	TH1D *hall = new TH1D("hall", "", 1,0,1);
+	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
+	totalWeight=hall->Integral();
+      }
+
+      Double_t weight=1;
+      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
+
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       //for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
@@ -242,6 +252,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
           genPartBr->GetEntry(ientry);
+	  weight*=gen->weight;
 	}
         
 	// check for certified lumi (if applicable)
@@ -291,7 +302,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	// veto w -> munu decay for wrong flavor background samples (needed for inclusive WToLNu sample)
         if (isWrongFlavor) {
           TLorentzVector *vec=0, *lep1=0, *lep2=0;
-          if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
+          if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))==LEPTON_ID) continue;
         }
 	
 	if(passSel) {
@@ -332,7 +343,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  if(isSignal) {
 	    TLorentzVector *vec=0, *lep1=0, *lep2=0;
 	    // veto wrong flavor events for signal sample
-            if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+            if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))!=LEPTON_ID) continue;
             if (vec && lep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
 	      genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());

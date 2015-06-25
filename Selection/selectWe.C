@@ -273,6 +273,7 @@ void selectWe(const TString conf="we.conf", // input file
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
           genPartBr->GetEntry(ientry);
+	  weight*=gen->weight;
 	}
      
         // check for certified lumi (if applicable)
@@ -340,7 +341,7 @@ void selectWe(const TString conf="we.conf", // input file
 
 	if(passSel) {	  
 	  //******* We have a W candidate! HURRAY! ********
-	  nsel+=weight*gen->weight;
+	  nsel+=weight;
           nselvar+=weight*weight;
 	  
 	  Double_t escale=1;
