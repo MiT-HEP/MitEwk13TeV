@@ -125,7 +125,7 @@ void computeAccGenZmm(const TString conf,             // input file
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
       TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
 
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
     

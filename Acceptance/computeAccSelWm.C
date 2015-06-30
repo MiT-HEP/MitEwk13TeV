@@ -21,15 +21,18 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
+#include "TLorentzVector.h"
 
 // define structures to read in ntuple
-#include "../Ntupler/interface/EWKAnaDefs.hh"
-#include "../Ntupler/interface/TEventInfo.hh"
-#include "../Ntupler/interface/TGenInfo.hh"
-#include "../Ntupler/interface/TMuon.hh"
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
+#include "BaconAna/DataFormats/interface/TMuon.hh"
+#include "BaconAna/Utils/interface/TTrigger.hh"
 
-// helper functions for lepton ID selection
-#include "../Utils/LeptonIDCuts.hh"
+#include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
+#include "../Utils/MyTools.hh"      // various helper functions
 
 // helper class to handle efficiency tables
 #include "CEffUser2D.hh"
@@ -49,38 +52,44 @@ void computeAccSelWm(const TString conf,       // input file
   //============================================================================================================== 
 
   const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.1;
+  const Double_t ETA_CUT    = 2.4;
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
+
+  const Double_t VETO_PT   = 20;
+  const Double_t VETO_ETA  = 2.4;
+
+  const Int_t BOSON_ID  = 24;
+  const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  TString dataHLTEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuHLTEff/analysis/eff.root");
-  TString zmmHLTEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuHLTEff/analysis/eff.root");
-  TString dataSelEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuSelEff/analysis/eff.root");
-  TString zmmSelEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuSelEff/analysis/eff.root");
-  TString dataTrkEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuTrkEff/analysis/eff.root");
-  TString zmmTrkEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuTrkEff/analysis/eff.root");
-  TString dataStaEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuStaEff_iso/analysis/eff.root");
-  TString zmmStaEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuStaEff_iso/analysis/eff.root");
+  TString dataHLTEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff/eff.root");
+  TString zmmHLTEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff/eff.root");
+  TString dataSelEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff/eff.root");
+  TString zmmSelEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff/eff.root");
+  TString dataTrkEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff/eff.root");
+  TString zmmTrkEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff/eff.root");
+  TString dataStaEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso/eff.root");
+  TString zmmStaEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso/eff.root");
   if(charge==1) {
-    dataHLTEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuHLTEff_pos/analysis/eff.root";
-    zmmHLTEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuHLTEff_pos/analysis/eff.root";
-    dataSelEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuSelEff_pos/analysis/eff.root";
-    zmmSelEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuSelEff_pos/analysis/eff.root";
-    dataTrkEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuTrkEff_pos/analysis/eff.root";
-    zmmTrkEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuTrkEff_pos/analysis/eff.root";
-    dataStaEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuStaEff_iso_pos/analysis/eff.root";
-    zmmStaEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuStaEff_iso_pos/analysis/eff.root";
+    dataHLTEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_pos/eff.root";
+    zmmHLTEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_pos/eff.root";
+    dataSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_pos/eff.root";
+    zmmSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_pos/eff.root";
+    dataTrkEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_pos/eff.root";
+    zmmTrkEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_pos/eff.root";
+    dataStaEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_pos/eff.root";
+    zmmStaEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_pos/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuHLTEff_neg/analysis/eff.root";
-    zmmHLTEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuHLTEff_neg/analysis/eff.root";
-    dataSelEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuSelEff_neg/analysis/eff.root";
-    zmmSelEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuSelEff_neg/analysis/eff.root";
-    dataTrkEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuTrkEff_neg/analysis/eff.root";
-    zmmTrkEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuTrkEff_neg/analysis/eff.root";
-    dataStaEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_MuStaEff_iso_neg/analysis/eff.root";
-    zmmStaEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zmm_MuStaEff_iso_neg/analysis/eff.root";
+    dataHLTEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_neg/eff.root";
+    zmmHLTEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_neg/eff.root";
+    dataSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_neg/eff.root";
+    zmmSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_neg/eff.root";
+    dataTrkEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_neg/eff.root";
+    zmmTrkEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_neg/eff.root";
+    dataStaEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_neg/eff.root";
+    zmmStaEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_neg/eff.root";
   }
 
   //--------------------------------------------------------------------------------------------------------------
@@ -221,9 +230,10 @@ void computeAccSelWm(const TString conf,       // input file
   }
   
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen  = new mithep::TGenInfo();
-  TClonesArray *muonArr    = new TClonesArray("mithep::TMuon");
+  baconhep::TEventInfo   *info = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
+  TClonesArray     *genPartArr = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray        *muonArr = new TClonesArray("baconhep::TMuon");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -236,6 +246,12 @@ void computeAccSelWm(const TString conf,       // input file
   vector<Double_t> nSelCorrVarv, nSelBCorrVarv, nSelECorrVarv;
   vector<Double_t> accCorrv, accBCorrv, accECorrv;
   vector<Double_t> accErrCorrv, accErrBCorrv, accErrECorrv;
+
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
+  UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");                                  
+  UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",                                                         
+  //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"); 
   
   //
   // loop through files
@@ -244,13 +260,14 @@ void computeAccSelWm(const TString conf,       // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("Gen",  &gen);     TBranch *genBr  = eventTree->GetBranch("Gen");
-    eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon"); 
+    eventTree->SetBranchAddress("Info",             &info); TBranch *infoBr    = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo",        &gen); TBranch *genBr     = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle",&genPartArr); TBranch *genPartBr = eventTree->GetBranch("GenParticle");
+    eventTree->SetBranchAddress("Muon",          &muonArr); TBranch *muonBr    = eventTree->GetBranch("Muon"); 
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -296,18 +313,21 @@ void computeAccSelWm(const TString conf,       // input file
     // loop over events
     //    
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<10000; ientry++) {
       genBr->GetEntry(ientry);
-      if(charge==-1 && gen->id_1!= EGenType::kMuon) continue;  // check for W-
-      if(charge== 1 && gen->id_2!=-EGenType::kMuon) continue;  // check for W+
-      infoBr->GetEntry(ientry);     
-    
-      Double_t weight=1;
+      infoBr->GetEntry(ientry);
+      genPartArr->Clear(); genPartBr->GetEntry(ientry);
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2, 0)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0)!=-LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID)  continue;
+
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
       
       // trigger requirement               
-      ULong_t trigger = kHLT_Mu15_eta2p1;
-      ULong_t trigObj = kHLT_Mu15_eta2p1_MuObj;   
-      if(!(info->triggerBits & trigger)) continue;  
+      if(!(info->triggerBits[trigger])) continue;  
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -315,23 +335,23 @@ void computeAccSelWm(const TString conf,       // input file
       muonArr->Clear();
       muonBr->GetEntry(ientry);
       Int_t nLooseLep=0;
-      const mithep::TMuon *goodMuon=0;
+      const baconhep::TMuon *goodMuon=0;
       Bool_t passSel=kFALSE;
       for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
-  	const mithep::TMuon *mu = (mithep::TMuon*)((*muonArr)[i]);
+  	const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
-        if(fabs(mu->eta) > 2.4) continue;      // loose lepton |eta| cut
-        if(mu->pt	 < 10)  continue;      // loose lepton pT cut
+        if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
+        if(mu->pt	 < VETO_PT)  continue; // loose lepton pT cut
         if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
         if(nLooseLep>1) {  // extra lepton veto
           passSel=kFALSE;
           break;
         }
         
-        if(fabs(mu->eta) > ETA_CUT)       continue;  // lepton |eta| cut
-        if(mu->pt < PT_CUT)		  continue;  // lepton pT cut	
-        if(!passMuonID(mu))		  continue;  // lepton selection
-        if(!(mu->hltMatchBits & trigObj)) continue;  // check trigger matching
+        if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
+        if(mu->pt < PT_CUT)		    continue;  // lepton pT cut	
+        if(!passMuonID(mu))		    continue;  // lepton selection
+        if(!(mu->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
 	
 	if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
 	

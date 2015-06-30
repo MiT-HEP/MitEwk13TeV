@@ -8,12 +8,13 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>                   // standard I/O
+#include <fstream>                    // standard I/O
 #include <TFile.h>                    // file handle class
 #include <TTree.h>                    // class to access ntuples
 #include <TF1.h>                      // 1D function
 #include <TFitResult.h>               // class to handle fit results
 #include <TGraphErrors.h>             // graph class
-#include "Math/LorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -32,9 +33,6 @@
 #endif
 
 using namespace RooFit;
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -123,11 +121,11 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitRecoilZmm(TString infilename,  // input ntuple
-                  Int_t   pfu1model,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-                  Int_t   pfu2model,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-	          Bool_t  sigOnly,     // signal event only?
-	          TString outputDir    // output directory
+void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/zmm_select.root",  // input ntuple
+                  Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
+                  Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
+	          Bool_t  sigOnly=1,     // signal event only?
+	          TString outputDir="./" // output directory
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -152,13 +150,13 @@ void fitRecoilZmm(TString infilename,  // input ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
-  const Double_t ETA_CUT   = 2.1;
+  const Double_t ETA_CUT   = 2.4;
      
  
   //--------------------------------------------------------------------------------------------------------------
@@ -228,7 +226,7 @@ void fitRecoilZmm(TString infilename,  // input ntuple
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
@@ -661,8 +659,8 @@ void fitRecoilZmm(TString infilename,  // input ntuple
     intree->SetBranchAddress("genVy",    &genVy);      // GEN boson rapidity (signal MC)
     intree->SetBranchAddress("genVMass", &genVMass);   // GEN boson mass (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",	 &met);        // MET
-    intree->SetBranchAddress("metPhi",	 &metPhi);     // phi(MET)
+    intree->SetBranchAddress("tkMet",	 &met);        // MET
+    intree->SetBranchAddress("tkMetPhi", &metPhi);     // phi(MET)
     intree->SetBranchAddress("sumEt",	 &sumEt);      // Sum ET
     intree->SetBranchAddress("u1",	 &u1);         // parallel component of recoil
     intree->SetBranchAddress("u2",	 &u2);         // perpendicular component of recoil
