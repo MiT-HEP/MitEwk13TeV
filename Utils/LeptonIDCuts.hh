@@ -87,26 +87,26 @@ Bool_t passEleID(const baconhep::TElectron *electron, const Double_t rho)
   // barrel/endcap dependent requirments      
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
-    if(iso >= 0.158721*(electron->pt))  { return kFALSE; }
-    if(electron->nMissingHits > 2) { return kFALSE; }
-    if(electron->sieie >= 0.011586) { return kFALSE; }
-    if(fabs(electron->dPhiIn) >= 0.230374) { return kFALSE; }
-    if(fabs(electron->dEtaIn) >= 0.013625) { return kFALSE; }
-    if(electron->hovere >= 0.181130) { return kFALSE; }
-    if(fabs(1.0-electron->eoverp) >= 0.295751*(electron->ecalEnergy)) { return kFALSE; }
-    if(fabs(electron->d0) >= 0.094095) { return kFALSE; }
-    if(fabs(electron->dz) >= 0.713070) { return kFALSE; }
+    if(iso >= 0.107587*(electron->pt))  { return kFALSE; }
+    if(electron->nMissingHits > 1) { return kFALSE; }
+    if(electron->sieie >= 0.009996) { return kFALSE; }
+    if(fabs(electron->dPhiIn) >= 0.035973) { return kFALSE; }
+    if(fabs(electron->dEtaIn) >= 0.008925) { return kFALSE; }
+    if(electron->hovere >= 0.050537) { return kFALSE; }
+    if(fabs(1.0-electron->eoverp) >= 0.091942*(electron->ecalEnergy)) { return kFALSE; }
+    if(fabs(electron->d0) >= 0.012235) { return kFALSE; }
+    if(fabs(electron->dz) >= 0.042020) { return kFALSE; }
   } else {
     // endcap
-    if(iso >= 0.177032*(electron->pt)) return kFALSE;
-    if(electron->nMissingHits > 3) return kFALSE;
-    if(electron->sieie  	  >= 0.031849)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     >= 0.255450)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     >= 0.011932)                        return kFALSE;
-    if(electron->hovere 	  >= 0.223870)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.155501*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0) >= 0.342293)                                return kFALSE;
-    if(fabs(electron->dz) >= 0.953461)                                return kFALSE;
+    if(iso >= 0.113254*(electron->pt)) return kFALSE;
+    if(electron->nMissingHits > 1) return kFALSE;
+    if(electron->sieie  	  >= 0.030135)                        return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.067879)                        return kFALSE;
+    if(fabs(electron->dEtaIn)     >= 0.007429)                        return kFALSE;
+    if(electron->hovere 	  >= 0.086782)                        return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.100683*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0) >= 0.036719)                                return kFALSE;
+    if(fabs(electron->dz) >= 0.138142)                                return kFALSE;
   }
 
   return kTRUE;
@@ -164,7 +164,7 @@ Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho)
 
 //--------------------------------------------------------------------------------------------------
 Bool_t passEleLooseID(const baconhep::TElectron *electron, const Double_t rho)
-{ // CSA14 Veto working point
+{ // Phys14 Veto working point
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
@@ -181,30 +181,97 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const Double_t rho)
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.24*(electron->pt))  return kFALSE;
+    if(iso > 0.158721*(electron->pt))  return kFALSE;
     if(electron->nMissingHits > 2) return kFALSE;
 
-    if(electron->sieie        > 0.012)                           return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.17)                            return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.0015)                          return kFALSE;
-    if(electron->hovere       > 0.29)                            return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.23*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0)     > 0.037)                           return kFALSE;
-    if(fabs(electron->dz)     > 0.82)                            return kFALSE;
+    if(electron->sieie        > 0.011586)                            return kFALSE;
+    if(fabs(electron->dPhiIn) > 0.230374)                            return kFALSE;
+    if(fabs(electron->dEtaIn) > 0.013625)                            return kFALSE;
+    if(electron->hovere       > 0.181130)                            return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.295751*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0)     > 0.094095)                            return kFALSE;
+    if(fabs(electron->dz)     > 0.713070)                            return kFALSE;
   
   } else {
     // endcap
     Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-    if(iso > 0.21*(electron->pt))  return kFALSE;
+    if(iso > 0.177032*(electron->pt))  return kFALSE;
     if(electron->nMissingHits > 3) return kFALSE;
 
-    if(electron->sieie        > 0.038)                           return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.25)                            return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.0026)                          return kFALSE;
-    if(electron->hovere       > 0.21)                            return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.17*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0)     > 0.28)                           return kFALSE;
-    if(fabs(electron->dz)     > 0.95)                            return kFALSE;
+    if(electron->sieie        > 0.031849)                            return kFALSE;
+    if(fabs(electron->dPhiIn) > 0.255450)                            return kFALSE;
+    if(fabs(electron->dEtaIn) > 0.011932)                            return kFALSE;
+    if(electron->hovere       > 0.223870)                            return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.155501*(electron->ecalEnergy)) return kFALSE;
+    if(fabs(electron->d0)     > 0.342293)                            return kFALSE;
+    if(fabs(electron->dz)     > 0.953461)                            return kFALSE;
+  
+  }
+
+  return kTRUE;
+}
+
+//--------------------------------------------------------------------------------------------------
+Bool_t passEleLooseID_check(const baconhep::TElectron *electron, const Double_t rho,TH1D* heleLooseID,TH1D* hfaileta,TH1D* hfailpt,TH1D* hfailphi)
+{ // Phys14 Veto working point
+  const Double_t ECAL_GAP_LOW  = 1.4442;
+  const Double_t ECAL_GAP_HIGH = 1.566;
+  
+  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) {
+    heleLooseID->Fill(1);
+    hfaileta->Fill(electron->scEta);
+    hfailpt->Fill(electron->pt);
+    hfailphi->Fill(electron->phi);
+    return kTRUE;
+  }
+  
+  if(!(electron->typeBits & baconhep::EEleType::kEcalDriven)) {
+    heleLooseID->Fill(2);
+    hfaileta->Fill(electron->scEta);
+    hfailpt->Fill(electron->pt);
+    hfailphi->Fill(electron->phi);
+    return kTRUE;
+   }
+
+  // conversion rejection
+  if(electron->isConv) {
+    heleLooseID->Fill(3);
+    hfaileta->Fill(electron->scEta);
+    hfailpt->Fill(electron->pt);
+    hfailphi->Fill(electron->phi);
+    return kTRUE;
+  }
+       
+  Double_t ea = getEffAreaEl(electron->scEta);
+     
+  // barrel/endcap dependent requirments      
+  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+    // barrel
+    Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+    if(iso > 0.158721*(electron->pt)) {heleLooseID->Fill(4); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(electron->nMissingHits > 2) {heleLooseID->Fill(5); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+
+    if(electron->sieie        > 0.011586) {heleLooseID->Fill(6); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->dPhiIn) > 0.230374) {heleLooseID->Fill(7); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->dEtaIn) > 0.013625) {heleLooseID->Fill(8); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(electron->hovere       > 0.181130) {heleLooseID->Fill(9); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(1.0-electron->eoverp) > 0.295751*(electron->ecalEnergy)) {heleLooseID->Fill(10); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->d0)     > 0.094095) {heleLooseID->Fill(11); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->dz)     > 0.713070) {heleLooseID->Fill(12); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+  
+  } else {
+    // endcap
+    Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+    if(iso > 0.177032*(electron->pt)) {heleLooseID->Fill(4); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(electron->nMissingHits > 3) {heleLooseID->Fill(5); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+
+    if(electron->sieie        > 0.031849) {heleLooseID->Fill(6); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->dPhiIn) > 0.255450) {heleLooseID->Fill(7); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->dEtaIn) > 0.011932) {heleLooseID->Fill(8); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(electron->hovere       > 0.223870) {heleLooseID->Fill(9); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(1.0-electron->eoverp) > 0.155501*(electron->ecalEnergy)) {heleLooseID->Fill(10); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->d0)     > 0.342293) {heleLooseID->Fill(11); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
+    if(fabs(electron->dz)     > 0.953461) {heleLooseID->Fill(12); hfaileta->Fill(electron->scEta); hfailpt->Fill(electron->pt); hfailphi->Fill(electron->phi); return kTRUE;}
   
   }
 
