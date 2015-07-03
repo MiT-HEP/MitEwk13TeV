@@ -20,20 +20,19 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
-#include "Math/LorentzVector.h"     // 4-vector class
+#include "TLorentzVector.h"         // 4-vector class
 
 // define structures to read in ntuple
-#include "EWKAna/Ntupler/interface/EWKAnaDefs.hh"
-#include "EWKAna/Ntupler/interface/TEventInfo.hh"
-#include "EWKAna/Ntupler/interface/TGenInfo.hh"
-#include "EWKAna/Ntupler/interface/TElectron.hh"
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
+#include "BaconAna/DataFormats/interface/TElectron.hh"
+#include "BaconAna/Utils/interface/TTrigger.hh"
 
-// helper functions for lepton ID selection
-#include "EWKAna/Utils/LeptonIDCuts.hh"
+#include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
+#include "../Utils/MyTools.hh"
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -53,10 +52,12 @@ void computeAccSelZee(const TString conf,             // input file
   const Double_t ELE_MASS   = 0.000511;  
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
+
+  const Int_t BOSON_ID  = 23;
+  const Int_t LEPTON_ID = 11;
   
   // Data/MC Z efficiency scale factor from simultaneous fit
-  Double_t zEffScale = 0.988542, zEffScaleErr = 0.011674;
-    
+  Double_t zEffScale = 1.0, zEffScaleErr = 0.01;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -94,9 +95,10 @@ void computeAccSelZee(const TString conf,             // input file
 
   
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info  = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen   = new mithep::TGenInfo();
-  TClonesArray *electronArr = new TClonesArray("mithep::TElectron");
+  baconhep::TEventInfo   *info = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
+  TClonesArray     *genPartArr = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray    *electronArr = new TClonesArray("baconhep::TElectron");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -105,6 +107,12 @@ void computeAccSelZee(const TString conf,             // input file
   vector<Double_t> nEvtsv, nSelv, nSelBBv, nSelBEv, nSelEEv;
   vector<Double_t> accv, accBBv, accBEv, accEEv;
   vector<Double_t> accErrv, accErrBBv, accErrBEv, accErrEEv;
+
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
+  //need to clean this up
+  UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
+  UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
     
   //
   // loop through files
@@ -113,13 +121,14 @@ void computeAccSelZee(const TString conf,             // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("Gen",      &gen);         TBranch *genBr      = eventTree->GetBranch("Gen");
-    eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+    eventTree->SetBranchAddress("Info",              &info); TBranch *infoBr     = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo",         &gen); TBranch *genBr      = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *partBr     = eventTree->GetBranch("GenParticle");
+    eventTree->SetBranchAddress("Electron",   &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -130,19 +139,22 @@ void computeAccSelZee(const TString conf,             // input file
     //
     // loop over events
     //
+
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       genBr->GetEntry(ientry);
-      if(gen->vmass<MASS_LOW || gen->vmass>MASS_HIGH) continue;
+      genPartArr->Clear(); partBr->GetEntry(ientry);
+      infoBr->GetEntry(ientry);
 
-      infoBr->GetEntry(ientry);     
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
+
+      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
     
-      Double_t weight=1;
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
     
       // trigger requirement               
-      ULong_t trigger = kHLT_Ele22_CaloIdL_CaloIsoVL;
-      ULong_t trigObj = kHLT_Ele22_CaloIdL_CaloIsoVL_EleObj;   
-      if(!(info->triggerBits & trigger)) continue;
+      if(!(info->triggerBits[trigger])) continue;
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -150,41 +162,40 @@ void computeAccSelZee(const TString conf,             // input file
       electronArr->Clear();
       electronBr->GetEntry(ientry);
       for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
-  	const mithep::TElectron *ele1 = (mithep::TElectron*)((*electronArr)[i1]);
+  	const baconhep::TElectron *ele1 = (baconhep::TElectron*)((*electronArr)[i1]);
 	
 	// check ECAL gap
 	if(fabs(ele1->scEta)>=ETA_BARREL && fabs(ele1->scEta)<=ETA_ENDCAP) continue;
         
-	if(ele1->scEt	     < PT_CUT)	     continue;  // lepton pT cut
-        if(fabs(ele1->scEta) > ETA_CUT)	     continue;  // lepton |eta| cut
-        if(!passEleID(ele1,info->rhoLowEta)) continue;  // lepton selection
+	if(ele1->scEt	     < PT_CUT)	  continue; // lepton pT cut
+        if(fabs(ele1->scEta) > ETA_CUT)	  continue; // lepton |eta| cut
+        if(!passEleID(ele1,info->rhoIso)) continue; // lepton selection
 
-        LorentzVector vEle1(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
+        TLorentzVector vEle1(0,0,0,0); vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
 	Bool_t isB1 = (fabs(ele1->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
         for(Int_t i2=i1+1; i2<electronArr->GetEntriesFast(); i2++) {          
-	  const mithep::TElectron *ele2 = (mithep::TElectron*)((*electronArr)[i2]);
+	  const baconhep::TElectron *ele2 = (baconhep::TElectron*)((*electronArr)[i2]);
 	  
 	  // check ECAL gap
 	  if(fabs(ele2->scEta)>=ETA_BARREL && fabs(ele2->scEta)<=ETA_ENDCAP) continue;
         
-          if(ele2->scEt        < PT_CUT)       continue;  // lepton pT cut
-          if(fabs(ele2->scEta) > ETA_CUT)      continue;  // lepton |eta| cut
-	  if(!passEleID(ele2,info->rhoLowEta)) continue;  // lepton selection
+          if(ele2->scEt        < PT_CUT)    continue; // lepton pT cut
+          if(fabs(ele2->scEta) > ETA_CUT)   continue; // lepton |eta| cut
+	  if(!passEleID(ele2,info->rhoIso)) continue; // lepton selection
 
-          LorentzVector vEle2(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
+          TLorentzVector vEle2(0,0,0,0); vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
           Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
           // trigger match
-	  if(!(ele1->hltMatchBits & trigObj) && !(ele2->hltMatchBits & trigObj)) continue;
-	  
+	  if(!(ele1->hltMatchBits[trigObjHLT]) && !(ele2->hltMatchBits[trigObjHLT])) continue;
+
 	  // mass window
-          LorentzVector vDilep = vEle1 + vEle2;
+          TLorentzVector vDilep = vEle1 + vEle2;
           if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
           
           
-          /******** We have a Z candidate! HURRAY! ********/
-       
+          /******** We have a Z candidate! HURRAY! ********/       
           nSelv[ifile]+=weight;
   	  if(isB1 && isB2)        nSelBBv[ifile]+=weight;
 	  else if(!isB1 && !isB2) nSelEEv[ifile]+=weight;

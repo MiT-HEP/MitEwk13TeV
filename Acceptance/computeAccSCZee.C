@@ -133,13 +133,12 @@ void computeAccSCZee(const TString conf,       // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    //for(UInt_t ientry=0; ientry<1000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
 
       TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
 
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
     

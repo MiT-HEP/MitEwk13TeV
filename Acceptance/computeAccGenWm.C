@@ -42,13 +42,12 @@ void computeAccGenWm(const TString conf,             // input file
   //============================================================================================================== 
 
   const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.1;
+  const Double_t ETA_CUT    = 2.4;
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
 
   const Int_t BOSON_ID  = 24;
-  Int_t LEPTON_ID = 13;
-  if (charge==1) LEPTON_ID=-13;
+  const Int_t LEPTON_ID = 13;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -120,20 +119,13 @@ void computeAccGenWm(const TString conf,             // input file
     // loop over events
     //    
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    //for(UInt_t ientry=0; ientry<10000000; ientry++) {
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
       TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) {
-        continue;
-      }
-      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) {
-        continue;
-      }
-      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) {
-        continue;
-      }
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2, 0)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0)!=-LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID) continue;
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;

@@ -22,16 +22,18 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
+#include "TLorentzVector.h"
 
 // define structures to read in ntuple
-#include "../Ntupler/interface/EWKAnaDefs.hh"
-#include "../Ntupler/interface/TEventInfo.hh"
-#include "../Ntupler/interface/TGenInfo.hh"
-#include "../Ntupler/interface/TElectron.hh"
-#include "../Ntupler/interface/TVertex.hh"
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TElectron.hh"
+#include "BaconAna/DataFormats/interface/TVertex.hh"
+#include "BaconAna/Utils/interface/TTrigger.hh"
 
-// helper functions for lepton ID selection
-#include "../Utils/LeptonIDCuts.hh"
+#include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
+#include "../Utils/MyTools.hh"
 
 // helper class to handle efficiency tables
 #include "CEffUser1D.hh"
@@ -55,31 +57,31 @@ void computeAccSelWe(const TString conf,       // input file
   const Double_t ETA_CUT    = 2.5;
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
-  
+
+  const Double_t VETO_PT   = 20;
+  const Double_t VETO_ETA  = 2.5;
+
+  const Int_t BOSON_ID  = 24;
+  const Int_t LEPTON_ID = 11;
+ 
   // efficiency files
-  TString dataHLTEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_EleHLTEff/analysis/eff.root");
-  TString zeeHLTEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zee_EleHLTEff/analysis/eff.root");
-  TString dataGsfSelEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_EleGsfSelEff/analysis/eff.root");
-  TString zeeGsfSelEffName("/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zee_EleGsfSelEff/analysis/eff.root");
-//  TString dataGsfEffName("../Efficiency/May23_EleGsfEff/analysis/eff.root");
-//  TString zeeGsfEffName("../Efficiency/Zee_EleGsfEff/analysis/eff.root");
+  TString dataHLTEffName(   "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff/eff.root");
+  TString zeeHLTEffName(    "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff/eff.root");
+  TString dataGsfSelEffName("/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff/eff.root");
+  TString zeeGsfSelEffName( "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff/eff.root");
   if(charge==1) {
-    dataHLTEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_EleHLTEff_pos/analysis/eff.root";
-    zeeHLTEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zee_EleHLTEff_pos/analysis/eff.root";
-    dataGsfSelEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_EleGsfSelEff_pos/analysis/eff.root";
-    zeeGsfSelEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zee_EleGsfSelEff_pos/analysis/eff.root";
-//    dataGsfEffName = "../Efficiency/May23_EleGsfEff_pos/analysis/eff.root";
-//    zeeGsfEffName  = "../Efficiency/Zee_EleGsfEff_pos/analysis/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_pos/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_pos/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_pos/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_pos/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_EleHLTEff_neg/analysis/eff.root";
-    zeeHLTEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zee_EleHLTEff_neg/analysis/eff.root";
-    dataGsfSelEffName = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/May23_EleGsfSelEff_neg/analysis/eff.root";
-    zeeGsfSelEffName  = "/scratch/klawhorn/EWKAnaStore/8TeV/EfficiencyResults/Zee_EleGsfSelEff_neg/analysis/eff.root";
-//    dataGsfEffName = "../Efficiency/May23_EleGsfEff_neg/analysis/eff.root";
-//    zeeGsfEffName  = "../Efficiency/Zee_EleGsfEff_neg/analysis/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_neg/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_neg/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_neg/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_neg/eff.root";
   }
-
+  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -113,7 +115,6 @@ void computeAccSelWe(const TString conf,       // input file
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-
   
   //
   // Get efficiency
@@ -168,34 +169,11 @@ void computeAccSelWe(const TString conf,       // input file
                       (TH2D*)zeeGsfSelEffFile->Get("hErrhEtaPt"));
   }
   
-//  TFile *dataGsfEffFile = new TFile(dataGsfEffName);
-//  CEffUser1D dataGsfEff;
-//  TH1D *hGsfErr=0, *hGsfErrB=0, *hGsfErrE=0;
-//  if(dataGsfEffName) {
-//    dataGsfEff.loadEff((TGraphAsymmErrors*)dataGsfEffFile->Get("grEffEta"));
-//    
-//    TGraphAsymmErrors* gr =(TGraphAsymmErrors*)dataGsfEffFile->Get("grEffEta");
-//    Double_t binning[gr->GetN()+1];
-//    const Double_t *xval  = gr->GetX();
-//    const Double_t *xerrl = gr->GetEXlow();
-//    const Double_t *xerrh = gr->GetEXhigh();
-//    binning[0] = xval[0]-xerrl[0];
-//    for(Int_t i=0; i<gr->GetN(); i++) binning[i+1] = xval[i]+xerrh[i];
-//    hGsfErr  = new TH1D("hGsfErr", "",gr->GetN(),binning);
-//    hGsfErrB = new TH1D("hGsfErrB","",gr->GetN(),binning);
-//    hGsfErrE = new TH1D("hGsfErrE","",gr->GetN(),binning);
-//  }
-//  
-//  TFile *zeeGsfEffFile = new TFile(zeeGsfEffName);
-//  CEffUser1D zeeGsfEff;
-//  if(zeeGsfEffName) {
-//    zeeGsfEff.loadEff((TGraphAsymmErrors*)zeeGsfEffFile->Get("grEffEta"));
-//  }
-  
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info  = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen   = new mithep::TGenInfo();
-  TClonesArray *electronArr = new TClonesArray("mithep::TElectron");
+  baconhep::TEventInfo    *info = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo *gen  = new baconhep::TGenEventInfo();
+  TClonesArray *electronArr = new TClonesArray("baconhep::TElectron");
+  TClonesArray *genPartArr  = new TClonesArray("baconhep::TGenParticle");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -208,6 +186,12 @@ void computeAccSelWe(const TString conf,       // input file
   vector<Double_t> nSelCorrVarv, nSelBCorrVarv, nSelECorrVarv;
   vector<Double_t> accCorrv, accBCorrv, accECorrv;
   vector<Double_t> accErrCorrv, accErrBCorrv, accErrECorrv;
+
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
+  //need to clean this up                                                                                                           
+  UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");                           
+  UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");  
   
   //
   // loop through files
@@ -216,13 +200,14 @@ void computeAccSelWe(const TString conf,       // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("Gen",      &gen);         TBranch *genBr      = eventTree->GetBranch("Gen");
-    eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+    eventTree->SetBranchAddress("Info",             &info); TBranch *infoBr     = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo",        &gen); TBranch *genBr      = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle",&genPartArr); TBranch *genPartBr  = eventTree->GetBranch("GenParticle");
+    eventTree->SetBranchAddress("Electron",  &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -249,28 +234,25 @@ void computeAccSelWe(const TString conf,       // input file
         hGsfSelErrE->SetBinContent(ix,iy,0);
       }
     }
-//    for(Int_t ix=0; ix<=hGsfErr->GetNbinsX(); ix++) {
-//      hGsfErr ->SetBinContent(ix,0);
-//      hGsfErrB->SetBinContent(ix,0);
-//      hGsfErrE->SetBinContent(ix,0);
-//    }
-    
+
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      genBr->GetEntry(ientry);
-      if(charge==-1 && gen->id_1!= EGenType::kElectron) continue;  // check for W-
-      if(charge== 1 && gen->id_2!=-EGenType::kElectron) continue;  // check for W+
-      infoBr->GetEntry(ientry);     
+      infoBr->GetEntry(ientry);
+      genBr->GetEntry(ientry);      
+      genPartArr->Clear(); genPartBr->GetEntry(ientry);
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2, 0)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0)!=-LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID)  continue;
     
-      Double_t weight=1;
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
       
       // trigger requirement                
-      ULong_t trigger = kHLT_Ele22_CaloIdL_CaloIsoVL;
-      ULong_t trigObj = kHLT_Ele22_CaloIdL_CaloIsoVL_EleObj; 
-      if(!(info->triggerBits & trigger)) continue;  
+      if(!(info->triggerBits[trigger])) continue;
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -278,26 +260,26 @@ void computeAccSelWe(const TString conf,       // input file
       electronArr->Clear();
       electronBr->GetEntry(ientry);
       Int_t nLooseLep=0;
-      const mithep::TElectron *goodEle=0;
+      const baconhep::TElectron *goodEle=0;
       Bool_t passSel=kFALSE;
       for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
-        const mithep::TElectron *ele = (mithep::TElectron*)((*electronArr)[i]);
+        const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
         
         // check ECAL gap
         if(fabs(ele->scEta)>=ETA_BARREL && fabs(ele->scEta)<=ETA_ENDCAP) continue;
         
-        if(fabs(ele->scEta) > 2.5) continue;                  // loose lepton |eta| cut
-        if(ele->scEt	    < 20)  continue;                  // loose lepton pT cut
-        if(passEleLooseID(ele,info->rhoLowEta)) nLooseLep++;  // loose lepton selection
+        if(fabs(ele->scEta) > VETO_ETA) continue;             // loose lepton |eta| cut
+        if(ele->scEt	    < VETO_PT)  continue;             // loose lepton pT cut
+        if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;     // loose lepton selection
         if(nLooseLep>1) {  // extra lepton veto
           passSel=kFALSE;
           break;
         }
         
-        if(fabs(ele->scEta) > ETA_CUT)      continue;  // lepton |eta| cut
-        if(ele->scEt < PT_CUT)  	    continue;  // lepton pT cut
-        if(!passEleID(ele,info->rhoLowEta)) continue;  // lepton selection
-        if(!(ele->hltMatchBits & trigObj))  continue;  // check trigger matching
+        if(fabs(ele->scEta) > ETA_CUT)       continue;  // lepton |eta| cut
+        if(ele->scEt < PT_CUT)  	     continue;  // lepton pT cut
+        if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
+        if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
         
 	if(charge!=0 && ele->q!=charge) continue;  // check charge (if necessary)
         

@@ -15,7 +15,7 @@
 #include <fstream>                    // functions for file I/O
 #include <string>                     // C++ string class
 #include <sstream>                    // class for parsing strings
-#include "Math/LorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"       // 4-vector class
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -37,10 +37,6 @@
 #include "RooDataHist.h"
 #include "RooFitResult.h"
 
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
-
 //=== MAIN MACRO ================================================================================================= 
 
 void EleScale() {
@@ -50,14 +46,14 @@ void EleScale() {
   //============================================================================================================== 
   
   // event category enumeration
-  enum { eEleEle2HLT=1, eEleEle1HLT, eEleEleNoSel, eEleSC };
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
   TString outputDir = "Results";
   TString pufname = ""; 
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zee/ntuples/data_select.raw.root");  // data
-  infilenamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zee/ntuples/zee_select.root");       // MC
+  infilenamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zee/ntuples/zee_select.root");  // data
+  infilenamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zee/ntuples/zee_select.root");  // MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
@@ -109,13 +105,13 @@ void EleScale() {
   UInt_t  category;
   UInt_t  npv, npu;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// electron specific /////
-  LorentzVector *sc1=0, *sc2=0;
+  TLorentzVector *sc1=0, *sc2=0;
   
   for(UInt_t ifile=0; ifile<infilenamev.size(); ifile++) {
     cout << "Processing " << infilenamev[ifile] << "..." << endl;
-    TFile *infile = new TFile(infilenamev[ifile]); assert(infile);
+    TFile *infile = TFile::Open(infilenamev[ifile]); assert(infile);
     TTree *intree = (TTree*)infile->Get("Events"); assert(intree);
   
     intree->SetBranchAddress("runNum",   &runNum);    // event run number
@@ -142,7 +138,7 @@ void EleScale() {
 //        weight *= puWeights->GetBinContent(npu+1);
       }
       
-      if((category!=eEleEle2HLT) && (category!=eEleEle1HLT)) continue;
+      if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
       if(q1 == q2) continue;
       if(dilep->M()	  < MASS_LOW)  continue;
       if(dilep->M()	  > MASS_HIGH) continue;
@@ -151,11 +147,9 @@ void EleScale() {
       if(fabs(sc1->Eta()) > ETA_CUT)   continue;      
       if(fabs(sc2->Eta()) > ETA_CUT)   continue;
     
-      LorentzVector vLep1(sc1->Pt(), lep1->Eta(), lep1->Phi(), ELE_MASS);
-      LorentzVector vLep2(sc2->Pt(), lep2->Eta(), lep2->Phi(), ELE_MASS);
-      //LorentzVector vLep1 = (*lep1);
-      //LorentzVector vLep2 = (*lep2);
-      LorentzVector vDilep = vLep1 + vLep2;
+      TLorentzVector vLep1(0,0,0,0); vLep1.SetPtEtaPhiM(sc1->Pt(), lep1->Eta(), lep1->Phi(), ELE_MASS);
+      TLorentzVector vLep2(0,0,0,0); vLep2.SetPtEtaPhiM(sc2->Pt(), lep2->Eta(), lep2->Phi(), ELE_MASS);
+      TLorentzVector vDilep = vLep1 + vLep2;
     
       Int_t bin1=-1, bin2=-1;
       for(UInt_t i=0; i<scEta_limits.size(); i++) {
