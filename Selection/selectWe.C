@@ -21,6 +21,7 @@
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
+#include "TCanvas.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -52,6 +53,35 @@ void selectWe(const TString conf="we.conf", // input file
 ) {
   gBenchmark->Start("selectWe");
 
+  TH1D* heleLooseID = new TH1D("heleLooseID","heleLooseID",12,0,12);
+  heleLooseID->GetXaxis()->SetBinLabel(1,"ECAL gap");
+  heleLooseID->GetXaxis()->SetBinLabel(2,"typeBits");
+  heleLooseID->GetXaxis()->SetBinLabel(3,"conversion");
+  heleLooseID->GetXaxis()->SetBinLabel(4,"iso");
+  heleLooseID->GetXaxis()->SetBinLabel(5,"missing hits");
+  heleLooseID->GetXaxis()->SetBinLabel(6,"sieie");
+  heleLooseID->GetXaxis()->SetBinLabel(7,"dPhiIn");
+  heleLooseID->GetXaxis()->SetBinLabel(8,"dEtaIn");
+  heleLooseID->GetXaxis()->SetBinLabel(9,"hovere");
+  heleLooseID->GetXaxis()->SetBinLabel(10,"ooEmooP");
+  heleLooseID->GetXaxis()->SetBinLabel(11,"d0");
+  heleLooseID->GetXaxis()->SetBinLabel(12,"dz");
+
+  TH1D* hfaileta = new TH1D("hfaileta","hfaileta",50,-3.5,3.5);
+  hfaileta->SetTitle("Supercluster Eta of Failing Electrons");
+  hfaileta->GetXaxis()->SetTitle("Supercluster eta");
+  hfaileta->GetYaxis()->SetTitle("# Events");
+
+  TH1D* hfailpt = new TH1D("hfailpt","hfailpt",50,0,100);
+  hfailpt->SetTitle("pT of Failing Electrons");
+  hfailpt->GetXaxis()->SetTitle("pT");
+  hfailpt->GetYaxis()->SetTitle("# Events");
+
+  TH1D* hfailphi = new TH1D("hfailphi","hfailphi",50,-3.0,3.0);
+  hfailphi->SetTitle("phi of Failing Electrons");
+  hfailphi->GetXaxis()->SetTitle("phi");
+  hfailphi->GetYaxis()->SetTitle("# Events");
+
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
@@ -60,7 +90,7 @@ void selectWe(const TString conf="we.conf", // input file
   const Double_t ETA_CUT  = 2.5;
   const Double_t ELE_MASS = 0.000511;
 
-  const Double_t VETO_PT   = 20;
+  const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.5;
   
   const Double_t ECAL_GAP_LOW  = 1.4442;
@@ -103,10 +133,11 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb;
-  Float_t met, metPhi, sumEt, mt, u1, u2;
+  Float_t met, metPhi, mvaMet, mvaMetPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Int_t   q;
   TLorentzVector *lep=0;
+  Int_t lepID;
   ///// electron specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
@@ -175,6 +206,8 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
@@ -187,6 +220,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",       "TLorentzVector", &lep);        // lepton 4-vector
+    outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
     ///// electron specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");      // track isolation of tag lepton
     outTree->Branch("emIso",      &emIso,      "emIso/F");       // ECAL isolation of tag lepton
@@ -258,17 +292,20 @@ void selectWe(const TString conf="we.conf", // input file
 	totalWeight=hall->Integral();
       }
 
-      Double_t weight=1;
-      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
+      cout<<endl;
+      cout<<"totalWeight is "<<totalWeight<<endl;
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<100; ientry++) {
+      //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=0; ientry<8000000; ientry++) {
         infoBr->GetEntry(ientry);
-	
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(genBr) {
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
@@ -276,6 +313,14 @@ void selectWe(const TString conf="we.conf", // input file
 	  weight*=gen->weight;
 	}
      
+        // Separate DY background into Z->tautau, Z->mumu, and Z->ee
+        TLorentzVector *vec_=0, *lep1_=0, *lep2_=0;
+        lepID = fabs(toolbox::flavor(genPartArr, 23, vec_, lep1_, lep2_, 1));
+
+//        if(lepID!=11) continue; // Z->ee
+//        if(lepID!=13) continue; // Z->mm
+//        if(lepID!=15) continue; // Z->tautau
+
         // check for certified lumi (if applicable)
         //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
@@ -299,7 +344,8 @@ void selectWe(const TString conf="we.conf", // input file
         electronBr->GetEntry(ientry);
 	Int_t nLooseLep=0;
 	const baconhep::TElectron *goodEle=0;
-	Bool_t passSel=kFALSE;	
+	Bool_t passSel=kFALSE;
+        heleLooseID->Fill(electronArr->GetEntriesFast());	
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
 	  
@@ -340,6 +386,7 @@ void selectWe(const TString conf="we.conf", // input file
 	}
 
 	if(passSel) {	  
+
 	  //******* We have a W candidate! HURRAY! ********
 	  nsel+=weight;
           nselvar+=weight*weight;
@@ -425,6 +472,8 @@ void selectWe(const TString conf="we.conf", // input file
 	  scale1fb = weight;
 	  met	   = info->pfMET;
 	  metPhi   = info->pfMETphi;
+          mvaMet   = info->mvaMET;
+          mvaMetPhi = info->mvaMETphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
 	  tkMet	   = info->trkMET;
@@ -456,7 +505,8 @@ void selectWe(const TString conf="we.conf", // input file
 	  isConv    = goodEle->isConv;
 	  nexphits  = goodEle->nMissingHits;
 	  typeBits  = goodEle->typeBits;
-	   
+	  //nsel+=weight;
+          //nselvar+=weight*weight;
 	  outTree->Fill();
 	  genV=0, genLep=0, lep=0, sc=0;
         }
@@ -466,7 +516,7 @@ void selectWe(const TString conf="we.conf", // input file
       infile=0, eventTree=0;    
 
       cout << nsel  << " +/- " << sqrt(nselvar);
-      if(isam!=0) cout << " per 1/fb";
+      if(isam!=0) cout << " per 1/pb";
       cout << endl;
 
     }
@@ -497,6 +547,20 @@ void selectWe(const TString conf="we.conf", // input file
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;  
+/*
+  TCanvas* celeLooseID = new TCanvas("eleLooseID_cutflow","eleLooseID_cutflow");
+  heleLooseID->Draw();
+  for(int j=1;j<heleLooseID->GetNbinsX()+1;j++)
+    cout<<"# electrons cut by "<<heleLooseID->GetXaxis()->GetBinLabel(j)<<": "<<heleLooseID->GetBinContent(j)<<endl;
 
+  TCanvas* cfailetaLooseID = new TCanvas("failetaLooseID","failetaLooseID");
+  hfaileta->Draw();
+
+  TCanvas* cfailptLooseID = new TCanvas("failptLooseID","failptLooseID");
+  hfailpt->Draw();
+
+  TCanvas* cfailphiLooseID = new TCanvas("failphiLooseID","failphiLooseID");
+  hfailphi->Draw();
+*/
   gBenchmark->Show("selectWe"); 
 }

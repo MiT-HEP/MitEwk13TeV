@@ -102,7 +102,7 @@ void selectZee(const TString conf="zee.conf", // input file
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb;
-  Float_t met, metPhi, sumEt, u1, u2;
+  Float_t met, metPhi, mvaMet, mvaMetPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
@@ -172,6 +172,8 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
@@ -286,18 +288,32 @@ void selectZee(const TString conf="zee.conf", // input file
 	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
 	totalWeight=hall->Integral();
       }
-
-      Double_t weight=1;
-      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
+/*
+      for(UInt_t kentry=0; kentry<eventTree->GetEntries(); kentry++) {
+      //for(UInt_t kentry=0; kentry<2400000; kentry++) {
+        if(kentry%100000==0) cout << "Processing event " << kentry << endl;
+        if(genBr) {
+          genBr->GetEntry(kentry);
+          genPartArr->Clear();
+          genPartBr->GetEntry(kentry);
+	}
+        totalWeight += gen->weight;
+      }
+*/
+      cout<<endl;
+      cout<<"totalWeight is "<<totalWeight<<endl;
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<1000; ientry++) {
+      //for(UInt_t ientry=0; ientry<2400000; ientry++) {
         infoBr->GetEntry(ientry);
-	
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(hasGen) {
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
@@ -511,6 +527,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	    met      = info->pfMET;
 	    metPhi   = info->pfMETphi;
 	    sumEt    = 0;
+            mvaMet   = info->mvaMET;
+            mvaMetPhi = info->mvaMETphi;
 	    tkMet    = info->trkMET;
 	    tkMetPhi = info->trkMETphi;
 	    tkSumEt  = 0;

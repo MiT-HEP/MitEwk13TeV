@@ -92,10 +92,11 @@ void selectWm(const TString conf="wm.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb;
-  Float_t met, metPhi, sumEt, mt, u1, u2;
+  Float_t met, metPhi, mvaMet, mvaMetPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Int_t   q;
   TLorentzVector *lep=0;
+  Int_t lepID;
   ///// muon specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
@@ -159,6 +160,8 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
@@ -171,6 +174,9 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",        "TLorentzVector", &lep);       // lepton 4-vector
+    outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     ///// muon specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");       // track isolation of lepton
     outTree->Branch("emIso",      &emIso,      "emIso/F");        // ECAL isolation of lepton
@@ -236,18 +242,22 @@ void selectWm(const TString conf="wm.conf", // input file
 	totalWeight=hall->Integral();
       }
 
-      Double_t weight=1;
-      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
+      cout<<endl;
+      cout<<"totalWeight is "<<totalWeight<<endl;
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
 
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<1000; ientry++) {
+      cout<<"Total entries is "<<eventTree->GetEntries()<<endl;
+      //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=0; ientry<8000000; ientry++) {
         infoBr->GetEntry(ientry);
-	
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(genBr) {
 	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
@@ -255,6 +265,13 @@ void selectWm(const TString conf="wm.conf", // input file
 	  weight*=gen->weight;
 	}
         
+        TLorentzVector *vec_=0, *lep1_=0, *lep2_=0;
+        lepID = fabs(toolbox::flavor(genPartArr, 23, vec_, lep1_, lep2_,1));
+
+        //if(lepID!=11) continue; // Z->ee
+        //if(lepID!=13) continue; // Z->mm
+        //if(lepID!=15) continue; // Z->tt
+
 	// check for certified lumi (if applicable)
         //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
@@ -307,8 +324,8 @@ void selectWm(const TString conf="wm.conf", // input file
 	
 	if(passSel) {
 	  /******** We have a W candidate! HURRAY! ********/
-	  nsel+=weight;
-          nselvar+=weight*weight;
+	  //nsel+=weight;
+          //nselvar+=weight*weight;
 	  
 	  TLorentzVector vLep; vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 
@@ -381,6 +398,8 @@ void selectWm(const TString conf="wm.conf", // input file
 	  scale1fb = weight;
 	  met	   = info->pfMET;
 	  metPhi   = info->pfMETphi;
+          mvaMet   = info->mvaMET;
+          mvaMetPhi = info->mvaMETphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
 	  tkMet    = info->trkMET;
@@ -389,6 +408,8 @@ void selectWm(const TString conf="wm.conf", // input file
           tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
 	  q        = goodMuon->q;
 	  lep      = &vLep;
+          mvaMet    = info->mvaMET;
+          mvaMetPhi = info->mvaMETphi;
 
 	  ///// muon specific /////
 	  trkIso     = goodMuon->trkIso;
@@ -407,7 +428,8 @@ void selectWm(const TString conf="wm.conf", // input file
 	  nMatch     = goodMuon->nMatchStn;
 	  nValidHits = goodMuon->nValidHits;
 	  typeBits   = goodMuon->typeBits;
-	  
+	  nsel+=weight;
+          nselvar+=weight*weight;
 	  outTree->Fill();
 	  genV=0, genLep=0, lep=0;
         }
@@ -416,7 +438,7 @@ void selectWm(const TString conf="wm.conf", // input file
       infile=0, eventTree=0;    
 
       cout << nsel  << " +/- " << sqrt(nselvar);
-      if(isam!=0) cout << " per 1/fb";
+      if(isam!=0) cout << " per 1/pb";
       cout << endl;
     }
     outFile->Write();
