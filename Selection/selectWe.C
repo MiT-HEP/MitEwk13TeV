@@ -133,8 +133,10 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb;
-  Float_t met, metPhi, mvaMet, mvaMetPhi, sumEt, mt, u1, u2;
+  Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
+  Float_t ppMet, ppMetPhi, ppSumEt, ppMt, ppU1, ppU2;
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
@@ -206,8 +208,6 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
-    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
-    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
@@ -218,6 +218,18 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass
     outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
+    outTree->Branch("mvaMet",      &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",   &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
+    outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    outTree->Branch("mvaMt",       &mvaMt,       "mvaMt/F");        // transverse mass
+    outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("ppMet",       &ppMet,      "ppMet/F");       // PUPPI MET
+    outTree->Branch("ppMetPhi",    &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
+    outTree->Branch("ppSumEt",     &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
+    outTree->Branch("ppMt",        &ppMt,       "ppMt/F");        // transverse mass 
+    outTree->Branch("ppU1",        &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
+    outTree->Branch("ppU2",        &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",       "TLorentzVector", &lep);        // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
@@ -424,6 +436,10 @@ void selectWe(const TString conf="we.conf", // input file
 	  u2        = -999;
 	  tkU1      = -999;
 	  tkU2      = -999;
+	  mvaU1     = -999;
+          mvaU2     = -999;
+	  ppU1      = -999;
+          ppU2      = -999;
 	  id_1      = -999;
 	  id_2      = -999;
 	  x_1       = -999;
@@ -459,6 +475,17 @@ void selectWe(const TString conf="we.conf", // input file
 	      TVector2 vTkU = -1.0*(vTkMet+vLepPt);
 	      tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
 	      tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+
+	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+              TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+              tkU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              tkU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+	      /*
+              TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
+              TVector2 vPpU = -1.0*(vPpMet+vLepPt);
+              tkU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              tkU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+	      */
 	    }
 	    id_1      = gen->id_1;
 	    id_2      = gen->id_2;
@@ -472,14 +499,19 @@ void selectWe(const TString conf="we.conf", // input file
 	  scale1fb = weight;
 	  met	   = info->pfMET;
 	  metPhi   = info->pfMETphi;
-          mvaMet   = info->mvaMET;
-          mvaMetPhi = info->mvaMETphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
 	  tkMet	   = info->trkMET;
 	  tkMetPhi = info->trkMETphi;
 	  tkSumEt  = 0;
 	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+	  mvaMet   = info->mvaMET;
+          mvaMetPhi = info->mvaMETphi;
+          mvaSumEt  = 0;
+          mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+	  ppMet    = 0;
+	  ppMetPhi = 0;
+	  ppMt     = 0;
 	  q        = goodEle->q;
 	  lep      = &vLep;
 	  

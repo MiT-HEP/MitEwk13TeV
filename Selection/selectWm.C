@@ -433,6 +433,9 @@ void selectWm(const TString conf="wm.conf", // input file
           mvaMetPhi = info->mvaMETphi;
           mvaSumEt  = 0;
           mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+	  ppMet    = 0;
+          ppMetPhi = 0;
+          ppMt     = 0;
 	  q        = goodMuon->q;
 	  lep      = &vLep;
 
