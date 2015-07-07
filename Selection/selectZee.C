@@ -102,8 +102,10 @@ void selectZee(const TString conf="zee.conf", // input file
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb;
-  Float_t met, metPhi, mvaMet, mvaMetPhi, sumEt, u1, u2;
+  Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
+  Float_t ppMet, ppMetPhi, ppSumEt, ppU1, ppU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// electron specific /////
@@ -172,8 +174,6 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
-    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
-    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
@@ -182,6 +182,16 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
     outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
+    outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("ppMet",       &ppMet,      "ppMet/F");       // PUPPI MET
+    outTree->Branch("ppMetPhi",    &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
+    outTree->Branch("ppSumEt",     &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
+    outTree->Branch("ppU1",        &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
+    outTree->Branch("ppU2",        &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
@@ -527,11 +537,15 @@ void selectZee(const TString conf="zee.conf", // input file
 	    met      = info->pfMET;
 	    metPhi   = info->pfMETphi;
 	    sumEt    = 0;
-            mvaMet   = info->mvaMET;
-            mvaMetPhi = info->mvaMETphi;
 	    tkMet    = info->trkMET;
 	    tkMetPhi = info->trkMETphi;
 	    tkSumEt  = 0;
+	    mvaMet   = info->mvaMET;
+            mvaMetPhi = info->mvaMETphi;
+	    mvaSumEt = 0;
+            ppMet    = 0;
+            ppMetPhi = 0;
+	    ppSumEt  = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
 	    dilep    = &vDilep;
@@ -548,6 +562,18 @@ void selectZee(const TString conf="zee.conf", // input file
             TVector2 vTkU = -1.0*(vTkMet+vZPt);
             tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+
+	    TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+            TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
+            tkU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            tkU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+
+	    /*    
+	    TVector2 vPpMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+            TVector2 vPpU = -1.0*(vPpMet+vZPt);
+            tkU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            tkU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+	    */
 	  
 	    ///// electron specific ///// 
 	    sc1        = &vTagSC;
