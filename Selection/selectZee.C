@@ -427,28 +427,28 @@ void selectZee(const TString conf="zee.conf", // input file
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
 	    if(isSignal && hasGen) {
-	      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
-	      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-	      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
-	      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
+	      TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+	      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+	      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	      toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
 
-	      Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, lep1->Eta(), lep1->Phi())<0.3) || 
-				((lep2) && toolbox::deltaR(tag->eta, tag->phi, lep2->Eta(), lep2->Phi())<0.3) );
+	      Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.3) || 
+				((lep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.3) );
 
-	      Bool_t match2 = ( ((lep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep1->Eta(), lep1->Phi())<0.3) || 
-				((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.3) );
+	      Bool_t match2 = ( ((lep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
+				((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
 	      if(match1 && match2) {
 		hasGenMatch = kTRUE;
-		if (vec!=0) {
+		if (gvec!=0) {
 		  genV=new TLorentzVector(0,0,0,0);
-		  genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
-		  genVPt   = vec->Pt();
-		  genVPhi  = vec->Phi();
-		  genVy    = vec->Rapidity();
-		  genVMass = vec->M();
+		  genV->SetPtEtaPhiM(gvec->Pt(), gvec->Eta(), gvec->Phi(), gvec->M());
+		  genVPt   = gvec->Pt();
+		  genVPhi  = gvec->Phi();
+		  genVy    = gvec->Rapidity();
+		  genVMass = gvec->M();
 		}
 		else {
-		  TLorentzVector tvec=*lep1+*lep2;
+		  TLorentzVector tvec=*glep1+*glep2;
 		  genV=new TLorentzVector(0,0,0,0);
 		  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
 		  genVPt   = tvec.Pt();
@@ -456,10 +456,10 @@ void selectZee(const TString conf="zee.conf", // input file
 		  genVy    = tvec.Rapidity();
 		  genVMass = tvec.M();
 		}
-		delete vec;
-		delete lep1;
-		delete lep2;
-		lep1=0; lep2=0; vec=0;
+		delete gvec;
+		delete glep1;
+		delete glep2;
+		glep1=0; glep2=0; gvec=0;
 	      }
 	      else {
 		genV     = new TLorentzVector(0,0,0,0);

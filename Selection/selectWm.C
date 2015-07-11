@@ -356,22 +356,22 @@ void selectWm(const TString conf="wm.conf", // input file
           weightPDF = -999;
 
 	  if(isSignal && hasGen) {
-	    TLorentzVector *vec=new TLorentzVector(0,0,0,0);
-            TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-            TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
-	    toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
+	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+            TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+            TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
 
-            if (vec && lep1) {
+            if (gvec && glep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
-	      genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
+	      genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
 	      genLep    = new TLorentzVector(0,0,0,0);
-	      genLep->SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),lep1->M());
-              genVPt    = vec->Pt();
-              genVPhi   = vec->Phi();
-              genVy     = vec->Rapidity();
-              genVMass  = vec->M();
-              genLepPt  = lep1->Pt();
-              genLepPhi = lep1->Phi();
+	      genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              genVPt    = gvec->Pt();
+              genVPhi   = gvec->Phi();
+              genVy     = gvec->Rapidity();
+              genVMass  = gvec->M();
+              genLepPt  = glep1->Pt();
+              genLepPhi = glep1->Phi();
 	      
               TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
               TVector2 vLepPt(vLep.Px(),vLep.Py());
@@ -405,6 +405,11 @@ void selectWm(const TString conf="wm.conf", // input file
             xPDF_2    = gen->xPDF_2;
             scalePDF  = gen->scalePDF;
             weightPDF = gen->weight;
+
+	    delete gvec;
+            delete glep1;
+            delete glep2;
+            gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
 	  met	   = info->pfMET;
