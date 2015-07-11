@@ -287,7 +287,7 @@ void selectWe(const TString conf="we.conf", // input file
 
         Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-	if(genBr) {
+	if(hasGen) {
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
@@ -517,7 +517,6 @@ void selectWe(const TString conf="we.conf", // input file
   delete gen;
   delete genPartArr;
   delete electronArr;
-  delete pvArr;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

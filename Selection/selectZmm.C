@@ -283,7 +283,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
         Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-	if(hadGen) {
+	if(hasGen) {
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
@@ -545,8 +545,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
   delete gen;
   delete genPartArr;
   delete muonArr;
-  delete pvArr;
-  
     
   //--------------------------------------------------------------------------------------------------------------
   // Output
