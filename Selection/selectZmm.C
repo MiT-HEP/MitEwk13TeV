@@ -277,10 +277,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 
-	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
-        if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
-        else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
-
         Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(hasGen) {
@@ -289,6 +285,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
           genPartBr->GetEntry(ientry);
 	  weight*=gen->weight;
 	}
+
+	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
+        if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
+        else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
      
         // check for certified lumi (if applicable)
         //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
