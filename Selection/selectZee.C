@@ -123,7 +123,6 @@ void selectZee(const TString conf="zee.conf", // input file
   TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
   TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
-  TClonesArray *pvArr          = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -139,7 +138,7 @@ void selectZee(const TString conf="zee.conf", // input file
     
     // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
-    // flag to reject Z->ee events for wrong flavor backgrounds
+    // flag to reject Z->ee events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);  
     
     CSample* samp = samplev[isam];
@@ -184,14 +183,14 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
     outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
     outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
-    outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
-    outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
-    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
-    outTree->Branch("ppMet",       &ppMet,      "ppMet/F");       // PUPPI MET
-    outTree->Branch("ppMetPhi",    &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
-    outTree->Branch("ppSumEt",     &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
-    outTree->Branch("ppU1",        &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
-    outTree->Branch("ppU2",        &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
+    outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("ppMet",      &ppMet,      "ppMet/F");       // PUPPI MET
+    outTree->Branch("ppMetPhi",   &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
+    outTree->Branch("ppSumEt",    &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
+    outTree->Branch("ppU1",       &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
+    outTree->Branch("ppU2",       &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
@@ -256,14 +255,6 @@ void selectZee(const TString conf="zee.conf", // input file
       UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
       UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
 
-      /*      cout << endl << "Checking trigger bits: " << endl;
-      cout << "HLT_Ele22_WP75_Gsf_v*         " << triggerMenu.getTriggerBit("HLT_Ele22_WP75_Gsf_v*") << endl;
-      cout << "HLT_Ele23_WP75_Gsf_v*         " << triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*") << endl;
-      cout << "HLT_IsoMu20_v*                " << triggerMenu.getTriggerBit("HLT_IsoMu20_v*")        << endl;
-
-      cout << "trigObjL1     " << trigObjL1 << endl;
-      cout << "trigObjHLT    " << trigObjHLT << endl;*/
-
       //Bool_t hasJSON = kFALSE;
       //baconhep::RunLumiRangeMap rlrm;
       //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
@@ -283,54 +274,39 @@ void selectZee(const TString conf="zee.conf", // input file
 	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
 
-      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
-      TBranch *pvBr=0;
-      if (hasVer) {
-	eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
-      }
-
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
-      Double_t totalWeight=0;
-
+      Double_t totalWeight=1;
       if (hasGen) {
 	TH1D *hall = new TH1D("hall", "", 1,0,1);
 	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
 	totalWeight=hall->Integral();
+	delete hall;
+	hall=0;
       }
-/*
-      for(UInt_t kentry=0; kentry<eventTree->GetEntries(); kentry++) {
-      //for(UInt_t kentry=0; kentry<2400000; kentry++) {
-        if(kentry%100000==0) cout << "Processing event " << kentry << endl;
-        if(genBr) {
-          genBr->GetEntry(kentry);
-          genPartArr->Clear();
-          genPartBr->GetEntry(kentry);
-	}
-        totalWeight += gen->weight;
-      }
-*/
-      cout<<endl;
-      cout<<"totalWeight is "<<totalWeight<<endl;
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<2400000; ientry++) {
         infoBr->GetEntry(ientry);
-        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+	// veto z -> xx decays for signal and z -> ee for bacground samples (needed for inclusive DYToLL sample)
+	if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
+	else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
 
         Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(hasGen) {
-	  genBr->GetEntry(ientry);
 	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
 	  genPartBr->GetEntry(ientry);
 	  weight*=gen->weight;
 	}
-     
+
         // check for certified lumi (if applicable)
         //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
@@ -340,11 +316,7 @@ void selectZee(const TString conf="zee.conf", // input file
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-	if (hasVer) {
-	  pvArr->Clear();
-	  pvBr->GetEntry(ientry);
-	}
-
+	
         //
 	// SELECTION PROCEDURE:
 	//  (1) Find a good electron matched to trigger -> this will be the "tag"
@@ -355,13 +327,15 @@ void selectZee(const TString conf="zee.conf", // input file
 	//      (c) if probe SC is part of an electron failing selection cuts     -> EleEleNoSel category
 	//      (d) if probe SC is not part of an ECAL driven electron            -> EleSC category
 	//	
+
 	electronArr->Clear();
         electronBr->GetEntry(ientry);
 	scArr->Clear();
 	scBr->GetEntry(ientry);
-        for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
+
+	for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
           const baconhep::TElectron *tag = (baconhep::TElectron*)((*electronArr)[i1]);
-	  
+
 	  // check ECAL gap
 	  if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue;
 	  
@@ -428,9 +402,6 @@ void selectZee(const TString conf="zee.conf", // input file
 	    TLorentzVector vDilep = vTag + vProbe;
 	    if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
 
-	    //only for looking at low pT trigger efficiencies
-	    //if (toolbox::deltaR(vTag.Eta(), vProbe.Eta(), vTag.Phi(), vProbe.Phi())<0.3) continue;
-
 	    // determine event category
 	    UInt_t icat=0;
 	    if(eleProbe) {
@@ -449,22 +420,18 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    if(icat==0) continue;
 
-	    // veto z -> ee decay for wrong flavor background samples (needed for inclusive DYToLL sample)
-	    if (isWrongFlavor) {
-	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))==LEPTON_ID) continue;
-	    }
-
-	    /******** We have a Z candidate! HURRAY! ********/
+	    //******** We have a Z candidate! HURRAY! ********
 	    nsel+=weight;
             nselvar+=weight*weight;
 
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
 	    if(isSignal && hasGen) {
-	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	      // veto wrong flavor events for signal sample
-	      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))!=LEPTON_ID) continue;
+	      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+	      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+	      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+	      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
+
 	      Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, lep1->Eta(), lep1->Phi())<0.3) || 
 				((lep2) && toolbox::deltaR(tag->eta, tag->phi, lep2->Eta(), lep2->Phi())<0.3) );
 
@@ -489,6 +456,10 @@ void selectZee(const TString conf="zee.conf", // input file
 		  genVy    = tvec.Rapidity();
 		  genVMass = tvec.M();
 		}
+		delete vec;
+		delete lep1;
+		delete lep2;
+		lep1=0; lep2=0; vec=0;
 	      }
 	      else {
 		genV     = new TLorentzVector(0,0,0,0);
@@ -498,7 +469,7 @@ void selectZee(const TString conf="zee.conf", // input file
 		genVMass = -999;
 	      }
 	    }
-	    
+
 	    if (hasGen) {
 	      id_1      = gen->id_1;
 	      id_2      = gen->id_2;
@@ -531,7 +502,7 @@ void selectZee(const TString conf="zee.conf", // input file
             else matchGen=0;
 
 	    category = icat;
-	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
+	    npv      = 0; 
 	    npu      = info->nPU;
 	    scale1fb = weight;
 	    met      = info->pfMET;
@@ -568,12 +539,10 @@ void selectZee(const TString conf="zee.conf", // input file
             tkU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             tkU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
-	    /*    
-	    TVector2 vPpMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-            TVector2 vPpU = -1.0*(vPpMet+vZPt);
-            tkU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-            tkU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-	    */
+	    //TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
+            //TVector2 vPpU = -1.0*(vPpMet+vZPt);
+            //tkU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            //tkU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 	  
 	    ///// electron specific ///// 
 	    sc1        = &vTagSC;
@@ -622,9 +591,10 @@ void selectZee(const TString conf="zee.conf", // input file
 	    typeBits2  = (eleProbe) ? eleProbe->typeBits      : 0; 
 
 	    outTree->Fill();
+	    delete genV;
 	    genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0;
 	  }
-        }
+	}
       }
       delete infile;
       infile=0, eventTree=0;    
@@ -638,10 +608,9 @@ void selectZee(const TString conf="zee.conf", // input file
   }
   delete info;
   delete gen;
+  delete genPartArr;
   delete electronArr;
   delete scArr;
-  delete pvArr;
-  
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

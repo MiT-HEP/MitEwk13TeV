@@ -115,7 +115,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
-  TClonesArray *pvArr      = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -131,7 +130,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
     // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
-    // flag to reject Z->mm events for wrong flavor backgrounds
+    // flag to reject Z->mm events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
@@ -253,19 +252,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
-        eventTree->SetBranchAddress("GenEvtInfo", &gen);
-	genBr = eventTree->GetBranch("GenEvtInfo");
-	eventTree->SetBranchAddress("GenParticle",&genPartArr);
-        genPartBr = eventTree->GetBranch("GenParticle");
+        eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
+	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
 
-      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
-      TBranch *pvBr=0;
-      if (hasVer) {
-        eventTree->SetBranchAddress("Vertex",       &pvArr);
-        pvBr = eventTree->GetBranch("Vertex");
-      }
-    
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
       Double_t totalWeight=0;
@@ -274,39 +264,28 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	TH1D *hall = new TH1D("hall", "", 1,0,1);
 	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
 	totalWeight=hall->Integral();
+	delete hall;
+	hall=0;
       }
-/*
-      for(UInt_t kentry=0; kentry<eventTree->GetEntries(); kentry++) {
-        if(kentry%100000==0) cout << "Processing event " << kentry << endl;
-        if(genBr) {
-          genBr->GetEntry(kentry);
-          genPartArr->Clear();
-          genPartBr->GetEntry(kentry);
-	}
-        totalWeight += gen->weight;
-      }
-*/
-      cout<<endl;
-      cout<<"totalWeight is "<<totalWeight<<endl;
-
-//      Double_t weight=1;
-//      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<2400000; ientry++) {
-        infoBr->GetEntry(ientry);	
-        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+        infoBr->GetEntry(ientry);
+
+        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
+        if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
+        else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
 
         Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-	if(genBr) {
-	  genBr->GetEntry(ientry);
+	if(hadGen) {
 	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
 	  weight*=gen->weight;
 	}
@@ -320,10 +299,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-        if (hasVer) {
-	  pvArr->Clear();
-	  pvBr->GetEntry(ientry);
-	}
 
         //
 	// SELECTION PROCEDURE:
@@ -336,8 +311,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	//      (d) if probe is a standalone muon but not global                -> MuSta category
 	//      (e) if probe is a tracker muon or non-muon track but not global -> MuTrk category
 	//
+
 	muonArr->Clear();
         muonBr->GetEntry(ientry);
+
         for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
           const baconhep::TMuon *tag = (baconhep::TMuon*)((*muonArr)[i1]);
 	
@@ -385,12 +362,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
 	    if(icat==0) continue;
 
-	    // veto z -> mm decay for wrong flavor background samples (needed for inclusive DYToLL sample)
-            if (isWrongFlavor) {
-              TLorentzVector *vec=0, *lep1=0, *lep2=0;
-              if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))==LEPTON_ID) continue;
-	    }
-
 	    /******** We have a Z candidate! HURRAY! ********/
 	    nsel+=weight;
             nselvar+=weight*weight;
@@ -398,9 +369,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
 	    if(isSignal && hasGen) {
-	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	      // veto wrong flavor events for signal sample
-              if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))!=LEPTON_ID) continue;
+	      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+              TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+              TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+	      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
+
               Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, lep1->Eta(), lep1->Phi())<0.5) ||
                                 ((lep2) && toolbox::deltaR(tag->eta, tag->phi, lep2->Eta(), lep2->Phi())<0.5) );
 	      
@@ -408,7 +381,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
                                 ((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.5) );
               if(match1 && match2) {
                 hasGenMatch = kTRUE;
-
 		if (vec!=0) {
                   genV=new TLorentzVector(0,0,0,0);
                   genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
@@ -426,6 +398,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
                   genVy    = tvec.Rapidity();
                   genVMass = tvec.M();
                 }
+		delete vec;
+		delete lep1;
+		delete lep2;
+		lep1=0; lep2=0; vec=0;
               }
               else {
 		genV     = new TLorentzVector(0,0,0,0); 
@@ -468,7 +444,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    else matchGen=0;
 	    
 	    category = icat;
-	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
+	    npv      = 0;
 	    npu      = info->nPU;
 	    scale1fb = weight;
 	    met      = info->pfMET;
@@ -506,7 +482,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
             tkU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
 	    /*	    
-	    TVector2 vPpMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+	    TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
             TVector2 vPpU = -1.0*(vPpMet+vZPt);
             tkU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             tkU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
@@ -550,6 +526,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    typeBits2   = probe->typeBits;
 	    
 	    outTree->Fill();
+	    delete genV;
 	    genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
 	  }
         }
@@ -566,6 +543,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   }
   delete info;
   delete gen;
+  delete genPartArr;
   delete muonArr;
   delete pvArr;
   

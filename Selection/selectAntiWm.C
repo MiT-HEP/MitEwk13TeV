@@ -52,7 +52,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   // Settings 
   //============================================================================================================== 
 
-  const Double_t PT_CUT    = 20;
+  const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
@@ -110,7 +110,6 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   baconhep::TGenEventInfo *gen  = new baconhep::TGenEventInfo();
   TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
-  TClonesArray *pvArr      = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -124,9 +123,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
     if(isam==0 && !hasData) continue;
 
-    // Assume signal sample is given name "wm"                                                                                                      
+    // Assume signal sample is given name "wm"
     Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
-    // flag to reject W->mnu events for wrong flavor backgrounds
+    // flag to reject W->mnu events when selecting wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);  
     
     CSample* samp = samplev[isam];
@@ -157,8 +156,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     outTree->Branch("genVPhi",    &genVPhi,    "genVPhi/F");    // GEN boson phi (signal MC)
     outTree->Branch("genVy",      &genVy,      "genVy/F");      // GEN boson rapidity (signal MC)
     outTree->Branch("genVMass",   &genVMass,   "genVMass/F");   // GEN boson mass (signal MC)
-    outTree->Branch("genLepPt",   &genLepPt, "genLepPt/F");    // GEN lepton pT (signal MC)
-    outTree->Branch("genLepPhi",  &genLepPhi,"genLepPhi/F");   // GEN lepton phi (signal MC)
+    outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");   // GEN lepton pT (signal MC)
+    outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");  // GEN lepton phi (signal MC)
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");   // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");        // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");     // phi(MET)
@@ -169,21 +168,21 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     outTree->Branch("tkMet",      &tkMet,      "tkMet/F");      // MET (track MET)
     outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");   // phi(MET) (track MET)
     outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");    // Sum ET (track MET)
-    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");       // transverse mass
+    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");       // transverse mass (track MET)
     outTree->Branch("tkU1",       &tkU1,       "tkU1/F");       // parallel component of recoil (track MET)
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");       // perpendicular component of recoil (track MET)
-    outTree->Branch("mvaMet",      &mvaMet,     "mvaMet/F");      // MVA MET
-    outTree->Branch("mvaMetPhi",   &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
-    outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
-    outTree->Branch("mvaMt",       &mvaMt,       "mvaMt/F");        // transverse mass
-    outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
-    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
-    outTree->Branch("ppMet",       &ppMet,      "ppMet/F");       // PUPPI MET
-    outTree->Branch("ppMetPhi",    &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
-    outTree->Branch("ppSumEt",     &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
-    outTree->Branch("ppMt",        &ppMt,       "ppMt/F");        // transverse mass 
-    outTree->Branch("ppU1",        &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
-    outTree->Branch("ppU2",        &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");     // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");  // phi(MVA MET)
+    outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");   // Sum ET (MVA MET)
+    outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");      // transverse mass (MVA MET)
+    outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");      // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");      // perpendicular component of recoil (mva MET)
+    outTree->Branch("ppMet",      &ppMet,      "ppMet/F");      // PUPPI MET
+    outTree->Branch("ppMetPhi",   &ppMetPhi,   "ppMetPhi/F");   // phi(PUPPI MET)
+    outTree->Branch("ppSumEt",    &ppSumEt,    "ppSumEt/F");    // Sum ET (PUPPI MET)
+    outTree->Branch("ppMt",       &ppMt,       "ppMt/F");       // transverse mass (PUPPI MET)
+    outTree->Branch("ppU1",       &ppU1,       "ppU1/F");       // parallel component of recoil (PUPPI MET)
+    outTree->Branch("ppU2",       &ppU2,       "ppU2/F");       // perpendicular component of recoil (PUPPI MET)
     outTree->Branch("q",          &q,          "q/I");          // lepton charge
     outTree->Branch("lep",        "TLorentzVector", &lep);      // lepton 4-vector
     ///// muon specific /////
@@ -239,11 +238,6 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         eventTree->SetBranchAddress("GenParticle",&genPartArr);
         genPartBr = eventTree->GetBranch("GenParticle");
       }
-      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
-      TBranch *pvBr=0;
-      if (hasVer) {
-        eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
-      }
     
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
@@ -253,10 +247,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	TH1D *hall = new TH1D("hall", "", 1,0,1);
 	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
 	totalWeight=hall->Integral();
+	delete hall;
+	hall=0;
       }
-
-      Double_t weight=1;
-      if(xsec>0 && totalWeight>0) weight = 1000.*xsec/totalWeight;
 
       //
       // loop over events
@@ -264,10 +257,18 @@ void selectAntiWm(const TString conf="wm.conf", // input file
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
         infoBr->GetEntry(ientry);
-	
+
+	if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        // veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
+        if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
+        else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+
+        Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(genBr) {
-          genBr->GetEntry(ientry);
           genPartArr->Clear();
+          genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
 	  weight*=gen->weight;
         }
@@ -281,10 +282,6 @@ void selectAntiWm(const TString conf="wm.conf", // input file
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-	if (hasVer) {
-	  pvArr->Clear();
-	  pvBr->GetEntry(ientry);
-	}
 
         //
 	// SELECTION PROCEDURE:
@@ -293,9 +290,11 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	//
 	muonArr->Clear();
         muonBr->GetEntry(ientry);
+
 	Int_t nLooseLep=0;
 	const baconhep::TMuon *goodMuon=0;
 	Bool_t passSel=kFALSE;
+
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
@@ -314,28 +313,23 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	  
 	  passSel=kTRUE;
 	  goodMuon = mu;
-
 	}
 
-	// veto w -> munu decay for wrong flavor background samples (needed for inclusive WToLNu sample)
-        if (isWrongFlavor) {
-          TLorentzVector *vec=0, *lep1=0, *lep2=0;
-          if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))==LEPTON_ID) continue;
-        }
-	
 	if(passSel) {	  
 	  /******** We have a W candidate! HURRAY! ********/
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
-	  TLorentzVector vLep; vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS);
+	  TLorentzVector vLep; 
+	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS);
+
 	  //
 	  // Fill tree
 	  //
 	  runNum   = info->runNum;
 	  lumiSec  = info->lumiSec;
 	  evtNum   = info->evtNum;
-	  npv	   = hasVer ? pvArr->GetEntriesFast() : 0;
+	  npv	   = 0;
 	  npu	   = info->nPU;
 	  genV      = new TLorentzVector(0,0,0,0);
           genLep    = new TLorentzVector(0,0,0,0);
@@ -359,10 +353,13 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           xPDF_2    = -999;
           scalePDF  = -999;
           weightPDF = -999;
-	  if(isSignal) {
-	    TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	    // veto wrong flavor events for signal sample
-            if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2,1))!=LEPTON_ID) continue;
+
+	  if(isSignal && hasGen) {
+	    TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+            TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+            TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+	    toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
+
             if (vec && lep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
               genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
@@ -421,7 +418,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           mvaMetPhi = info->mvaMETphi;
           mvaSumEt  = 0;
           mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-	  ppMet   = 0;
+	  ppMet    = 0;
           ppMetPhi = 0;
           ppSumEt  = 0;
 	  ppMt     = 0;
@@ -447,6 +444,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	  typeBits   = goodMuon->typeBits;
 
 	  outTree->Fill();
+	  delete genV;
+	  delete genLep;
 	  genV=0, genLep=0, lep=0;
         }
       }
@@ -462,10 +461,10 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   }
   delete info;
   delete gen;
+  delete genPartArr;
   delete muonArr;
   delete pvArr;
-  
-    
+      
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
