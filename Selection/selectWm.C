@@ -35,7 +35,7 @@
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 // lumi section selection with JSON files
-//#include "MitAna/DataCont/interface/RunLumiRangeMap.h"
+#include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -214,12 +214,12 @@ void selectWm(const TString conf="wm.conf", // input file
       infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
 
-      //Bool_t hasJSON = kFALSE;
-      //baconhep::RunLumiRangeMap rlrm;
-      //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
-      // hasJSON = kTRUE;
-      // rlrm.AddJSONFile(samp->jsonv[ifile].Data()); 
-      //}
+      Bool_t hasJSON = kFALSE;
+      baconhep::RunLumiRangeMap rlrm;
+      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+	hasJSON = kTRUE;
+	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
+      }
 
       const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
       UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
@@ -273,8 +273,8 @@ void selectWm(const TString conf="wm.conf", // input file
         else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
         
 	// check for certified lumi (if applicable)
-        //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
-        //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
+        baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
+        if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
         if(!(info->triggerBits[trigger])) continue;

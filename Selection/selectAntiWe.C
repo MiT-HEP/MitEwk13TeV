@@ -244,12 +244,12 @@ void selectAntiWe(const TString conf="we.conf", // input file
         trigObjHLT = 5; //triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
       }
 
-      //Bool_t hasJSON = kFALSE;
-      //baconhep::RunLumiRangeMap rlrm;
-      //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
-      //hasJSON = kTRUE;
-      //rlrm.AddJSONFile(samp->jsonv[ifile].Data()); 
-      //}
+      Bool_t hasJSON = kFALSE;
+      baconhep::RunLumiRangeMap rlrm;
+      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+	hasJSON = kTRUE;
+	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
+      }
   
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);  
@@ -298,8 +298,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
         else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
 
         // check for certified lumi (if applicable)
-        //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
-        //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
+        baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
+        if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
         if(!(info->triggerBits[trigger])) continue;
