@@ -478,14 +478,14 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
 	    TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
             TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
-            tkU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-            tkU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+            mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
 	    /*	    
 	    TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
             TVector2 vPpU = -1.0*(vPpMet+vZPt);
-            tkU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-            tkU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+            ppU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            ppU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 	    */
 	  
 	    ///// muon specific /////

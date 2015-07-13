@@ -387,13 +387,13 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 
 	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
               TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
-              tkU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              tkU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      /*
               TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
               TVector2 vPpU = -1.0*(vPpMet+vLepPt);
-              tkU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              tkU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      */
             }
 	    id_1      = gen->id_1;

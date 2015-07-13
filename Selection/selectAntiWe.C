@@ -232,10 +232,17 @@ void selectAntiWe(const TString conf="we.conf", // input file
       assert(infile);
 
       const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-      UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
-      //need to clean this up
-      UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
-      UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
+      UInt_t trigger, trigObjL1, trigObjHLT;
+      if (isam==0) {
+        trigger = triggerMenu.getTriggerBit("HLT_Ele23_WPLoose_Gsf_v*"); //data trigger
+        trigObjL1  = 1; //data
+        trigObjHLT = 2; //data
+      }
+      else {
+        trigger = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
+        trigObjL1  = 4; //triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
+        trigObjHLT = 5; //triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
+      }
 
       //Bool_t hasJSON = kFALSE;
       //baconhep::RunLumiRangeMap rlrm;
@@ -430,13 +437,13 @@ void selectAntiWe(const TString conf="we.conf", // input file
 
 	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
               TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
-              tkU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              tkU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+	      mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      /*
               TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
               TVector2 vPpU = -1.0*(vPpMet+vLepPt);
-              tkU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              tkU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      */
 	    }
 	    id_1      = gen->id_1;

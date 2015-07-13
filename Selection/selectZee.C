@@ -55,7 +55,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 25;
+  const Double_t PT_CUT    = 20;
   const Double_t ETA_CUT   = 2.5;
   const Double_t ELE_MASS  = 0.000511;
   
@@ -250,10 +250,17 @@ void selectZee(const TString conf="zee.conf", // input file
       assert(infile);
 
       const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-      UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
-      //need to clean this up
-      UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
-      UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
+      UInt_t trigger, trigObjL1, trigObjHLT;
+      if (isam==0) {
+	trigger = triggerMenu.getTriggerBit("HLT_Ele23_WPLoose_Gsf_v*"); //data trigger
+	trigObjL1  = 1; //data
+	trigObjHLT = 2; //data
+      }
+      else {
+	trigger = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
+	trigObjL1  = 4; //triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
+	trigObjHLT = 5; //triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
+      }
 
       //Bool_t hasJSON = kFALSE;
       //baconhep::RunLumiRangeMap rlrm;
@@ -313,7 +320,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
         // trigger requirement               
         if(!(info->triggerBits[trigger])) continue;
-      
+
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
 	
@@ -536,13 +543,13 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
             TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
-            tkU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-            tkU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+            mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
 	    //TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
             //TVector2 vPpU = -1.0*(vPpMet+vZPt);
-            //tkU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-            //tkU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+            //ppU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            //ppU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 	  
 	    ///// electron specific ///// 
 	    sc1        = &vTagSC;
