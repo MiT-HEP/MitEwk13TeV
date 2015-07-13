@@ -61,10 +61,10 @@ void selectZee(const TString conf="zee.conf", // input file
   
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
-  
-  const Double_t escaleNbins  = 6;
-  const Double_t escaleEta[]  = { 0.4,     0.8,     1.2,     1.4442,  2,        2.5 };
-  const Double_t escaleCorr[] = { 1.00284, 1.00479, 1.00734, 1.00851, 1.00001,  0.982898 };
+
+  const Double_t escaleNbins  = 2;
+  const Double_t escaleEta[]  = { 1.4442,   2.5     };
+  const Double_t escaleCorr[] = { 0.997542, 1.01507 };
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
@@ -147,7 +147,7 @@ void selectZee(const TString conf="zee.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(isam==0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+    if(!doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number

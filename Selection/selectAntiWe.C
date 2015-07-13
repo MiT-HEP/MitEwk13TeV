@@ -63,10 +63,10 @@ void selectAntiWe(const TString conf="we.conf", // input file
   
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
-  
-  const Double_t escaleNbins  = 6;
-  const Double_t escaleEta[]  = { 0.4,     0.8,     1.2,     1.4442,  2,        2.5 };
-  const Double_t escaleCorr[] = { 1.00284, 1.00479, 1.00734, 1.00851, 1.00001,  0.982898 };
+
+  const Double_t escaleNbins  = 2;
+  const Double_t escaleEta[]  = { 1.4442,   2.5     };
+  const Double_t escaleCorr[] = { 0.997542, 1.01507 };
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
