@@ -55,7 +55,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 20;
+  const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.5;
   const Double_t ELE_MASS  = 0.000511;
   
