@@ -237,7 +237,7 @@ void selectWe(const TString conf="we.conf", // input file
       assert(infile);
 
       Bool_t hasJSON = kFALSE;
-      mithep::RunLumiRangeMap rlrm;
+      baconhep::RunLumiRangeMap rlrm;
       if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
         hasJSON = kTRUE;
         rlrm.addJSONFile(samp->jsonv[ifile].Data()); 

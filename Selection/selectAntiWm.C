@@ -35,7 +35,7 @@
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 // lumi section selection with JSON files
-//#include "MitAna/DataCont/interface/RunLumiRangeMap.h"
+#include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
