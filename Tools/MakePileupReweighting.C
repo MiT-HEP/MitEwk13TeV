@@ -12,24 +12,39 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
+
 #endif
 
 // Main macro function
 //--------------------------------------------------------------------------------------------------
 void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/SingleMuon.root",
 			   TString mcfile   = "/data/blue/Bacon/Run2/wz_bacon/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
+			   TString certfile = "../Selection/Cert_246908-251252_13TeV_PromptReco_Collisions15_JSON.txt",
 			   TString outfile  = "pileup_weights_2015B.root") {
 
   TFile *f_data = new TFile(datafile, "read");
   TTree *t_data = (TTree*) f_data->Get("Events");
   TH1D *h_data = new TH1D("npv_rw", "npv_rw", 40, 0, 40); h_data->Sumw2();
 
+  baconhep::TEventInfo *info = new baconhep::TEventInfo();
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
+
+  t_data->SetBranchAddress("Info", &info);    TBranch *infoBr   = t_data->GetBranch("Info");
   t_data->SetBranchAddress("PV", &vertexArr); TBranch *vertexBr = t_data->GetBranch("PV");
 
-  for (Int_t i=0; i<t_data->GetEntries()/1000; i++) {
+  baconhep::RunLumiRangeMap rlrm;
+  rlrm.addJSONFile(certfile.Data());
+
+  for (Int_t i=0; i<t_data->GetEntries(); i++) {
     vertexArr->Clear();
     vertexBr->GetEntry(i);
+    infoBr->GetEntry(i);
+
+    baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec); 
+    if (!(rlrm.hasRunLumi(rl))) continue;
     h_data->Fill(vertexArr->GetEntries());
   }
 
@@ -48,8 +63,8 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
   }
 
   h_mc->Scale(1.0/h_mc->Integral());
-
-  /*  TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
+  /*
+  TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
   h_data->Draw("hist");
   h_mc->SetLineColor(kRed);
   h_mc->Draw("histsame");
@@ -59,8 +74,8 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
   l->AddEntry(h_mc,"MC","l");
   l->Draw();
   
-  c1->SaveAs("npv_data_mc.png");*/
-
+  c1->SaveAs("npv_data_mc.png");
+  */
   TFile *f_out = new TFile(outfile, "recreate");
 
   TH1D *h_scale = (TH1D*) h_data->Clone();
