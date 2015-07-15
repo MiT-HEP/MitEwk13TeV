@@ -21,16 +21,16 @@
 #
 # Z->mumu
 #
-root -l -q computeAccGenZmm.C+\(\"zmm.conf\",\"Zmumu\"\)
+#root -l -q computeAccGenZmm.C+\(\"zmm.conf\",\"Zmumu\"\)
 #root -l -q computeAccSelZmm.C+\(\"zmm.conf\",\"Zmumu\"\)
 #root -l -q computeAccSelZmmBinned.C+\(\"zmm.conf\",\"Zmumu\"\)
 
 #
 # Z->ee
 #
-root -l -q computeAccGenZee.C+\(\"zee.conf\",\"Zee\"\)
-root -l -q computeAccSCZee.C+\(\"zee.conf\",\"Zee\"\)
+#root -l -q computeAccGenZee.C+\(\"zee.conf\",\"Zee\"\)
+#root -l -q computeAccSCZee.C+\(\"zee.conf\",\"Zee\"\)
 #root -l -q computeAccSelZee.C+\(\"zee.conf\",\"Zee\"\)
-#root -l -q computeAccSelZeeBinned.C+\(\"zee.conf\",\"Zee\"\)
+root -l -q computeAccSelZeeBinned.C+\(\"zee.conf\",\"Zee\"\)
 
 rm *.so *.d

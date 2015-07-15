@@ -61,25 +61,25 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_pos/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_neg/eff.root";
-  const TString zmmHLTEffName_pos  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_pos/eff.root";
-  const TString zmmHLTEffName_neg  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_neg/eff.root";
-  
-  const TString dataSelEffName_pos = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_pos/eff.root";
-  const TString dataSelEffName_neg = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_neg/eff.root";
-  const TString zmmSelEffName_pos  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_pos/eff.root";
-  const TString zmmSelEffName_neg  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_neg/eff.root";
-  
-  const TString dataTrkEffName_pos = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_pos/eff.root";
-  const TString dataTrkEffName_neg = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_neg/eff.root";
-  const TString zmmTrkEffName_pos  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_pos/eff.root";
-  const TString zmmTrkEffName_neg  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_neg/eff.root";
-  
-  const TString dataStaEffName_pos = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_pos/eff.root";
-  const TString dataStaEffName_neg = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_neg/eff.root";
-  const TString zmmStaEffName_pos  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_pos/eff.root";
-  const TString zmmStaEffName_neg  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_neg/eff.root";
+  const TString dataHLTEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+
+  const TString dataSelEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
+  const TString dataSelEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
+  const TString zmmSelEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+  const TString zmmSelEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+
+  const TString dataTrkEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+
+  const TString dataStaEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuStaEff_iso/eff.root";
+  const TString dataStaEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZmm_MuStaEff_iso/eff.root";
+  const TString zmmStaEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+  const TString zmmStaEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
   
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -247,10 +247,13 @@ void computeAccSelZmmBinned(const TString conf,      // input file
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
 
-      TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
-
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
+      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
+      delete vec; delete lep1; delete lep2;
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;

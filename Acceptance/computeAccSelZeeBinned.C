@@ -63,19 +63,19 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const Int_t LEPTON_ID = 11;
   
   // efficiency files
-  const TString dataHLTEffName     = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_pos = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_pos/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_neg/eff.root";
-  const TString zeeHLTEffName      = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_pos  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_pos/eff.root";
-  const TString zeeHLTEffName_neg  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_neg/eff.root";
+  const TString dataHLTEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName      = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
   
-  const TString dataGsfSelEffName     = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_pos = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_pos/eff.root";
-  const TString dataGsfSelEffName_neg = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_neg/eff.root";
-  const TString zeeGsfSelEffName      = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_pos/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_neg/eff.root";
+  const TString dataGsfSelEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName      = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -197,7 +197,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
     infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
-  
+
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
     eventTree->SetBranchAddress("Info",              &info); TBranch *infoBr     = eventTree->GetBranch("Info");
     eventTree->SetBranchAddress("GenEvtInfo",         &gen); TBranch *genBr      = eventTree->GetBranch("GenEvtInfo");
@@ -208,7 +208,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
     nSelv.push_back(0);
     nSelCorrv.push_back(0);
     statErr2v.push_back(0);
-    
+
     //
     // loop over events
     //
@@ -216,11 +216,14 @@ void computeAccSelZeeBinned(const TString conf,            // input file
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
-      
-      TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
 
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
+      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
+      delete vec; delete lep1; delete lep2;
     
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
@@ -230,7 +233,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
-    
+
       electronArr->Clear();
       electronBr->GetEntry(ientry);
       for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
@@ -310,7 +313,6 @@ void computeAccSelZeeBinned(const TString conf,            // input file
             effmc   *= zeeGsfSelEff_neg.getEff(fabs(sceta2), ele2->scEt);
           }
           corr *= effdata/effmc;
-	  
 	  nSelv[ifile]+=weight;
 	  nSelCorrv[ifile]+=weight*corr;
 	  statErr2v[ifile]+=weight*weight*corr*corr;
@@ -377,8 +379,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   }  
   delete info;
   delete gen;
-  delete electronArr;
-  
+  delete electronArr;  
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

@@ -65,21 +65,21 @@ void computeAccSelWe(const TString conf,       // input file
   const Int_t LEPTON_ID = 11;
  
   // efficiency files
-  TString dataHLTEffName(   "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff/eff.root");
-  TString zeeHLTEffName(    "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff/eff.root");
-  TString dataGsfSelEffName("/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff/eff.root");
-  TString zeeGsfSelEffName( "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff/eff.root");
+  TString dataHLTEffName(   "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
+  TString zeeHLTEffName(    "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root");
+  TString dataGsfSelEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root");
+  TString zeeGsfSelEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_pos/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_pos/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_pos/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_pos/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName    = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_neg/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleHLTEff_neg/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_neg/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zee_EleGsfSelEff_neg/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   
   //--------------------------------------------------------------------------------------------------------------
@@ -238,15 +238,18 @@ void computeAccSelWe(const TString conf,       // input file
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/100; ientry++) {
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
-      TLorentzVector *vec=0, *lep1=0, *lep2=0;
 
-      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2, 0)!=LEPTON_ID) continue;
-      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0)!=-LEPTON_ID) continue;
-      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID)  continue;
+      if (charge==-1 && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
+      /*TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);*/
     
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;

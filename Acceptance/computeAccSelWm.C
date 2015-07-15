@@ -63,33 +63,33 @@ void computeAccSelWm(const TString conf,       // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  TString dataHLTEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff/eff.root");
-  TString zmmHLTEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff/eff.root");
-  TString dataSelEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff/eff.root");
-  TString zmmSelEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff/eff.root");
-  TString dataTrkEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff/eff.root");
-  TString zmmTrkEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff/eff.root");
-  TString dataStaEffName("/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso/eff.root");
-  TString zmmStaEffName( "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso/eff.root");
+  TString dataHLTEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root");
+  TString zmmHLTEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root");
+  TString dataSelEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root");
+  TString zmmSelEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root");
+  TString dataTrkEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
+  TString zmmTrkEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
+  TString dataStaEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root");
+  TString zmmStaEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root");
   if(charge==1) {
-    dataHLTEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_pos/eff.root";
-    zmmHLTEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_pos/eff.root";
-    dataSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_pos/eff.root";
-    zmmSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_pos/eff.root";
-    dataTrkEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_pos/eff.root";
-    zmmTrkEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_pos/eff.root";
-    dataStaEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_pos/eff.root";
-    zmmStaEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_pos/eff.root";
+    dataHLTEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+    zmmHLTEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+    dataSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+    zmmSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+    dataTrkEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+    zmmTrkEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+    dataStaEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+    zmmStaEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_neg/eff.root";
-    zmmHLTEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuHLTEff_neg/eff.root";
-    dataSelEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_neg/eff.root";
-    zmmSelEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuSelEff_neg/eff.root";
-    dataTrkEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_neg/eff.root";
-    zmmTrkEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuTrkEff_neg/eff.root";
-    dataStaEffName = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_neg/eff.root";
-    zmmStaEffName  = "/afs/cern.ch/user/c/cmedlock/public/Zmm_MuStaEff_iso_neg/eff.root";
+    dataHLTEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+    zmmHLTEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+    dataSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+    zmmSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+    dataTrkEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+    zmmTrkEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+    dataStaEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+    zmmStaEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
   }
 
   //--------------------------------------------------------------------------------------------------------------
@@ -317,11 +317,14 @@ void computeAccSelWm(const TString conf,       // input file
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
-      TLorentzVector *vec=0, *lep1=0, *lep2=0;
 
-      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2, 0)!=LEPTON_ID) continue;
-      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0)!=-LEPTON_ID) continue;
-      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID)  continue;
+      if (charge==-1 && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
+      /*TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);*/
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;

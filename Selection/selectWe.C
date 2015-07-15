@@ -126,6 +126,7 @@ void selectWe(const TString conf="we.conf", // input file
   TClonesArray *genPartArr  = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *electronArr = new TClonesArray("baconhep::TElectron");
   TClonesArray *scArr       = new TClonesArray("baconhep::TPhoton");
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -260,6 +261,8 @@ void selectWe(const TString conf="we.conf", // input file
       assert(eventTree);  
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+      eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
+
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -383,7 +386,11 @@ void selectWe(const TString conf="we.conf", // input file
 	  runNum    = info->runNum;
 	  lumiSec   = info->lumiSec;
 	  evtNum    = info->evtNum;
-	  npv	    = 0;
+
+	  vertexArr->Clear();
+	  vertexBr->GetEntry(ientry);
+
+	  npv      = vertexArr->GetEntries();
 	  npu	    = info->nPU;
 	  genV      = new TLorentzVector(0,0,0,0);
 	  genLep    = new TLorentzVector(0,0,0,0);
@@ -529,6 +536,7 @@ void selectWe(const TString conf="we.conf", // input file
   delete gen;
   delete genPartArr;
   delete electronArr;
+  delete vertexArr;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

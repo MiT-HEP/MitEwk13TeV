@@ -115,6 +115,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -247,8 +248,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
       }
   
       eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-      eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
-      eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");
+      eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
+      eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
+      eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -324,7 +326,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  if(!(tag->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
 	  TLorentzVector vTag;    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, MUON_MASS);
 	  TLorentzVector vTagSta; vTagSta.SetPtEtaPhiM(tag->staPt, tag->staEta, tag->staPhi, MUON_MASS);
-	
+
 	  for(Int_t i2=0; i2<muonArr->GetEntriesFast(); i2++) {
 	    if(i1==i2) continue;
 	    const baconhep::TMuon *probe = (baconhep::TMuon*)((*muonArr)[i2]);
@@ -365,7 +367,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    /******** We have a Z candidate! HURRAY! ********/
 	    nsel+=weight;
             nselvar+=weight*weight;
-	    
+
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
 	    if(isSignal && hasGen) {
@@ -444,7 +446,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    else matchGen=0;
 	    
 	    category = icat;
-	    npv      = 0;
+
+	    vertexArr->Clear();
+	    vertexBr->GetEntry(ientry);
+
+	    npv      = vertexArr->GetEntries();
 	    npu      = info->nPU;
 	    scale1fb = weight;
 	    met      = info->pfMET;
@@ -545,6 +551,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   delete gen;
   delete genPartArr;
   delete muonArr;
+  delete vertexArr;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

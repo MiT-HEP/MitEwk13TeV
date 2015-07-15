@@ -123,7 +123,8 @@ void selectZee(const TString conf="zee.conf", // input file
   TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
   TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
-  
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
+
   TFile *infile=0;
   TTree *eventTree=0;
   
@@ -274,6 +275,7 @@ void selectZee(const TString conf="zee.conf", // input file
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
+      eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -509,7 +511,11 @@ void selectZee(const TString conf="zee.conf", // input file
             else matchGen=0;
 
 	    category = icat;
-	    npv      = 0; 
+
+	    vertexArr->Clear();
+            vertexBr->GetEntry(ientry);
+
+            npv      = vertexArr->GetEntries();
 	    npu      = info->nPU;
 	    scale1fb = weight;
 	    met      = info->pfMET;
@@ -618,6 +624,7 @@ void selectZee(const TString conf="zee.conf", // input file
   delete genPartArr;
   delete electronArr;
   delete scArr;
+  delete vertexArr;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output
