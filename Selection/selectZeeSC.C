@@ -300,7 +300,7 @@ void selectZeeSC(const TString conf="zee_sc.conf", // input file
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=0; ientry<eventTree->GetEntries()/10; ientry++) {
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -355,8 +355,8 @@ void selectZeeSC(const TString conf="zee_sc.conf", // input file
 	  // check ECAL gap
 	  if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue;
 	  
-	  if (!(((glep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.3) || 
-		 ((glep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.3))) continue;
+	  if (!(((glep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.1) || 
+		 ((glep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.1))) continue;
 	  
 	  Double_t escale1=1;
 	  if(doScaleCorr && isam==0) {
@@ -380,10 +380,10 @@ void selectZeeSC(const TString conf="zee_sc.conf", // input file
 	  for(Int_t j=0; j<muonArr->GetEntriesFast(); j++) {
 	    const baconhep::TMuon *tkProbe = (baconhep::TMuon*)((*muonArr)[j]);
 	    if (tkProbe->typeBits & baconhep::EMuType::kGlobal) continue;
-	    if (toolbox::deltaR(tkProbe->eta, tkProbe->phi, tag->eta, tag->phi)<0.3) continue;
+	    if (toolbox::deltaR(tkProbe->eta, tkProbe->phi, tag->eta, tag->phi)<0.1) continue;
 
-	    if (!( ((glep1) && toolbox::deltaR(tkProbe->eta, tkProbe->phi, glep1->Eta(), glep1->Phi())<0.3) || 
-		   ((glep2) && toolbox::deltaR(tkProbe->eta, tkProbe->phi, glep2->Eta(), glep2->Phi())<0.3) ) ) continue;
+	    if (!( ((glep1) && toolbox::deltaR(tkProbe->eta, tkProbe->phi, glep1->Eta(), glep1->Phi())<0.1) || 
+		   ((glep2) && toolbox::deltaR(tkProbe->eta, tkProbe->phi, glep2->Eta(), glep2->Phi())<0.1) ) ) continue;
 
 	    // check ECAL gap
 	    if(fabs(tkProbe->eta)>=ECAL_GAP_LOW && fabs(tkProbe->eta)<=ECAL_GAP_HIGH) continue;
@@ -395,7 +395,7 @@ void selectZeeSC(const TString conf="zee_sc.conf", // input file
 	    Int_t iprobe=-1;
 	    for(Int_t i2=0; i2<scArr->GetEntriesFast(); i2++) {
 	      const baconhep::TPhoton *sc = (baconhep::TPhoton*)((*scArr)[i2]);
-	      if (toolbox::deltaR(tkProbe->eta, tkProbe->phi, sc->eta, sc->phi)<0.3) {
+	      if (toolbox::deltaR(tkProbe->eta, tkProbe->phi, sc->eta, sc->phi)<0.1) {
 		scProbe=sc;
 		iprobe=i2;
 		break;
@@ -425,11 +425,11 @@ void selectZeeSC(const TString conf="zee_sc.conf", // input file
 	    Bool_t hasGenMatch = kFALSE;
 	    if(isSignal && hasGen) {
 
-	      Bool_t match1 = ( ((glep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.3) || 
-				((glep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.3) );
+	      Bool_t match1 = ( ((glep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.1) || 
+				((glep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.1) );
 
-	      Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
-				((glep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+	      Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.1) || 
+				((glep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.1) );
 	      if(match1 && match2) {
 		hasGenMatch = kTRUE;
 		if (gvec!=0) {
