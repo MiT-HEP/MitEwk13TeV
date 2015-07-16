@@ -216,6 +216,18 @@ void plotWeMet(const TString  conf,      // input file
     infile=0, intree=0;    
   } // end sample loop 
 
+  //
+  // Make ratio graphs
+  //
+
+  vector<TH1D*> hMetDiffv;
+  vector<TH1D*> hMet2Diffv;
+/*
+  for(Int_t ich=0; ich<3; ich++) {
+    sprintf(hname,"hMetDiff_ch%i",ich);     hMetDiffv.push_back(makeDiffHist(hMetv[ich][0],hMetMC[ich],hname));
+    sprintf(hname,"hMet2Diff_ch%i",ich);    hMet2Diffv.push_back(makeDiffHist(hMet2v[ich][0],hMet2MC[ich],hname));
+  }
+*/
   //--------------------------------------------------------------------------------------------------------------
   // Make plots
   //==============================================================================================================
@@ -282,7 +294,7 @@ void plotWeMet(const TString  conf,      // input file
     sprintf(ylabel,"Events / %.1f GeV/c",hMetv[ich][0]->GetBinWidth(1));
     sprintf(pname,"pfmet_ch%i",ich);
     CPlot plotMet_pf(pname,"",xlabel,ylabel);
-    //plotMet.AddHist1D(hMetv[ich][0],samplev[0]->label,"E"); // No data to plot
+    plotMet_pf.AddHist1D(hMetv[ich][0],samplev[0]->label,"E");
 
     // Get yields
     double ndy_pf=0, nwtaunu_pf=0, ndiboson_pf=0, nttbar_pf=0, nsig_pf=0;
@@ -297,10 +309,7 @@ void plotWeMet(const TString  conf,      // input file
       else if(snamev[isam].CompareTo("we")==0) nsig_pf += hMetv[ich][isam]->Integral();
 
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet_pf.AddToStack(hMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet_pf.AddToStack(hMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet_pf.AddToStack(hMetv[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrowe#nu")==0){
@@ -337,21 +346,19 @@ void plotWeMet(const TString  conf,      // input file
     plotMet_pf.SetLegend(0.68,0.65,0.84,0.78);
     plotMet_pf.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
     plotMet_pf.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+    plotMet_pf.SetYRange(0,1.2*hMetv[ich][0]->GetMaximum());
     plotMet_pf.Draw(c,kTRUE,format,1);
     plotMet_pf.Draw(c,kTRUE,"pdf",1);
 
     sprintf(ylabel,"Events / %.1f GeV/c",hMet2v[ich][0]->GetBinWidth(1));
     sprintf(pname,"pfmetlog_ch%i",ich);
     CPlot plotMet2_pf(pname,"",xlabel,ylabel);
-    //plotMet2.AddHist1D(hMet2v[ich][0],samplev[0]->label,"E"); // No data to plot
+    plotMet2_pf.AddHist1D(hMet2v[ich][0],samplev[0]->label,"E");
 
     ewkDrawn = kFALSE;
     for(UInt_t isam=1; isam<samplev.size(); isam++) {
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet2_pf.AddToStack(hMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet2_pf.AddToStack(hMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet2_pf.AddToStack(hMet2v[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrowe#nu")==0){
@@ -375,7 +382,7 @@ void plotWeMet(const TString  conf,      // input file
     sprintf(ylabel,"Events / %.1f GeV/c",hMvaMetv[ich][0]->GetBinWidth(1));
     sprintf(pname,"mvamet_ch%i",ich);
     CPlot plotMet_mva(pname,"",xlabel,ylabel);
-    //plotMet.AddHist1D(hMetv[ich][0],samplev[0]->label,"E"); // No data to plot
+    plotMet_mva.AddHist1D(hMetv[ich][0],samplev[0]->label,"E");
 
     // Get yields
     double ndy_mva=0, nwtaunu_mva=0, ndiboson_mva=0, nttbar_mva=0, nsig_mva=0;
@@ -390,10 +397,7 @@ void plotWeMet(const TString  conf,      // input file
       else if(snamev[isam].CompareTo("we")==0) nsig_mva += hMvaMetv[ich][isam]->Integral();
 
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet_mva.AddToStack(hMvaMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet_mva.AddToStack(hMvaMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet_mva.AddToStack(hMvaMetv[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrowe#nu")==0){
@@ -430,21 +434,19 @@ void plotWeMet(const TString  conf,      // input file
     plotMet_mva.SetLegend(0.68,0.65,0.84,0.78);
     plotMet_mva.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
     plotMet_mva.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+    plotMet_mva.SetYRange(0,1.2*hMvaMetv[ich][0]->GetMaximum());
     plotMet_mva.Draw(c,kTRUE,format,1);
     plotMet_mva.Draw(c,kTRUE,"pdf",1);
 
     sprintf(ylabel,"Events / %.1f GeV/c",hMvaMet2v[ich][0]->GetBinWidth(1));
     sprintf(pname,"mvametlog_ch%i",ich);
     CPlot plotMet2_mva(pname,"",xlabel,ylabel);
-    //plotMet2.AddHist1D(hMet2v[ich][0],samplev[0]->label,"E"); // No data to plot
+    plotMet2_mva.AddHist1D(hMet2v[ich][0],samplev[0]->label,"E");
 
     ewkDrawn = kFALSE;
     for(UInt_t isam=1; isam<samplev.size(); isam++) {
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet2_mva.AddToStack(hMvaMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet2_mva.AddToStack(hMvaMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet2_mva.AddToStack(hMvaMet2v[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrowe#nu")==0){
@@ -468,7 +470,7 @@ void plotWeMet(const TString  conf,      // input file
     sprintf(ylabel,"Events / %.1f GeV/c",hTrkMetv[ich][0]->GetBinWidth(1));
     sprintf(pname,"trkmet_ch%i",ich);
     CPlot plotMet_trk(pname,"",xlabel,ylabel);
-    //plotMet.AddHist1D(hMetv[ich][0],samplev[0]->label,"E"); // No data to plot
+    plotMet_trk.AddHist1D(hMetv[ich][0],samplev[0]->label,"E");
 
     // Get yields
     double ndy_trk=0, nwtaunu_trk=0, ndiboson_trk=0, nttbar_trk=0, nsig_trk=0;
@@ -483,10 +485,7 @@ void plotWeMet(const TString  conf,      // input file
       else if(snamev[isam].CompareTo("we")==0) nsig_trk += hTrkMetv[ich][isam]->Integral();
 
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet_trk.AddToStack(hTrkMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet_trk.AddToStack(hTrkMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet_trk.AddToStack(hTrkMetv[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrowe#nu")==0){
@@ -523,13 +522,14 @@ void plotWeMet(const TString  conf,      // input file
     plotMet_trk.SetLegend(0.68,0.65,0.84,0.78);
     plotMet_trk.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
     plotMet_trk.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+    plotMet_trk.SetYRange(0,1.2*hTrkMetv[ich][0]->GetMaximum());
     plotMet_trk.Draw(c,kTRUE,format,1);
     plotMet_trk.Draw(c,kTRUE,"pdf",1);
 
     sprintf(ylabel,"Events / %.1f GeV/c",hTrkMet2v[ich][0]->GetBinWidth(1));
     sprintf(pname,"trkmetlog_ch%i",ich);
     CPlot plotMet2_trk(pname,"",xlabel,ylabel);
-    //plotMet2.AddHist1D(hMet2v[ich][0],samplev[0]->label,"E"); // No data to plot
+    plotMet2_trk.AddHist1D(hMet2v[ich][0],samplev[0]->label,"E");
 
     ewkDrawn = kFALSE;
     for(UInt_t isam=1; isam<samplev.size(); isam++) {

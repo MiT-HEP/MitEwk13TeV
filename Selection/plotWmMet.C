@@ -291,10 +291,7 @@ void plotWmMet(const TString  conf,      // input file
       else if(snamev[isam].CompareTo("wm")==0) nsig_pf += hMetv[ich][isam]->Integral();
 
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet_pf.AddToStack(hMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet_pf.AddToStack(hMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet_pf.AddToStack(hMetv[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrow#mu#nu")==0){
@@ -342,10 +339,7 @@ void plotWmMet(const TString  conf,      // input file
     ewkDrawn = kFALSE;
     for(UInt_t isam=1; isam<samplev.size(); isam++) {
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet2_pf.AddToStack(hMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet2_pf.AddToStack(hMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet2_pf.AddToStack(hMet2v[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrow#mu#nu")==0){
@@ -384,10 +378,7 @@ void plotWmMet(const TString  conf,      // input file
       else if(snamev[isam].CompareTo("wm")==0) nsig_mva += hMvaMetv[ich][isam]->Integral();
 
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet_mva.AddToStack(hMvaMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet_mva.AddToStack(hMvaMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet_mva.AddToStack(hMvaMetv[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrow#mu#nu")==0){
@@ -436,10 +427,7 @@ void plotWmMet(const TString  conf,      // input file
     ewkDrawn = kFALSE;
     for(UInt_t isam=1; isam<samplev.size(); isam++) {
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet2_mva.AddToStack(hMvaMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet2_mva.AddToStack(hMvaMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet2_mva.AddToStack(hMvaMet2v[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrow#mu#nu")==0){
@@ -469,7 +457,7 @@ void plotWmMet(const TString  conf,      // input file
     double ndy_trk=0, nwtaunu_trk=0, ndiboson_trk=0, nttbar_trk=0, nsig_trk=0;
 
     ewkDrawn=kFALSE;
-    for(UInt_t isam=1; isam<samplev.size(); isam++) {
+    for(UInt_t isam=0; isam<samplev.size(); isam++) {
       // For making yield table
       if(snamev[isam].CompareTo("top")==0) nttbar_trk += hTrkMetv[ich][isam]->Integral();
       else if(snamev[isam].CompareTo("ww")==0 || snamev[isam].CompareTo("wz")==0 || snamev[isam].CompareTo("zz")==0) ndiboson_trk += hTrkMetv[ich][isam]->Integral();
@@ -478,10 +466,7 @@ void plotWmMet(const TString  conf,      // input file
       else if(snamev[isam].CompareTo("wm")==0) nsig_trk += hTrkMetv[ich][isam]->Integral();
 
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet_trk.AddToStack(hTrkMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet_trk.AddToStack(hTrkMetv[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet_trk.AddToStack(hTrkMetv[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrow#mu#nu")==0){
@@ -530,10 +515,7 @@ void plotWmMet(const TString  conf,      // input file
     ewkDrawn = kFALSE;
     for(UInt_t isam=1; isam<samplev.size(); isam++) {
       // For plotting signal and EWK+ttbar MET
-      if(samplev[isam]->label.CompareTo("Data")==0) {
-        if     (hasData==0) continue;
-        else if(hasData==1) plotMet2_trk.AddToStack(hTrkMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol);
-      } else if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
+      if(samplev[isam]->label.CompareTo("EWK+t#bar{t}")==0) {
         if     (ewkDrawn==0) {plotMet2_trk.AddToStack(hTrkMet2v[ich][isam],samplev[isam]->label,samplev[isam]->color,samplev[isam]->linecol); ewkDrawn=kTRUE;}
         else if(ewkDrawn==1) plotMet2_trk.AddToStack(hTrkMet2v[ich][isam],samplev[isam]->color,samplev[isam]->linecol);
       } else if(samplev[isam]->label.CompareTo("W#rightarrow#mu#nu")==0){
