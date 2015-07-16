@@ -59,8 +59,8 @@ Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid) {
   for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
     const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
     Int_t pdgId=fabs(genloop->pdgId);
-    Int_t parentPdgId=dynamic_cast<baconhep::TGenParticle*>(genPartArr->At(genloop->parent>-1 ? genloop->parent : 0))->pdgId;
-    if ( (pdgId==11||pdgId==13||pdgId==15) && (parentPdgId==vid || genloop->status==23) ) return pdgId;
+    Int_t parentPdgId=fabs(dynamic_cast<baconhep::TGenParticle*>(genPartArr->At(genloop->parent>-1 ? genloop->parent : 0))->pdgId);
+    if ( (pdgId==11||pdgId==13||pdgId==15) && (parentPdgId==fabs(vid) || genloop->status==23) ) return genloop->pdgId;
   }
   return 0;
 }

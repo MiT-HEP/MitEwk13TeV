@@ -272,8 +272,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         }
 
         // veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
-        if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
-        else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+        if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
+	else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
         
 	// check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      

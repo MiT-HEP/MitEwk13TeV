@@ -68,8 +68,8 @@ void selectWe(const TString conf="we.conf", // input file
   const Double_t ECAL_GAP_HIGH = 1.566;
 
   const Double_t escaleNbins  = 2;
-  const Double_t escaleEta[]  = { 1.4442,   2.5     };
-  const Double_t escaleCorr[] = { 0.997542, 1.01507 };
+  const Double_t escaleEta[]  = { 1.4442, 2.5   };
+  const Double_t escaleCorr[] = { 0.992,  1.009 };
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
@@ -287,6 +287,7 @@ void selectWe(const TString conf="we.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //for(UInt_t ientry=0; ientry<100; ientry++) {
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -299,17 +300,17 @@ void selectWe(const TString conf="we.conf", // input file
           genPartBr->GetEntry(ientry);
 	  weight*=gen->weight;
 	}
-
+	
 	// veto w -> xv decays for signal and w -> ev for bacground samples (needed for inclusive WToLNu sample)
-        if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
-        else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+        if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue; 
+        else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue; 
      
         // check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if(!(info->triggerBits[trigger])) continue;
+	if(!(info->triggerBits[trigger])) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;

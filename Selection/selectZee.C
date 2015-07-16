@@ -63,8 +63,8 @@ void selectZee(const TString conf="zee.conf", // input file
   const Double_t ECAL_GAP_HIGH = 1.566;
 
   const Double_t escaleNbins  = 2;
-  const Double_t escaleEta[]  = { 1.4442,   2.5     };
-  const Double_t escaleCorr[] = { 0.997542, 1.01507 };
+  const Double_t escaleEta[]  = { 1.4442, 2.5   };
+  const Double_t escaleCorr[] = { 0.992,  1.009 };
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
@@ -148,7 +148,7 @@ void selectZee(const TString conf="zee.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(!doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+    if(isam==0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
@@ -313,8 +313,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	}
 
 	// veto z -> xx decays for signal and z -> ee for bacground samples (needed for inclusive DYToLL sample)
-	if (isWrongFlavor && hasGen && toolbox::flavor(genPartArr, BOSON_ID)==LEPTON_ID) continue;
-	else if (isSignal && hasGen && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+	if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
+	else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
 
         // check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
