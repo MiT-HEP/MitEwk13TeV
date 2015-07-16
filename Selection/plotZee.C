@@ -58,7 +58,8 @@ void plotZee(const TString  conf,            // input file
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
   
-  
+  TString pufname = "../Tools/pileup_weights_2015B.root";
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -77,7 +78,11 @@ void plotZee(const TString  conf,            // input file
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir + TString("/plots");
-  
+
+  // setup pileup reweighting                                                   
+  TFile *pufile = new TFile(pufname); assert(pufile);
+  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+
   //
   // Create histograms
   //
@@ -256,6 +261,7 @@ void plotZee(const TString  conf,            // input file
       Double_t weight = 1;
       if(isam!=0) {
         weight *= scale1fb*lumi;
+	weight *=puWeights->GetBinContent(floor(npv)-1);
       }
       hMassv[category][isam]    ->Fill(dilep->M(),weight);
       hPt1v[category][isam]     ->Fill(dilep->Pt(),weight);
