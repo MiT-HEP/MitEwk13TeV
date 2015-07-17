@@ -202,7 +202,7 @@ void plotWeMet(const TString  conf,      // input file
       Double_t weight = 1;
       if(isam!=0) {
         weight *= scale1fb*lumi;
-	weight *=puWeights->GetBinContent(floor(npv)-1);
+	weight *=puWeights->GetBinContent(npv+1);
       }
       
       for(UInt_t ich=0; ich<3; ich++) {
