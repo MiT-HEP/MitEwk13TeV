@@ -441,11 +441,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 	      toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
 
-	      Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.3) || 
-				((lep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.3) );
+	      Bool_t match1 = ( ((glep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.3) || 
+				((glep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.3) );
 
-	      Bool_t match2 = ( ((lep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
-				((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+	      Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
+				((glep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+
 	      if(match1 && match2) {
 		hasGenMatch = kTRUE;
 		if (gvec!=0) {
