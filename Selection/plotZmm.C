@@ -178,7 +178,7 @@ void plotZmm(const TString  conf,            // input file
     // Read input file and get the TTrees
     TString infilename = inputDir + TString("/") + snamev[isam] + TString("_select.root");
     cout << "Processing " << infilename << "..." << endl;
-    infile = new TFile(infilename);	    assert(infile);
+    infile = TFile::Open(infilename);	    assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
 
     intree->SetBranchAddress("runNum",      &runNum);        // event run number
@@ -253,7 +253,7 @@ void plotZmm(const TString  conf,            // input file
       Double_t weight = 1;
       if(isam!=0) {
         weight *= scale1fb*lumi;
-	weight *=puWeights->GetBinContent(floor(npv)-1);
+	weight *=puWeights->GetBinContent(npv+1);
       }
       
       hMassv[category][isam]    ->Fill(dilep->M(),weight);
