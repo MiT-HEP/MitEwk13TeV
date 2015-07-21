@@ -462,8 +462,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
             mvaMet   = info->mvaMET;
             mvaMetPhi = info->mvaMETphi;
 	    mvaSumEt = 0;
-            ppMet    = 0;
-            ppMetPhi = 0;
+        ppMet    = info->pfMETC;
+        ppMetPhi = info->pfMETCphi;
 	    ppSumEt  = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
@@ -487,12 +487,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
             mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
-	    /*	    
-	    TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
-            TVector2 vPpU = -1.0*(vPpMet+vZPt);
-            ppU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-            ppU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-	    */
+	    	    
+	    TVector2 vPpMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+        TVector2 vPpU = -1.0*(vPpMet+vZPt);
+        ppU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+        ppU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+    
 	  
 	    ///// muon specific /////
 	    sta1        = &vTagSta;
