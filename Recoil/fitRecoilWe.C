@@ -6,14 +6,15 @@
 //
 //________________________________________________________________________________________________
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+// #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>                   // standard I/O
+#include <fstream>
 #include <TFile.h>                    // file handle class
 #include <TTree.h>                    // class to access ntuples
 #include <TF1.h>                      // 1D function
 #include <TFitResult.h>               // class to handle fit results
 #include <TGraphErrors.h>             // graph class
-#include "Math/LorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"          // 4-vector class
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -29,12 +30,9 @@
 #include "RooFitResult.h"
 #include "RooDataHist.h"
 #include "RooFormulaVar.h"
-#endif
+// #endif
 
 using namespace RooFit;
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -154,20 +152,20 @@ void fitRecoilWe(TString infoldername,  // input ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
 
-  if (useData == 0)
+  if (useData == 0){
     fnamev.push_back(TString(infoldername) + TString("we_select.root")); isBkgv.push_back(kFALSE);
-
-  else if (useData == 1)
+  } else if (useData == 1){
     fnamev.push_back(TString(infoldername) + TString("data_select.root")); isBkgv.push_back(kFALSE);
-
-  else if (useData == 2)
-    fnamev.push_back(TString(infoldername) + TString("data_select.raw.root")); isBkgv.push_back(kFALSE);
-
-  else
+  } else {
     cout << "useData value doesn't make sense" << endl;
+  }
 
-  fnamev.push_back(TString(infoldername) + TString("top_select.root")); isBkgv.push_back(kTRUE); 
-  fnamev.push_back(TString(infoldername) + TString("ewk_select.root")); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.5;
@@ -238,8 +236,8 @@ void fitRecoilWe(TString infoldername,  // input ntuple
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  LorentzVector *lep=0;
-  LorentzVector *sc=0; 
+  TLorentzVector *lep=0;
+  TLorentzVector *sc=0; 
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
     cout << "Processing " << fnamev[ifile] << "..." << endl;

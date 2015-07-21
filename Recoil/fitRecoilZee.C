@@ -6,14 +6,15 @@
 //
 //________________________________________________________________________________________________
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+// //#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>                   // standard I/O
+#include <fstream>                    // standard I/O
 #include <TFile.h>                    // file handle class
 #include <TTree.h>                    // class to access ntuples
 #include <TF1.h>                      // 1D function
 #include <TFitResult.h>               // class to handle fit results
 #include <TGraphErrors.h>             // graph class
-#include "Math/LorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -29,11 +30,11 @@
 #include "RooFitResult.h"
 #include "RooDataHist.h"
 #include "RooFormulaVar.h"
-#endif
+//#endif
 
 using namespace RooFit;
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
+// typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
 
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -152,8 +153,12 @@ void fitRecoilZee(TString infilename,  // input ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Zee/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/zz_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/wz_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/ww_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/wx_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
@@ -228,8 +233,8 @@ void fitRecoilZee(TString infilename,  // input ntuple
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
-  LorentzVector *sc1=0, *sc2=0;  
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *sc1=0, *sc2=0;  
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
     cout << "Processing " << fnamev[ifile] << "..." << endl;

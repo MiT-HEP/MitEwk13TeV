@@ -6,7 +6,7 @@
 //
 //________________________________________________________________________________________________
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
+// //#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>                   // standard I/O
 #include <fstream>                    // standard I/O
 #include <TFile.h>                    // file handle class
@@ -30,7 +30,7 @@
 #include "RooFitResult.h"
 #include "RooDataHist.h"
 #include "RooFormulaVar.h"
-#endif
+//#endif
 
 using namespace RooFit;
 
@@ -121,10 +121,10 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/zmm_select.root",  // input ntuple
+void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
                   Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
                   Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-	          Bool_t  sigOnly=1,     // signal event only?
+	              Bool_t  sigOnly=1,     // signal event only?
 	          TString outputDir="./" // output directory
 ) {
 
@@ -135,10 +135,7 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {
-     0,  5, 10, 15, 20, 25, 30, 35, 40, 50,
-    60, 70, 80, 90
-  };
+  Double_t ptbins[] = {0,5,10,15,20,25,30,35,40,50,60,70,80,90};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   Double_t corrbins[] = { 0, 10, 30, 50 };
@@ -150,8 +147,12 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  fnamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/zz_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/wz_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/ww_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/wx_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
