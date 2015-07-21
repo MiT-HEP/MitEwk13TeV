@@ -450,15 +450,14 @@ void selectWe(const TString conf="we.conf", // input file
 	      tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 
 	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-              TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
-              mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-	      /*
-              TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
-              TVector2 vPpU = -1.0*(vPpMet+vLepPt);
-              ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-	      */
+          TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+          mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+          mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+          
+          TVector2 vPpMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+          TVector2 vPpU = -1.0*(vPpMet+vLepPt);
+          ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+          ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	    }
 	    id_1      = gen->id_1;
 	    id_2      = gen->id_2;
@@ -484,12 +483,14 @@ void selectWe(const TString conf="we.conf", // input file
 	  tkSumEt  = 0;
 	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
 	  mvaMet   = info->mvaMET;
-          mvaMetPhi = info->mvaMETphi;
-          mvaSumEt  = 0;
-          mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-	  ppMet    = 0;
-	  ppMetPhi = 0;
-	  ppMt     = 0;
+      mvaMetPhi = info->mvaMETphi;
+      mvaSumEt  = 0;
+      mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+      ppMet    = info->pfMETC;
+      ppMetPhi = info->pfMETCphi;
+      ppSumEt = 0;
+      ppMt     = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
+      
 	  q        = goodEle->q;
 	  lep      = &vLep;
 	  

@@ -412,97 +412,100 @@ void selectAntiWe(const TString conf="we.conf", // input file
           weightPDF = -999;
 
 	  if(isSignal && hasGen) {
-	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
-            TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-            TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *gvec  =new TLorentzVector(0,0,0,0);
+        TLorentzVector *glep1 =new TLorentzVector(0,0,0,0);
+        TLorentzVector *glep2 =new TLorentzVector(0,0,0,0);
 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
 
-            if (gvec && glep1) {
-              genV      = new TLorentzVector(0,0,0,0);
-              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
-              genLep    = new TLorentzVector(0,0,0,0);
-              genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              genVPt    = gvec->Pt();
-              genVPhi   = gvec->Phi();
-              genVy     = gvec->Rapidity();
-              genVMass  = gvec->M();
-              genLepPt  = glep1->Pt();
-              genLepPhi = glep1->Phi();
+        if (gvec && glep1) {
+          genV      = new TLorentzVector(0,0,0,0);
+          genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+          genLep    = new TLorentzVector(0,0,0,0);
+          genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+          genVPt    = gvec->Pt();
+          genVPhi   = gvec->Phi();
+          genVy     = gvec->Rapidity();
+          genVMass  = gvec->M();
+          genLepPt  = glep1->Pt();
+          genLepPhi = glep1->Phi();
 
 	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
-              TVector2 vLepPt(vLep.Px(),vLep.Py());
-              TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));
-              TVector2 vU = -1.0*(vMet+vLepPt);
-              u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+          TVector2 vLepPt(vLep.Px(),vLep.Py());
+          TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));
+          TVector2 vU = -1.0*(vMet+vLepPt);
+          u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+          u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      
-              TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
-              TVector2 vTkU = -1.0*(vTkMet+vLepPt);
-              tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+          TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
+          TVector2 vTkU = -1.0*(vTkMet+vLepPt);
+          tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+          tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 
 	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-              TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+          TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
 	      mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-	      /*
-              TVector2 vPpMet((info->ppMET)*cos(info->ppMETphi), (info->ppMET)*sin(info->ppMETphi));
-              TVector2 vPpU = -1.0*(vPpMet+vLepPt);
-              ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-	      */
+          mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+          
+          TVector2 vPpMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+          TVector2 vPpU = -1.0*(vPpMet+vLepPt);
+          ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+          ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	    }
+	    
 	    id_1      = gen->id_1;
-            id_2      = gen->id_2;
-            x_1       = gen->x_1;
-            x_2       = gen->x_2;
-            xPDF_1    = gen->xPDF_1;
-            xPDF_2    = gen->xPDF_2;
-            scalePDF  = gen->scalePDF;
-            weightPDF = gen->weight;
+        id_2      = gen->id_2;
+        x_1       = gen->x_1;
+        x_2       = gen->x_2;
+        xPDF_1    = gen->xPDF_1;
+        xPDF_2    = gen->xPDF_2;
+        scalePDF  = gen->scalePDF;
+        weightPDF = gen->weight;
 
 	    delete gvec;
-            delete glep1;
-            delete glep2;
-            gvec=0; glep1=0; glep2=0;
+        delete glep1;
+        delete glep2;
+        gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
 	  met	   = info->pfMET;
 	  metPhi   = info->pfMETphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
+      
 	  tkMet    = info->trkMET;
-          tkMetPhi = info->trkMETphi;
-          tkSumEt  = 0;
-          tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+      tkMetPhi = info->trkMETphi;
+      tkSumEt  = 0;
+      tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+          
 	  mvaMet   = info->mvaMET;
-          mvaMetPhi = info->mvaMETphi;
-          mvaSumEt  = 0;
-          mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-	  ppMet    = 0;
-          ppMetPhi = 0;
-          ppSumEt  = 0;
-          ppMt     = 0;
+      mvaMetPhi = info->mvaMETphi;
+      mvaSumEt  = 0;
+      mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+      
+      ppMet    = info->pfMETC;
+      ppMetPhi = info->pfMETCphi;
+      ppSumEt = 0;
+      ppMt     = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
 	  q        = goodEle->q;
 	  lep      = &vLep;
 	  
 	  ///// electron specific /////
 	  sc	    = &vSC;
 	  trkIso    = goodEle->trkIso;
-          emIso     = goodEle->ecalIso;
-          hadIso    = goodEle->hcalIso;
-          pfChIso   = goodEle->chHadIso;
-          pfGamIso  = goodEle->gammaIso;
-          pfNeuIso  = goodEle->neuHadIso;
-          pfCombIso = goodEle->chHadIso + TMath::Max(goodEle->neuHadIso + goodEle->gammaIso -
-                                                     (info->rhoIso)*getEffArea(goodEle->scEta), 0.);
-          sigieie   = goodEle->sieie;
-          hovere    = goodEle->hovere;
+      emIso     = goodEle->ecalIso;
+      hadIso    = goodEle->hcalIso;
+      pfChIso   = goodEle->chHadIso;
+      pfGamIso  = goodEle->gammaIso;
+      pfNeuIso  = goodEle->neuHadIso;
+      pfCombIso = goodEle->chHadIso + TMath::Max(goodEle->neuHadIso + goodEle->gammaIso -
+                                                  (info->rhoIso)*getEffArea(goodEle->scEta), 0.);
+      sigieie   = goodEle->sieie;
+      hovere    = goodEle->hovere;
 	  eoverp    = goodEle->eoverp;
-          fbrem     = goodEle->fbrem;
-          dphi      = goodEle->dPhiIn;
-          deta      = goodEle->dEtaIn;
-          ecalE     = goodEle->ecalEnergy;
+      fbrem     = goodEle->fbrem;
+      dphi      = goodEle->dPhiIn;
+      deta      = goodEle->dEtaIn;
+      ecalE     = goodEle->ecalEnergy;
 	  d0        = goodEle->d0;
 	  dz        = goodEle->dz;
 	  isConv    = goodEle->isConv;
