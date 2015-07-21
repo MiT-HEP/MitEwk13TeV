@@ -43,7 +43,7 @@ void computeAccGenZmm(const TString conf,             // input file
   const Double_t MASS_LOW   = 60;
   const Double_t MASS_HIGH  = 120;
   const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.1;
+  const Double_t ETA_CUT    = 2.4;
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
 
