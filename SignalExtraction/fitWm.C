@@ -77,7 +77,7 @@ void fitWm(const TString  outputDir,   // output directory
   const Double_t METMAX  = 100;
   
   const Double_t PT_CUT  = 25;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
 
   // file format for output plots
   const TString format("png"); 

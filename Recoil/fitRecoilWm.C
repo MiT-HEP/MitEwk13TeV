@@ -167,7 +167,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   fnamev.push_back(TString(infoldername) + TString("ewk_select.root")); isBkgv.push_back(kTRUE);
   
   const Double_t PT_CUT  = 25;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
      
  
   //--------------------------------------------------------------------------------------------------------------

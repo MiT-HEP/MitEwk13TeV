@@ -51,7 +51,7 @@ void plotWm(const TString  conf,            // input file
   const TString format("png");
   
   const Double_t PT_CUT  = 25;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
   
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;

@@ -29,7 +29,7 @@ void makeTemplatesWm()
   //==============================================================================================================   
   
   const Double_t PT_CUT  = 25;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
 
   // input W signal file
   TString infilename("/data/blue/ksung/EWKAna/8TeV/Selection/Wmunu/ntuples/wm_select.root");
