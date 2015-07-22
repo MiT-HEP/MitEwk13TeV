@@ -275,8 +275,8 @@ Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBi
     if (isL1) return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEGL1SingleEG20ORL1SingleEG15Filter",hltMatchBits);
     else return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEle23WPLooseGsfTrackIsoFilter",hltMatchBits);
   }
-  else if (isL1) return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v","hltL1sL1SingleEG20",hltMatchBits);
-  else return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v","hltEle23WP75GsfTrackIsoFilter",hltMatchBits);
+  else if (isL1) return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v*","hltL1sL1SingleEG20",hltMatchBits);
+  else return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v*","hltEle23WP75GsfTrackIsoFilter",hltMatchBits);
 }
 
 //--------------------------------------------------------------------------------------------------
