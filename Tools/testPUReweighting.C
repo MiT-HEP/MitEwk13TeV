@@ -44,6 +44,8 @@ void testPUReweighting(TString datafile = "root://eoscms//store/user/jlawhorn/Ru
     //for (Int_t i=0; i<10000; i++) {
     infoBr->GetEntry(i);
     genBr->GetEntry(i);
+    if (i%10000==0) cout << 100*double(i)/t_mc->GetEntries() << endl;
+
     h_mc->Fill(info->nPU, gen->weight);
     h_mc2->Fill(info->nPU,h_rw->GetBinContent(info->nPU+1)*gen->weight);
   }

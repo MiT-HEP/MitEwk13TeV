@@ -14,6 +14,7 @@
 #include <string>
 
 #include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
 #endif
@@ -29,6 +30,7 @@ void MakePileupReweighting(TString datafile = "root://eoscms//store/user/jlawhor
   TTree *t_data = (TTree*) f_data->Get("Events");
   TH1D *h_data = new TH1D("npv_rw", "npv_rw", 40, 0, 40); h_data->Sumw2();
 
+  baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   baconhep::TEventInfo *info = new baconhep::TEventInfo();
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
 
@@ -56,10 +58,12 @@ void MakePileupReweighting(TString datafile = "root://eoscms//store/user/jlawhor
   TH1D *h_mc = new TH1D("npv_mc", "npv_mc", 40, 0, 40); h_mc->Sumw2();
 
   t_mc->SetBranchAddress("Info", &info); infoBr = t_mc->GetBranch("Info");
+  t_mc->SetBranchAddress("GenEvtInfo", &gen); TBranch *genBr = t_mc->GetBranch("GenEvtInfo");
 
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
     infoBr->GetEntry(i);
-    h_mc->Fill(info->nPU);
+    genBr->GetEntry(i);
+    h_mc->Fill(info->nPU, gen->weight);
   }
 
   h_mc->Scale(1.0/h_mc->Integral());
