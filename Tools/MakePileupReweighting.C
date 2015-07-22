@@ -20,12 +20,12 @@
 
 // Main macro function
 //--------------------------------------------------------------------------------------------------
-void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/SingleMuon.root",
-			   TString mcfile   = "/data/blue/Bacon/Run2/wz_bacon/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
+void MakePileupReweighting(TString datafile = "root://eoscms//store/user/jlawhorn/Run2/wz_bacon/SingleMuon.root",
+			   TString mcfile   = "root://eoscms//store/user/jlawhorn/Run2/wz_bacon//DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
 			   TString certfile = "../Selection/Cert_246908-251252_13TeV_PromptReco_Collisions15_JSON.txt",
 			   TString outfile  = "pileup_weights_2015B.root") {
 
-  TFile *f_data = new TFile(datafile, "read");
+  TFile *f_data = TFile::Open(datafile, "read");
   TTree *t_data = (TTree*) f_data->Get("Events");
   TH1D *h_data = new TH1D("npv_rw", "npv_rw", 40, 0, 40); h_data->Sumw2();
 
@@ -45,21 +45,21 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
 
     baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec); 
     if (!(rlrm.hasRunLumi(rl))) continue;
+    if (vertexArr->GetEntries()==0) continue;
     h_data->Fill(vertexArr->GetEntries());
   }
 
   h_data->Scale(1.0/h_data->Integral());
 
-  TFile *f_mc = new TFile(mcfile, "read");
+  TFile *f_mc = TFile::Open(mcfile, "read");
   TTree *t_mc = (TTree*) f_mc->Get("Events");
   TH1D *h_mc = new TH1D("npv_mc", "npv_mc", 40, 0, 40); h_mc->Sumw2();
 
-  t_mc->SetBranchAddress("PV", &vertexArr); vertexBr = t_mc->GetBranch("PV");
+  t_mc->SetBranchAddress("Info", &info); infoBr = t_mc->GetBranch("Info");
 
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
-    vertexArr->Clear();
-    vertexBr->GetEntry(i);
-    h_mc->Fill(vertexArr->GetEntries());
+    infoBr->GetEntry(i);
+    h_mc->Fill(info->nPU);
   }
 
   h_mc->Scale(1.0/h_mc->Integral());
