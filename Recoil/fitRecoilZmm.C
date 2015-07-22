@@ -125,6 +125,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
                   Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
                   Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
 	              Bool_t  sigOnly=1,     // signal event only?
+                  std::string uparName = "u1",
+                  std::string uprpName = "u2",
+                  std::string metName = "pf",
 	          TString outputDir="./" // output directory
 ) {
 
@@ -225,7 +228,10 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   UInt_t  npv, npu;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb;
-  Float_t met, metPhi, sumEt, u1, u2;
+  Float_t met, metPhi, sumEt, u1, u2; // pf met
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2; // mva met
+  Float_t ppMet, ppMetPhi, ppSumEt, ppU1, ppU2; // pf type 1
+  Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2; // tk met
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   
@@ -247,13 +253,34 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     intree->SetBranchAddress("genVy",    &genVy);      // GEN boson rapidity (signal MC)
     intree->SetBranchAddress("genVMass", &genVMass);   // GEN boson mass (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",	 &met);        // MET
-    intree->SetBranchAddress("metPhi",	 &metPhi);     // phi(MET)
-    intree->SetBranchAddress("sumEt",	 &sumEt);      // Sum ET
-    intree->SetBranchAddress("u1",	 &u1);         // parallel component of recoil
-    intree->SetBranchAddress("u2",	 &u2);         // perpendicular component of recoil
+    
+    intree->SetBranchAddress("met",	       &met);        // Uncorrected PF MET
+    intree->SetBranchAddress("metPhi",	   &metPhi);     // phi(MET)
+    intree->SetBranchAddress("sumEt",      &sumEt);      // Sum ET
+    intree->SetBranchAddress(uparName.c_str(),	       &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(),	       &u2);         // perpendicular component of recoil
+    
+//     intree->SetBranchAddress("mvaMet",     &mvaMet);        // MVA MET
+//     intree->SetBranchAddress("mvaMetPhi",  &mvaMetPhi);     // phi(MET)
+//     intree->SetBranchAddress("mvaSumEt",   &mvaSumEt);      // Sum ET
+//     intree->SetBranchAddress("mvaU1",      &mvaU1);         // parallel component of recoil      
+//     intree->SetBranchAddress("mvaU2",      &mvaU2);         // perpendicular component of recoil
+//     
+//     intree->SetBranchAddress("ppMet",      &ppMet);        // Type1-corrected PF MET (in puppi variables for now)
+//     intree->SetBranchAddress("ppMetPhi",   &ppMetPhi);     // phi(MET)
+//     intree->SetBranchAddress("ppSumEt",    &ppSumEt);      // Sum ET
+//     intree->SetBranchAddress("ppU1",       &ppU1);         // parallel component of recoil      
+//     intree->SetBranchAddress("ppU2",       &ppU2);         // perpendicular component of recoil
+//     
+//     intree->SetBranchAddress("tkMet",      &tkMet);        // track met
+//     intree->SetBranchAddress("tkMetPhi",   &tkMetPhi);     // phi(MET)
+//     intree->SetBranchAddress("tkSumEt",    &tkSumEt);      // Sum ET
+//     intree->SetBranchAddress("tkU1",       &tkU1);         // parallel component of recoil      
+//     intree->SetBranchAddress("tkU2",       &tkU2);         // perpendicular component of recoil
+    
     intree->SetBranchAddress("q1",	 &q1);         // charge of tag lepton
     intree->SetBranchAddress("q2",	 &q2);         // charge of probe lepton
+    
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
     intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
     intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
@@ -544,7 +571,10 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 //  if(njetcut==0) plotPFu2sigma1.SetYRange(0,15);
 //  else           plotPFu2sigma1.SetYRange(0,20);
   plotPFu2sigma1.Draw(c,kTRUE,"png");
-  
+  //plotPFu2sigma1.Draw()
+ // std::cout << "hello" << std::endl;
+ // return;
+ // std::cout << "goodbye" << std::endl;
   if(pfu2model>=2) {
     grPFu2sigma2 = new TGraphErrors(nbins,xval,pfu2Sigma2,xerr,pfu2Sigma2Err);
     grPFu2sigma2->SetName("grPFu2sigma2");
@@ -713,7 +743,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   //==============================================================================================================
 
   char outfname[100];
-  sprintf(outfname,"%s/fits.root",outputDir.Data());
+  sprintf(outfname,"%s/fits_%s.root",outputDir.Data(),metName.c_str());
   TFile *outfile = new TFile(outfname,"RECREATE");
   
   if(grPFu1mean)    grPFu1mean->Write();
