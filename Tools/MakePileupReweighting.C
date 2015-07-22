@@ -21,9 +21,9 @@
 
 // Main macro function
 //--------------------------------------------------------------------------------------------------
-void MakePileupReweighting(TString datafile = "root://eoscms//store/user/jlawhorn/Run2/wz_bacon/SingleMuon.root",
-			   TString mcfile   = "root://eoscms//store/user/jlawhorn/Run2/wz_bacon//DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
-			   TString certfile = "../Selection/Cert_246908-251252_13TeV_PromptReco_Collisions15_JSON.txt",
+void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/SingleMuon.root",
+			   TString mcfile   = "/data/blue/Bacon/Run2/wz_bacon/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
+			   TString certfile = "../Selection/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt",
 			   TString outfile  = "pileup_weights_2015B.root") {
 
   TFile *f_data = TFile::Open(datafile, "read");
@@ -63,6 +63,7 @@ void MakePileupReweighting(TString datafile = "root://eoscms//store/user/jlawhor
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
     infoBr->GetEntry(i);
     genBr->GetEntry(i);
+    if (info->nPU==0) continue;
     h_mc->Fill(info->nPU, gen->weight);
   }
 
