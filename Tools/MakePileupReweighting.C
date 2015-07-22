@@ -63,8 +63,8 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
     infoBr->GetEntry(i);
     genBr->GetEntry(i);
-    if (info->nPU==0) continue;
-    h_mc->Fill(info->nPU, gen->weight);
+    if (info->nPUmean==0) continue;
+    h_mc->Fill(info->nPUmean, gen->weight);
   }
 
   h_mc->Scale(1.0/h_mc->Integral());

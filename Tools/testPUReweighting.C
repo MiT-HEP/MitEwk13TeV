@@ -46,8 +46,8 @@ void testPUReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Single
     genBr->GetEntry(i);
     if (i%10000==0) cout << 100*double(i)/t_mc->GetEntries() << endl;
 
-    h_mc->Fill(info->nPU, gen->weight);
-    h_mc2->Fill(info->nPU,h_rw->GetBinContent(info->nPU+1)*gen->weight);
+    h_mc->Fill(info->nPUmean, gen->weight);
+    h_mc2->Fill(info->nPUmean,h_rw->GetBinContent(info->nPUmean+1)*gen->weight);
   }
 
   cout << h_mc->Integral() << ", " << h_mc2->Integral() << endl;
