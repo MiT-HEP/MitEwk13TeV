@@ -130,7 +130,7 @@ void selectZee(const TString conf="zee.conf", // input file
   TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
   TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
-  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
+  TClonesArray *vertexArr      = new TClonesArray("baconhep::TVertex");
 
   TFile *infile=0;
   TTree *eventTree=0;
@@ -267,7 +267,7 @@ void selectZee(const TString conf="zee.conf", // input file
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
-      eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
+      eventTree->SetBranchAddress("PV",   &vertexArr);       TBranch *vertexBr = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -408,11 +408,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	    if(eleProbe) {
 	      if(passEleID(eleProbe,info->rhoIso)) {
 
-		if(isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData)) {
+		if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		  if(i1>iprobe) continue;  // make sure we don't double count EleEle2HLT category
 		  icat=eEleEle2HLT;  
 		} 
-		else if(isEleTriggerObj(triggerMenu, tag->hltMatchBits, kTRUE, isData)) {
+		else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kTRUE, isData)) {
 		  icat=eEleEle1HLT1L1; 
 		}
 		else { icat=eEleEle1HLT; }
@@ -607,6 +607,8 @@ void selectZee(const TString conf="zee.conf", // input file
     outFile->Write();
     outFile->Close(); 
   }
+  delete h_rw;
+  delete f_rw;
   delete info;
   delete gen;
   delete genPartArr;

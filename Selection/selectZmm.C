@@ -32,6 +32,7 @@
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
+#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
@@ -60,6 +61,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 13;
+
+  // load trigger menu                                                                                                  
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+
+  // load pileup reweighting file                                                                                       
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -93,11 +101,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
   Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
-  Float_t ppMet, ppMetPhi, ppSumEt, ppU1, ppU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// muon specific /////
@@ -127,7 +134,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
     
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
+    Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
+    else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
@@ -164,6 +173,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("genVy",       &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
     outTree->Branch("genVMass",    &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
     outTree->Branch("scale1fb",    &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
+    outTree->Branch("puWeight",    &puWeight,   "puWeight/F");    // scale factor for pileup reweighting (MC)            
     outTree->Branch("met",         &met,        "met/F");         // MET
     outTree->Branch("metPhi",      &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",       &sumEt,      "sumEt/F");       // Sum ET
@@ -179,11 +189,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
     outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
     outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
-    outTree->Branch("ppMet",       &ppMet,      "ppMet/F");       // PUPPI MET
-    outTree->Branch("ppMetPhi",    &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
-    outTree->Branch("ppSumEt",     &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
-    outTree->Branch("ppU1",        &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
-    outTree->Branch("ppU2",        &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
     outTree->Branch("q1",          &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("dilep",       "TLorentzVector", &dilep);     // di-lepton 4-vector
@@ -233,12 +238,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
       infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
-
-      const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-      UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
-      UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");
-      UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", 
-      //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09");
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
@@ -297,7 +296,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;
 
         // trigger requirement               
-        if(!(info->triggerBits[trigger])) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -323,7 +322,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  if(tag->pt        < PT_CUT)        continue;  // lepton pT cut
 	  if(fabs(tag->eta) > ETA_CUT)       continue;  // lepton |eta| cut
 	  if(!passMuonID(tag))               continue;  // lepton selection
-	  if(!(tag->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE)) continue;
 	  TLorentzVector vTag;    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, MUON_MASS);
 	  TLorentzVector vTagSta; vTagSta.SetPtEtaPhiM(tag->staPt, tag->staEta, tag->staPhi, MUON_MASS);
 
@@ -347,11 +346,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    // determine event category
 	    UInt_t icat=0;
 	    if(passMuonID(probe)) {
-	      if(probe->hltMatchBits[trigObjHLT]) {
+	      if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kFALSE)) {
 	        if(i1>i2) continue;  // make sure we don't double count MuMu2HLT category
 		icat=eMuMu2HLT;
 	      }
-	      else if(probe->hltMatchBits[trigObjL1]) {
+	      else if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kTRUE)) {
 		icat=eMuMu1HLT1L1;
 	      }
 	      else {
@@ -451,10 +450,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    vertexBr->GetEntry(ientry);
 
 	    npv      = vertexArr->GetEntries();
-	    npu      = info->nPU;
+	    npu      = info->nPUmean;
 	    scale1fb = weight;
-	    met      = info->pfMET;
-	    metPhi   = info->pfMETphi;
+	    puWeight = h_rw->GetBinContent(info->nPUmean+1);
+	    met      = info->pfMETC;
+	    metPhi   = info->pfMETCphi;
 	    sumEt    = 0;
 	    tkMet    = info->trkMET;
             tkMetPhi = info->trkMETphi;
@@ -462,17 +462,14 @@ void selectZmm(const TString conf="zmm.conf", // input file
             mvaMet   = info->mvaMET;
             mvaMetPhi = info->mvaMETphi;
 	    mvaSumEt = 0;
-        ppMet    = info->pfMETC;
-        ppMetPhi = info->pfMETCphi;
-	    ppSumEt  = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
 	    dilep    = &vDilep;
 	    q1       = tag->q;
 	    q2       = probe->q;
 
-	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));        
-            TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));        
+	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
+            TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
             TVector2 vU = -1.0*(vMet+vZPt);
             u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
@@ -487,13 +484,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
             mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
-	    	    
-	    TVector2 vPpMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
-        TVector2 vPpU = -1.0*(vPpMet+vZPt);
-        ppU1 = ((vDilep.Px())*(vPpU.Px()) + (vDilep.Py())*(vPpU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-        ppU2 = ((vDilep.Px())*(vPpU.Py()) - (vDilep.Py())*(vPpU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-    
-	  
 	    ///// muon specific /////
 	    sta1        = &vTagSta;
 	    trkIso1     = tag->trkIso;
@@ -547,6 +537,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outFile->Write();
     outFile->Close(); 
   }
+  delete h_rw;
+  delete f_rw;
   delete info;
   delete gen;
   delete genPartArr;

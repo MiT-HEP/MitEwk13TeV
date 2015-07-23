@@ -33,6 +33,7 @@
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
+#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
@@ -61,6 +62,13 @@ void selectWm(const TString conf="wm.conf", // input file
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
+
+  // load trigger menu
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -91,11 +99,10 @@ void selectWm(const TString conf="wm.conf", // input file
   TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
-  Float_t ppMet, ppMetPhi, ppSumEt, ppMt, ppU1, ppU2;
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
@@ -123,7 +130,9 @@ void selectWm(const TString conf="wm.conf", // input file
     
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
+    Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
+    else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
@@ -131,6 +140,7 @@ void selectWm(const TString conf="wm.conf", // input file
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
+
     //
     // Set up output ntuple
     //
@@ -160,6 +170,7 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
+    outTree->Branch("puWeight",   &puWeight,   "puWeight/F");    // scale factor for pileup reweighting (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
@@ -175,15 +186,9 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
     outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
-    outTree->Branch("mvaMt",      &mvaMt,       "mvaMt/F");      // transverse mass (MVA MET)
+    outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");      // transverse mass (MVA MET)
     outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
     outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
-    outTree->Branch("ppMet",      &ppMet,      "ppMet/F");       // PUPPI MET
-    outTree->Branch("ppMetPhi",   &ppMetPhi,   "ppMetPhi/F");    // phi(PUPPI MET)
-    outTree->Branch("ppSumEt",    &ppSumEt,    "ppSumEt/F");     // Sum ET (PUPPI MET)
-    outTree->Branch("ppMt",       &ppMt,       "ppMt/F");        // transverse mass (PUPPI MET)
-    outTree->Branch("ppU1",       &ppU1,       "ppU1/F");        // parallel component of recoil (PUPPI MET)
-    outTree->Branch("ppU2",       &ppU2,       "ppU2/F");        // perpendicular component of recoil (PUPPI MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",        "TLorentzVector", &lep);       // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
@@ -221,12 +226,6 @@ void selectWm(const TString conf="wm.conf", // input file
 	hasJSON = kTRUE;
 	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
-
-      const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-      UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
-      UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");
-      UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",
-      //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09");
 
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);  
@@ -279,7 +278,7 @@ void selectWm(const TString conf="wm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if(!(info->triggerBits[trigger])) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -310,7 +309,7 @@ void selectWm(const TString conf="wm.conf", // input file
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
 	  if(mu->pt < PT_CUT)                 continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
-          if(!(mu->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 
 	  passSel=kTRUE;
 	  goodMuon = mu;
@@ -323,7 +322,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  
 	  TLorentzVector vLep; 
 	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
-
+	  
 	  //
 	  // Fill tree
 	  //
@@ -335,7 +334,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  vertexBr->GetEntry(ientry);
 
 	  npv       = vertexArr->GetEntries();
-	  npu	    = info->nPU;
+	  npu	    = info->nPUmean;
 	  genV      = new TLorentzVector(0,0,0,0);
 	  genLep    = new TLorentzVector(0,0,0,0);
 	  genVPt    = -999;
@@ -350,8 +349,6 @@ void selectWm(const TString conf="wm.conf", // input file
           tkU2      = -999;
 	  mvaU1     = -999;
           mvaU2     = -999;
-	  ppU1      = -999;
-          ppU2      = -999;
           id_1      = -999;
           id_2      = -999;
           x_1       = -999;
@@ -366,7 +363,7 @@ void selectWm(const TString conf="wm.conf", // input file
             TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
-
+	    
             if (gvec && glep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
 	      genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
@@ -382,7 +379,7 @@ void selectWm(const TString conf="wm.conf", // input file
               TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
               TVector2 vLepPt(vLep.Px(),vLep.Py());
 
-              TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));
+              TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
               TVector2 vU = -1.0*(vMet+vLepPt);
               u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
               u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
@@ -396,11 +393,6 @@ void selectWm(const TString conf="wm.conf", // input file
               TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
               mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
               mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-	      
-              TVector2 vPpMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
-              TVector2 vPpU = -1.0*(vPpMet+vLepPt);
-              ppU1 = ((vWPt.Px())*(vPpU.Px()) + (vWPt.Py())*(vPpU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              ppU2 = ((vWPt.Px())*(vPpU.Py()) - (vWPt.Py())*(vPpU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      
             }
             id_1      = gen->id_1;
@@ -418,10 +410,11 @@ void selectWm(const TString conf="wm.conf", // input file
             gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-	  met	   = info->pfMET;
-	  metPhi   = info->pfMETphi;
+	  puWeight = h_rw->GetBinContent(info->nPUmean+1);
+	  met	   = info->pfMETC;
+	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
-	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
+	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
 	  tkMet    = info->trkMET;
           tkMetPhi = info->trkMETphi;
           tkSumEt  = 0;
@@ -430,13 +423,9 @@ void selectWm(const TString conf="wm.conf", // input file
           mvaMetPhi = info->mvaMETphi;
           mvaSumEt  = 0;
           mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-	  ppMet    = info->pfMETC;
-      ppMetPhi = info->pfMETCphi;
-      ppSumEt = 0;
-      ppMt     = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
 	  q        = goodMuon->q;
 	  lep      = &vLep;
-
+	  
 	  ///// muon specific /////
 	  trkIso     = goodMuon->trkIso;
 	  emIso      = goodMuon->ecalIso;
@@ -470,7 +459,8 @@ void selectWm(const TString conf="wm.conf", // input file
     outFile->Write();
     outFile->Close();
   }
-
+  delete h_rw;
+  delete f_rw;
   delete info;
   delete gen;
   delete genPartArr;

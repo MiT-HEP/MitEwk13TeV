@@ -266,17 +266,29 @@ Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchB
 }
 
 Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t isData) {
-  if (isData) return triggerMenu.pass("HLT_Ele23_WPLoose_Gsf_v*",hltBits);
-  else return triggerMenu.pass("HLT_Ele23_WP75_Gsf_v*",hltBits);
+  if (isData) {
+    return triggerMenu.pass("HLT_Ele23_WPLoose_Gsf_v*",hltBits);
+  }
+  else {
+    return triggerMenu.pass("HLT_Ele23_WP75_Gsf_v*",hltBits);
+  }
 }
 
 Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData) {
   if (isData) {
-    if (isL1) return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEGL1SingleEG20ORL1SingleEG15Filter",hltMatchBits);
-    else return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEle23WPLooseGsfTrackIsoFilter",hltMatchBits);
+    if (isL1) {
+      return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEGL1SingleEG20ORL1SingleEG15Filter",hltMatchBits);
+    }
+    else {
+      return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEle23WPLooseGsfTrackIsoFilter",hltMatchBits);
+    }
   }
-  else if (isL1) return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v*","hltL1sL1SingleEG20",hltMatchBits);
-  else return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v*","hltEle23WP75GsfTrackIsoFilter",hltMatchBits);
+  else if (isL1) {
+    return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v*","hltL1sL1SingleEG20",hltMatchBits);
+  }
+  else {
+    return triggerMenu.passObj("HLT_Ele23_WP75_Gsf_v*","hltEle23WP75GsfTrackIsoFilter",hltMatchBits);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
