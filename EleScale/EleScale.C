@@ -15,7 +15,7 @@
 #include <fstream>                    // functions for file I/O
 #include <string>                     // C++ string class
 #include <sstream>                    // class for parsing strings
-#include "TLorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 #include "TRandom3.h"
 
 #include "../Utils/CPlot.hh"          // helper class for plots
@@ -49,12 +49,11 @@ void EleScale() {
   // event category enumeration
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
-  TString outputDir = "Results";
-  TString pufname = ""; 
+  TString outputDir = "test";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/data_select.raw.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/zee_select.root");  // MC
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/data_select.raw.root");  // data
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
@@ -63,14 +62,14 @@ void EleScale() {
   const Double_t ELE_MASS  = 0.000511;  
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  scEta_limits.push_back(make_pair(0.0,1.4442));
-  scEta_limits.push_back(make_pair(1.566,2.5));
-  /*scEta_limits.push_back(make_pair(0.0,0.4));
-  scEta_limits.push_back(make_pair(0.4,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.2));
-  scEta_limits.push_back(make_pair(1.2,1.4442));
+  /*scEta_limits.push_back(make_pair(0.0,0.8));
+  scEta_limits.push_back(make_pair(0.8,1.4442));
+  scEta_limits.push_back(make_pair(1.566,2.5));*/
+  scEta_limits.push_back(make_pair(0.0,0.5));
+  scEta_limits.push_back(make_pair(0.5,1.0));
+  scEta_limits.push_back(make_pair(1.0,1.4442));
   scEta_limits.push_back(make_pair(1.566,2.0));
-  scEta_limits.push_back(make_pair(2.0,2.5));*/
+  scEta_limits.push_back(make_pair(2.0,2.5));
 
   CPlot::sOutDir = outputDir;
   
@@ -83,19 +82,16 @@ void EleScale() {
    
   enum { eData=0, eMC };
   
-//  TFile *pufile = new TFile(pufname); assert(pufile);
-//  TH1D  *puWeights = (TH1D*)pufile->Get("puWeights");
-  
   char hname[100];
   vector<TH1D*> hMCv, hDatav;  
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
       sprintf(hname,"mc_%i_%i",ibin,jbin);
-      hMCv.push_back(new TH1D(hname,"",100,MASS_LOW,MASS_HIGH));
+      hMCv.push_back(new TH1D(hname,"",120,MASS_LOW,MASS_HIGH));
       hMCv.back()->Sumw2();
       
       sprintf(hname,"data_%i_%i",ibin,jbin);
-      hDatav.push_back(new TH1D(hname,"",100,MASS_LOW,MASS_HIGH));
+      hDatav.push_back(new TH1D(hname,"",120,MASS_LOW,MASS_HIGH));
       hDatav.back()->Sumw2();
     }
   }
@@ -104,7 +100,7 @@ void EleScale() {
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
@@ -122,6 +118,7 @@ void EleScale() {
     intree->SetBranchAddress("lumiSec",  &lumiSec);   // event lumi section
     intree->SetBranchAddress("evtNum",   &evtNum);    // event number
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight
+    intree->SetBranchAddress("puWeight", &puWeight);  // pileup reweighting
     intree->SetBranchAddress("matchGen", &matchGen);  // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category", &category);  // dilepton category
     intree->SetBranchAddress("npv",      &npv);	      // number of primary vertices
@@ -140,7 +137,7 @@ void EleScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-	weight=scale1fb;
+	weight=scale1fb*puWeight;
       }
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
@@ -219,11 +216,11 @@ void EleScale() {
   Int_t intOrder = 1;     // Interpolation order for       
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     sprintf(vname,"scale_%i",ibin);
-    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.0,0.8,1.2);
+    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.01,0.7,1.3);
     scalebins.add(*scalebinned);
     
     sprintf(vname,"sigma_%i",ibin);
-    RooRealVar *sigmabinned = new RooRealVar(vname,vname,0.8,0.0,2.0);
+    RooRealVar *sigmabinned = new RooRealVar(vname,vname,0.2,0.0,3.0);
     sigmabins.add(*sigmabinned);
   }
     
@@ -243,7 +240,7 @@ void EleScale() {
       sprintf(vname,"zmassmcscEta_%i_%i",ibin,jbin);
       RooDataHist *zmassmcscEta = new RooDataHist(vname,vname,RooArgList(massmc),hMCv[n]);      
       sprintf(vname,"masstemplatescEta_%i_%i",ibin,jbin);
-      RooHistPdf *masstemplatescEta = new RooHistPdf(vname,vname,RooArgList(*massshiftedscEta),RooArgList(massmc),*zmassmcscEta,intOrder);             
+      RooHistPdf *masstemplatescEta = new RooHistPdf(vname,vname,RooArgList(*massshiftedscEta),RooArgList(massmc),*zmassmcscEta,intOrder);
 
       // Gaussian smearing function
       sprintf(vname,"sigmascEta_%i_%i",ibin,jbin);
@@ -301,19 +298,20 @@ void EleScale() {
   
   CPlot plotScale1("ele_scale_datatomc","","Supercluster |#eta|","Data scale correction");
   plotScale1.AddGraph(grScaleDatatoMC,"",kBlue);
-  plotScale1.SetYRange(0.99,1.01);
+  plotScale1.SetYRange(0.98,1.02);
   plotScale1.AddLine(0,1,2.75,1,kBlack,7);
   plotScale1.Draw(c,kTRUE,format);
   
   CPlot plotScale2("ele_scale_mctodata","","Supercluster |#eta|","MC#rightarrowData scale correction");
   plotScale2.AddGraph(grScaleMCtoData,"",kBlue);
-  plotScale2.SetYRange(0.99,1.01);
+  plotScale2.SetYRange(0.98,1.02);
   plotScale2.AddLine(0,1,2.75,1,kBlack,7);
   plotScale2.Draw(c,kTRUE,format);
 
   CPlot plotRes("ele_res_mctodata","","Supercluster |#eta|","MC#rightarrowData additional smear [GeV]");
   plotRes.AddGraph(grSigmaMCtoData,"",kBlue);
-  plotRes.SetYRange(0,1.6);
+  plotRes.SetYRange(-0.5,2.0);
+  plotRes.AddLine(0,0,2.75,0,kBlack,7);
   plotRes.Draw(c,kTRUE,format);
 
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
