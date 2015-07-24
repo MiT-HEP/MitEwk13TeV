@@ -54,19 +54,19 @@ Double_t sigmaFunc(Double_t *x, Double_t *par) {
   return a*x[0]*x[0] + b*x[0] + c;
 }
 
-Double_t sigmaFunc(Double_t *x, Double_t *par) {
-  // par[0]: quadratic coefficient
-  // par[1]: linear coefficient
-  // par[2]: constant term
-  
-  Double_t a  = par[0];
-  Double_t b  = par[1];
-  Double_t c  = par[2];
-  Double_t d  = par[3];
-  Double_t e  = par[4];
-    
-  return a*x[0]*x[0] + b*x[0] + c + d*x[0]*x[0]*x[0] + e*x[0]*x[0]*x[0]*x[0];
-}
+// Double_t sigmaFunc(Double_t *x, Double_t *par) {
+//   // par[0]: quadratic coefficient
+//   // par[1]: linear coefficient
+//   // par[2]: constant term
+//   
+//   Double_t a  = par[0];
+//   Double_t b  = par[1];
+//   Double_t c  = par[2];
+//   Double_t d  = par[3];
+//   Double_t e  = par[4];
+//     
+//   return a*x[0]*x[0] + b*x[0] + c + d*x[0]*x[0]*x[0] + e*x[0]*x[0]*x[0]*x[0];
+// }
 
 //--------------------------------------------------------------------------------------------------
 // function to describe relative fraction in a double Gaussian based on 
@@ -76,9 +76,9 @@ Double_t frac2Func(Double_t *x, Double_t *par) {
   // par[4..7]:  sigma1
   // par[8..11]: sigma2
   
-  TF1 s0("_s0",sigmaFunc,0,7000,4,5,3); s0.SetParameters(par[0],par[1],par[2],par[3]);
-  TF1 s1("_s1",sigmaFunc,0,7000,4,5,3); s1.SetParameters(par[4],par[5],par[6],par[7]);
-  TF1 s2("_s2",sigmaFunc,0,7000,4,5,3); s2.SetParameters(par[8],par[9],par[10],par[11]);
+  TF1 s0("_s0",sigmaFunc,0,7000,4); s0.SetParameters(par[0],par[1],par[2],par[3]);
+  TF1 s1("_s1",sigmaFunc,0,7000,4); s1.SetParameters(par[4],par[5],par[6],par[7]);
+  TF1 s2("_s2",sigmaFunc,0,7000,4); s2.SetParameters(par[8],par[9],par[10],par[11]);
   
   return (s0.Eval(x[0]) - s1.Eval(x[0]))/(s2.Eval(x[0]) - s1.Eval(x[0]));
 }
@@ -152,7 +152,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {0,5,10,15,20,25,30,35,40,45,50,60,70,80,100};
+  Double_t ptbins[] = {0,5,10,15,20,25,30,40,55,70,100};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   Double_t corrbins[] = { 0, 10, 30, 50 };
@@ -164,12 +164,12 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zz_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wz_select.root"); isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/ww_select.root"); isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wx_select.root"); isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zz_select.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wz_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/ww_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wx_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
@@ -199,17 +199,17 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   }
     
   TFitResultPtr fitresPFu1mean;   TF1 *fcnPFu1mean   = new TF1("fcnPFu1mean",formulaPFu1mean,0,7000);
-  TFitResultPtr fitresPFu1sigma1; TF1 *fcnPFu1sigma1 = new TF1("fcnPFu1sigma1",sigmaFunc,0,7000,3, 3, 3);
-  TFitResultPtr fitresPFu1sigma2; TF1 *fcnPFu1sigma2 = new TF1("fcnPFu1sigma2",sigmaFunc,0,7000,3, 3, 3);  
-  TFitResultPtr fitresPFu1sigma0; TF1 *fcnPFu1sigma0 = new TF1("fcnPFu1sigma0",sigmaFunc,0,7000,3, 3, 3);    
-  TFitResultPtr fitresPFu1frac2;  TF1 *fcnPFu1frac2  = new TF1("fcnPFu1frac2",frac2Func,0,7000,12, 3, 3);
+  TFitResultPtr fitresPFu1sigma1; TF1 *fcnPFu1sigma1 = new TF1("fcnPFu1sigma1",sigmaFunc,0,7000,3);
+  TFitResultPtr fitresPFu1sigma2; TF1 *fcnPFu1sigma2 = new TF1("fcnPFu1sigma2",sigmaFunc,0,7000,3);  
+  TFitResultPtr fitresPFu1sigma0; TF1 *fcnPFu1sigma0 = new TF1("fcnPFu1sigma0",sigmaFunc,0,7000,3);    
+  TFitResultPtr fitresPFu1frac2;  TF1 *fcnPFu1frac2  = new TF1("fcnPFu1frac2",frac2Func,0,7000,12);
 
   TFitResultPtr fitresPFu2mean;   TF1 *fcnPFu2mean   = new TF1("fcnPFu2mean",formulaPFu2mean,0,7000);
-  TFitResultPtr fitresPFu2sigma1; TF1 *fcnPFu2sigma1 = new TF1("fcnPFu2sigma1",sigmaFunc,0,7000,3, 3, 3);  
-  TFitResultPtr fitresPFu2sigma2; TF1 *fcnPFu2sigma2 = new TF1("fcnPFu2sigma2",sigmaFunc,0,7000,3, 3, 3);  
-  TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3, 3, 3);  
+  TFitResultPtr fitresPFu2sigma1; TF1 *fcnPFu2sigma1 = new TF1("fcnPFu2sigma1",sigmaFunc,0,7000,3);  
+  TFitResultPtr fitresPFu2sigma2; TF1 *fcnPFu2sigma2 = new TF1("fcnPFu2sigma2",sigmaFunc,0,7000,3);  
+  TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2frac2;  TF1 *fcnPFu2frac2  = new TF1("fcnPFu2frac2",frac2Func,0,7000,12);
-      
+/*      
   fcnPFu1sigma1->SetParameter(0,0); fcnPFu1sigma1->SetParLimits(0,-5e-2,0);
    fcnPFu1sigma1->SetParameter(1,0.25); //fcnPFu1sigma1->SetParLimits(1,-1,1);
 //   fcnPFu1sigma1->SetParameter(2,12);   fcnPFu1sigma1->SetParLimits(2,0,20);
@@ -220,16 +220,16 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 //   fcnPFu1sigma0->SetParameter(0,-2e-5); fcnPFu1sigma0->SetParLimits(0,-1e-3,0);
 //   fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
 //   fcnPFu1sigma0->SetParameter(2,14);     fcnPFu1sigma0->SetParLimits(2,0,20); 
-  
-  fcnPFu2sigma1->SetParameter(0,0);  fcnPFu2sigma1->SetParLimits(0,-5e-3,0);
+  */
+  fcnPFu2sigma1->SetParameter(0,-5e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-4,0);
  // fcnPFu2sigma1->SetParameter(1,0.15); //  fcnPFu2sigma1->SetParLimits(1,-1,1);
 //  fcnPFu2sigma1->SetParameter(2,9);     // fcnPFu2sigma1->SetParLimits(2,2,7);
-  fcnPFu2sigma2->SetParameter(0,0);  fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
+ // fcnPFu2sigma2->SetParameter(0,0);  fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
 //  fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
 //  fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
-   fcnPFu2sigma0->SetParameter(0,-1e-3);  fcnPFu2sigma0->SetParLimits(0,-1e-2,-1e-3);
-   fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,2);
-   fcnPFu2sigma0->SetParameter(2,12);      fcnPFu2sigma0->SetParLimits(2,1,20);
+   // fcnPFu2sigma0->SetParameter(0,-1e-3);  fcnPFu2sigma0->SetParLimits(0,-1e-2,-1e-3);
+   // fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,2);
+   // fcnPFu2sigma0->SetParameter(2,12);      fcnPFu2sigma0->SetParLimits(2,1,20);
     
   TFile *infile = 0;
   TTree *intree = 0;  
