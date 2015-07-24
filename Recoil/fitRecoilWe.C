@@ -127,7 +127,10 @@ void fitRecoilWe(TString infoldername,  // input ntuple
 		 Bool_t  sigOnly,       // signal event only?
 		 Int_t   charge,        // charge requirement
 		 Bool_t  useData,       // use data? (0 = signal MC, 1 = data, 2 = raw data)
-		 TString outputDir      // output directory
+         std::string uparName = "u1",
+         std::string uprpName = "u2",
+         std::string metName = "pf",
+		 TString outputDir  ="./"    // output directory
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -160,12 +163,12 @@ void fitRecoilWe(TString infoldername,  // input ntuple
     cout << "useData value doesn't make sense" << endl;
   }
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wenu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.5;
@@ -258,8 +261,8 @@ void fitRecoilWe(TString infoldername,  // input ntuple
     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
     intree->SetBranchAddress("sc",       &sc);        // electron Supercluster 4-vector
@@ -669,8 +672,8 @@ void fitRecoilWe(TString infoldername,  // input ntuple
     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);  // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);  // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
     intree->SetBranchAddress("sc",       &sc);        // electron Supercluster 4-vector
