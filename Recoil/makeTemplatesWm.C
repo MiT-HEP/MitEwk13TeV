@@ -11,7 +11,7 @@
 #include <iomanip>                        // functions to format standard I/O
 #include <TLorentzVector.h>          // 4-vector class
 
-#include "../Utils/MyTools.hh"	          // various helper functions
+// #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/RecoilCorrector.hh"    // class to handle recoil corrections for MET
 #endif
 
@@ -36,9 +36,9 @@ void makeTemplatesWm()
   // file name with Zl MC
   TString zllMCfname("ZeeMC/fits.root");
   // file name with Wp MC
-  TString wpMCfname("WepMC/fits.root");
+  TString wpMCfname("WmpMC/fits.root");
     // file name with Wm MC
-  TString wmMCfname("WemMC/fits.root");
+  TString wmMCfname("WmmMC/fits.root");
   
 
   
