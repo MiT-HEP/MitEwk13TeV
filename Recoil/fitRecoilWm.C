@@ -34,9 +34,6 @@
 
 using namespace RooFit;
 
-// typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
-
 //=== FUNCTION DECLARATIONS ======================================================================================
 
 // generate web page
@@ -130,7 +127,10 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 		 Bool_t  sigOnly,       // signal event only?
 		 Int_t   charge,        // charge requirement
 		 Bool_t  useData,       // use Data? (0 = signal MC, 1 = data)
-		 TString outputDir      // output directory
+         std::string uparName = "u1",
+         std::string uprpName = "u2",
+         std::string metName = "pf",
+		 TString outputDir ="./"     // output directory
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -163,12 +163,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     cout << "useData value doesn't make sense" << endl;
   }
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
 
   
   const Double_t PT_CUT  = 25;
@@ -259,8 +259,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
   
@@ -669,8 +669,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
     
