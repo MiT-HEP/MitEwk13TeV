@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # output ntuple directory
-NTUPDIR=/data/blue/jlawhorn
+NTUPDIR=.
 
 # integrated luminosity for data
 LUMI=7.3
@@ -12,7 +12,7 @@ LUMI=7.3
 #root -l -q rootlogon.plot.C plotZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu/ntuples\",\"Zmumu\",${LUMI}\)
 #root -l -q rootlogon.plot.C plotWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu/ntuples\",\"Wmunu\",${LUMI}\)
 
-root -l -q selectZee.C+\(\"zee.conf\",\"${NTUPDIR}/Zee\",0\)
+#root -l -q selectZee.C+\(\"zee.conf\",\"${NTUPDIR}/Zee\",0\)
 #root -l -q selectWe.C+\(\"we.conf\",\"${NTUPDIR}/Wenu\",0\)
 #root -l -q selectAntiWe.C+\(\"we.conf\",\"${NTUPDIR}/AntiWenu\",0\)
 #root -l -q rootlogon.plot.C plotZee.C+\(\"zee.conf\",\"${NTUPDIR}/Zee/ntuples\",\"Zee\",${LUMI}\)
