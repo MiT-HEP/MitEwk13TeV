@@ -12,10 +12,10 @@ def concatenate(listline,delimiter):
 
 efftype = sys.argv[1]
 # File names to process. Always put the positive before the negative.
-outputdir = '/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/'
-infilenames = [outputdir+efftype+'_pos/latex.txt',outputdir+efftype+'_neg/latex.txt']
+outputdir = '/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataMC/'
+infilenames = [outputdir+efftype+'_scalefactors_pos.txt',outputdir+efftype+'_scalefactors_neg.txt']
 # Output file
-outfile = open(efftype+'_table.txt','w')
+outfile = open(efftype+'Eff_scalefactors_table.txt','w')
 
 # Get number of eta bins (number of columns)
 posfile = open(infilenames[0])
@@ -100,19 +100,13 @@ if needMultRows:
 		outfile.write('\n \hline \n')
 
 # Get table caption
-efftype_caption_map = {'Zee_EleHLTEff':'Electron trigger efficiencies in MC.',
-		       'DataZee_EleHLTEff':'Electron trigger efficiencies in data.',
-		       'Zee_EleGsfSelEff':'Electron reconstruction, ID, and isolation efficiencies in MC.',
-		       'DataZee_EleGsfSelEff':'Electron reconstruction, ID, and isolation efficiencies in data.',
+efftype_caption_map = {'eleHLT':'Electron trigger scale factors.',
+		       'eleGsfSel':'Electron reconstruction, ID, and isolation scale factors.',
 		       'Zee_EleSCEff':'Electron supercluster efficiencies in MC.',
-                       'Zmm_MuHLTEff':'Muon trigger efficiencies in MC.',
-                       'DataZmm_MuHLTEff':'Muon trigger efficiencies in data.',
-                       'Zmm_MuSelEff':'Muon ID and isolation efficiencies in MC.',
-                       'DataZmm_MuSelEff':'Muon ID and isolation efficiencies in data.',
-                       'Zmm_MuTrkEff':'Tracking efficiency in MC.',
-                       'DataZmm_MuTrkEff':'Tracking efficiency in data.',
-                       'Zmm_MuStaEff_iso':'Stand-alone muon efficiency in MC.',
-                       'DataZmm_MuStaEff_iso':'Stand-alone muon efficiency in data.'}
+                       'muHLT':'Muon trigger scale factors.',
+                       'muSel':'Muon ID and isolation scale factors.',
+                       'muTrk':'Muon tracking scale factors.',
+                       'muSta':'Stand-alone muon efficiency scale factors.'}
 caption = efftype_caption_map[efftype]
 
 # LaTex table end
