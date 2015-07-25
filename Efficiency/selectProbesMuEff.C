@@ -42,8 +42,8 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   // Main analysis code 
   //==============================================================================================================  
   
-  enum { eHLTEff, eL1Eff, eSelEff, eTrkEff, eStaEff, eStaEff_iso, ePOGIDEff, ePOGIsoEff };
-  if(effType > ePOGIsoEff) {
+  enum { eHLTEff, eL1Eff, eSelEff, eTrkEff, eStaEff, eStaEff_iso, ePOGIDEff, ePOGIsoEff, eHLTSelStaEff_iso };
+  if(effType > eHLTSelStaEff_iso) {
     cout << "Invalid effType option! Exiting..." << endl;
     return;
   }
@@ -83,7 +83,7 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   UInt_t  matchGen;
   UInt_t  category;
   //UInt_t  npv, npu;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
@@ -138,6 +138,7 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("nValidHits2",&nValidHits2); // number of valid muon hits of probe muon
   intree->SetBranchAddress("typeBits1",  &typeBits1);   // muon type of tag muon
   intree->SetBranchAddress("typeBits2",  &typeBits2);   // muon type of probe muon
+  intree->SetBranchAddress("puWeight",   &puWeight);
 
   //
   // loop over events
@@ -250,7 +251,21 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       else                            { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
       
       m = dilep->M();
-    
+    } else if(effType==eHLTSelStaEff_iso) {
+      //
+      // probe = isolated tracker track
+      // pass  = is also a GLB muon
+      // * MuMu2HLT, MuMu1HLT(1L1), isolated MuMuNoSel event means a passing probe, isolated MuTrk event means a failing probe, 
+      //   MuSta, non-isolated MuMuNoSel, and non-isolated MuTrk events do not satisfy probe requirements
+      //    
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kFALSE; }
+      else if(category==eMuMu1HLT)    { pass=kFALSE; }
+      else if(category==eMuMuNoSel)   { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
+      else if(category==eMuSta)       { continue; }
+      else                            { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
+      
+      m = dilep->M();    
     } else if(effType==ePOGIDEff) {
       //
       // probe = tracker track
@@ -307,14 +322,14 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       m = dilep->M();    
     }
     
-    nProbes += doWeighted ? scale1fb : 1;
+    nProbes += doWeighted ? scale1fb*puWeight : 1;
 
     // Fill tree
     mass = m;
     pt	 = (effType==eTrkEff) ? sta2->Pt()  : lep2->Pt();
     eta	 = (effType==eTrkEff) ? sta2->Eta() : lep2->Eta();
     phi	 = (effType==eTrkEff) ? sta2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb : 1;
+    weight  = doWeighted ? scale1fb*puWeight : 1;
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -327,13 +342,13 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
     if(category==eMuMu2HLT) {
       if(lep2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb : 1;
+      nProbes += doWeighted ? scale1fb*puWeight : 1;
 
       mass	   = m;
       pt	   = (effType==eTrkEff) ? sta1->Pt()  : lep1->Pt();
       eta	   = (effType==eTrkEff) ? sta1->Eta() : lep1->Eta();
       phi	   = (effType==eTrkEff) ? sta1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb : 1;
+      weight  = doWeighted ? scale1fb*puWeight : 1;
       q	   = q1;
       npv	   = npv;
       npu	   = npu;

@@ -82,7 +82,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   UInt_t  matchGen;
   UInt_t  category;
   //UInt_t  npv, npu;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
@@ -113,6 +113,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
   intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
   intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector 
+  intree->SetBranchAddress("puWeight",&puWeight);
   
   //
   // loop over events
@@ -121,7 +122,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     intree->GetEntry(ientry);
     
     if(sc1->Pt() < TAG_PT_CUT) continue;
-    
+
     // check GEN match if necessary
     if(doGenMatch && !matchGen) continue;
     
@@ -193,14 +194,14 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else                              { pass=kFALSE; }  
     }
     
-    nProbes += doWeighted ? scale1fb : 1;
+    nProbes += doWeighted ? scale1fb*puWeight : 1;
 
     // Fill tree
     mass    = dilep->M();
     pt	    = sc2->Pt();
     eta	    = sc2->Eta();
     phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb : 1;
+    weight  = doWeighted ? scale1fb*puWeight : 1;
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -212,14 +213,14 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     
     if(category==eEleEle2HLT) {
       if(sc2->Pt() < TAG_PT_CUT) continue;
-      
-      nProbes += doWeighted ? scale1fb : 1;
+
+      nProbes += doWeighted ? scale1fb*puWeight : 1;
       
       mass    = dilep->M();
       pt      = sc1->Pt();
       eta     = sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb : 1;
+      weight  = doWeighted ? scale1fb*puWeight : 1;
       q	      = q1;
       npv     = npv;
       npu     = npu;
