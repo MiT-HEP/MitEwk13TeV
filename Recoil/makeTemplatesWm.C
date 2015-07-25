@@ -9,14 +9,11 @@
 #include <vector>                         // STL vector class
 #include <iostream>                       // standard I/O
 #include <iomanip>                        // functions to format standard I/O
-#include "Math/LorentzVector.h"           // 4-vector class
+#include <TLorentzVector.h>          // 4-vector class
 
-#include "../Utils/MyTools.hh"	          // various helper functions
+// #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/RecoilCorrector.hh"    // class to handle recoil corrections for MET
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -32,21 +29,29 @@ void makeTemplatesWm()
   const Double_t ETA_CUT = 2.4;
 
   // input W signal file
-  TString infilename("/data/blue/ksung/EWKAna/8TeV/Selection/Wmunu/ntuples/wm_select.root");
+  TString infilename("/data/blue/Bacon/Run2/wz_flat/Wmunu/ntuples/wm_select.root");
   
-  // file name with recoil correction
-  TString recoilfname("ZmmDataMay23_2/fits.root");
+  // file name with Zll data
+  TString datafname("ZeeData/fits.root");
+  // file name with Zl MC
+  TString zllMCfname("ZeeMC/fits.root");
+  // file name with Wp MC
+  TString wpMCfname("WmpMC/fits.root");
+    // file name with Wm MC
+  TString wmMCfname("WmmMC/fits.root");
+  
+
   
   // output file name
-  TString outfilename("/data/blue/ksung/EWKAna/8TeV/RecoilSyst/WmTemplates_May23_2.root");
-  
+  TString outfilename("./test.root");
+
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
-    
+
   // Access recoil corrections
-  RecoilCorrector recoilCorr(recoilfname);
+  RecoilCorrector recoilCorr(datafname,zllMCfname,wpMCfname,wmMCfname);
 
   //
   // Declare variables to read in ntuple
@@ -57,7 +62,7 @@ void makeTemplatesWm()
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  LorentzVector *lep=0;
+  TLorentzVector *lep=0;
     
   //
   // Set up output TTrees
@@ -195,62 +200,147 @@ void makeTemplatesWm()
     lepScale=1; lepScaleErr=0.005;
     lepRes=0.5; lepResErr=0.5;
     
-    // apply recoil corrections with nominal lepton scale and resolution corrections
+//     // apply recoil corrections with nominal lepton scale and resolution corrections
+//     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
+//     out_met = corrMet;
+//     corrWmTree->Fill();
+//     if(q>0) corrWmpTree->Fill();
+//     else    corrWmmTree->Fill();    
     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
-    out_met = corrMet;
-    corrWmTree->Fill();
-    if(q>0) corrWmpTree->Fill();
-    else    corrWmmTree->Fill();    
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, 1);
+      out_met = corrMet;
+      corrWmTree->Fill();
+      corrWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, -1);
+      out_met = corrMet;
+      corrWmTree->Fill();
+      corrWmmTree->Fill();
+    }
     
-    // recoil corrections "up"
+//     // recoil corrections "up"
+//     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,1);
+//     out_met = corrMet;
+//     corrUpWmTree->Fill();
+//     if(q>0) corrUpWmpTree->Fill();
+//     else    corrUpWmmTree->Fill();
     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,1);
-    out_met = corrMet;
-    corrUpWmTree->Fill();
-    if(q>0) corrUpWmpTree->Fill();
-    else    corrUpWmmTree->Fill();
-  	  
-    // recoil corrections "down"
-    lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,-1);
-    out_met = corrMet;
-    corrDownWmTree->Fill();
-    if(q>0) corrDownWmpTree->Fill();
-    else    corrDownWmmTree->Fill();    
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,1, 1);
+      out_met = corrMet;
+      corrUpWmTree->Fill();
+      corrUpWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,1, -1);
+      out_met = corrMet;
+      corrUpWmTree->Fill();
+      corrUpWmmTree->Fill();
+    }
     
-    // lepton scale "up"
+//     // recoil corrections "down"
+//     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,-1);
+//     out_met = corrMet;
+//     corrDownWmTree->Fill();
+//     if(q>0) corrDownWmpTree->Fill();
+//     else    corrDownWmmTree->Fill();   
+    lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes);
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,-1, 1);
+      out_met = corrMet;
+      corrDownWmTree->Fill();
+      corrDownWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi,-1, -1);
+      out_met = corrMet;
+      corrDownWmTree->Fill();
+      corrDownWmmTree->Fill();
+    }
+    
+//     // lepton scale "up"
+//     lepPt  = gRandom->Gaus(lep->Pt()*(lepScale+lepScaleErr), lepRes);
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
+//     out_met = corrMet;
+//     lepScaleUpWmTree->Fill();
+//     if(q>0) lepScaleUpWmpTree->Fill();
+//     else    lepScaleUpWmmTree->Fill();
     lepPt  = gRandom->Gaus(lep->Pt()*(lepScale+lepScaleErr), lepRes);
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
-    out_met = corrMet;
-    lepScaleUpWmTree->Fill();
-    if(q>0) lepScaleUpWmpTree->Fill();
-    else    lepScaleUpWmmTree->Fill();
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, 1);
+      out_met = corrMet;
+      lepScaleUpWmTree->Fill();
+      lepScaleUpWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, -1);
+      out_met = corrMet;
+      lepScaleUpWmTree->Fill();
+      lepScaleUpWmmTree->Fill();
+    }
   	  
-    // lepton scale "down"
+//     // lepton scale "down"
+//     lepPt  = gRandom->Gaus(lep->Pt()*(lepScale-lepScaleErr), lepRes);
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
+//     out_met = corrMet;
+//     lepScaleDownWmTree->Fill();
+//     if(q>0) lepScaleDownWmpTree->Fill();
+//     else    lepScaleDownWmmTree->Fill();
     lepPt  = gRandom->Gaus(lep->Pt()*(lepScale-lepScaleErr), lepRes);
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
-    out_met = corrMet;
-    lepScaleDownWmTree->Fill();
-    if(q>0) lepScaleDownWmpTree->Fill();
-    else    lepScaleDownWmmTree->Fill();
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, 1);
+      out_met = corrMet;
+      lepScaleDownWmTree->Fill();
+      lepScaleDownWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, -1);
+      out_met = corrMet;
+      lepScaleDownWmTree->Fill();
+      lepScaleDownWmmTree->Fill();
+    }
      
     
-    // lepton resolution "up"
+//     // lepton resolution "up"
+//     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes+lepResErr);
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
+//     out_met = corrMet;
+//     lepResUpWmTree->Fill();
+//     if(q>0) lepResUpWmpTree->Fill();
+//     else    lepResUpWmmTree->Fill();
     lepPt  = gRandom->Gaus(lep->Pt()*lepScale, lepRes+lepResErr);
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
-    out_met = corrMet;
-    lepResUpWmTree->Fill();
-    if(q>0) lepResUpWmpTree->Fill();
-    else    lepResUpWmmTree->Fill();
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, 1);
+      out_met = corrMet;
+      lepResUpWmTree->Fill();
+      lepResUpWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, -1);
+      out_met = corrMet;
+      lepResUpWmTree->Fill();
+      lepResUpWmmTree->Fill();
+    }
   	  
-    // lepton resolution "down"
+//     // lepton resolution "down"
+//     lepPt  = (lepRes-lepResErr>0) ? gRandom->Gaus(lep->Pt()*lepScale, lepRes-lepResErr) : lep->Pt()*lepScale;
+//     recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
+//     out_met = corrMet;
+//     lepResDownWmTree->Fill();
+//     if(q>0) lepResDownWmpTree->Fill();
+//     else    lepResDownWmmTree->Fill();   
     lepPt  = (lepRes-lepResErr>0) ? gRandom->Gaus(lep->Pt()*lepScale, lepRes-lepResErr) : lep->Pt()*lepScale;
-    recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi);
-    out_met = corrMet;
-    lepResDownWmTree->Fill();
-    if(q>0) lepResDownWmpTree->Fill();
-    else    lepResDownWmmTree->Fill();     
+    if(q>0){
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, 1);
+      out_met = corrMet;
+      lepResDownWmTree->Fill();
+      lepResDownWmpTree->Fill();
+    } else {
+      recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lepPhi, 0, -1);
+      out_met = corrMet;
+      lepResDownWmTree->Fill();
+      lepResDownWmmTree->Fill();   
+    }
+    
   }   
   delete infile;
   infile=0, intree=0;   

@@ -54,6 +54,20 @@ Double_t sigmaFunc(Double_t *x, Double_t *par) {
   return a*x[0]*x[0] + b*x[0] + c;
 }
 
+// Double_t sigmaFunc(Double_t *x, Double_t *par) {
+//   // par[0]: quadratic coefficient
+//   // par[1]: linear coefficient
+//   // par[2]: constant term
+//   
+//   Double_t a  = par[0];
+//   Double_t b  = par[1];
+//   Double_t c  = par[2];
+//   Double_t d  = par[3];
+//   Double_t e  = par[4];
+//     
+//   return a*x[0]*x[0] + b*x[0] + c + d*x[0]*x[0]*x[0] + e*x[0]*x[0]*x[0]*x[0];
+// }
+
 //--------------------------------------------------------------------------------------------------
 // function to describe relative fraction in a double Gaussian based on 
 // functions for sigma0, sigma1, and sigma2
@@ -110,22 +124,25 @@ Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResultPtr fs) {
 void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
                 const Int_t model, const Bool_t sigOnly,
                 TCanvas *c, const char *plabel, const char *xlabel,
-		Double_t *meanArr,   Double_t *meanErrArr,
-		Double_t *sigma0Arr, Double_t *sigma0ErrArr,
-		Double_t *sigma1Arr, Double_t *sigma1ErrArr,
-		Double_t *sigma2Arr, Double_t *sigma2ErrArr,
-		Double_t *sigma3Arr, Double_t *sigma3ErrArr,
-		Double_t *frac2Arr,  Double_t *frac2ErrArr,
-		Double_t *frac3Arr,  Double_t *frac3ErrArr);
+                Double_t *meanArr,   Double_t *meanErrArr,
+                Double_t *sigma0Arr, Double_t *sigma0ErrArr,
+                Double_t *sigma1Arr, Double_t *sigma1ErrArr,
+                Double_t *sigma2Arr, Double_t *sigma2ErrArr,
+                Double_t *sigma3Arr, Double_t *sigma3ErrArr,
+                Double_t *frac2Arr,  Double_t *frac2ErrArr,
+                Double_t *frac3Arr,  Double_t *frac3ErrArr);
 
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/zmm_select.root",  // input ntuple
+void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
                   Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
                   Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-	          Bool_t  sigOnly=1,     // signal event only?
-	          TString outputDir="./" // output directory
+	              Bool_t  sigOnly=1,     // signal event only?
+                  std::string uparName = "u1",
+                  std::string uprpName = "u2",
+                  std::string metName = "pf",
+                  TString outputDir="./" // output directory
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -135,10 +152,7 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {
-     0,  5, 10, 15, 20, 25, 30, 35, 40, 50,
-    60, 70, 80, 90
-  };
+  Double_t ptbins[] = {0,5,10,15,20,25,30,40,55,70,100};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   Double_t corrbins[] = { 0, 10, 30, 50 };
@@ -150,8 +164,12 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  fnamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/afs/cern.ch/work/j/jlawhorn/public/wz-ntuples/Zmumu_fromCatherine/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zz_select.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wz_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/ww_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wx_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
@@ -191,26 +209,27 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   TFitResultPtr fitresPFu2sigma2; TF1 *fcnPFu2sigma2 = new TF1("fcnPFu2sigma2",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2frac2;  TF1 *fcnPFu2frac2  = new TF1("fcnPFu2frac2",frac2Func,0,7000,12);
-      
-//  fcnPFu1sigma1->SetParameter(0,-5e-4); fcnPFu1sigma1->SetParLimits(0,-1e-3,1e-3);
-//  fcnPFu1sigma1->SetParameter(1,0.07);  fcnPFu1sigma1->SetParLimits(1,-1,1);
-//  fcnPFu1sigma1->SetParameter(2,5.5);   fcnPFu1sigma1->SetParLimits(2,3,7);
-//  fcnPFu1sigma2->SetParameter(0,1e-4);  fcnPFu1sigma2->SetParLimits(0,-2e-2,2e-2);
-//  fcnPFu1sigma2->SetParameter(1,0.06);  fcnPFu1sigma2->SetParLimits(1,-1,1);
-//  fcnPFu1sigma2->SetParameter(2,9.5);   fcnPFu1sigma2->SetParLimits(2,5,15);
-//  fcnPFu1sigma0->SetParameter(0,-1e-4); fcnPFu1sigma0->SetParLimits(0,-1e-2,1e-2);
-//  fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
-  fcnPFu1sigma0->SetParameter(2,7);     fcnPFu1sigma0->SetParLimits(2,5,9); 
+/*      
+  fcnPFu1sigma1->SetParameter(0,0); fcnPFu1sigma1->SetParLimits(0,-5e-2,0);
+   fcnPFu1sigma1->SetParameter(1,0.25); //fcnPFu1sigma1->SetParLimits(1,-1,1);
+//   fcnPFu1sigma1->SetParameter(2,12);   fcnPFu1sigma1->SetParLimits(2,0,20);
   
-//  fcnPFu2sigma1->SetParameter(0,-1e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-3,5e-3);
-//  fcnPFu2sigma1->SetParameter(1,0.05);   fcnPFu2sigma1->SetParLimits(1,-1,1);
-//  fcnPFu2sigma1->SetParameter(2,5);      fcnPFu2sigma1->SetParLimits(2,2,7);
-//  fcnPFu2sigma2->SetParameter(0,-1e-4);  fcnPFu2sigma2->SetParLimits(0,-5e-3,5e-3);
+ fcnPFu1sigma2->SetParameter(0,-2e-3);  fcnPFu1sigma2->SetParLimits(0,-2e-3,-1e-5);
+  fcnPFu1sigma2->SetParameter(1,0.5);  fcnPFu1sigma2->SetParLimits(1,-1,3);
+  fcnPFu1sigma2->SetParameter(2,16);   fcnPFu1sigma2->SetParLimits(2,5,25);
+//   fcnPFu1sigma0->SetParameter(0,-2e-5); fcnPFu1sigma0->SetParLimits(0,-1e-3,0);
+//   fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
+//   fcnPFu1sigma0->SetParameter(2,14);     fcnPFu1sigma0->SetParLimits(2,0,20); 
+  */
+  fcnPFu2sigma1->SetParameter(0,-5e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-4,0);
+ // fcnPFu2sigma1->SetParameter(1,0.15); //  fcnPFu2sigma1->SetParLimits(1,-1,1);
+//  fcnPFu2sigma1->SetParameter(2,9);     // fcnPFu2sigma1->SetParLimits(2,2,7);
+ // fcnPFu2sigma2->SetParameter(0,0);  fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
 //  fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
 //  fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
-//  fcnPFu2sigma0->SetParameter(0,-1e-4);  fcnPFu2sigma0->SetParLimits(0,-1e-2,1e-2);
-//  fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,1);
-//  fcnPFu2sigma0->SetParameter(2,7);      fcnPFu2sigma0->SetParLimits(2,5,9);
+   // fcnPFu2sigma0->SetParameter(0,-1e-3);  fcnPFu2sigma0->SetParLimits(0,-1e-2,-1e-3);
+   // fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,2);
+   // fcnPFu2sigma0->SetParameter(2,12);      fcnPFu2sigma0->SetParLimits(2,1,20);
     
   TFile *infile = 0;
   TTree *intree = 0;  
@@ -224,7 +243,10 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   UInt_t  npv, npu;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb;
-  Float_t met, metPhi, sumEt, u1, u2;
+  Float_t met, metPhi, sumEt, u1, u2; // pf met
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2; // mva met
+  Float_t ppMet, ppMetPhi, ppSumEt, ppU1, ppU2; // pf type 1
+  Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2; // tk met
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   
@@ -246,13 +268,16 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
     intree->SetBranchAddress("genVy",    &genVy);      // GEN boson rapidity (signal MC)
     intree->SetBranchAddress("genVMass", &genVMass);   // GEN boson mass (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",	 &met);        // MET
-    intree->SetBranchAddress("metPhi",	 &metPhi);     // phi(MET)
-    intree->SetBranchAddress("sumEt",	 &sumEt);      // Sum ET
-    intree->SetBranchAddress("u1",	 &u1);         // parallel component of recoil
-    intree->SetBranchAddress("u2",	 &u2);         // perpendicular component of recoil
+    
+    intree->SetBranchAddress("met",	           &met);        // Uncorrected PF MET
+    intree->SetBranchAddress("metPhi",	       &metPhi);     // phi(MET)
+    intree->SetBranchAddress("sumEt",          &sumEt);      // Sum ET
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
+    
     intree->SetBranchAddress("q1",	 &q1);         // charge of tag lepton
     intree->SetBranchAddress("q2",	 &q2);         // charge of probe lepton
+    
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
     intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
     intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
@@ -543,7 +568,10 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
 //  if(njetcut==0) plotPFu2sigma1.SetYRange(0,15);
 //  else           plotPFu2sigma1.SetYRange(0,20);
   plotPFu2sigma1.Draw(c,kTRUE,"png");
-  
+  //plotPFu2sigma1.Draw()
+ // std::cout << "hello" << std::endl;
+ // return;
+ // std::cout << "goodbye" << std::endl;
   if(pfu2model>=2) {
     grPFu2sigma2 = new TGraphErrors(nbins,xval,pfu2Sigma2,xerr,pfu2Sigma2Err);
     grPFu2sigma2->SetName("grPFu2sigma2");
@@ -662,8 +690,8 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
     intree->SetBranchAddress("tkMet",	 &met);        // MET
     intree->SetBranchAddress("tkMetPhi", &metPhi);     // phi(MET)
     intree->SetBranchAddress("sumEt",	 &sumEt);      // Sum ET
-    intree->SetBranchAddress("u1",	 &u1);         // parallel component of recoil
-    intree->SetBranchAddress("u2",	 &u2);         // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q1",	 &q1);         // charge of tag lepton
     intree->SetBranchAddress("q2",	 &q2);         // charge of probe lepton
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
@@ -712,7 +740,7 @@ void fitRecoilZmm(TString infilename="/afs/cern.ch/work/j/jlawhorn/public/wz-ntu
   //==============================================================================================================
 
   char outfname[100];
-  sprintf(outfname,"%s/fits.root",outputDir.Data());
+  sprintf(outfname,"%s/fits_%s.root",outputDir.Data(),metName.c_str());
   TFile *outfile = new TFile(outfname,"RECREATE");
   
   if(grPFu1mean)    grPFu1mean->Write();
