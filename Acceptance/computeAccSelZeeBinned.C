@@ -63,19 +63,21 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const Int_t LEPTON_ID = 11;
   
   // efficiency files
-  const TString dataHLTEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName      = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+
+  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
   
-  const TString dataGsfSelEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_pos = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_neg = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName      = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+
+  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 

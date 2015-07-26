@@ -63,33 +63,33 @@ void computeAccSelWm(const TString conf,       // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  TString dataHLTEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root");
-  TString zmmHLTEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root");
-  TString dataSelEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root");
-  TString zmmSelEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root");
-  TString dataTrkEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
-  TString zmmTrkEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
-  TString dataStaEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root");
-  TString zmmStaEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root");
+  TString dataHLTEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root");
+  TString zmmHLTEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root");
+  TString dataSelEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root");
+  TString zmmSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root");
+  TString dataTrkEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root");
+  TString zmmTrkEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
+  TString dataStaEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root");
+  TString zmmStaEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root");
   if(charge==1) {
-    dataHLTEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-    zmmHLTEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-    dataSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-    zmmSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-    dataTrkEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    zmmTrkEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
-    zmmStaEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+    dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+    zmmHLTEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+    dataSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
+    zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+    dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+    zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
+    zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-    zmmHLTEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-    dataSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-    zmmSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-    dataTrkEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    zmmTrkEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
-    zmmStaEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+    dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+    zmmHLTEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+    dataSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
+    zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+    dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+    zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
+    zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
   }
 
   //--------------------------------------------------------------------------------------------------------------
@@ -312,8 +312,8 @@ void computeAccSelWm(const TString conf,       // input file
     //
     // loop over events
     //    
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    //for(UInt_t ientry=0; ientry<10000; ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/10; ientry++) {
+    //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
