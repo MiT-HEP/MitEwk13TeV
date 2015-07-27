@@ -58,28 +58,28 @@ void computeAccSelWe(const TString conf,       // input file
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
 
-  const Double_t VETO_PT   = 20;
+  const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.5;
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
  
   // efficiency files
-  TString dataHLTEffName(   "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
-  TString zeeHLTEffName(    "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root");
-  TString dataGsfSelEffName("/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root");
-  TString zeeGsfSelEffName( "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
+  TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
+  TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root");
+  TString dataGsfSelEffName("/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root");
+  TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName    = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/c/cmedlock/public/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   
   //--------------------------------------------------------------------------------------------------------------
@@ -238,12 +238,13 @@ void computeAccSelWe(const TString conf,       // input file
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/100; ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/10000; ientry++) {
+    //for(UInt_t ientry=0; ientry<1000; ientry++) {
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
 
-      if (charge==-1 && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID)!=LEPTON_ID) continue;
       if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       /*TLorentzVector *vec=new TLorentzVector(0,0,0,0);
@@ -303,21 +304,19 @@ void computeAccSelWe(const TString conf,       // input file
 	  if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
           Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt);
+          //Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt)-dataHLTEff.getErrLow(sceta, goodEle->scEt);
+          //Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt)-zeeHLTEff.getErrLow(sceta, goodEle->scEt);
           corr *= effdata/effmc;
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
           Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
 	  Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt);
+	  //Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt)+dataGsfSelEff.getErrHigh(sceta, goodEle->scEt);
+          //Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt)+zeeGsfSelEff.getErrHigh(sceta, goodEle->scEt);
           corr *= effdata/effmc;
         }
-//        if(dataGsfEffFile && zeeGsfEffFile) {
-//          Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
-//	  Double_t effdata = dataGsfEff.getEff(sceta);
-//          Double_t effmc   = zeeGsfEff.getEff(sceta);
-//          corr *= effdata/effmc;
-//        }
-	
+
 	// scale factor uncertainties
         if(dataHLTEffFile && zeeHLTEffFile) {
 	  Float_t sceta = goodEle->scEta;
@@ -342,21 +341,11 @@ void computeAccSelWe(const TString conf,       // input file
 	  if(isBarrel) hGsfSelErrB->Fill(sceta,goodEle->scEt,err);
 	  else         hGsfSelErrE->Fill(sceta,goodEle->scEt,err);
         }
-//        if(dataGsfEffFile && zeeGsfEffFile) {
-//          Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
-//	  Double_t effdata = dataGsfEff.getEff(sceta);
-//          Double_t effmc   = zeeGsfEff.getEff(sceta);
-//          Double_t errdata = TMath::Max(dataGsfEff.getErrLow(sceta),dataGsfEff.getErrHigh(sceta));
-//	  Double_t errmc   = TMath::Max(zeeGsfEff.getErrLow(sceta), zeeGsfEff.getErrHigh(sceta));
-//	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);  
-//	  hGsfErr->Fill(sceta,err);
-//	  if(isBarrel) hGsfErrB->Fill(sceta,err);
-//	  else         hGsfErrE->Fill(sceta,err);
-//        }	
-	
+
 	nSelv[ifile]+=weight;
 	nSelCorrv[ifile]+=weight*corr;
 	nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+
   	if(isBarrel) { 
 	  nSelBv[ifile]+=weight;
 	  nSelBCorrv[ifile]+=weight*corr;
@@ -387,12 +376,7 @@ void computeAccSelWe(const TString conf,       // input file
 	err=hGsfSelErrE->GetBinContent(ix,iy); varE+=err*err;
       }
     }
-//    for(Int_t ix=0; ix<=hGsfErr->GetNbinsX(); ix++) {
-//      Double_t err;
-//      err=hGsfErr->GetBinContent(ix);  var+=err*err;
-//      err=hGsfErrB->GetBinContent(ix); varB+=err*err;
-//      err=hGsfErrE->GetBinContent(ix); varE+=err*err;
-//    }
+
     nSelCorrVarv[ifile]+=var;
     nSelBCorrVarv[ifile]+=varB;
     nSelECorrVarv[ifile]+=varE;

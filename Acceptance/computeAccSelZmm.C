@@ -1,4 +1,5 @@
 //================================================================================================
+// Not used for 13 TeV measurement.
 //
 // Compute Z->mumu acceptance at full selection level
 //

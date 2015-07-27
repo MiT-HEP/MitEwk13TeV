@@ -1,4 +1,5 @@
 //================================================================================================
+// Not used for 13 TeV measurement.
 //
 // Compute W->munu acceptance at generator level
 //
