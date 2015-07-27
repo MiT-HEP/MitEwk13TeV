@@ -78,7 +78,7 @@ TGraphAsymmErrors* makeEffGraph(const vector<Double_t> &edgesv, const vector<TTr
 TGraphAsymmErrors* makeEffGraph(const vector<Double_t> &edgesv, const vector<TTree*> &passv, const vector<TTree*> &failv,
                                 const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 		                
 				const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi, 
-				const TString format, const Bool_t doAbsEta,const double lumi);
+				const TString format, const Bool_t doAbsEta,const double lumi, const TString yaxislabel, const int charge);
 
 // Make 2D efficiency map
 void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &passv, const vector<TTree*> &failv, const Int_t method,
@@ -87,7 +87,7 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &passv, const vector<TTree*> &failv,
                    const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 
 		   const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi, 
-		   const TString format, const Bool_t doAbsEta,const double lumi);
+		   const TString format, const Bool_t doAbsEta,const double lumi,const TString yaxislabel,const int charge);
 
 
 // Generate MC-based signal templates
@@ -111,7 +111,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		TTree *passTree, TTree *failTree,
 		const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 
 		const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
-		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail,const double lumi);
+		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail,const double lumi,const TString yaxislabel,const int charge);
 
 // Print correlations
 void printCorrelations(ostream& os, RooFitResult *res);
@@ -572,7 +572,7 @@ void plotEff(const TString conf,            // input binning file
     
     // efficiency in pT
     if(opts[0]) {
-      grEffPt = makeEffGraph(ptBinEdgesv, passTreePtv, failTreePtv, sigModPass, bkgModPass, sigModFail, bkgModFail, "pt", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta,lumi);
+      grEffPt = makeEffGraph(ptBinEdgesv, passTreePtv, failTreePtv, sigModPass, bkgModPass, sigModFail, bkgModFail, "pt", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
       grEffPt->SetName("grEffPt");
       CPlot plotEffPt("effpt","","probe p_{T} [GeV/c]","#varepsilon");
       plotEffPt.AddGraph(grEffPt,"",kBlack);
@@ -583,7 +583,7 @@ void plotEff(const TString conf,            // input binning file
         
     // efficiency in eta
     if(opts[1]) {
-      grEffEta = makeEffGraph(etaBinEdgesv, passTreeEtav, failTreeEtav, sigModPass, bkgModPass, sigModFail, bkgModFail, "eta", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta,lumi);
+      grEffEta = makeEffGraph(etaBinEdgesv, passTreeEtav, failTreeEtav, sigModPass, bkgModPass, sigModFail, bkgModFail, "eta", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
       grEffEta->SetName("grEffEta");
       CPlot plotEffEta("effeta","","probe #eta","#varepsilon");
       if(doAbsEta) plotEffEta.SetXTitle("probe |#eta|");
@@ -600,7 +600,7 @@ void plotEff(const TString conf,            // input binning file
     
     // efficiency in phi
     if(opts[2]) {
-      grEffPhi = makeEffGraph(phiBinEdgesv, passTreePhiv, failTreePhiv, sigModPass, bkgModPass, sigModFail, bkgModFail, "phi", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta,lumi);
+      grEffPhi = makeEffGraph(phiBinEdgesv, passTreePhiv, failTreePhiv, sigModPass, bkgModPass, sigModFail, bkgModFail, "phi", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
       grEffPhi->SetName("grEffPhi");
       CPlot plotEffPhi("effphi","","probe #phi","#varepsilon");
       plotEffPhi.AddGraph(grEffPhi,"",kBlack);
@@ -610,7 +610,7 @@ void plotEff(const TString conf,            // input binning file
     
     // efficiency in N_PV
     if(opts[3]) {
-      grEffNPV = makeEffGraph(npvBinEdgesv, passTreeNPVv, failTreeNPVv, sigModPass, bkgModPass, sigModFail, bkgModFail, "npv", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta,lumi);
+      grEffNPV = makeEffGraph(npvBinEdgesv, passTreeNPVv, failTreeNPVv, sigModPass, bkgModPass, sigModFail, bkgModFail, "npv", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
       grEffNPV->SetName("grEffNPV");
       CPlot plotEffNPV("effnpv","","N_{PV}","#varepsilon");
       plotEffNPV.AddGraph(grEffNPV,"",kBlack);
@@ -627,7 +627,8 @@ void plotEff(const TString conf,            // input binning file
     // eta-pT efficiency maps
     //
     if(opts[4]) {
-      makeEffHist2D(hEffEtaPt, hErrlEtaPt, hErrhEtaPt, passTreeEtaPtv, failTreeEtaPtv, sigModPass, bkgModPass, sigModFail, bkgModFail, "etapt", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta,lumi);
+      makeEffHist2D(hEffEtaPt, hErrlEtaPt, hErrhEtaPt, passTreeEtaPtv, failTreeEtaPtv, sigModPass, bkgModPass, sigModFail, bkgModFail, "etapt", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
+
       hEffEtaPt->SetTitleOffset(1.2,"Y");
       hEffEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
       CPlot plotEffEtaPt("effetapt","","probe #eta","probe p_{T} [GeV/c]");
@@ -641,7 +642,7 @@ void plotEff(const TString conf,            // input binning file
       if(doAbsEta) plotErrlEtaPt.SetXTitle("probe |#eta|");
       plotErrlEtaPt.AddHist2D(hErrlEtaPt,"COLZ");
       plotErrlEtaPt.Draw(c,kTRUE,format);
-  
+
       hErrhEtaPt->SetTitleOffset(1.2,"Y");
       hErrhEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
       CPlot plotErrhEtaPt("errhetapt","","probe #eta","probe p_{T} [GeV/c]");
@@ -654,7 +655,7 @@ void plotEff(const TString conf,            // input binning file
     // eta-phi efficiency maps
     //
     if(opts[5]) {
-      makeEffHist2D(hEffEtaPhi, hErrlEtaPhi, hErrhEtaPhi, passTreeEtaPhiv, failTreeEtaPhiv, sigModPass, bkgModPass, sigModFail, bkgModFail, "etaphi", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta,lumi);
+      makeEffHist2D(hEffEtaPhi, hErrlEtaPhi, hErrhEtaPhi, passTreeEtaPhiv, failTreeEtaPhiv, sigModPass, bkgModPass, sigModFail, bkgModFail, "etaphi", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
       hEffEtaPhi->SetTitleOffset(1.2,"Y");
       CPlot plotEffEtaPhi("effetaphi","","probe #eta","probe #phi");
       if(doAbsEta) plotEffEtaPhi.SetXTitle("probe |#eta|");
@@ -674,7 +675,7 @@ void plotEff(const TString conf,            // input binning file
       plotErrhEtaPhi.Draw(c,kTRUE,format);
     }
   }
-  
+
   // Undo scaling of axes before saving to file
   hEffEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins]);
   hErrlEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins]);
@@ -943,9 +944,8 @@ TGraphAsymmErrors* makeEffGraph(const vector<Double_t> &edgesv, const vector<TTr
 TGraphAsymmErrors* makeEffGraph(const vector<Double_t> &edgesv, const vector<TTree*> &passv, const vector<TTree*> &failv,
                                 const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 
 		                const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
-				const TString format, const Bool_t doAbsEta,const double lumi)
+				const TString format, const Bool_t doAbsEta,const double lumi, const TString yaxislabel, const int charge)
 {
-  cout<<"makEffGraph called"<<endl;
   const UInt_t n = edgesv.size()-1;
   Double_t xval[n], xerr[n];
   Double_t yval[n], yerrl[n], yerrh[n];
@@ -974,7 +974,7 @@ TGraphAsymmErrors* makeEffGraph(const vector<Double_t> &edgesv, const vector<TTr
 	         passv[ibin], failv[ibin],
 	         sigpass, bkgpass, sigfail, bkgfail, 
 	         name, massLo, massHi, fitMassLo, fitMassHi, 
-		 format, doAbsEta, cpass, cfail,lumi);
+		 format, doAbsEta, cpass, cfail, lumi, yaxislabel, charge);
     }
     
     yval[ibin]  = eff;
@@ -1020,7 +1020,7 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &passv, const vector<TTree*> &failv, 
                    const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 
 		   const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
-		   const TString format, const Bool_t doAbsEta,const double lumi)
+		   const TString format, const Bool_t doAbsEta, const double lumi, const TString yaxislabel, const int charge)
 {  
   TCanvas *cpass = MakeCanvas("cpass","cpass",720,540);
   cpass->SetWindowPosition(cpass->GetWindowTopX()+cpass->GetBorderSize()+800,0);
@@ -1048,8 +1048,9 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 		   passv[ibin], failv[ibin],
 		   sigpass, bkgpass, sigfail, bkgfail, 
 		   name, massLo, massHi, fitMassLo, fitMassHi,
-		   format, doAbsEta, cpass, cfail,lumi);
+		   format, doAbsEta, cpass, cfail, lumi, yaxislabel, charge);
       }
+
       hEff ->SetBinContent(hEff ->GetBin(ix+1, iy+1), eff);
       hErrl->SetBinContent(hErrl->GetBin(ix+1, iy+1), errl);
       hErrh->SetBinContent(hErrh->GetBin(ix+1, iy+1), errh);
@@ -1608,8 +1609,9 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		TTree *passTree, TTree *failTree,
 		const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 
 		const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
-		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail,const double lumi)
+		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail, const double lumi, const TString yaxislabel, const int charge)
 {
+  cout<<"eta from "<<xbinLo<<" to "<<xbinHi<<" and pt from "<<ybinLo<<" to "<<ybinHi<<endl;
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
   m.setBins(10000);
 
@@ -1777,7 +1779,16 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   RooRealVar NbkgPass("NbkgPass","Background count in PASS sample",50,0,NbkgPassMax);
   if(bkgpass==0) NbkgPass.setVal(0);
   RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);  
-    
+  // Special conditions for failing fits
+  // *** Muon tracking efficiency ***
+  cout<<yaxislabel<<", "<<yaxislabel.CompareTo("GSF+ID+Iso")<<", "<<charge<<", "<<xbinLo<<", "<<xbinHi<<", "<<ybinLo<<", "<<ybinHi<<endl;
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.0 && xbinHi==-1.566 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.0 && xbinHi==-0.5 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.0 && xbinHi==1.4 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.566 && xbinHi==2.0 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.5 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+
   RooFormulaVar NsigPass("NsigPass","eff*Nsig",RooArgList(eff,Nsig));
   RooFormulaVar NsigFail("NsigFail","(1.0-eff)*Nsig",RooArgList(eff,Nsig));
   RooAddPdf *modelPass=0, *modelFail=0;
@@ -1928,7 +1939,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   txtfile << endl;
   printCorrelations(txtfile, fitResult);
   txtfile.close();
-  
+
   //
   // Clean up
   //
