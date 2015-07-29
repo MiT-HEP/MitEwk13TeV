@@ -19,8 +19,8 @@
 #include <TCanvas.h>
 #include <TLorentzVector.h>     // 4-vector class
 
-#include <../Utils/MitStyleRemix.hh>
-#include <CorrPlot.hh>
+#include "../Utils/MitStyleRemix.hh"
+#include "CorrPlot.hh"
 
 using namespace std;
 
@@ -34,67 +34,68 @@ void addPdf(CorrPlot *plot, Int_t pdf, TString label, Int_t color, Double_t x_xs
 
 void wpmCorrPlot() {
 
-  Double_t wme_yield=30857.0;
-  Double_t wmm_yield=33848.0;
-  Double_t wpe_yield=44206.0;
-  Double_t wpm_yield=47637.0;
+  TString folder = "for2Dplots";
 
-  Double_t wp_xs=7.12;
-  Double_t wm_xs=5.06;
+  Double_t wme_yield= 8370;
+  Double_t wmm_yield= 8370;
+  Double_t wpe_yield=11330;
+  Double_t wpm_yield=11330;
+
+  Double_t wp_xs=11.33;
+  Double_t wm_xs=8.37;
 
   CorrPlot plot("cplot","","#sigma^{tot}_{W}xBR(W^{-}#rightarrow l#nu) [nb]","#sigma^{tot}_{W}xBR(W^{+}#rightarrow l#nu) [nb]");
 
-  std::vector<Double_t> ct10_minus;
-  comEM("/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wme_parse_ct10nlo.txt",
-	"/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wmm_parse_ct10nlo.txt",
+  std::vector<Double_t> ct14_minus;
+  comEM(folder+"/wme_ct14.txt",
+	folder+"/wmm_ct14.txt",
 	wme_yield,
 	wmm_yield,
-	ct10_minus);
+	ct14_minus);
 
-  std::vector<Double_t> ct10_plus;
-  comEM("/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wpe_parse_ct10nlo.txt",
-	"/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wpm_parse_ct10nlo.txt",
+  std::vector<Double_t> ct14_plus;
+  comEM(folder+"/wpe_ct14.txt",
+	folder+"/wpm_ct14.txt",
 	wpe_yield,
 	wpm_yield,
-	ct10_plus);
+	ct14_plus);
 
-  //CT10nlo
-  addPdf(&plot, CTEQ, "CT10nlo", kGreen, wm_xs, wp_xs, ct10_minus, ct10_plus);
+  //CT14nlo
+  addPdf(&plot, CTEQ, "CT14nlo", kGreen, wm_xs, wp_xs, ct14_minus, ct14_plus);
 
   std::vector<Double_t> nnpdf23_minus;
-  comEM("/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wme_corr_nnpdf23_nlo.txt",
-	"/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wmm_corr_nnpdf23_nlo.txt",
+  comEM(folder+"/wme_nnpdf30.txt",
+	folder+"/wmm_nnpdf30.txt",
 	wme_yield,
 	wmm_yield,
 	nnpdf23_minus);
 
   std::vector<Double_t> nnpdf23_plus;
-  comEM("/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wpe_corr_nnpdf23_nlo.txt",
-	"/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wpm_corr_nnpdf23_nlo.txt",
+  comEM(folder+"/wpe_nnpdf30.txt",
+	folder+"/wpm_nnpdf30.txt",
 	wpe_yield,
 	wpm_yield,
 	nnpdf23_plus);
 
-
   //NNPDF2.3nlo
-  addPdf(&plot, NNPDF, "NNPDF2.3nlo", kBlue, wm_xs, wp_xs, nnpdf23_minus, nnpdf23_plus);
+  addPdf(&plot, NNPDF, "NNPDF3.0nlo", kBlue, wm_xs, wp_xs, nnpdf23_minus, nnpdf23_plus);
 
   std::vector<Double_t> mstw2008_minus;
-  comEM("/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wme_parse_mstw2008nlo68cl.txt",
-	"/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wmm_parse_mstw2008nlo68cl.txt",
+  comEM(folder+"/wme_mmht2014.txt",
+	folder+"/wmm_mmht2014.txt",
 	wme_yield,
 	wmm_yield,
 	mstw2008_minus);
 
   std::vector<Double_t> mstw2008_plus;
-  comEM("/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wpe_parse_mstw2008nlo68cl.txt",
-	"/afs/cern.ch/work/j/jlawhorn/public/wz-8tev-acc/wpm_parse_mstw2008nlo68cl.txt",
+  comEM(folder+"/wpe_mmht2014.txt",
+	folder+"/wpm_mmht2014.txt",
 	wpe_yield,
 	wpm_yield,
 	mstw2008_plus);
 
   //MSTW2008
-  addPdf(&plot, MSTW, "MSTW2008nlo", kRed, wm_xs, wp_xs, mstw2008_minus, mstw2008_plus);
+  addPdf(&plot, MSTW, "MMMHT2014nlo", kRed, wm_xs, wp_xs, mstw2008_minus, mstw2008_plus);
 
   TCanvas *c1 = MakeCanvas("c1", "", 800, 600);
   plot.Draw(c1, "test.png");
@@ -115,9 +116,9 @@ void comEM(TString e_list,
   vector<Double_t>  vE;
   while (getline(ifs,line)) {
     stringstream ss(line);
-    Double_t acc, scale;
-    ss >> acc >> scale;
-    vE.push_back(scale);
+    Double_t acc;
+    ss >> acc;
+    vE.push_back(acc);
   }
   ifs.close();
 
@@ -127,9 +128,9 @@ void comEM(TString e_list,
   vector<Double_t> vM;
   while (getline(ifs,line)) {
     stringstream ss(line);
-    Double_t acc, scale;
-    ss >> acc >> scale;
-    vM.push_back(scale);
+    Double_t acc;
+    ss >> acc;
+    vM.push_back(acc);
   }
   ifs.close();
 
@@ -167,7 +168,7 @@ void addPdf(CorrPlot *plot,
       dX=x_xs*(x[0]-x[i]);
       dY=y_xs*(y[0]-y[i]);
     }
-    //for ct10
+    //for ct14
     else if (pdf==CTEQ) {
       dX=x_xs*(x[0]-x[i])/1.645;
       dY=y_xs*(y[0]-y[i])/1.645;
@@ -184,24 +185,25 @@ void addPdf(CorrPlot *plot,
     covMatrix(1,0)+=dX*dY;
   }
 
-  /*  cout << "matrix: " << endl;
+  cout << "matrix: " << endl;
   cout << covMatrix(0,0) << " " << covMatrix(1,0) << endl;
-  cout << covMatrix(0,1) << " " << covMatrix(1,1) << endl;*/
+  cout << covMatrix(0,1) << " " << covMatrix(1,1) << endl;
 
   TVectorD eigVals(2); eigVals=TMatrixDSymEigen(covMatrix).GetEigenValues();
   TMatrixD eigVecs(2,2); eigVecs=TMatrixDSymEigen(covMatrix).GetEigenVectors();
   
-  /*  cout << "eigen-values" << endl;
+  cout << "eigen-values" << endl;
   cout << eigVals(0) << " " << eigVals(1) << endl;
   cout << "eigen-vectors: " << endl;
-  cout << eigVecs(0,0) << " " << eigVecs(1,0) << " " << eigVecs(0,1) << " " << eigVecs(1,1) << endl;*/
+  cout << eigVecs(0,0) << " " << eigVecs(1,0) << " " << eigVecs(0,1) << " " << eigVecs(1,1) << endl;
   
   TLorentzVector vec(0,0,0,0);
   vec.SetPx(eigVecs(0,0));
   vec.SetPy(eigVecs(1,0));
 
-  //cout << x[0] << " " << y[0] << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
+  cout << x[0] << " " << y[0] << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
+
   TEllipse *ell = new TEllipse(x_xs*x[0],y_xs*y[0],sqrt(eigVals(0)),sqrt(eigVals(1)),0,360,vec.Phi()/TMath::Pi()*180);
-  
+  cout << "00000" << endl;
   plot->AddCorrPlot(nom, ell, label, color);
 }

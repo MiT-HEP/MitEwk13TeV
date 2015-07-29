@@ -23,6 +23,7 @@ void CorrPlot::AddCorrPlot(TGraph *gr, TEllipse *el, TString label, int color, i
   }
   fLeg->AddEntry(gr,label,"P");
 
+
   gr->SetMarkerColor(color);
   gr->SetLineColor  (color);
   gr->SetFillColor  (color);
@@ -49,8 +50,8 @@ void CorrPlot::Draw(TCanvas *c, TString fname) {
   fItems[0].graph->GetXaxis()->SetTitle(fXtitle);
   fItems[0].graph->GetYaxis()->SetTitle(fYtitle);
 
-  fItems[0].graph->GetXaxis()->SetLimits(3.5,5.9);
-  fItems[0].graph->GetYaxis()->SetRangeUser(5.0,8.0);
+  fItems[0].graph->GetXaxis()->SetLimits(8.2,8.6);
+  fItems[0].graph->GetYaxis()->SetRangeUser(11.0,11.6);
 
   fItems[0].graph->Draw("ap");
   fItems[0].ellipse->Draw("same s");

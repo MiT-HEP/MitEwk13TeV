@@ -18,7 +18,6 @@
 #include <TEllipse.h>
 #include <TCanvas.h>
 #include <TLorentzVector.h>     // 4-vector class
-
 #include <../Utils/MitStyleRemix.hh>
 #include <CorrPlot.hh>
 

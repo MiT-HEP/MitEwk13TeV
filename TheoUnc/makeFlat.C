@@ -23,9 +23,8 @@
 using namespace std;
 
 #endif
-
-void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/Ewk13TeV/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
-	      TString output="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/WmJetsToLNu.root",
+void makeFlat(TString input="root://eoscms//store/user/jlawhorn/w-ct10nlo.root",
+	      TString output="foo.root",
 	      Int_t vid=-24) {
   
   TChain chain("Events");
@@ -91,8 +90,6 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/Ewk13TeV
   otree->Branch("genL2f_m",   &genL2f_m,   "genL2f_m/d");
 
   for (Int_t ie=0; ie<chain.GetEntries(); ie++) {
-  //for (Int_t ie=0; ie<10000000; ie++) {
-  //for (Int_t ie=0; ie<100; ie++) {
     infoBr->GetEntry(ie);
     genPartArr->Clear(); partBr->GetEntry(ie);
     if (genPartArr->GetEntries()==0) continue;
@@ -101,10 +98,9 @@ void makeFlat(TString input="root://eoscms.cern.ch//store/user/jlawhorn/Ewk13TeV
     Int_t flavor=0;
     Int_t iv=-1, iv1=-1, iv2=-1;
     Int_t vidLoop=vid;
-    //cout << "-----" << endl;
     for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
       const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
-      //cout << i << ", " << genloop->pdgId << ", " << genloop->parent << ", " << genloop->pt << ", " << genloop->status << endl;
+      //if (fabs(genloop->pdgId)==24 || fabs(genloop->pdgId)<17 || fabs(genloop->pdgId)==22) cout << i << ", " << genloop->pdgId << ", " << genloop->parent << ", " << genloop->status << endl;
       if (genloop->pdgId==-vidLoop) {
 	vec=0; lepPos=0; lepNeg=0;
 	vidLoop=-vid;

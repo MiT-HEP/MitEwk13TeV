@@ -1,8 +1,8 @@
 #!/bin/bash
 
 root -l -q getCT14uncertainties.C+ > ct14.txt
-#root -l -q getNNPDF30uncertainties.C+ > nnpdf30.txt
-#root -l -q getMMHT2014uncertainties.C+ > mmht2014.txt
+root -l -q getNNPDF30uncertainties.C+ > nnpdf30.txt
+root -l -q getMMHT2014uncertainties.C+ > mmht2014.txt
 
 mkdir for2Dplots
 

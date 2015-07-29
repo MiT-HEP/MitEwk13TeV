@@ -15,7 +15,6 @@
 #include <fstream>                  // functions for file I/O
 #include <TChain.h>
 #include <TH1.h>
-#include "LHAPDF/LHAPDF.h"
 
 using namespace std;
 
@@ -30,18 +29,14 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
 Bool_t acceptB(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 Bool_t acceptE(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 
-//void acceptGenZ(TString input="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/DYJetsToLL.root",
-void acceptGenZ(TString input="dy_ct10nlo.root",
-		TString outputDir="idfk/",
-		//TString pdfName="NNPDF30_nlo_nf_5_pdfas",
-		TString pdfName="CT10nlo",
-		Int_t setMin=0,
-		Int_t setMax=0,
-		Int_t proc=1) {
-  
+//void acceptGenZ_HORACE(TString input="/afs/cern.ch/work/j/jlawhorn/public/Horace/z_muon_fsr_v2.root",
+void acceptGenZ_HORACE(TString input="root://eoscms//store/user/jlawhorn/Horace_new/old_z/z_muon_fsr.root",
+		       TString outputDir="idfk/",
+		       Int_t proc=1) {
+
   TString procName[2]={"zee", "zmm"};
   char output[150];
-  sprintf(output, "%s%s_%s.root", outputDir.Data(), procName[proc].Data(), pdfName.Data());
+  sprintf(output, "%s%s_%s.root", outputDir.Data(), procName[proc].Data(), "foo");
   cout << output << endl;
   TChain chain("Events");
   chain.Add(input);
@@ -95,97 +90,74 @@ void acceptGenZ(TString input="dy_ct10nlo.root",
   chain.SetBranchAddress("genL2f_m",   &genL2f_m);
 
   TFile *outFile = new TFile(output, "recreate");
-  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
-  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(25100);
-  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(11000);
-  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(13100);
 
-  for (Int_t iPdfSet=setMin; iPdfSet<setMax+1; iPdfSet++) {
+  char histname[100];
+  sprintf(histname,"dEta");
+  TH1D* dEta = new TH1D(histname, "", 20, -5, 5); dEta->Sumw2();
+  sprintf(histname,"dPt");
+  TH1D* dPt = new TH1D(histname, "", 25, 25, 100); dPt->Sumw2();
+  
+  sprintf(histname,"dPreBB");
+  TH1D* dPreBB = new TH1D(histname, "", 1, 0, 2); dPreBB->Sumw2();
+  sprintf(histname,"dPreBE");
+  TH1D* dPreBE = new TH1D(histname, "", 1, 0, 2); dPreBE->Sumw2();
+  sprintf(histname,"dPreEE");
+  TH1D* dPreEE = new TH1D(histname, "", 1, 0, 2); dPreEE->Sumw2();
+  
+  sprintf(histname,"dPostBB");
+  TH1D* dPostBB = new TH1D(histname, "", 1, 0, 2); dPostBB->Sumw2();
+  sprintf(histname,"dPostBE");
+  TH1D* dPostBE = new TH1D(histname, "", 1, 0, 2); dPostBE->Sumw2();
+  sprintf(histname,"dPostEE");
+  TH1D* dPostEE = new TH1D(histname, "", 1, 0, 2); dPostEE->Sumw2();
+  
+  sprintf(histname,"dTot");
+  TH1D* dTot = new TH1D(histname, "", 1, 0, 2); dTot->Sumw2();
+  
+  Double_t nentries=0, nsel=0;
+  
+  for (Int_t i=0; i<chain.GetEntries(); i++) {
+    chain.GetEntry(i);
     
-    LHAPDF::PDF* testPdf = LHAPDF::mkPDF(pdfName.Data(),iPdfSet);
+    if (!isProc(proc, genV_id, genV_m, genL1_id, genL2_id)) continue;
     
-    char histname[100];
-    sprintf(histname,"dEta_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dEta = new TH1D(histname, "", 20, -5, 5); dEta->Sumw2();
-    sprintf(histname,"dPt_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPt = new TH1D(histname, "", 25, 25, 100); dPt->Sumw2();
-
-    sprintf(histname,"dPreBB_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPreBB = new TH1D(histname, "", 1, 0, 2); dPreBB->Sumw2();
-    sprintf(histname,"dPreBE_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPreBE = new TH1D(histname, "", 1, 0, 2); dPreBE->Sumw2();
-    sprintf(histname,"dPreEE_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPreEE = new TH1D(histname, "", 1, 0, 2); dPreEE->Sumw2();
-
-    sprintf(histname,"dPostBB_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPostBB = new TH1D(histname, "", 1, 0, 2); dPostBB->Sumw2();
-    sprintf(histname,"dPostBE_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPostBE = new TH1D(histname, "", 1, 0, 2); dPostBE->Sumw2();
-    sprintf(histname,"dPostEE_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dPostEE = new TH1D(histname, "", 1, 0, 2); dPostEE->Sumw2();
+    nentries+=weight;
     
-    sprintf(histname,"dTot_%s_%i",pdfName.Data(),iPdfSet);
-    TH1D* dTot = new TH1D(histname, "", 1, 0, 2); dTot->Sumw2();
+    dTot->Fill(1.0,weight);
 
-    Double_t nentries=0, nsel=0;
+    Bool_t passBB =acceptBB(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
+    Bool_t passBBF=acceptBB(proc, genV_id, genV_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
+    
+    Bool_t passBE =acceptBE(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
+    Bool_t passBEF=acceptBE(proc, genV_id, genV_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
+    
+    Bool_t passEE =acceptEE(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
+    Bool_t passEEF=acceptEE(proc, genV_id, genV_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
 
-    for (Int_t i=0; i<chain.GetEntries(); i++) {
-    //for (Int_t i=0; i<100; i++) {
-      chain.GetEntry(i);
-
-      if (!isProc(proc, genV_id, genV_m, genL1_id, genL2_id)) continue;
-
-      Int_t fid_1 = id_1;//( id_1==0 ? 21 : id_1 );
-      Int_t fid_2 = id_2;//( id_2==0 ? 21 : id_2 );
-      Double_t newWeight = weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
-      if (fabs(nomPdf->xfxQ(fid_1, x_1, scalePDF)) < 1e-8 || fabs(nomPdf->xfxQ(fid_2, x_2, scalePDF)) < 1e-8 ) { 
-	cout << "wtf: " << fid_1 << ", " << x_1 << ", " << scalePDF << " => " << nomPdf->xfxQ(fid_1, x_1, scalePDF) << "; ";
-	cout << fid_2 << ", " << x_2 << ", " << scalePDF << " => " << nomPdf->xfxQ(fid_2, x_2, scalePDF) << "; ";
-	cout << weight << ", " << newWeight << endl;
-	continue;
-      }
-
-      nentries+=newWeight;
-
-      dTot->Fill(1.0,newWeight);
-
-      Bool_t passBB =acceptBB(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
-      Bool_t passBBF=acceptBB(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
-
-      Bool_t passBE =acceptBE(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
-      Bool_t passBEF=acceptBE(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
-
-      Bool_t passEE =acceptEE(proc, genV_id, genV_m, genL1_id, genL2_id, genL1_pt, genL1_eta, genL2_pt, genL2_eta);
-      Bool_t passEEF=acceptEE(proc, genV_id, genVf_m, genL1_id, genL2_id, genL1f_pt, genL1f_eta, genL2f_pt, genL2f_eta);
-
-      if      (passBB) dPreBB->Fill(1.0, newWeight);
-      else if (passBE) dPreBE->Fill(1.0, newWeight);
-      else if (passEE) dPreEE->Fill(1.0, newWeight);
-      
-      if      (passBBF) { dPostBB->Fill(1.0, newWeight); }
-      else if (passBEF) { dPostBE->Fill(1.0, newWeight); }
-      else if (passEEF) { dPostEE->Fill(1.0, newWeight); }
-      
-      if (passBBF || passBEF || passEEF) {
-	//if (passBB || passBE || passEE) {
-	dEta->Fill(genVf_eta, newWeight);
-	dPt->Fill(genVf_pt, newWeight);        
-	nsel+=newWeight;
-      }
+    if      (passBB) dPreBB->Fill(1.0, weight);
+    else if (passBE) dPreBE->Fill(1.0, weight);
+    else if (passEE) dPreEE->Fill(1.0, weight);
+    
+    if      (passBBF) { dPostBB->Fill(1.0, weight); }
+    else if (passBEF) { dPostBE->Fill(1.0, weight); }
+    else if (passEEF) { dPostEE->Fill(1.0, weight); }
+    
+    if (passBBF || passBEF || passEEF) {
+      //if (passBB || passBE || passEE) {
+      dEta->Fill(genVf_eta, weight);
+      dPt->Fill(genVf_pt, weight);        
+      nsel+=weight;
     }
-    cout << "------------" << endl;
-    Double_t acc=(dPreBB->Integral()+dPreBE->Integral()+dPreEE->Integral())/(dTot->Integral());
-
-    cout << "Pre-FSR acceptance: " << dPreBB->Integral() + dPreBE->Integral() + dPreEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
- 
-    acc=(dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral())/(dTot->Integral());
-
-    cout << "Post-FSR acceptance: " << dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
-
-    outFile->Write();
-    
   }
-  outFile->Close();
+  cout << "------------" << endl;
+  Double_t acc=(dPreBB->Integral()+dPreBE->Integral()+dPreEE->Integral())/(dTot->Integral());
+  
+  cout << "Pre-FSR acceptance: " << dPreBB->Integral() + dPreBE->Integral() + dPreEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
+  
+  acc=(dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral())/(dTot->Integral());
+  
+  cout << "Post-FSR acceptance: " << dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
+  
 }
 
 Bool_t acceptEE(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id, Double_t genL1_pt, Double_t genL1_eta, Double_t genL2_pt, Double_t genL2_eta) {
@@ -240,7 +212,9 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
     else return kFALSE;
   }
   else if (proc==zmm) {
-    if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>60 && genV_m<120) return kTRUE;
+    //if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>60 && genV_m<120) return kTRUE;
+    if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>55 && genV_m<125) return kTRUE;
+    //if (fabs(genL1_id)==13 && fabs(genL2_id)==13) return kTRUE;
     else return kFALSE;
   }
   return kFALSE;

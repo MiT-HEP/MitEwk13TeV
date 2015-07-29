@@ -33,11 +33,11 @@ Double_t uncert(vector<Double_t> &vScale, vector<Double_t> &vScaleAs);
 
 void getMMHT2014uncertainties() {
 
-  Double_t wmXsec = 8.35;
-  Double_t wpXsec = 11.20;
-  Double_t zXsec  = 1.92;
+  Double_t wmXsec = 8.37;
+  Double_t wpXsec = 11.33;
+  Double_t zXsec  = 1.87;
 
-  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/MMHT2014_amc/";
+  TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf2/MMHT2014_amc/";
 
   //cout << "MMHT2014 acceptances" << endl;
 
@@ -126,19 +126,33 @@ void getMMHT2014uncertainties() {
   for (UInt_t i=0; i<wpmScaleA.size(); i++) { wzmScaleA.push_back(((wpmScaleA[i]*wpXsec+wmmScaleA[i]*wmXsec)/(zmmScaleA[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
 
   cout << "PDF: MMHT2014 " << endl;
-  cout << "W+m:      " << setprecision(4) <<  uncert(wpmScales,   wpmScaleA) << "\\\% " << endl;
-  cout << "W-m:      " << setprecision(4) <<  uncert(wmmScales,   wmmScaleA) << "\\\% " << endl;
-  cout << "W(m):     " << setprecision(4) <<  uncert(wmScales,     wmScaleA) << "\\\% " << endl;
-  cout << "W+/W-(m): " << setprecision(4) <<  uncert(wpmmScales, wpmmScaleA) << "\\\% " << endl;
-  cout << "Zmm:      " << setprecision(4) <<  uncert(zmmScales,   zmmScaleA) << "\\\% " << endl;
-  cout << "W/Z(m):   " << setprecision(4) <<  uncert(wzmScales,   wzmScaleA) << "\\\% " << endl;
-
-  cout << "W+e:      " << setprecision(4) <<  uncert(wpeScales,   wpeScaleA) << "\\\% " << endl;
-  cout << "W-e:      " << setprecision(4) <<  uncert(wmeScales,   wmeScaleA) << "\\\% " << endl;
-  cout << "W(e):     " << setprecision(4) <<  uncert(weScales,     weScaleA) << "\\\% " << endl;
-  cout << "W+/W-(e): " << setprecision(4) <<  uncert(wpmeScales, wpmeScaleA) << "\\\% " << endl;
-  cout << "Zee:      " << setprecision(4) <<  uncert(zeeScales,   zeeScaleA) << "\\\% " << endl;
-  cout << "W/Z(e):   " << setprecision(4) <<  uncert(wzeScales,   wzeScaleA) << "\\\% " << endl;
+  cout << "W+m:      " << setprecision(3) <<  wpmNom  <<  endl;
+  cout << "W-m:      " << setprecision(3) <<  wmmNom  <<  endl;
+  cout << "W(m):     " << setprecision(3) <<  wmNom   <<  endl;
+  cout << "W+/W-(m): " << setprecision(3) <<  wpmmNom <<  endl;
+  cout << "Zmm:      " << setprecision(3) <<  zmmNom  <<  endl;
+  cout << "W/Z(m):   " << setprecision(3) <<  wzmNom  <<  endl;
+  cout << "-----" << endl;
+  cout << "W+e:      " << setprecision(3) <<  wpeNom  <<  endl;
+  cout << "W-e:      " << setprecision(3) <<  wmeNom  <<  endl;
+  cout << "W(e):     " << setprecision(3) <<  weNom   <<  endl;
+  cout << "W+/W-(e): " << setprecision(3) <<  wpmeNom <<  endl;
+  cout << "Zee:      " << setprecision(3) <<  zeeNom  <<  endl;
+  cout << "W/Z(e):   " << setprecision(3) <<  wzeNom  <<  endl;
+  cout << "-----" << endl;
+  cout << "W+m:      " << setprecision(3) << uncert(wpmScales,  wpmScaleA)  <<  endl;
+  cout << "W-m:      " << setprecision(3) << uncert(wmmScales,  wmmScaleA)  <<  endl;
+  cout << "W(m):     " << setprecision(3) << uncert(wmScales,   wmScaleA)   <<  endl;
+  cout << "W+/W-(m): " << setprecision(3) << uncert(wpmmScales, wpmmScaleA) <<  endl;
+  cout << "Zmm:      " << setprecision(3) << uncert(zmmScales,  zmmScaleA)  <<  endl;
+  cout << "W/Z(m):   " << setprecision(3) << uncert(wzmScales,  wzmScaleA)  <<  endl;
+  cout << "-----" << endl;
+  cout << "W+e:      " << setprecision(3) << uncert(wpeScales,  wpeScaleA)  <<  endl;
+  cout << "W-e:      " << setprecision(3) << uncert(wmeScales,  wmeScaleA)  <<  endl;
+  cout << "W(e):     " << setprecision(3) << uncert(weScales,   weScaleA)   <<  endl;
+  cout << "W+/W-(e): " << setprecision(3) << uncert(wpmeScales, wpmeScaleA) <<  endl;
+  cout << "Zee:      " << setprecision(3) << uncert(zeeScales,  zeeScaleA)  <<  endl;
+  cout << "W/Z(e):   " << setprecision(3) << uncert(wzeScales,  wzeScaleA)  <<  endl;
 
 }
 void makeScaleVector(TString inDir, TString chan, Double_t &nom, vector<Double_t> &vScales, TString sname) {

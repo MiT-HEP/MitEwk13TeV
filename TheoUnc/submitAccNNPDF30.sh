@@ -38,56 +38,56 @@ cp acceptGenZ_C.so $WORK_DIR
 # CENTRAL 118
 ############
 
-CHAN=wme
-CHANNUM=0
-AS=118
-bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
-
-CHAN=wpe
-CHANNUM=1
-bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
-
-CHAN=wmm
-CHANNUM=2
-bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
-
-CHAN=wpm
-CHANNUM=3
-bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
-
-CHAN=zee
-CHANNUM=0
-bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
-
-CHAN=zmm
-CHANNUM=1
-bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
+#CHAN=wme
+#CHANNUM=0
+#AS=118
+#bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
+#
+#CHAN=wpe
+#CHANNUM=1
+#bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
+#
+#CHAN=wmm
+#CHANNUM=2
+#bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
+#
+#CHAN=wpm
+#CHANNUM=3
+#bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
+#
+#CHAN=zee
+#CHANNUM=0
+#bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
+#
+#CHAN=zmm
+#CHANNUM=1
+#bsub -q 1nd -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 100 ${CHANNUM}
 
 
 ############
 # +1 119
 ############
 
-CHAN=wme
-CHANNUM=0
+#CHAN=wme
+#CHANNUM=0
 AS=119
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=wpe
-CHANNUM=1
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=wmm
-CHANNUM=2
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=wpm
-CHANNUM=3
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=zee
-CHANNUM=0
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=wpe
+#CHANNUM=1
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=wmm
+#CHANNUM=2
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=wpm
+#CHANNUM=3
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=zee
+#CHANNUM=0
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
 
 CHAN=zmm
 CHANNUM=1
@@ -98,85 +98,85 @@ bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN
 # -1 117
 ############
 
-CHAN=wme
-CHANNUM=0
-AS=117
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=wpe
-CHANNUM=1
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=wmm
-CHANNUM=2
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=wpm
-CHANNUM=3
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=zee
-CHANNUM=0
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
-
-CHAN=zmm
-CHANNUM=1
-bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#CHAN=wme
+#CHANNUM=0
+#AS=117
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=wpe
+#CHANNUM=1
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=wmm
+#CHANNUM=2
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=wpm
+#CHANNUM=3
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=zee
+#CHANNUM=0
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
+#
+#CHAN=zmm
+#CHANNUM=1
+#bsub -q 8nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 72 ${CHANNUM}
 
 ############
 # +3 121
 ############
 
-CHAN=wme
-CHANNUM=0
+#CHAN=wme
+#CHANNUM=0
 AS=121
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=wpe
+#CHANNUM=1
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=wmm
+#CHANNUM=2
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=wpm
+#CHANNUM=3
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=zee
+#CHANNUM=0
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
 
-CHAN=wpe
+CHAN=zmm
 CHANNUM=1
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=wmm
-CHANNUM=2
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=wpm
-CHANNUM=3
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=zee
-CHANNUM=0
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-HAN=zmm
-HANNUM=1
 bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
 
 ############
 # -3 115
 ############
 
-CHAN=wme
-CHANNUM=0
-AS=115
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=wpe
-CHANNUM=1
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=wmm
-CHANNUM=2
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=wpm
-CHANNUM=3
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=zee
-CHANNUM=0
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
-
-CHAN=zmm
-CHANNUM=1
-bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#CHAN=wme
+#CHANNUM=0
+#AS=115
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=wpe
+#CHANNUM=1
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=wmm
+#CHANNUM=2
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WmJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=wpm
+#CHANNUM=3
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/WpJetsToLNu.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenW.C acceptGenW_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=zee
+#CHANNUM=0
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
+#
+#CHAN=zmm
+#CHANNUM=1
+#bsub -q 1nh -o ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.out -e ${LOG_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.err ${SCRIPT} ${WORK_DIR} ${INPUT_DIR}/DYJetsToLL.root ${ENV_DIR} ${OUTPUT_DIR}/${CHAN}_nnpdf30_nlo_as_0${AS}.txt acceptGenZ.C acceptGenZ_C.so NNPDF30_nlo_as_0${AS} 0 5 ${CHANNUM}
