@@ -1,4 +1,5 @@
 //================================================================================================
+// Not used for 13 TeV measurement.
 //
 // Compute Z->mumu acceptance at generator level
 //
@@ -43,7 +44,7 @@ void computeAccGenZmm(const TString conf,             // input file
   const Double_t MASS_LOW   = 60;
   const Double_t MASS_HIGH  = 120;
   const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.1;
+  const Double_t ETA_CUT    = 2.4;
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
 
@@ -125,7 +126,7 @@ void computeAccGenZmm(const TString conf,             // input file
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
       TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
 
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
     

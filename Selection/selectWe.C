@@ -20,6 +20,8 @@
 #include <iomanip>                  // functions to format standard I/O
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
+#include "TH1D.h"
+#include "TCanvas.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -34,9 +36,11 @@
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
+#include "BaconProd/Utils/interface/TriggerTools.hh"
+
 
 // lumi section selection with JSON files
-//#include "MitAna/DataCont/interface/RunLumiRangeMap.h"
+#include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -59,18 +63,25 @@ void selectWe(const TString conf="we.conf", // input file
   const Double_t ETA_CUT  = 2.5;
   const Double_t ELE_MASS = 0.000511;
 
-  const Double_t VETO_PT   = 20;
+  const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.5;
   
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
-  
-  const Double_t escaleNbins  = 6;
-  const Double_t escaleEta[]  = { 0.4,     0.8,     1.2,     1.4442,  2,        2.5 };
-  const Double_t escaleCorr[] = { 1.00284, 1.00479, 1.00734, 1.00851, 1.00001,  0.982898 };
+
+  const Double_t escaleNbins  = 2;
+  const Double_t escaleEta[]  = { 1.4442, 2.5   };
+  const Double_t escaleCorr[] = { 0.992,  1.009 };
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
+
+  // load trigger menu
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -101,11 +112,13 @@ void selectWe(const TString conf="we.conf", // input file
   TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
   Int_t   q;
   TLorentzVector *lep=0;
+  Int_t lepID;
   ///// electron specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
@@ -115,15 +128,13 @@ void selectWe(const TString conf="we.conf", // input file
   UInt_t  isConv, nexphits, typeBits;
   TLorentzVector *sc=0;
 
-  cout << sc->Class() << endl;
-  
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
-  TClonesArray *genPartArr  = new TClonesArray("baconhep::TGenParticle");
-  TClonesArray *electronArr = new TClonesArray("baconhep::TElectron");
-  TClonesArray *scArr       = new TClonesArray("baconhep::TPhoton");
-  TClonesArray *pvArr       = new TClonesArray("baconhep::TVertex");
+  TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
+  TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
+  TClonesArray *vertexArr      = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -135,11 +146,13 @@ void selectWe(const TString conf="we.conf", // input file
     
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
+    Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
+    else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "we" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
-    // flag to reject W->enu events for wrong flavor backgrounds
+    // flag to reject W->enu events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
   
     CSample* samp = samplev[isam];
@@ -174,6 +187,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
+    outTree->Branch("puWeight",   &puWeight,   "puWeight/F");    // scale factor for pileup reweighting (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
@@ -183,11 +197,18 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)                           
     outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
     outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
-    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass
+    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass (track MET) 
     outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
     outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
+    outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");       // transverse mass (mva MET)
+    outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",       "TLorentzVector", &lep);        // lepton 4-vector
+    outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
     ///// electron specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");      // track isolation of tag lepton
     outTree->Branch("emIso",      &emIso,      "emIso/F");       // ECAL isolation of tag lepton
@@ -221,66 +242,69 @@ void selectWe(const TString conf="we.conf", // input file
       infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
 
-      //Bool_t hasJSON = kFALSE;
-      //mithep::RunLumiRangeMap rlrm;
-      //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
-      //  hasJSON = kTRUE;
-      //  rlrm.AddJSONFile(samp->jsonv[ifile].Data()); 
-      //}
-
-      const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-      UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
-      //need to clean this up                                                                                              
-      UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");              
-      UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");
+      Bool_t hasJSON = kFALSE;
+      baconhep::RunLumiRangeMap rlrm;
+      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+        hasJSON = kTRUE;
+        rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
+      }
 
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);  
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+      eventTree->SetBranchAddress("PV",   &vertexArr);       TBranch *vertexBr = eventTree->GetBranch("PV");
+
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
 	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
-      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
-      TBranch *pvBr=0;
-      if (hasVer) {
-        eventTree->SetBranchAddress("Vertex", &pvArr); pvBr = eventTree->GetBranch("Vertex");
-      }
+
       // Compute MC event weight per 1/fb
-      Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
-      if(xsec>0) weight = 1000.*xsec/(Double_t)eventTree->GetEntries();     
+      Double_t totalWeight=0;
+
+      if (hasGen) {
+	TH1D *hall = new TH1D("hall", "", 1,0,1);
+	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
+	totalWeight=hall->Integral();
+	delete hall;
+	hall=0;
+      }
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<100; ientry++) {
         infoBr->GetEntry(ientry);
-	
-	if(genBr) {
-	  genBr->GetEntry(ientry);
+
+        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+	if(hasGen) {
 	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
+	  weight*=gen->weight;
 	}
+	
+	// veto w -> xv decays for signal and w -> ev for bacground samples (needed for inclusive WToLNu sample)
+        if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue; 
+        else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue; 
      
         // check for certified lumi (if applicable)
-        //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
-        //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
+        baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
+        if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if(!(info->triggerBits[trigger])) continue;
+        if (!isEleTrigger(triggerMenu, info->triggerBits, isData)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-        if (hasVer) {
-	  pvArr->Clear();
-	  pvBr->GetEntry(ientry);
-	}
       
         //
 	// SELECTION PROCEDURE:
@@ -289,9 +313,11 @@ void selectWe(const TString conf="we.conf", // input file
 	//
 	electronArr->Clear();
         electronBr->GetEntry(ientry);
+
 	Int_t nLooseLep=0;
 	const baconhep::TElectron *goodEle=0;
-	Bool_t passSel=kFALSE;	
+	Bool_t passSel=kFALSE;
+
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
 	  
@@ -319,20 +345,15 @@ void selectWe(const TString conf="we.conf", // input file
           if(fabs(ele->scEta)   > ETA_CUT)     continue;  // lepton |eta| cut
           if(escale*(ele->scEt) < PT_CUT)      continue;  // lepton pT cut
           if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
-          if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+	  if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, isData)) continue;
 	  
 	  passSel=kTRUE;
 	  goodEle = ele;  
 	}
 
-	// veto w -> enu decay for wrong flavor background samples (needed for inclusive WToLNu sample)
-	if (isWrongFlavor) {
-	  TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	  if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
-	}
-
 	if(passSel) {	  
-	  /******** We have a W candidate! HURRAY! ********/
+
+	  //******* We have a W candidate! HURRAY! ********
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
@@ -346,8 +367,10 @@ void selectWe(const TString conf="we.conf", // input file
 	    }
 	  }
 	  
-	  TLorentzVector vLep(0,0,0,0); vLep.SetPtEtaPhiM(escale*(goodEle->pt), goodEle->eta, goodEle->phi, ELE_MASS);  
-	  TLorentzVector vSC(0,0,0,0); vSC.SetPtEtaPhiM(escale*(goodEle->scEt), goodEle->scEta, goodEle->scPhi, ELE_MASS); 	  
+	  TLorentzVector vLep(0,0,0,0); 
+	  vLep.SetPtEtaPhiM(escale*(goodEle->pt), goodEle->eta, goodEle->phi, ELE_MASS);  
+	  TLorentzVector vSC(0,0,0,0); 
+	  vSC.SetPtEtaPhiM(escale*(goodEle->scEt), goodEle->scEta, goodEle->scPhi, ELE_MASS); 	  
 	  
 	  //
 	  // Fill tree
@@ -355,8 +378,12 @@ void selectWe(const TString conf="we.conf", // input file
 	  runNum    = info->runNum;
 	  lumiSec   = info->lumiSec;
 	  evtNum    = info->evtNum;
-	  npv	    = hasVer ? pvArr->GetEntriesFast() : 0;
-	  npu	    = info->nPU;
+
+	  vertexArr->Clear();
+	  vertexBr->GetEntry(ientry);
+
+	  npv      = vertexArr->GetEntries();
+	  npu	    = info->nPUmean;
 	  genV      = new TLorentzVector(0,0,0,0);
 	  genLep    = new TLorentzVector(0,0,0,0);
 	  genVPt    = -999;
@@ -369,6 +396,8 @@ void selectWe(const TString conf="we.conf", // input file
 	  u2        = -999;
 	  tkU1      = -999;
 	  tkU2      = -999;
+	  mvaU1     = -999;
+          mvaU2     = -999;
 	  id_1      = -999;
 	  id_2      = -999;
 	  x_1       = -999;
@@ -377,25 +406,29 @@ void selectWe(const TString conf="we.conf", // input file
 	  xPDF_2    = -999;
 	  scalePDF  = -999;
 	  weightPDF = -999;
-	  if(isSignal) {
-	    TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	    // veto wrong flavor events for signal sample
-	    if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
-	    if (vec && lep1) {
+
+	  if(isSignal && hasGen) {
+	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
+
+	    if (gvec && glep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
-              genV->SetPtEtaPhiM(vec->Pt(),vec->Eta(),vec->Phi(),vec->M());
+              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
               genLep    = new TLorentzVector(0,0,0,0);
-              genLep->SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),lep1->M());
-              genVPt    = vec->Pt();
-              genVPhi   = vec->Phi();
-              genVy     = vec->Rapidity();
-              genVMass  = vec->M();
-              genLepPt  = lep1->Pt();
-              genLepPhi = lep1->Phi();
+              genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              genVPt    = gvec->Pt();
+              genVPhi   = gvec->Phi();
+              genVy     = gvec->Rapidity();
+              genVMass  = gvec->M();
+              genLepPt  = glep1->Pt();
+              genLepPhi = glep1->Phi();
 
 	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
-	      TVector2 vLepPt(vLep.Px(),vLep.Py());      
-	      TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));        
+	      TVector2 vLepPt(vLep.Px(),vLep.Py());
+
+	      TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));        
 	      TVector2 vU = -1.0*(vMet+vLepPt);
 	      u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
 	      u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
@@ -404,6 +437,11 @@ void selectWe(const TString conf="we.conf", // input file
 	      TVector2 vTkU = -1.0*(vTkMet+vLepPt);
 	      tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
 	      tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+	      
+	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+	      TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+	      mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+	      mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	    }
 	    id_1      = gen->id_1;
 	    id_2      = gen->id_2;
@@ -413,16 +451,26 @@ void selectWe(const TString conf="we.conf", // input file
 	    xPDF_2    = gen->xPDF_2;
 	    scalePDF  = gen->scalePDF;
 	    weightPDF = gen->weight;
+
+	    delete gvec;
+	    delete glep1;
+	    delete glep2;
+	    gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-	  met	   = info->pfMET;
-	  metPhi   = info->pfMETphi;
+	  puWeight = h_rw->GetBinContent(info->nPUmean+1);
+	  met	   = info->pfMETC;
+	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
-	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETphi))) );
+	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
 	  tkMet	   = info->trkMET;
 	  tkMetPhi = info->trkMETphi;
 	  tkSumEt  = 0;
 	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+	  mvaMet   = info->mvaMET;
+	  mvaMetPhi = info->mvaMETphi;
+	  mvaSumEt  = 0;
+	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
 	  q        = goodEle->q;
 	  lep      = &vLep;
 	  
@@ -448,8 +496,10 @@ void selectWe(const TString conf="we.conf", // input file
 	  isConv    = goodEle->isConv;
 	  nexphits  = goodEle->nMissingHits;
 	  typeBits  = goodEle->typeBits;
-	   
+
 	  outTree->Fill();
+	  delete genV; 
+	  delete genLep;
 	  genV=0, genLep=0, lep=0, sc=0;
         }
       }
@@ -457,17 +507,19 @@ void selectWe(const TString conf="we.conf", // input file
       infile=0, eventTree=0;    
 
       cout << nsel  << " +/- " << sqrt(nselvar);
-      if(isam!=0) cout << " per 1/fb";
+      if(isam!=0) cout << " per 1/pb";
       cout << endl;
     }
     outFile->Write();
     outFile->Close();
   }
+  delete h_rw;
+  delete f_rw;
   delete info;
   delete gen;
+  delete genPartArr;
   delete electronArr;
-  delete pvArr;
-  
+  delete vertexArr;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output
@@ -482,10 +534,10 @@ void selectWe(const TString conf="we.conf", // input file
   if(doScaleCorr)
     cout << "  *** Scale corrections applied ***" << endl;
   cout << endl;
-
+  
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;  
-      
+
   gBenchmark->Show("selectWe"); 
 }

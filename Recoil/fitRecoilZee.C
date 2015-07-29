@@ -8,12 +8,13 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>                   // standard I/O
+#include <fstream>                    // standard I/O
 #include <TFile.h>                    // file handle class
 #include <TTree.h>                    // class to access ntuples
 #include <TF1.h>                      // 1D function
 #include <TFitResult.h>               // class to handle fit results
 #include <TGraphErrors.h>             // graph class
-#include "Math/LorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -32,9 +33,6 @@
 #endif
 
 using namespace RooFit;
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -94,7 +92,7 @@ Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResultPtr fs) {
   df[0] = x*x;
   df[1] = x;
   df[2] = 1;
-    
+  
   Double_t err2=0;
   for(Int_t i=0; i<3; i++) {
     err2 += df[i]*df[i]*(fs->GetCovarianceMatrix()[i][i]);
@@ -112,22 +110,25 @@ Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResultPtr fs) {
 void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
                 const Int_t model, const Bool_t sigOnly,
                 TCanvas *c, const char *plabel, const char *xlabel,
-		Double_t *meanArr,   Double_t *meanErrArr,
-		Double_t *sigma0Arr, Double_t *sigma0ErrArr,
-		Double_t *sigma1Arr, Double_t *sigma1ErrArr,
-		Double_t *sigma2Arr, Double_t *sigma2ErrArr,
-		Double_t *sigma3Arr, Double_t *sigma3ErrArr,
-		Double_t *frac2Arr,  Double_t *frac2ErrArr,
-		Double_t *frac3Arr,  Double_t *frac3ErrArr);
+                Double_t *meanArr,   Double_t *meanErrArr,
+                Double_t *sigma0Arr, Double_t *sigma0ErrArr,
+                Double_t *sigma1Arr, Double_t *sigma1ErrArr,
+                Double_t *sigma2Arr, Double_t *sigma2ErrArr,
+                Double_t *sigma3Arr, Double_t *sigma3ErrArr,
+                Double_t *frac2Arr,  Double_t *frac2ErrArr,
+                Double_t *frac3Arr,  Double_t *frac3ErrArr);
 
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitRecoilZee(TString infilename,  // input ntuple
-                  Int_t   pfu1model,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-                  Int_t   pfu2model,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-	          Bool_t  sigOnly,     // signal event only?
-	          TString outputDir    // output directory
+void fitRecoilZee(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/data_select.root",  // input ntuple
+                  Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
+                  Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
+	              Bool_t  sigOnly=1,     // signal event only?
+                  std::string uparName = "u1",
+                  std::string uprpName = "u2",
+                  std::string metName = "pf",
+                  TString outputDir="./" // output directory
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -137,10 +138,7 @@ void fitRecoilZee(TString infilename,  // input ntuple
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {
-     0,  5, 10, 15, 20, 25, 30, 35, 40, 50,
-    60, 70, 80, 90
-  };
+  Double_t ptbins[] = {0,5,10,15,20,25,30,40,55,70,100};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   Double_t corrbins[] = { 0, 10, 30, 50 };
@@ -152,8 +150,12 @@ void fitRecoilZee(TString infilename,  // input ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Zee/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
@@ -194,26 +196,43 @@ void fitRecoilZee(TString infilename,  // input ntuple
   TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2frac2;  TF1 *fcnPFu2frac2  = new TF1("fcnPFu2frac2",frac2Func,0,7000,12);
 
-  fcnPFu1sigma1->SetParameter(0,-5e-4); fcnPFu1sigma1->SetParLimits(0,-1e-3,1e-3);
-  fcnPFu1sigma1->SetParameter(1,0.07);  fcnPFu1sigma1->SetParLimits(1,-1,1);
-  fcnPFu1sigma1->SetParameter(2,5.5);   fcnPFu1sigma1->SetParLimits(2,3,7);
-  fcnPFu1sigma2->SetParameter(0,1e-4);  fcnPFu1sigma2->SetParLimits(0,-2e-2,2e-2);
-  fcnPFu1sigma2->SetParameter(1,0.06);  fcnPFu1sigma2->SetParLimits(1,-1,1);
-  fcnPFu1sigma2->SetParameter(2,9.5);   fcnPFu1sigma2->SetParLimits(2,5,15);
-  fcnPFu1sigma0->SetParameter(0,-1e-4); fcnPFu1sigma0->SetParLimits(0,-1e-2,1e-2);
-  fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
-  fcnPFu1sigma0->SetParameter(2,7);     fcnPFu1sigma0->SetParLimits(2,5,9); 
-  
-  fcnPFu2sigma1->SetParameter(0,-1e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-3,5e-3);
-  fcnPFu2sigma1->SetParameter(1,0.05);   fcnPFu2sigma1->SetParLimits(1,-1,1);
-  fcnPFu2sigma1->SetParameter(2,5);      fcnPFu2sigma1->SetParLimits(2,2,7);
-  fcnPFu2sigma2->SetParameter(0,-1e-4);  fcnPFu2sigma2->SetParLimits(0,-5e-3,5e-3);
-  fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
-  fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
-  fcnPFu2sigma0->SetParameter(0,-1e-4);  fcnPFu2sigma0->SetParLimits(0,-1e-2,1e-2);
-  fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,1);
-  fcnPFu2sigma0->SetParameter(2,7);      fcnPFu2sigma0->SetParLimits(2,5,9);        
+//   fcnPFu1sigma1->SetParameter(0,-5e-4); fcnPFu1sigma1->SetParLimits(0,-1e-3,1e-3);
+//   fcnPFu1sigma1->SetParameter(1,0.07);  fcnPFu1sigma1->SetParLimits(1,-1,1);
+//   fcnPFu1sigma1->SetParameter(2,5.5);   fcnPFu1sigma1->SetParLimits(2,3,7);
+// //   
+   fcnPFu1sigma2->SetParameter(0,1e-4);  fcnPFu1sigma2->SetParLimits(0,-2e-2,2e-2);
+//   fcnPFu1sigma2->SetParameter(1,0.06);  fcnPFu1sigma2->SetParLimits(1,-1,1);
+//   fcnPFu1sigma2->SetParameter(2,9.5);   fcnPFu1sigma2->SetParLimits(2,5,15);
+// //   
+   fcnPFu1sigma0->SetParameter(0,-1e-4); //fcnPFu1sigma0->SetParLimits(0,-1e-2,1e-2);
+//   fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
+//   fcnPFu1sigma0->SetParameter(2,7);     fcnPFu1sigma0->SetParLimits(2,5,9); 
+// //   
+//   fcnPFu1frac2->SetParameter(0,-1e-4); fcnPFu1frac2->SetParLimits(0,-1e-2,1e-2);
+//   fcnPFu1frac2->SetParameter(1,0.07);  fcnPFu1frac2->SetParLimits(1,-1,1);
+//   fcnPFu1frac2->SetParameter(2,7);     fcnPFu1frac2->SetParLimits(2,5,9); 
+// //   
+// //   
+//   fcnPFu2sigma1->SetParameter(0,-1e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-3,5e-3);
+//   fcnPFu2sigma1->SetParameter(1,0.05);   fcnPFu2sigma1->SetParLimits(1,-1,1);
+//   fcnPFu2sigma1->SetParameter(2,5);      fcnPFu2sigma1->SetParLimits(2,2,7);
+// //   
+//   fcnPFu2sigma2->SetParameter(0,-1e-4);  fcnPFu2sigma2->SetParLimits(0,-5e-3,5e-3);
+//   fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
+//   fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
+// //   
+//   fcnPFu2sigma0->SetParameter(0,-1e-4);  fcnPFu2sigma0->SetParLimits(0,-1e-2,1e-2);
+//   fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,1);
+//   fcnPFu2sigma0->SetParameter(2,7);      fcnPFu2sigma0->SetParLimits(2,5,9); 
+//   
+//   
+//   fcnPFu2frac2->SetParameter(0,-1e-4); fcnPFu2frac2->SetParLimits(0,-1e-2,1e-2);
+//   fcnPFu2frac2->SetParameter(1,0.07);  fcnPFu2frac2->SetParLimits(1,-1,1);
+//   fcnPFu2frac2->SetParameter(2,7);     fcnPFu2frac2->SetParLimits(2,5,9); 
     
+  
+  
+  
   TFile *infile = 0;
   TTree *intree = 0;  
   
@@ -228,8 +247,8 @@ void fitRecoilZee(TString infilename,  // input ntuple
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
-  LorentzVector *sc1=0, *sc2=0;  
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *sc1=0, *sc2=0;  
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
     cout << "Processing " << fnamev[ifile] << "..." << endl;
@@ -248,18 +267,22 @@ void fitRecoilZee(TString infilename,  // input ntuple
     intree->SetBranchAddress("genVy",    &genVy);      // GEN boson rapidity (signal MC)
     intree->SetBranchAddress("genVMass", &genVMass);   // GEN boson mass (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",      &met);	       // MET
-    intree->SetBranchAddress("metPhi",   &metPhi);     // phi(MET)
-    intree->SetBranchAddress("sumEt",    &sumEt);      // Sum ET
-    intree->SetBranchAddress("u1",       &u1);	       // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);	       // perpendicular component of recoil
-    intree->SetBranchAddress("q1",       &q1);	       // charge of tag lepton
-    intree->SetBranchAddress("q2",       &q2);	       // charge of probe lepton
-    intree->SetBranchAddress("dilep",    &dilep);      // dilepton 4-vector
-    intree->SetBranchAddress("lep1",     &lep1);       // tag lepton 4-vector
-    intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
-    intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
-    intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector
+    
+    intree->SetBranchAddress("met",	           &met);        // Uncorrected PF MET
+    intree->SetBranchAddress("metPhi",	       &metPhi);     // phi(MET)
+    intree->SetBranchAddress("sumEt",          &sumEt);      // Sum ET
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
+    
+    intree->SetBranchAddress("q1",	 &q1);         // charge of tag lepton
+    intree->SetBranchAddress("q2",	 &q2);         // charge of probe lepton
+    
+    intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
+    intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
+    intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
+    
+    intree->SetBranchAddress("sc1",            &sc1);        // tag Supercluster 4-vector
+    intree->SetBranchAddress("sc2",            &sc2);        // probe Supercluster 4-vector
   
     //
     // Loop over events
@@ -651,30 +674,30 @@ void fitRecoilZee(TString infilename,  // input ntuple
     infile = new TFile(fnamev[ifile]);
     intree = (TTree*)infile->Get("Events");
   
-    intree->SetBranchAddress("runNum",   &runNum);     // event run number
-    intree->SetBranchAddress("lumiSec",  &lumiSec);    // event lumi section
-    intree->SetBranchAddress("evtNum",   &evtNum);     // event number
-    intree->SetBranchAddress("matchGen", &matchGen);   // event has both leptons matched to MC Z->ll
-    intree->SetBranchAddress("category", &category);   // dilepton category
-    intree->SetBranchAddress("npv",      &npv);	       // number of primary vertices
-    intree->SetBranchAddress("npu",      &npu);	       // number of in-time PU events (MC)
-    intree->SetBranchAddress("genVPt",   &genVPt);     // GEN boson pT (signal MC)
-    intree->SetBranchAddress("genVPhi",  &genVPhi);    // GEN boson phi (signal MC)
-    intree->SetBranchAddress("genVy",    &genVy);      // GEN boson rapidity (signal MC)
-    intree->SetBranchAddress("genVMass", &genVMass);   // GEN boson mass (signal MC)
-    intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",      &met);	       // MET
-    intree->SetBranchAddress("metPhi",   &metPhi);     // phi(MET)
-    intree->SetBranchAddress("sumEt",    &sumEt);      // Sum ET
-    intree->SetBranchAddress("u1",       &u1);	       // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);	       // perpendicular component of recoil
-    intree->SetBranchAddress("q1",       &q1);	       // charge of tag lepton
-    intree->SetBranchAddress("q2",       &q2);	       // charge of probe lepton
-    intree->SetBranchAddress("dilep",    &dilep);      // dilepton 4-vector
-    intree->SetBranchAddress("lep1",     &lep1);       // tag lepton 4-vector
-    intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
-    intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
-    intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector
+    intree->SetBranchAddress("runNum",      &runNum);     // event run number
+    intree->SetBranchAddress("lumiSec",     &lumiSec);    // event lumi section
+    intree->SetBranchAddress("evtNum",      &evtNum);     // event number
+    intree->SetBranchAddress("matchGen",   &matchGen);   // event has both leptons matched to MC Z->ll
+    intree->SetBranchAddress("category",   &category);   // dilepton category
+    intree->SetBranchAddress("npv",        &npv);	       // number of primary vertices
+    intree->SetBranchAddress("npu",        &npu);	       // number of in-time PU events (MC)
+    intree->SetBranchAddress("genVPt",     &genVPt);     // GEN boson pT (signal MC)
+    intree->SetBranchAddress("genVPhi",   &genVPhi);    // GEN boson phi (signal MC)
+    intree->SetBranchAddress("genVy",      &genVy);      // GEN boson rapidity (signal MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);   // GEN boson mass (signal MC)
+    intree->SetBranchAddress("scale1fb",    &scale1fb);   // event weight per 1/fb (MC)
+    intree->SetBranchAddress("met",         &met);	       // MET
+    intree->SetBranchAddress("metPhi",       &metPhi);     // phi(MET)
+    intree->SetBranchAddress("sumEt",          &sumEt);      // Sum ET
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
+    intree->SetBranchAddress("q1",             &q1);	       // charge of tag lepton
+    intree->SetBranchAddress("q2",             &q2);	       // charge of probe lepton
+    intree->SetBranchAddress("dilep",          &dilep);      // dilepton 4-vector
+    intree->SetBranchAddress("lep1",           &lep1);       // tag lepton 4-vector
+    intree->SetBranchAddress("lep2",           &lep2);       // probe lepton 4-vector
+    intree->SetBranchAddress("sc1",            &sc1);        // tag Supercluster 4-vector
+    intree->SetBranchAddress("sc2",            &sc2);        // probe Supercluster 4-vector
     
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
@@ -718,7 +741,7 @@ void fitRecoilZee(TString infilename,  // input ntuple
   //==============================================================================================================
 
   char outfname[100];
-  sprintf(outfname,"%s/fits.root",outputDir.Data());
+  sprintf(outfname,"%s/fits_%s.root",outputDir.Data(),metName.c_str());
   TFile *outfile = new TFile(outfname,"RECREATE");
   
   if(grPFu1mean)    grPFu1mean->Write();

@@ -34,7 +34,7 @@ public:
 class CMCTemplateConvGaussian : public CSignalModel
 {
 public:
-  CMCTemplateConvGaussian(RooRealVar &m, TH1D* hist, const Bool_t pass, RooRealVar *sigma0=0, int intOrder=1);
+  CMCTemplateConvGaussian(RooRealVar &m, TH1D* hist, const Bool_t pass, const int ibin, RooRealVar *sigma0=0, int intOrder=1);
   ~CMCTemplateConvGaussian();
   RooRealVar  *mean, *sigma;
   RooGaussian *gaus;
@@ -120,12 +120,23 @@ CBreitWignerConvCrystalBall::~CBreitWignerConvCrystalBall()
 }
 
 //--------------------------------------------------------------------------------------------------
-CMCTemplateConvGaussian::CMCTemplateConvGaussian(RooRealVar &m, TH1D* hist, const Bool_t pass, RooRealVar *sigma0, int intOrder)
-{  
+CMCTemplateConvGaussian::CMCTemplateConvGaussian(RooRealVar &m, TH1D* hist, const Bool_t pass, const int ibin, RooRealVar *sigma0, int intOrder)
+{
   char name[10];
-  if(pass) sprintf(name,"%s","Pass");
-  else     sprintf(name,"%s","Fail");
-  
+  if(pass) sprintf(name,"%s_%i","Pass",ibin);
+  else     sprintf(name,"%s_%i","Fail",ibin);
+/*
+  if(xbinLo==0) {
+    if(pass) sprintf(name,"%s","Pass");
+    else     sprintf(name,"%s","Fail");
+  } else if(xbinLo==1.4442) {
+    if(pass) sprintf(name,"%s","PassEcalGap");
+    else     sprintf(name,"%s","FailEcalGap");
+  } else if(xbinLo==1.566) {
+    if(pass) sprintf(name,"%s","PassTroubleRegion");
+    else     sprintf(name,"%s","FailTroubleRegion");
+  }
+*/  
   char vname[50];  
   
   if(pass) {
@@ -139,7 +150,6 @@ CMCTemplateConvGaussian::CMCTemplateConvGaussian(RooRealVar &m, TH1D* hist, cons
     else       { sprintf(vname,"sigma%s",name); sigma = new RooRealVar(vname,vname,2,0,5); }
     sprintf(vname,"gaus%s",name);  gaus  = new RooGaussian(vname,vname,m,*mean,*sigma);
   }
-
 
   sprintf(vname,"inHist_%s",hist->GetName());
   inHist = (TH1D*)hist->Clone(vname);

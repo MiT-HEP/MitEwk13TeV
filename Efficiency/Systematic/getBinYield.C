@@ -63,7 +63,7 @@ void getBinYield(const TString effType="BK_EleEff",
   // Selection cuts
   const Double_t METMAX  = 100;
   const Double_t PT_CUT  = 30;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
 
   // Set up binning from efficiency
 

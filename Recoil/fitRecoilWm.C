@@ -8,12 +8,13 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <iostream>                   // standard I/O
+#include <fstream>
 #include <TFile.h>                    // file handle class
 #include <TTree.h>                    // class to access ntuples
 #include <TF1.h>                      // 1D function
 #include <TFitResult.h>               // class to handle fit results
 #include <TGraphErrors.h>             // graph class
-#include "Math/LorentzVector.h"       // 4-vector class
+#include <TLorentzVector.h>     // 4-vector class
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -32,9 +33,6 @@
 #endif
 
 using namespace RooFit;
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -129,7 +127,10 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 		 Bool_t  sigOnly,       // signal event only?
 		 Int_t   charge,        // charge requirement
 		 Bool_t  useData,       // use Data? (0 = signal MC, 1 = data)
-		 TString outputDir      // output directory
+         std::string uparName = "u1",
+         std::string uprpName = "u2",
+         std::string metName = "pf",
+		 TString outputDir ="./"     // output directory
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -154,20 +155,24 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
 
-  if (useData == 0)
+  if (useData == 0){
     fnamev.push_back(TString(infoldername) + TString("wm_select.root")); isBkgv.push_back(kFALSE);
-
-  else if (useData == 1)
+  } else if (useData == 1){
     fnamev.push_back(TString(infoldername) + TString("data_select.root")); isBkgv.push_back(kFALSE);
-
-  else
+  } else {
     cout << "useData value doesn't make sense" << endl;
+  }
 
-  fnamev.push_back(TString(infoldername) + TSTring("top_select.root")); isBkgv.push_back(kTRUE); 
-  fnamev.push_back(TString(infoldername) + TString("ewk_select.root")); isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
+
   
   const Double_t PT_CUT  = 25;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
      
  
   //--------------------------------------------------------------------------------------------------------------
@@ -235,7 +240,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  LorentzVector *lep=0;  
+  TLorentzVector *lep=0;  
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
     cout << "Processing " << fnamev[ifile] << "..." << endl;
@@ -254,8 +259,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
   
@@ -657,15 +662,15 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("npu",      &npu);       // number of in-time PU events (MC)
     intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)   
-    intree->SetBranchAddress("genVy",    &genVy);     // GEN boson rapidity (signal MC)
-    intree->SetBranchAddress("genVMass", &genVMass);  // GEN boson mass (signal MC)
+//     intree->SetBranchAddress("genVy",    &genVy);     // GEN boson rapidity (signal MC)
+//     intree->SetBranchAddress("genVMass", &genVMass);  // GEN boson mass (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("met",      &met);       // MET
     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
     

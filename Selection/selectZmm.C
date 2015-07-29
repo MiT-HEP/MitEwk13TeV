@@ -19,6 +19,7 @@
 #include <iomanip>                  // functions to format standard I/O
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"     // 4-vector class
+#include "TH1D.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -31,9 +32,10 @@
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
+#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
-//#include "MitAna/DataCont/interface/RunLumiRangeMap.h"
+#include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -59,6 +61,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 13;
+
+  // load trigger menu                                                                                                  
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+
+  // load pileup reweighting file                                                                                       
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -92,9 +101,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
   Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// muon specific /////
@@ -112,7 +122,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
-  TClonesArray *pvArr      = new TClonesArray("baconhep::TVertex");
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -124,11 +134,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
     
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
+    Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
+    else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
-    // flag to reject Z->mm events for wrong flavor backgrounds
+    // flag to reject Z->mm events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
@@ -161,6 +173,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("genVy",       &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
     outTree->Branch("genVMass",    &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
     outTree->Branch("scale1fb",    &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
+    outTree->Branch("puWeight",    &puWeight,   "puWeight/F");    // scale factor for pileup reweighting (MC)            
     outTree->Branch("met",         &met,        "met/F");         // MET
     outTree->Branch("metPhi",      &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",       &sumEt,      "sumEt/F");       // Sum ET
@@ -171,6 +184,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("tkSumEt",     &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
     outTree->Branch("tkU1",        &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
     outTree->Branch("tkU2",        &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
+    outTree->Branch("mvaMet",      &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",   &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
+    outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
     outTree->Branch("q1",          &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("dilep",       "TLorentzVector", &dilep);     // di-lepton 4-vector
@@ -221,71 +239,67 @@ void selectZmm(const TString conf="zmm.conf", // input file
       infile = TFile::Open(samp->fnamev[ifile]); 
       assert(infile);
 
-      const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-      UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
-      UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");
-      UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", 
-      //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09");
-
-      //Bool_t hasJSON = kFALSE;
-      //baconhep::RunLumiRangeMap rlrm;
-      //if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
-      //  hasJSON = kTRUE;
-      //rlrm.AddJSONFile(samp->jsonv[ifile].Data()); 
-      //}
+      Bool_t hasJSON = kFALSE;
+      baconhep::RunLumiRangeMap rlrm;
+      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+        hasJSON = kTRUE;
+	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
+      }
   
       eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-      eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
-      eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");
+      eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
+      eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
+      eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
-        eventTree->SetBranchAddress("GenEvtInfo", &gen);
-	genBr = eventTree->GetBranch("GenEvtInfo");
-	eventTree->SetBranchAddress("GenParticle",&genPartArr);
-        genPartBr = eventTree->GetBranch("GenParticle");
+        eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
+	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
 
-      Bool_t hasVer = eventTree->GetBranchStatus("Vertex");
-      TBranch *pvBr=0;
-      if (hasVer) {
-        eventTree->SetBranchAddress("Vertex",       &pvArr);
-        pvBr = eventTree->GetBranch("Vertex");
-      }
-    
       // Compute MC event weight per 1/fb
-      Double_t weight = 1;
       const Double_t xsec = samp->xsecv[ifile];
-      if(xsec>0) weight = 1000.*xsec/(Double_t)eventTree->GetEntries();     
+      Double_t totalWeight=0;
+
+      if (hasGen) {
+	TH1D *hall = new TH1D("hall", "", 1,0,1);
+	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
+	totalWeight=hall->Integral();
+	delete hall;
+	hall=0;
+      }
 
       //
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
-
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      //for(UInt_t ientry=0; ientry<500; ientry++) {
         infoBr->GetEntry(ientry);
-	
-	if(genBr) {
-	  genBr->GetEntry(ientry);
+
+        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+
+        Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+	if(hasGen) {
 	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
+	  weight*=gen->weight;
 	}
+
+	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
+        if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
+        else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
      
         // check for certified lumi (if applicable)
-        //baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
-        //if(hasJSON && !rlrm.HasRunLumi(rl)) continue;  
+        baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
+        if(hasJSON && !rlrm.hasRunLumi(rl)) continue;
 
         // trigger requirement               
-        if(!(info->triggerBits[trigger])) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-        if (hasVer) {
-	  pvArr->Clear();
-	  pvBr->GetEntry(ientry);
-	}
 
         //
 	// SELECTION PROCEDURE:
@@ -298,18 +312,20 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	//      (d) if probe is a standalone muon but not global                -> MuSta category
 	//      (e) if probe is a tracker muon or non-muon track but not global -> MuTrk category
 	//
+
 	muonArr->Clear();
         muonBr->GetEntry(ientry);
+
         for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
           const baconhep::TMuon *tag = (baconhep::TMuon*)((*muonArr)[i1]);
 	
 	  if(tag->pt        < PT_CUT)        continue;  // lepton pT cut
 	  if(fabs(tag->eta) > ETA_CUT)       continue;  // lepton |eta| cut
 	  if(!passMuonID(tag))               continue;  // lepton selection
-	  if(!(tag->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE)) continue;
 	  TLorentzVector vTag;    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, MUON_MASS);
 	  TLorentzVector vTagSta; vTagSta.SetPtEtaPhiM(tag->staPt, tag->staEta, tag->staPhi, MUON_MASS);
-	
+
 	  for(Int_t i2=0; i2<muonArr->GetEntriesFast(); i2++) {
 	    if(i1==i2) continue;
 	    const baconhep::TMuon *probe = (baconhep::TMuon*)((*muonArr)[i2]);
@@ -330,11 +346,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    // determine event category
 	    UInt_t icat=0;
 	    if(passMuonID(probe)) {
-	      if(probe->hltMatchBits[trigObjHLT]) {
+	      if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kFALSE)) {
 	        if(i1>i2) continue;  // make sure we don't double count MuMu2HLT category
 		icat=eMuMu2HLT;
 	      }
-	      else if(probe->hltMatchBits[trigObjL1]) {
+	      else if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kTRUE)) {
 		icat=eMuMu1HLT1L1;
 	      }
 	      else {
@@ -342,41 +358,37 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      }
 	    }
 	    else if(probe->typeBits & baconhep::EMuType::kGlobal) { icat=eMuMuNoSel; }
-	    else if(probe->typeBits & baconhep::EMuType::kStandalone) { icat=eMuMuNoSel; }
+	    else if(probe->typeBits & baconhep::EMuType::kStandalone) { icat=eMuSta; }
+            else                                                      { icat=eMuTrk; }
 
 	    if(icat==0) continue;
-
-	    // veto z -> mm decay for wrong flavor background samples (needed for inclusive DYToLL sample)
-            if (isWrongFlavor) {
-              TLorentzVector *vec=0, *lep1=0, *lep2=0;
-              if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))==LEPTON_ID) continue;
-	    }
 
 	    /******** We have a Z candidate! HURRAY! ********/
 	    nsel+=weight;
             nselvar+=weight*weight;
-	    
+
 	    // Perform matching of dileptons to GEN leptons from Z decay
 	    Bool_t hasGenMatch = kFALSE;
 	    if(isSignal && hasGen) {
-	      TLorentzVector *vec=0, *lep1=0, *lep2=0;
-	      // veto wrong flavor events for signal sample
-              if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID) continue;
-              Bool_t match1 = ( ((lep1) && toolbox::deltaR(tag->eta, tag->phi, lep1->Eta(), lep1->Phi())<0.5) ||
-                                ((lep2) && toolbox::deltaR(tag->eta, tag->phi, lep2->Eta(), lep2->Phi())<0.5) );
+	      TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+              TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+              TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	      toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
+
+              Bool_t match1 = ( ((glep1) && toolbox::deltaR(tag->eta, tag->phi, glep1->Eta(), glep1->Phi())<0.5) ||
+                                ((glep2) && toolbox::deltaR(tag->eta, tag->phi, glep2->Eta(), glep2->Phi())<0.5) );
 	      
-              Bool_t match2 = ( ((lep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep1->Eta(), lep1->Phi())<0.5) ||
-                                ((lep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), lep2->Eta(), lep2->Phi())<0.5) );
+              Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.5) ||
+                                ((glep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.5) );
               if(match1 && match2) {
                 hasGenMatch = kTRUE;
-
-		if (vec!=0) {
+		if (gvec!=0) {
                   genV=new TLorentzVector(0,0,0,0);
-                  genV->SetPtEtaPhiM(vec->Pt(), vec->Eta(), vec->Phi(), vec->M());
-                  genVPt   = vec->Pt();
-                  genVPhi  = vec->Phi();
-                  genVy    = vec->Rapidity();
-                  genVMass = vec->M();
+                  genV->SetPtEtaPhiM(gvec->Pt(), gvec->Eta(), gvec->Phi(), gvec->M());
+                  genVPt   = gvec->Pt();
+                  genVPhi  = gvec->Phi();
+                  genVy    = gvec->Rapidity();
+                  genVMass = gvec->M();
                 }
                 else {
                   TLorentzVector tvec=*lep1+*lep2;
@@ -387,6 +399,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
                   genVy    = tvec.Rapidity();
                   genVMass = tvec.M();
                 }
+		delete gvec;
+		delete glep1;
+		delete glep2;
+		glep1=0; glep2=0; gvec=0;
               }
               else {
 		genV     = new TLorentzVector(0,0,0,0); 
@@ -429,23 +445,31 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    else matchGen=0;
 	    
 	    category = icat;
-	    npv      = hasVer ? pvArr->GetEntriesFast() : 0;
-	    npu      = info->nPU;
+
+	    vertexArr->Clear();
+	    vertexBr->GetEntry(ientry);
+
+	    npv      = vertexArr->GetEntries();
+	    npu      = info->nPUmean;
 	    scale1fb = weight;
-	    met      = info->pfMET;
-	    metPhi   = info->pfMETphi;
+	    puWeight = h_rw->GetBinContent(info->nPUmean+1);
+	    met      = info->pfMETC;
+	    metPhi   = info->pfMETCphi;
 	    sumEt    = 0;
 	    tkMet    = info->trkMET;
             tkMetPhi = info->trkMETphi;
             tkSumEt  = 0;
+            mvaMet   = info->mvaMET;
+            mvaMetPhi = info->mvaMETphi;
+	    mvaSumEt = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
 	    dilep    = &vDilep;
 	    q1       = tag->q;
 	    q2       = probe->q;
 
-	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));        
-            TVector2 vMet((info->pfMET)*cos(info->pfMETphi), (info->pfMET)*sin(info->pfMETphi));        
+	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
+            TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
             TVector2 vU = -1.0*(vMet+vZPt);
             u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
@@ -454,7 +478,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
             TVector2 vTkU = -1.0*(vTkMet+vZPt);
             tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-	  
+
+	    TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+            TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
+            mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+
 	    ///// muon specific /////
 	    sta1        = &vTagSta;
 	    trkIso1     = tag->trkIso;
@@ -493,6 +522,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    typeBits2   = probe->typeBits;
 	    
 	    outTree->Fill();
+	    delete genV;
 	    genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
 	  }
         }
@@ -507,11 +537,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outFile->Write();
     outFile->Close(); 
   }
+  delete h_rw;
+  delete f_rw;
   delete info;
   delete gen;
+  delete genPartArr;
   delete muonArr;
-  delete pvArr;
-  
+  delete vertexArr;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

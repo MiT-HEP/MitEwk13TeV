@@ -1,4 +1,5 @@
 //================================================================================================
+// Not used for 13 TeV measurement.
 //
 // Compute Z->mumu acceptance at full selection level
 //
@@ -20,20 +21,19 @@
 #include <fstream>                  // functions for file I/O
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
-#include "Math/LorentzVector.h"     // 4-vector class
+#include "TLorentzVector.h"         // 4-vector class
 
 // define structures to read in ntuple
-#include "EWKAna/Ntupler/interface/EWKAnaDefs.hh"
-#include "EWKAna/Ntupler/interface/TEventInfo.hh"
-#include "EWKAna/Ntupler/interface/TGenInfo.hh"
-#include "EWKAna/Ntupler/interface/TMuon.hh"
+#include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
+#include "BaconAna/DataFormats/interface/TEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"
+#include "BaconAna/DataFormats/interface/TMuon.hh"
+#include "BaconAna/Utils/interface/TTrigger.hh"
 
-// helper functions for lepton ID selection
-#include "EWKAna/Utils/LeptonIDCuts.hh"
+#include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
+#include "../Utils/MyTools.hh"
 #endif
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -49,14 +49,16 @@ void computeAccSelZmm(const TString conf,       // input file
   const Double_t MASS_LOW   = 60;
   const Double_t MASS_HIGH  = 120;
   const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.1;
+  const Double_t ETA_CUT    = 2.4;
   const Double_t MUON_MASS  = 0.105658369;
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
+
+  const Int_t BOSON_ID  = 23;
+  const Int_t LEPTON_ID = 13;
   
   // Data/MC Z efficiency scale factor from simultaneous fit
-  Double_t zEffScale = 0.974847, zEffScaleErr = 0.006816;
-
+  Double_t zEffScale = 1.0, zEffScaleErr = 0.01;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -93,9 +95,10 @@ void computeAccSelZmm(const TString conf,       // input file
   gSystem->mkdir(outputDir,kTRUE);
   
   // Data structures to store info from TTrees
-  mithep::TEventInfo *info = new mithep::TEventInfo();
-  mithep::TGenInfo   *gen  = new mithep::TGenInfo();
-  TClonesArray *muonArr    = new TClonesArray("mithep::TMuon");
+  baconhep::TEventInfo   *info = new baconhep::TEventInfo();
+  baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
+  TClonesArray     *genPartArr = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray        *muonArr = new TClonesArray("baconhep::TMuon");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -112,36 +115,45 @@ void computeAccSelZmm(const TString conf,       // input file
 
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << " ..." << endl;
-    infile = new TFile(fnamev[ifile]); 
+    infile = TFile::Open(fnamev[ifile]); 
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("Gen",  &gen);     TBranch *genBr  = eventTree->GetBranch("Gen");
-    eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");   
+    eventTree->SetBranchAddress("Info",              &info); TBranch *infoBr    = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo",         &gen); TBranch *genBr     = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *genPartBr = eventTree->GetBranch("GenParticle");
+    eventTree->SetBranchAddress("Muon",           &muonArr); TBranch *muonBr    = eventTree->GetBranch("Muon");   
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
     nSelBBv.push_back(0);
     nSelBEv.push_back(0);
     nSelEEv.push_back(0);
+
+    const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+    UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
+    UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");
+    UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",
+    //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09");
     
     //
     // loop over events
     //      
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       genBr->GetEntry(ientry);
-      if(gen->vmass<MASS_LOW || gen->vmass>MASS_HIGH) continue;
-   
+      genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
+
+      TLorentzVector *vec=0, *lep1=0, *lep2=0;
+      if (fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0))!=LEPTON_ID) continue;
+
+      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
     
-      Double_t weight=1;
+      Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
       
       // trigger requirement               
-      ULong_t trigger = kHLT_Mu15_eta2p1;
-      ULong_t trigObj = kHLT_Mu15_eta2p1_MuObj;   
-      if(!(info->triggerBits & trigger)) continue;  
+      if(!(info->triggerBits[trigger])) continue;  
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -149,36 +161,37 @@ void computeAccSelZmm(const TString conf,       // input file
       muonArr->Clear();
       muonBr->GetEntry(ientry);
       for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
-  	const mithep::TMuon *mu1 = (mithep::TMuon*)((*muonArr)[i1]);
+  	const baconhep::TMuon *mu1 = (baconhep::TMuon*)((*muonArr)[i1]);
 
         if(mu1->pt	  < PT_CUT)  continue;  // lepton pT cut
         if(fabs(mu1->eta) > ETA_CUT) continue;  // lepton |eta| cut
         if(!passMuonID(mu1))	     continue;  // lepton selection
 	
-	LorentzVector vMu1(mu1->pt, mu1->eta, mu1->phi, MUON_MASS);
+	TLorentzVector vMu1(0,0,0,0);
+	vMu1.SetPtEtaPhiM(mu1->pt, mu1->eta, mu1->phi, MUON_MASS);
 	Bool_t isB1 = (fabs(mu1->eta)<ETA_BARREL) ? kTRUE : kFALSE;
 
         for(Int_t i2=i1+1; i2<muonArr->GetEntriesFast(); i2++) {
-          const mithep::TMuon *mu2 = (mithep::TMuon*)((*muonArr)[i2]);
+          const baconhep::TMuon *mu2 = (baconhep::TMuon*)((*muonArr)[i2]);
         
           if(mu1->q == mu2->q)	       continue;  // opposite charge requirement
           if(mu2->pt        < PT_CUT)  continue;  // lepton pT cut
           if(fabs(mu2->eta) > ETA_CUT) continue;  // lepton |eta| cut
 	  if(!passMuonID(mu2))	       continue;  // lepton selection
 
-          LorentzVector vMu2(mu2->pt, mu2->eta, mu2->phi, MUON_MASS);  
+          TLorentzVector vMu2(0,0,0,0);
+	  vMu2.SetPtEtaPhiM(mu2->pt, mu2->eta, mu2->phi, MUON_MASS);  
           Bool_t isB2 = (fabs(mu2->eta)<ETA_BARREL) ? kTRUE : kFALSE;
 
           // trigger match
-	  if(!(mu1->hltMatchBits & trigObj) && !(mu2->hltMatchBits & trigObj)) continue;
+	  if(!(mu1->hltMatchBits[trigObjHLT]) && !(mu2->hltMatchBits[trigObjHLT])) continue;
 	  
 	  // mass window
-          LorentzVector vDilep = vMu1 + vMu2;
+          TLorentzVector vDilep = vMu1 + vMu2;
           if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
           
           
           /******** We have a Z candidate! HURRAY! ********/
-          
           nSelv[ifile]+=weight;
   	  if(isB1 && isB2)        nSelBBv[ifile]+=weight;
 	  else if(!isB1 && !isB2) nSelEEv[ifile]+=weight;

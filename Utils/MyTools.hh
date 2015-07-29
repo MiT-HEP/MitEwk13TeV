@@ -13,9 +13,9 @@ namespace toolbox
   
   Int_t roundToInt(const Double_t x);
   
-  Int_t flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2);
+  Int_t flavor(TClonesArray *genPartArr, Int_t vid);
   
-  void fillGen(TClonesArray *genPartArr, Int_t vid, Int_t lid, TLorentzVector* &vec, TLorentzVector* &fvec, TLorentzVector* &lep1, TLorentzVector* &lep2);
+  void fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t absM);
 
 }
 
@@ -54,19 +54,26 @@ Int_t toolbox::roundToInt(Double_t x)
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2) {
+Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid) {
 
-  Int_t flavor=0;
+  for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
+    const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
+    Int_t pdgId=fabs(genloop->pdgId);
+    Int_t parentPdgId=fabs(dynamic_cast<baconhep::TGenParticle*>(genPartArr->At(genloop->parent>-1 ? genloop->parent : 0))->pdgId);
+    if ( (pdgId==11||pdgId==13||pdgId==15) && (parentPdgId==fabs(vid) || genloop->status==23) ) return genloop->pdgId;
+  }
+  return 0;
+}
 
+//------------------------------------------------------------------------------------------------------------------------
+void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t absM) 
+{
   Int_t iv=-1, iv1=-1, iv2=-1;
   TLorentzVector *lepPos=0, *lepNeg=0;
   TLorentzVector *preLepPos=0, *preLepNeg=0;
   for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
     const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
     if (genloop->status==23 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11)) {
-      if (flavor==0) {
-	flavor=genloop->pdgId;
-      }
       if (genloop->pdgId<0 && lepPos==0) {
 	lepPos=new TLorentzVector(0,0,0,0);
 	lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
@@ -82,20 +89,17 @@ Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 	iv2=i;
       }
     }
-    else if (genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) {
+    else if ((absM==0 && genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) || (absM==1 && fabs(genloop->pdgId)==fabs(vid) && (genloop->status==3||genloop->status==22))) {
       vec=new TLorentzVector(0,0,0,0);
       vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
       iv=i;
     }
     else if (iv!=-1 && genloop->parent==iv) {
-      if (genloop->pdgId==vid) {
+      if ((absM==0 && genloop->pdgId==vid)||(absM==1 && fabs(genloop->pdgId)==fabs(vid))) {
 	vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
         iv=i;
       }
       else if (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11) {
-	if (flavor==0) {
-	  flavor=genloop->pdgId;
-	}
 	if (genloop->pdgId<0 && lepPos==0) {
           lepPos=new TLorentzVector(0,0,0,0);
           lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
@@ -124,81 +128,29 @@ Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 
   if (vec==0 && preLepNeg && preLepPos) {
     TLorentzVector temp = *preLepNeg + *preLepPos;
-    vec=&temp;
+    vec->SetPtEtaPhiM(temp.Pt(), temp.Eta(), temp.Phi(), temp.M());
   }
 
   if (lepPos && lepNeg) {
     if (lepPos->Pt()>lepNeg->Pt()) {
-      lep1=lepPos;
-      lep2=lepNeg;
+      lep1->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
+      lep2->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
     }
     else {
-      lep1=lepNeg;
-      lep2=lepPos;
+      lep1->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
+      lep2->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
     }
   }
-  else if (lepPos) lep1=lepPos;
-  else if (lepNeg) lep1=lepNeg;
+  else if (lepPos) lep1->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
+  else if (lepNeg) lep1->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
 
-  return flavor;
-}
-
-//------------------------------------------------------------------------------------------------------------------------
-void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, Int_t lid, TLorentzVector* &vec, TLorentzVector* &fvec, TLorentzVector* &lep1, TLorentzVector* &lep2) 
-{
-  Int_t iv=-1, iv1=-1, iv2=-1;
-  TLorentzVector *lepPos=0, *lepNeg=0;
-
-  for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
-    const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
-    if (fabs(genloop->pdgId==vid) && (genloop->status==3||genloop->status==22)) {
-      vec=new TLorentzVector(0,0,0,0);
-      vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-      iv=i;
-    }
-    else if (iv!=-1 && genloop->parent==iv) {
-      if (fabs(genloop->pdgId)==vid) {
-        fvec=new TLorentzVector(0,0,0,0);
-	fvec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-        iv=i;
-      }
-      if(fabs(genloop->pdgId)==lid) {
-	if (genloop->pdgId<0 && lepPos==0) {
-          lepPos=new TLorentzVector(0,0,0,0);
-          lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-          iv1=i;
-	}
-        else if (lepNeg==0) {
-          lepNeg=new TLorentzVector(0,0,0,0);
-          lepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-          iv2=i;
-        }
-      }
-    }
-    else if (fabs(genloop->pdgId)==lid) {
-      if (genloop->parent==iv1) {
-        lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-        iv1=i;
-      }
-      if (genloop->parent==iv2) {
-        lepNeg->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-        iv2=i;
-      }
-    }
-  }
-  if (lepPos && lepNeg) {
-    if (lepPos->Pt()>lepNeg->Pt()) {
-      lep1=lepPos;
-      lep2=lepNeg;
-    }
-    else {
-      lep1=lepNeg;
-      lep2=lepPos;
-    }
-  }
-  else if (lepPos) lep1=lepPos;
-  else if (lepNeg) lep1=lepNeg;
+  delete preLepNeg;
+  delete preLepPos;
+  delete lepNeg;
+  delete lepPos;
   
-}
+  preLepNeg=0; preLepPos=0;
+  lepNeg=0; lepPos=0;
 
+}
 #endif

@@ -15,7 +15,8 @@
 #include <fstream>                    // functions for file I/O
 #include <string>                     // C++ string class
 #include <sstream>                    // class for parsing strings
-#include "Math/LorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
+#include "TRandom3.h"
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
@@ -37,27 +38,22 @@
 #include "RooDataHist.h"
 #include "RooFitResult.h"
 
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
-
-
 //=== MAIN MACRO ================================================================================================= 
 
 void EleScale() {
-  
+
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
   
   // event category enumeration
-  enum { eEleEle2HLT=1, eEleEle1HLT, eEleEleNoSel, eEleSC };
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
-  TString outputDir = "Results";
-  TString pufname = ""; 
+  TString outputDir = "test";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zee/ntuples/data_select.raw.root");  // data
-  infilenamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zee/ntuples/zee_select.root");       // MC
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/data_select.raw.root");  // data
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
@@ -66,10 +62,12 @@ void EleScale() {
   const Double_t ELE_MASS  = 0.000511;  
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  scEta_limits.push_back(make_pair(0.0,0.4));
-  scEta_limits.push_back(make_pair(0.4,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.2));
-  scEta_limits.push_back(make_pair(1.2,1.4442));
+  /*scEta_limits.push_back(make_pair(0.0,0.8));
+  scEta_limits.push_back(make_pair(0.8,1.4442));
+  scEta_limits.push_back(make_pair(1.566,2.5));*/
+  scEta_limits.push_back(make_pair(0.0,0.5));
+  scEta_limits.push_back(make_pair(0.5,1.0));
+  scEta_limits.push_back(make_pair(1.0,1.4442));
   scEta_limits.push_back(make_pair(1.566,2.0));
   scEta_limits.push_back(make_pair(2.0,2.5));
 
@@ -84,19 +82,16 @@ void EleScale() {
    
   enum { eData=0, eMC };
   
-//  TFile *pufile = new TFile(pufname); assert(pufile);
-//  TH1D  *puWeights = (TH1D*)pufile->Get("puWeights");
-  
   char hname[100];
   vector<TH1D*> hMCv, hDatav;  
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
       sprintf(hname,"mc_%i_%i",ibin,jbin);
-      hMCv.push_back(new TH1D(hname,"",100,MASS_LOW,MASS_HIGH));
+      hMCv.push_back(new TH1D(hname,"",120,MASS_LOW,MASS_HIGH));
       hMCv.back()->Sumw2();
       
       sprintf(hname,"data_%i_%i",ibin,jbin);
-      hDatav.push_back(new TH1D(hname,"",100,MASS_LOW,MASS_HIGH));
+      hDatav.push_back(new TH1D(hname,"",120,MASS_LOW,MASS_HIGH));
       hDatav.back()->Sumw2();
     }
   }
@@ -105,22 +100,25 @@ void EleScale() {
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
+  Float_t scale1fb, puWeight;
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
   Int_t   q1, q2;
-  LorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// electron specific /////
-  LorentzVector *sc1=0, *sc2=0;
+  TLorentzVector *sc1=0, *sc2=0;
   
   for(UInt_t ifile=0; ifile<infilenamev.size(); ifile++) {
     cout << "Processing " << infilenamev[ifile] << "..." << endl;
-    TFile *infile = new TFile(infilenamev[ifile]); assert(infile);
+    TFile *infile = TFile::Open(infilenamev[ifile]); assert(infile);
     TTree *intree = (TTree*)infile->Get("Events"); assert(intree);
   
     intree->SetBranchAddress("runNum",   &runNum);    // event run number
     intree->SetBranchAddress("lumiSec",  &lumiSec);   // event lumi section
     intree->SetBranchAddress("evtNum",   &evtNum);    // event number
+    intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight
+    intree->SetBranchAddress("puWeight", &puWeight);  // pileup reweighting
     intree->SetBranchAddress("matchGen", &matchGen);  // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category", &category);  // dilepton category
     intree->SetBranchAddress("npv",      &npv);	      // number of primary vertices
@@ -138,11 +136,11 @@ void EleScale() {
       
       Double_t weight = 1;
       if(ifile==eMC) {
-        if(!matchGen) continue;
-//        weight *= puWeights->GetBinContent(npu+1);
+	//if(!matchGen) continue;
+	weight=scale1fb*puWeight;
       }
       
-      if((category!=eEleEle2HLT) && (category!=eEleEle1HLT)) continue;
+      if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
       if(q1 == q2) continue;
       if(dilep->M()	  < MASS_LOW)  continue;
       if(dilep->M()	  > MASS_HIGH) continue;
@@ -150,12 +148,14 @@ void EleScale() {
       if(sc2->Pt()	  < PT_CUT)    continue;
       if(fabs(sc1->Eta()) > ETA_CUT)   continue;      
       if(fabs(sc2->Eta()) > ETA_CUT)   continue;
-    
-      LorentzVector vLep1(sc1->Pt(), lep1->Eta(), lep1->Phi(), ELE_MASS);
-      LorentzVector vLep2(sc2->Pt(), lep2->Eta(), lep2->Phi(), ELE_MASS);
-      //LorentzVector vLep1 = (*lep1);
-      //LorentzVector vLep2 = (*lep2);
-      LorentzVector vDilep = vLep1 + vLep2;
+
+      TLorentzVector vLep1(0,0,0,0); 
+      TLorentzVector vLep2(0,0,0,0); 
+
+      vLep1.SetPtEtaPhiM(lep1->Pt(), lep1->Eta(), lep1->Phi(), ELE_MASS);
+      vLep2.SetPtEtaPhiM(lep2->Pt(), lep2->Eta(), lep2->Phi(), ELE_MASS);
+      
+      TLorentzVector vDilep = vLep1 + vLep2;
     
       Int_t bin1=-1, bin2=-1;
       for(UInt_t i=0; i<scEta_limits.size(); i++) {
@@ -179,7 +179,7 @@ void EleScale() {
     delete infile;
     infile=0, intree=0;
   }
-  
+
   //
   // Fit for energy scale and resolution corrections
   //
@@ -216,11 +216,11 @@ void EleScale() {
   Int_t intOrder = 1;     // Interpolation order for       
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     sprintf(vname,"scale_%i",ibin);
-    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.0,0.8,1.2);      
+    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.01,0.7,1.3);
     scalebins.add(*scalebinned);
     
     sprintf(vname,"sigma_%i",ibin);
-    RooRealVar *sigmabinned = new RooRealVar(vname,vname,0.8,0.0,5.0);      
+    RooRealVar *sigmabinned = new RooRealVar(vname,vname,0.2,0.0,3.0);
     sigmabins.add(*sigmabinned);
   }
     
@@ -240,11 +240,11 @@ void EleScale() {
       sprintf(vname,"zmassmcscEta_%i_%i",ibin,jbin);
       RooDataHist *zmassmcscEta = new RooDataHist(vname,vname,RooArgList(massmc),hMCv[n]);      
       sprintf(vname,"masstemplatescEta_%i_%i",ibin,jbin);
-      RooHistPdf *masstemplatescEta = new RooHistPdf(vname,vname,RooArgList(*massshiftedscEta),RooArgList(massmc),*zmassmcscEta,intOrder);             
+      RooHistPdf *masstemplatescEta = new RooHistPdf(vname,vname,RooArgList(*massshiftedscEta),RooArgList(massmc),*zmassmcscEta,intOrder);
 
       // Gaussian smearing function
       sprintf(vname,"sigmascEta_%i_%i",ibin,jbin);
-      RooFormulaVar *sigmascEta = new RooFormulaVar(vname,vname,"TMath::Max(0.01,sqrt(@0*@0+@1*@1))",RooArgList(*sigmabins.at(ibin),*sigmabins.at(jbin)));        
+      RooFormulaVar *sigmascEta = new RooFormulaVar(vname,vname,"sqrt(@0*@0+@1*@1)",RooArgList(*sigmabins.at(ibin),*sigmabins.at(jbin)));
       sprintf(vname,"resscEta_%i_%i",ibin,jbin);
       RooGaussian *resscEta = new RooGaussian(vname,vname,mass,RooConst(0.),*sigmascEta);
 
@@ -264,7 +264,7 @@ void EleScale() {
   }
   
   // perform fit
-  RooDataHist zdatascEta_comb("zdatascEta_comb","zdatascEta_comb",RooArgList(mass),zscEta_cat,hmap,1.0/(hDatav.size()));
+  RooDataHist zdatascEta_comb("zdatascEta_comb","zdatascEta_comb",RooArgList(mass),zscEta_cat,hmap,1.0);
   combscalefit.fitTo(zdatascEta_comb,PrintEvalErrors(kFALSE),Minos(kFALSE),Strategy(0),Minimizer("Minuit2",""));
 
   Double_t xval[scEta_limits.size()];
@@ -298,19 +298,20 @@ void EleScale() {
   
   CPlot plotScale1("ele_scale_datatomc","","Supercluster |#eta|","Data scale correction");
   plotScale1.AddGraph(grScaleDatatoMC,"",kBlue);
-  plotScale1.SetYRange(0.99,1.01);
+  plotScale1.SetYRange(0.98,1.02);
   plotScale1.AddLine(0,1,2.75,1,kBlack,7);
   plotScale1.Draw(c,kTRUE,format);
   
   CPlot plotScale2("ele_scale_mctodata","","Supercluster |#eta|","MC#rightarrowData scale correction");
   plotScale2.AddGraph(grScaleMCtoData,"",kBlue);
-  plotScale2.SetYRange(0.99,1.01);
+  plotScale2.SetYRange(0.98,1.02);
   plotScale2.AddLine(0,1,2.75,1,kBlack,7);
   plotScale2.Draw(c,kTRUE,format);
 
   CPlot plotRes("ele_res_mctodata","","Supercluster |#eta|","MC#rightarrowData additional smear [GeV]");
   plotRes.AddGraph(grSigmaMCtoData,"",kBlue);
-  plotRes.SetYRange(0,1.6);
+  plotRes.SetYRange(-0.5,2.0);
+  plotRes.AddLine(0,0,2.75,0,kBlack,7);
   plotRes.Draw(c,kTRUE,format);
 
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
@@ -325,8 +326,10 @@ void EleScale() {
       char cutstr[100];  sprintf(cutstr,"zscEta_cat==zscEta_cat::%s",catname); 
       RooDataHist zmc(catname,catname,RooArgList(mass),hMCv[n]);
       RooHistPdf mctemplate(catname,catname,RooArgList(mass),zmc,intOrder);          
-      mctemplate.plotOn(frame,LineColor(kBlue),LineWidth(1),Normalization(hDatav[n]->GetEntries()));            
-      mctemplate.plotOn(frame,LineColor(kBlue),FillColor(kBlue),FillStyle(3002),DrawOption("F"),Normalization(hDatav[n]->GetEntries()));      
+      //mctemplate.plotOn(frame,LineColor(kBlue),LineWidth(1),Normalization(hDatav[n]->GetEntries()));            
+      mctemplate.plotOn(frame,LineColor(kBlue),LineWidth(1),Normalization(hDatav[n]->Integral()));
+      //mctemplate.plotOn(frame,LineColor(kBlue),FillColor(kBlue),FillStyle(3002),DrawOption("F"),Normalization(hDatav[n]->GetEntries()));      
+      mctemplate.plotOn(frame,LineColor(kBlue),FillColor(kBlue),FillStyle(3002),DrawOption("F"),Normalization(hDatav[n]->Integral()));
       zdatascEta_comb.plotOn(frame,Cut(cutstr),MarkerStyle(kFullCircle),MarkerSize(1.0),DrawOption("ZP"));
       combscalefit.plotOn(frame,Slice(zscEta_cat,catname),ProjWData(RooArgSet(mass,catname),zdatascEta_comb),
                           LineColor(kGreen+2));           
@@ -379,4 +382,5 @@ void EleScale() {
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;  
+
 }

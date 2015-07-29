@@ -11,6 +11,8 @@
 #include <TGraphAsymmErrors.h>      // graph class
 #include <vector>                   // STL vector class
 #include <iostream>                 // standard I/O
+#include <fstream>
+#include <sstream>
 
 #include "CPlot.hh"	     // helper class for plots
 #include "MitStyleRemix.hh"  // style settings for drawing
@@ -18,10 +20,49 @@
 
 void plotDataMC(const TString outdir   = "Data/extra",
                 const TString mcfname  = "MC/eff.root",
-	        const TString datfname = "Data/eff.root"
+	        const TString datfname = "Data/eff.root",
+                const TString fname    = "noNameGiven",
+                const double efflow    = 0.70,
+                const double effhigh   = 1.20,
+                const double lumi      = 7.3,
+                const TString conf     = "muhlt.bins",
+                const TString xaxislabel="",   // 'Supercluster' or 'Muon'
+                const TString yaxislabel=""    // use different labels for each efficiency
 ) {
   gBenchmark->Start("plotDataMC");
   
+  // bin edges for kinematic variables
+  vector<Double_t> ptBinEdgesv;
+  vector<Double_t> etaBinEdgesv;
+  
+  //
+  // parse binning file
+  //
+  ifstream ifs;
+  ifs.open(conf.Data());
+  assert(ifs.is_open());
+  string line;
+  Int_t state=0;
+  Int_t opts[6];
+  while(getline(ifs,line)) {
+    if(line[0]=='#') continue;
+    if(line[0]=='%') { 
+      state++; 
+      continue; 
+    }
+    
+    Double_t edge;
+    stringstream ss(line);
+    if(state==0) {
+      ss >> opts[0] >> opts[1] >> opts[2] >> opts[3] >> opts[4] >> opts[5];
+    } else {
+      ss >> edge;
+      if(state==1)      { ptBinEdgesv.push_back(edge);  }
+      else if(state==2) { etaBinEdgesv.push_back(edge); }
+   }
+  }
+  ifs.close();
+
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
@@ -30,17 +71,18 @@ void plotDataMC(const TString outdir   = "Data/extra",
   vector<TString> ptlabelv;
   
   // eta bins
-  etalabelv.push_back("0 < |#eta| < 1.5");
-  etalabelv.push_back("1.5 < |#eta| < 2.5");
+  etalabelv.push_back("0 < |#eta| < 1.2");
+  etalabelv.push_back("1.2 < |#eta| < 2.4");
   
   CPlot::sOutDir = outdir;
   TString format = "png";
 
-  // y-axis ranges
-  Double_t efflow   = 0.10, effhigh   = 1.20;
-  Double_t scalelow = 0.95, scalehigh = 1.05;
+  // y-axis range for scale factors
+  Double_t scalelow = 0.80, scalehigh = 1.05;
   
-  
+  char lumitext[100]; // lumi label
+  sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================   
@@ -63,24 +105,13 @@ void plotDataMC(const TString outdir   = "Data/extra",
   
   grMCEffEta = (TGraphAsymmErrors*)mcfile.Get("grEffEta");
   grMCEffPt  = (TGraphAsymmErrors*)mcfile.Get("grEffPt");
-  if(grMCEffPt) {
-    grMCEffPt->SetPoint(grMCEffPt->GetN()-1, 125, grMCEffPt->GetY()[grMCEffPt->GetN()-1]);
-    grMCEffPt->SetPointError(grMCEffPt->GetN()-1,25,25, 
-                             grMCEffPt->GetErrorYlow(grMCEffPt->GetN()-1),
-			     grMCEffPt->GetErrorYhigh(grMCEffPt->GetN()-1));
-  }  			               
+
   hMCEff  = (TH2F*)mcfile.Get("hEffEtaPt");
   hMCErrl = (TH2F*)mcfile.Get("hErrlEtaPt");
   hMCErrh = (TH2F*)mcfile.Get("hErrhEtaPt");  
 
   grDataEffEta = (TGraphAsymmErrors*)datafile.Get("grEffEta");
   grDataEffPt  = (TGraphAsymmErrors*)datafile.Get("grEffPt");
-  if(grDataEffPt) {
-    grDataEffPt->SetPoint(grDataEffPt->GetN()-1, 125, grDataEffPt->GetY()[grDataEffPt->GetN()-1]);
-    grDataEffPt->SetPointError(grDataEffPt->GetN()-1,25,25, 
-                                grDataEffPt->GetErrorYlow(grDataEffPt->GetN()-1),
-			        grDataEffPt->GetErrorYhigh(grDataEffPt->GetN()-1));
-  }
   
   hDataEff  = (TH2F*)datafile.Get("hEffEtaPt");
   hDataErrl = (TH2F*)datafile.Get("hErrlEtaPt");
@@ -91,6 +122,7 @@ void plotDataMC(const TString outdir   = "Data/extra",
     for(Int_t i=0; i<grMCEffEta->GetN(); i++) {
       Double_t mcval   = grMCEffEta->GetY()[i];
       Double_t dataval = grDataEffEta->GetY()[i];
+      if(i==2 || i==8) { grMCEffEta->RemovePoint(i); grDataEffEta->RemovePoint(i); } // For removing the ECAL gap bins for electrons
       Double_t scale   = dataval/mcval;
       grScaleEta->SetPoint(i,grMCEffEta->GetX()[i],scale);
       
@@ -111,8 +143,8 @@ void plotDataMC(const TString outdir   = "Data/extra",
       Double_t dataval = grDataEffPt->GetY()[i];
       Double_t scale   = dataval/mcval;
       grScalePt->SetPoint(i, grMCEffPt->GetX()[i],scale);
-      if(i==grMCEffPt->GetN()-1)
-        grScalePt->SetPoint(i,165,scale);
+      //if(i==grMCEffPt->GetN()-1)
+        //grScalePt->SetPoint(i,165,scale);
     
       Double_t mcerrl   = grMCEffPt->GetErrorYlow(i);
       Double_t mcerrh   = grMCEffPt->GetErrorYhigh(i);
@@ -127,37 +159,7 @@ void plotDataMC(const TString outdir   = "Data/extra",
   if(hMCEff->GetEntries()>0 && hDataEff->GetEntries()>0) {
     const Int_t nx = hMCEff->GetNbinsX();
     const Int_t ny = hMCEff->GetNbinsY(); 
-/*    
-    for(Int_t iy=1; iy<=ny; iy++) {
-      Double_t xval[nx], xerr[nx];
-      Double_t effval[nx],   efferrl[nx],   efferrh[nx];
-      Double_t scaleval[nx], scaleerrl[nx], scaleerrh[nx];
-      
-      for(Int_t ix=1; ix<=nx; ix++) {
-        xval[ix-1] = 0.5*(hMCEff->GetXaxis()->GetBinLowEdge(ix) + hMCEff->GetXaxis()->GetBinLowEdge(ix+1));
-        xerr[ix-1] = 0;
-        
-        Double_t mceff  = hMCEff->GetCellContent(ix,iy);
-        Double_t mcerrl = hMCErrl->GetCellContent(ix,iy);
-        Double_t mcerrh = hMCErrh->GetCellContent(ix,iy);
-        
-        Double_t dataeff  = hDataEff->GetCellContent(ix,iy);
-        Double_t dataerrl = hDataErrl->GetCellContent(ix,iy);
-        Double_t dataerrh = hDataErrh->GetCellContent(ix,iy);
-        effval[ix-1]  = dataeff;
-        efferrl[ix-1] = dataerrl;
-        efferrh[ix-1] = dataerrh;
-        
-        Double_t scale = dataeff/mceff;
-        scaleval[ix-1]  = scale;
-        scaleerrl[ix-1] = scale*sqrt(mcerrl*mcerrl/mceff/mceff + dataerrl*dataerrl/dataeff/dataeff);
-        scaleerrh[ix-1] = scale*sqrt(mcerrh*mcerrh/mceff/mceff + dataerrh*dataerrh/dataeff/dataeff);
-      }
-      
-      eff_vs_eta_per_ptv.push_back(new TGraphAsymmErrors(nx,xval,effval,xerr,xerr,efferrl,efferrh));
-      scale_vs_eta_per_ptv.push_back(new TGraphAsymmErrors(nx,xval,scaleval,xerr,xerr,scaleerrl,scaleerrh));
-    }
-*/    
+
     for(Int_t ix=1; ix<=nx; ix++) {
       Double_t xval[ny], xerr[ny];
       Double_t mceffval[ny], mcefferrl[ny], mcefferrh[ny];
@@ -205,14 +207,16 @@ void plotDataMC(const TString outdir   = "Data/extra",
   TCanvas *c = MakeCanvas("c","c",800,600);
   
   if(grMCEffEta && grDataEffEta) {
-    CPlot plotEffEta("effeta","","|#eta|","#varepsilon");
+    CPlot plotEffEta("effeta_"+fname,"",xaxislabel+" #eta",yaxislabel+" efficiency");
     plotEffEta.AddGraph(grMCEffEta,   "MC","",  kRed, kOpenSquare);
-    plotEffEta.AddGraph(grDataEffEta,"data","",kBlue,kFullDotLarge);
+    plotEffEta.AddGraph(grDataEffEta,"Data","",kBlue,kFullDotLarge);
     plotEffEta.SetYRange(efflow,effhigh);
-    plotEffEta.TransLegend(0,-0.5);
+    //plotEffEta.AddTextBox(lumitext,0.58,0.70,0.93,0.76,0);
+    plotEffEta.AddTextBox(lumitext,0.62,0.79,0.95,0.87,0);
+    plotEffEta.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
     plotEffEta.Draw(c,kTRUE,format);
     
-    CPlot plotScaleEta("scaleeta","","|#eta|","scale factor");
+    CPlot plotScaleEta("scaleeta_"+fname,"","|#eta|","scale factor");
     plotScaleEta.AddGraph(grScaleEta,"",kBlue,kFullDotLarge);
     plotScaleEta.AddLine(0,1.0,2.7,1.0,kBlack,7);
     plotScaleEta.SetYRange(scalelow,scalehigh);
@@ -221,73 +225,70 @@ void plotDataMC(const TString outdir   = "Data/extra",
   }
   
   if(grMCEffPt && grDataEffPt) {
-    CPlot plotEffPt("effpt","","p_{T} [GeV/c]","#varepsilon");
+    CPlot plotEffPt("effpt_"+fname,"",xaxislabel+" p_{T} [GeV]",yaxislabel+" efficiency");
     plotEffPt.AddGraph(grMCEffPt,   "MC","",  kRed, kOpenSquare);
-    plotEffPt.AddGraph(grDataEffPt,"data","",kBlue,kFullDotLarge);
+    plotEffPt.AddGraph(grDataEffPt,"Data","",kBlue,kFullDotLarge);
     plotEffPt.SetYRange(efflow,effhigh);
-    plotEffPt.SetXRange(0,150);
-    plotEffPt.TransLegend(0,-0.5);
+    plotEffPt.SetXRange(20,85);
+    //plotEffPt.AddTextBox(lumitext,0.58,0.70,0.93,0.76,0);
+    plotEffPt.AddTextBox(lumitext,0.62,0.79,0.95,0.87,0);
+    plotEffPt.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
     plotEffPt.Draw(c,kTRUE,format);
   
-    CPlot plotScalePt("scalept","","p_{T} [GeV/c]","scale factor");
+    CPlot plotScalePt("scalept_"+fname,"","p_{T} [GeV/c]","scale factor");
     plotScalePt.AddGraph(grScalePt,"",kBlue,kFullDotLarge);
     plotScalePt.AddLine(0,1.0,150,1.0,kBlack,7);
-    plotScalePt.SetXRange(0,150);
     plotScalePt.SetYRange(scalelow,scalehigh);
     plotScalePt.Draw(c,kTRUE,format);
   }
-      
+  
   if(mceff_vs_pt_per_etav.size()>0 && eff_vs_pt_per_etav.size()>0) {
-    for(UInt_t ig=0; ig<mceff_vs_pt_per_etav.size(); ig++) {
-      char pname[100];
-      sprintf(pname,"effpt_eta%i",ig);
-      CPlot plotEffPt_perEta(pname,"","p_{T} [GeV/c]","#varepsilon");
-      plotEffPt_perEta.AddGraph(mceff_vs_pt_per_etav[ig],"MC","",   kRed,  kOpenSquare);
-      plotEffPt_perEta.AddGraph(eff_vs_pt_per_etav[ig], "data","", kBlue, kFullDotLarge);
-      plotEffPt_perEta.AddTextBox(etalabelv[ig],0.2,0.82,0.4,0.88,0);
-      plotEffPt_perEta.TransLegend(0,-0.5); 
-      plotEffPt_perEta.SetXRange(0,150);
-      plotEffPt_perEta.SetYRange(efflow,effhigh);
-      plotEffPt_perEta.Draw(c,kTRUE,format);
-    }    
-    
-    for(UInt_t ig=0; ig<scale_vs_pt_per_etav.size(); ig++) {
-      char pname[100];
-      sprintf(pname,"scalept_eta%i",ig);
-      CPlot plotScalePt_perEta(pname,"","p_{T} [GeV/c]","scale factor");
-      plotScalePt_perEta.AddGraph(scale_vs_pt_per_etav[ig],"",kBlue,kFullDotLarge);
-      plotScalePt_perEta.AddTextBox(etalabelv[ig],0.7,0.82,0.9,0.88,0);
-      plotScalePt_perEta.AddLine(0,1,150,1,kBlack,7);
-      plotScalePt_perEta.SetXRange(0,150);
-      plotScalePt_perEta.SetYRange(scalelow,scalehigh);
-      plotScalePt_perEta.Draw(c,kTRUE,format);
+
+    // To make an eta-phi scale factor table using LaTex
+    ofstream latexfile;
+    char latexfname[100];    
+    sprintf(latexfname,"%s/scalefactors.txt",outdir.Data());
+    latexfile.open(latexfname);
+    assert(latexfile.is_open());
+
+    for(int a=0; a<etaBinEdgesv.size()-1; a++) {
+      if(a==0) latexfile << "& ";
+      latexfile << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
     }
+    latexfile << "\\\\";
+    latexfile << endl;
+
+    vector<double> sfv;
+    vector<double> sf_errv;
+    for(UInt_t w=0; w<scale_vs_pt_per_etav.size(); w++) {
+      TGraphAsymmErrors* g = (TGraphAsymmErrors*)scale_vs_pt_per_etav[w];
+      for(UInt_t d=0; d<g->GetN(); d++) {
+        double pt, sf;
+        g->GetPoint(d,pt,sf);
+        sfv.push_back(sf);
+        double sf_err = g->GetErrorY(d);
+        sf_errv.push_back(sf_err);
+        //cout<<"eta from "<<etaBinEdgesv[w]<<" to "<<etaBinEdgesv[w+1]<<" and pt from "<<ptBinEdgesv[d]<<" to "<<ptBinEdgesv[d+1]<<" ---> scalefactor is "<<sf<<" +/- "<<sf_err<<endl;
+      }
+    }
+
+    // For each bin in pT
+    //cout<<"ptBinEdgesv.size() is "<<ptBinEdgesv.size()<<endl;
+    for(UInt_t b=0; b<ptBinEdgesv.size()-1; b++) {
+      //cout<<"pt bin "<<ptBinEdgesv[b]<<" to "<<ptBinEdgesv[b+1]<<endl;
+      latexfile << "& $" << ptBinEdgesv[b] << "<p_{T}<" << ptBinEdgesv[b+1] << "$ ";
+      // Get scale factors for each bin in eta
+      for(UInt_t c=0; c<etaBinEdgesv.size()-1; c++) {
+        //cout<<"---eta bin "<<etaBinEdgesv[c]<<" to "<<etaBinEdgesv[c+1]<<": b = "<<sfv[b+c*(ptBinEdgesv.size()-1)]<<" ± "<<sf_errv[b+c*(ptBinEdgesv.size()-1)]<<endl;
+        ios_base::fmtflags flags = latexfile.flags();
+	latexfile.precision(3);
+        latexfile << "& $" << fixed << sfv[b+c*(ptBinEdgesv.size()-1)] << " \\pm " << sf_errv[b+c*(ptBinEdgesv.size()-1)] << "$ ";
+        latexfile.flags(flags);
+      }
+      latexfile << " \\\\" << endl;
+     }
+
   }
 
-  if(mceff_vs_eta_per_ptv.size()>0 && eff_vs_eta_per_ptv.size()>0) {
-    for(UInt_t ig=0; ig<mceff_vs_eta_per_ptv.size(); ig++) {
-      char pname[100];
-      sprintf(pname,"effeta_pt%i",ig);
-      CPlot plotEffEta_perPt(pname,"","|#eta|","#varepsilon");
-      plotEffEta_perPt.AddGraph(mceff_vs_eta_per_ptv[ig],"MC","",  kRed,  kOpenSquare);
-      plotEffEta_perPt.AddGraph(eff_vs_eta_per_ptv[ig], "data","", kBlue, kFullDotLarge);
-      plotEffEta_perPt.AddTextBox(ptlabelv[ig],0.2,0.82,0.4,0.88,0);
-      plotEffEta_perPt.SetYRange(efflow,effhigh);
-      plotEffEta_perPt.Draw(c,kTRUE,format);
-    }
-    
-    for(UInt_t ig=0; ig<scale_vs_eta_per_ptv.size(); ig++) {
-      char pname[100];
-      sprintf(pname,"scaleeta_pt%i",ig);
-      CPlot plotScaleEta_perPt(pname,"","|#eta|","scale factor");
-      plotScaleEta_perPt.AddGraph(scale_vs_eta_per_ptv[ig],"", kBlue, kFullDotLarge);
-      plotScaleEta_perPt.AddLine(-2.7,1.0,2.7,1.0,kBlack,7);
-      plotScaleEta_perPt.AddTextBox(ptlabelv[ig],0.7,0.82,0.9,0.88,0);
-      plotScaleEta_perPt.SetYRange(scalelow,scalehigh);
-      plotScaleEta_perPt.SetXRange(-2.7,2.7);
-      plotScaleEta_perPt.Draw(c,kTRUE,format);
-    }
-  }
-  
   gBenchmark->Show("plotDataMC");
 }

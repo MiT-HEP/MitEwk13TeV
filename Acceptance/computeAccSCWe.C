@@ -58,8 +58,7 @@ void computeAccSCWe(const TString conf,             // input file
   const Double_t ETA_ENDCAP = 1.566;
 
   const Int_t BOSON_ID  = 24;
-  Int_t LEPTON_ID = 11;
-  if (charge==1) LEPTON_ID=-11;
+  const Int_t LEPTON_ID = 11;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -120,10 +119,10 @@ void computeAccSCWe(const TString conf,             // input file
     assert(infile);
   
     eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
-    eventTree->SetBranchAddress("Info",   &info);    TBranch *infoBr   = eventTree->GetBranch("Info");
-    eventTree->SetBranchAddress("GenEvtInfo", &gen); TBranch *genBr    = eventTree->GetBranch("GenEvtInfo");
+    eventTree->SetBranchAddress("Info",              &info); TBranch *infoBr   = eventTree->GetBranch("Info");
+    eventTree->SetBranchAddress("GenEvtInfo",         &gen); TBranch *genBr    = eventTree->GetBranch("GenEvtInfo");
     eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *genPartBr  = eventTree->GetBranch("GenParticle");
-    eventTree->SetBranchAddress("Photon", &photonArr); TBranch *photonBr = eventTree->GetBranch("Photon");
+    eventTree->SetBranchAddress("Photon",       &photonArr); TBranch *photonBr = eventTree->GetBranch("Photon");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -134,14 +133,13 @@ void computeAccSCWe(const TString conf,             // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    //for(UInt_t ientry=0; ientry<1000; ientry++) {
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       TLorentzVector *vec=0, *lep1=0, *lep2=0;
-      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) continue;
-      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2)!=LEPTON_ID) continue;
-      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2))!=LEPTON_ID)  continue;
+      if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID, vec, lep1, lep2, 0)!=LEPTON_ID) continue;
+      if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 0)!=-LEPTON_ID) continue;
+      if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID, vec, lep1, lep2, 1))!=LEPTON_ID)  continue;
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;  

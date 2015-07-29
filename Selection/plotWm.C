@@ -51,11 +51,12 @@ void plotWm(const TString  conf,            // input file
   const TString format("png");
   
   const Double_t PT_CUT  = 25;
-  const Double_t ETA_CUT = 2.1;
+  const Double_t ETA_CUT = 2.4;
   
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
   
+  TString pufname = "../Tools/pileup_weights_2015B.root";
   
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -74,7 +75,10 @@ void plotWm(const TString  conf,            // input file
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  
+  // setup pileup reweighting                                                   
+  TFile *pufile = new TFile(pufname); assert(pufile);
+  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+
   //
   // Create histograms
   //
@@ -189,7 +193,7 @@ void plotWm(const TString  conf,            // input file
     // Read input file and get the TTrees
     TString infilename = inputDir + TString("/") + snamev[isam] + TString("_select.root");
     cout << "Processing " << infilename << "..." << endl;
-    infile = new TFile(infilename);	    assert(infile);
+    infile = TFile::Open(infilename);	    assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
 
     intree->SetBranchAddress("runNum",     &runNum);       // event run number
@@ -241,6 +245,7 @@ void plotWm(const TString  conf,            // input file
       Double_t weight = 1;
       if(isam!=0) {
         weight *= scale1fb*lumi;
+	weight *=puWeights->GetBinContent(npv+1);
       }
       
       for(UInt_t ich=0; ich<3; ich++) {
