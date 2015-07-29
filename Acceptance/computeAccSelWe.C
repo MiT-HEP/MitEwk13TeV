@@ -238,8 +238,7 @@ void computeAccSelWe(const TString conf,       // input file
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/10000; ientry++) {
-    //for(UInt_t ientry=0; ientry<1000; ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
@@ -247,10 +246,6 @@ void computeAccSelWe(const TString conf,       // input file
       if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID)!=LEPTON_ID) continue;
       if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
-      /*TLorentzVector *vec=new TLorentzVector(0,0,0,0);
-      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
-      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);*/
     
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
@@ -304,16 +299,12 @@ void computeAccSelWe(const TString conf,       // input file
 	  if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
           Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt);
-          //Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt)-dataHLTEff.getErrLow(sceta, goodEle->scEt);
-          //Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt)-zeeHLTEff.getErrLow(sceta, goodEle->scEt);
           corr *= effdata/effmc;
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
           Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
 	  Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt);
-	  //Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt)+dataGsfSelEff.getErrHigh(sceta, goodEle->scEt);
-          //Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt)+zeeGsfSelEff.getErrHigh(sceta, goodEle->scEt);
           corr *= effdata/effmc;
         }
 
@@ -368,6 +359,9 @@ void computeAccSelWe(const TString conf,       // input file
         err=hHLTErrE->GetBinContent(ix,iy); varE+=err*err;
       }
     }
+
+    cout << "var1: " << var << endl;
+
     for(Int_t iy=0; iy<=hGsfSelErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hGsfSelErr->GetNbinsX(); ix++) {
         Double_t err;
@@ -376,6 +370,8 @@ void computeAccSelWe(const TString conf,       // input file
 	err=hGsfSelErrE->GetBinContent(ix,iy); varE+=err*err;
       }
     }
+
+    cout << "var2: " << var << endl;
 
     nSelCorrVarv[ifile]+=var;
     nSelBCorrVarv[ifile]+=varB;

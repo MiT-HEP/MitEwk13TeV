@@ -202,7 +202,7 @@ void MuScale() {
   TH1D *hDummyFit = new TH1D("hDummyFit","",0,0,10);
   hDummyFit->SetLineColor(kGreen+2);
 
-  RooRealVar mass("mass","M_{ee}",60.0,120.0,"GeV") ;
+  RooRealVar mass("mass","M_{#mu#mu}",60.0,120.0,"GeV") ;
   mass.setBins(1600,"cache");
   
   RooRealVar massmc("massmc","massmc",0.0,150.0,"GeV");  // mass variable for building MC template
@@ -297,19 +297,19 @@ void MuScale() {
   TGraphErrors *grScaleMCtoData = new TGraphErrors(scEta_limits.size(),xval,scaleMCtoData,xerr,scaleMCtoDataerr);
   TGraphErrors *grSigmaMCtoData = new TGraphErrors(scEta_limits.size(),xval,sigmaMCtoData,xerr,sigmaMCtoDataerr);
   
-  CPlot plotScale1("ele_scale_datatomc","","Supercluster |#eta|","Data scale correction");
+  CPlot plotScale1("mu_scale_datatomc","","Muon |#eta|","Data scale correction");
   plotScale1.AddGraph(grScaleDatatoMC,"",kBlue);
   plotScale1.SetYRange(0.98,1.02);
   plotScale1.AddLine(0,1,2.75,1,kBlack,7);
   plotScale1.Draw(c,kTRUE,format);
   
-  CPlot plotScale2("ele_scale_mctodata","","Supercluster |#eta|","MC#rightarrowData scale correction");
+  CPlot plotScale2("mu_scale_mctodata","","Muon |#eta|","MC#rightarrowData scale correction");
   plotScale2.AddGraph(grScaleMCtoData,"",kBlue);
   plotScale2.SetYRange(0.98,1.02);
   plotScale2.AddLine(0,1,2.75,1,kBlack,7);
   plotScale2.Draw(c,kTRUE,format);
 
-  CPlot plotRes("ele_res_mctodata","","Supercluster |#eta|","MC#rightarrowData additional smear [GeV]");
+  CPlot plotRes("mu_res_mctodata","","Muon |#eta|","MC#rightarrowData additional smear [GeV]");
   plotRes.AddGraph(grSigmaMCtoData,"",kBlue);
   plotRes.SetYRange(0,1.6);
   plotRes.Draw(c,kTRUE,format);
@@ -336,7 +336,7 @@ void MuScale() {
       sprintf(pname,"postfit_%i_%i",ibin,jbin);
       sprintf(str1,"[%.1f, %.1f]",scEta_limits.at(ibin).first,scEta_limits.at(ibin).second);
       sprintf(str2,"[%.1f, %.1f]",scEta_limits.at(jbin).first,scEta_limits.at(jbin).second);
-      CPlot plot(pname,frame,"","m(e^{+}e^{-}) [GeV/c^{2}]","Events / 0.6 GeV/c^{2}");
+      CPlot plot(pname,frame,"","m(#mu^{+}#mu^{-}) [GeV/c^{2}]","Events / 0.6 GeV/c^{2}");
       plot.AddTextBox(str1,0.21,0.80,0.45,0.87,0,kBlack,-1);
       plot.AddTextBox(str2,0.21,0.73,0.45,0.80,0,kBlack,-1);
       plot.SetLegend(0.75,0.64,0.93,0.88);

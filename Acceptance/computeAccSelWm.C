@@ -56,7 +56,7 @@ void computeAccSelWm(const TString conf,       // input file
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
 
-  const Double_t VETO_PT   = 20;
+  const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.4;
 
   const Int_t BOSON_ID  = 24;
@@ -69,7 +69,7 @@ void computeAccSelWm(const TString conf,       // input file
   TString zmmSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root");
   TString dataTrkEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root");
   TString zmmTrkEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
-  TString dataStaEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root");
+  TString dataStaEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root");
   TString zmmStaEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root");
   if(charge==1) {
     dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
@@ -78,7 +78,7 @@ void computeAccSelWm(const TString conf,       // input file
     zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
     dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
     zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
+    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root";
     zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
   }
   if(charge==-1) {
@@ -88,7 +88,7 @@ void computeAccSelWm(const TString conf,       // input file
     zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
     dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
     zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
+    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root";
     zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
   }
 
@@ -312,7 +312,7 @@ void computeAccSelWm(const TString conf,       // input file
     //
     // loop over events
     //    
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/10; ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);

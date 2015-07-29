@@ -17,13 +17,14 @@
 #include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
+#include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #endif
 
 // Main macro function
 //--------------------------------------------------------------------------------------------------
 void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/SingleMuon.root",
 			   TString mcfile   = "/data/blue/Bacon/Run2/wz_bacon/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
-			   TString certfile = "../Selection/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt",
+			   TString certfile = "../Selection/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt",
 			   TString outfile  = "pileup_weights_2015B.root") {
 
   TFile *f_data = TFile::Open(datafile, "read");
@@ -40,16 +41,28 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
   baconhep::RunLumiRangeMap rlrm;
   rlrm.addJSONFile(certfile.Data());
 
+  Int_t nZero=0, nGood=0;
+
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
     vertexArr->Clear();
     vertexBr->GetEntry(i);
     infoBr->GetEntry(i);
 
     baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec); 
-    if (!(rlrm.hasRunLumi(rl))) continue;
-    if (vertexArr->GetEntries()==0) continue;
+    if (!rlrm.hasRunLumi(rl)) continue;
+
+    nGood++;
+
+    if (vertexArr->GetEntries()==0) {
+      nZero++;
+      continue;
+    }
+    
     h_data->Fill(vertexArr->GetEntries());
+
   }
+
+  cout << nZero << " events with no reconstructed vertex out of " << nGood << endl;
 
   h_data->Scale(1.0/h_data->Integral());
 
@@ -59,28 +72,48 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
 
   t_mc->SetBranchAddress("Info", &info); infoBr = t_mc->GetBranch("Info");
   t_mc->SetBranchAddress("GenEvtInfo", &gen); TBranch *genBr = t_mc->GetBranch("GenEvtInfo");
+  t_mc->SetBranchAddress("PV", &vertexArr); vertexBr = t_mc->GetBranch("PV");
+
+  Double_t nZeroMC=0, nGoodMC=0;
 
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
     infoBr->GetEntry(i);
     genBr->GetEntry(i);
-    if (info->nPUmean==0) continue;
-    h_mc->Fill(info->nPUmean, gen->weight);
+    vertexArr->Clear();
+    vertexBr->GetEntry(i);
+    nGoodMC+=gen->weight;
+    if (vertexArr->GetEntries()==0) {
+      nZeroMC+=gen->weight;
+      continue;
+    }
+    h_mc->Fill(vertexArr->GetEntries(),gen->weight);
+    
   }
 
+  cout << nZeroMC << " events with no reconstructed vertex out of " << nGoodMC << endl;
+
   h_mc->Scale(1.0/h_mc->Integral());
-  /*
-  TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
-  h_data->Draw("hist");
-  h_mc->SetLineColor(kRed);
-  h_mc->Draw("histsame");
+
+  TCanvas *c1 = MakeCanvas("c1", "c1", 800, 600);
+  h_mc->SetFillColor(798); h_mc->SetLineColor(797);
+  h_mc->SetLineWidth(3); h_data->SetLineWidth(3);
+  h_mc->SetFillStyle(1001);
+  h_mc->SetTitle("");
+  h_mc->GetXaxis()->SetTitle("n_{PV}");
+  h_mc->GetYaxis()->SetTitle("A.U.");
+  h_mc->GetYaxis()->SetRangeUser(0,1.2*TMath::Max(h_mc->GetMaximum(), h_data->GetMaximum()));
+  h_mc->Draw("hist");
+  h_data->Draw("histsame");
 
   TLegend *l = new TLegend(0.7,0.7,0.9,0.9);
-  l->AddEntry(h_data,"Data","l");
-  l->AddEntry(h_mc,"MC","l");
+  l->SetShadowColor(0);
+  l->SetLineColor(0);
+  l->AddEntry(h_data,"Full Dataset","l");
+  l->AddEntry(h_mc,"MC","lf");
   l->Draw();
   
   c1->SaveAs("npv_data_mc.png");
-  */
+
   TFile *f_out = new TFile(outfile, "recreate");
 
   TH1D *h_scale = (TH1D*) h_data->Clone();
