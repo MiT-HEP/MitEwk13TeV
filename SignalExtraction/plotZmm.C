@@ -23,17 +23,18 @@
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
+
+// helper class to handle efficiency tables
+#include "CEffUser1D.hh"
+#include "CEffUser2D.hh"
+
 #endif
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
-
-Double_t getResCorr(const Double_t eta)
-{
-  return 0.5;
-}
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -53,9 +54,14 @@ void plotZmm(const TString  outputDir,   // output directory
   enum { eData, eZmm, eEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
+
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zmm_select.root");   typev.push_back(eZmm);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
   
 //  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zmumu/ntuples/zmm_select.root");  typev.push_back(eZmm);
+  // fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zmumu/ntuples/zmm_select.root");  typev.push_back(eZmm);
 //  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
 //  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
 
@@ -66,20 +72,44 @@ void plotZmm(const TString  outputDir,   // output directory
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
-  const Double_t ETA_CUT   = 2.1;
+  const Double_t ETA_CUT   = 2.4;
+
+  // efficiency files
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+
+  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+
+  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+
+  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_fullDataset/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_fullDataset/eff.root";
+
   
   // plot output file format
   const TString format("png");
 
   Int_t yield = 0;
+  Double_t yield_zmm = 0, yield_zmm_unc=0;
+  Double_t yield_ewk = 0, yield_ewk_unc=0;
    
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
 
   // event category enumeration
-  enum { eMuMu2HLT=1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };
-  
+  enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk }; // event category enum
+    
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
@@ -100,9 +130,95 @@ void plotZmm(const TString  outputDir,   // output directory
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
+  Float_t puWeight;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   Float_t pfCombIso1, pfCombIso2;
+
+  
+  //
+  // HLT efficiency
+  //
+  cout << "Loading trigger efficiencies..." << endl;
+  
+  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
+  CEffUser2D dataHLTEff_pos;
+  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
+  CEffUser2D dataHLTEff_neg;
+  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
+    
+  TFile *zmmHLTEffFile_pos = new TFile(zmmHLTEffName_pos);
+  CEffUser2D zmmHLTEff_pos;
+  zmmHLTEff_pos.loadEff((TH2D*)zmmHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);
+  CEffUser2D zmmHLTEff_neg;
+  zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
+  
+  //
+  // Selection efficiency
+  //
+  cout << "Loading selection efficiencies..." << endl;
+  
+  TFile *dataSelEffFile_pos = new TFile(dataSelEffName_pos);
+  CEffUser2D dataSelEff_pos;
+  dataSelEff_pos.loadEff((TH2D*)dataSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *dataSelEffFile_neg = new TFile(dataSelEffName_neg);
+  CEffUser2D dataSelEff_neg;
+  dataSelEff_neg.loadEff((TH2D*)dataSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrhEtaPt"));
+  
+  TFile *zmmSelEffFile_pos = new TFile(zmmSelEffName_pos);
+  CEffUser2D zmmSelEff_pos;
+  zmmSelEff_pos.loadEff((TH2D*)zmmSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrhEtaPt"));
+
+  TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);
+  CEffUser2D zmmSelEff_neg;
+  zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
+ 
+  //
+  // Standalone efficiency
+  //
+  cout << "Loading standalone efficiencies..." << endl;
+  
+  TFile *dataStaEffFile_pos = new TFile(dataStaEffName_pos);
+  CEffUser2D dataStaEff_pos;
+  dataStaEff_pos.loadEff((TH2D*)dataStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *dataStaEffFile_neg = new TFile(dataStaEffName_neg);
+  CEffUser2D dataStaEff_neg;
+  dataStaEff_neg.loadEff((TH2D*)dataStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrhEtaPt"));
+  
+  TFile *zmmStaEffFile_pos = new TFile(zmmStaEffName_pos);
+  CEffUser2D zmmStaEff_pos;
+  zmmStaEff_pos.loadEff((TH2D*)zmmStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);
+  CEffUser2D zmmStaEff_neg;
+  zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt"));
+ 
+  //
+  // Tracker efficiency
+  //
+  cout << "Loading track efficiencies..." << endl;
+  
+  TFile *dataTrkEffFile_pos = new TFile(dataTrkEffName_pos);
+  CEffUser2D dataTrkEff_pos;
+  dataTrkEff_pos.loadEff((TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *dataTrkEffFile_neg = new TFile(dataTrkEffName_neg);
+  CEffUser2D dataTrkEff_neg;
+  dataTrkEff_neg.loadEff((TH2D*)dataTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrhEtaPt"));
+  
+  TFile *zmmTrkEffFile_pos = new TFile(zmmTrkEffName_pos);
+  CEffUser2D zmmTrkEff_pos;
+  zmmTrkEff_pos.loadEff((TH2D*)zmmTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *zmmTrkEffFile_neg = new TFile(zmmTrkEffName_neg);
+  CEffUser2D zmmTrkEff_neg;
+  zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
 
   TFile *infile=0;
   TTree *intree=0;
@@ -138,7 +254,8 @@ void plotZmm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
     intree->SetBranchAddress("pfCombIso1", &pfCombIso1);  // combined PF isolation of tag lepton
     intree->SetBranchAddress("pfCombIso2", &pfCombIso2);  // combined PF isolation of probe lepton
-  
+    intree->SetBranchAddress("puWeight",      &puWeight);        // pu weight
+    
     //
     // loop over events
     //
@@ -157,27 +274,114 @@ void plotZmm(const TString  outputDir,   // output directory
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
+	weight *= puWeight;
+	weight *= getMuScaleCorr(lep1->Eta(),0)*getMuScaleCorr(lep2->Eta(),0);
       }
       
       // fill Z events passing selection (MuMu2HLT + MuMu1HLT)
-      if((category==eMuMu2HLT) || (category==eMuMu1HLT)) {
+      if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
+	//if((category==eMuMu2HLT) || (category==eMuMu1HLT)) {
         if(typev[ifile]==eData) { 
 	  hData->Fill(mass); 
 
 	  yield++;
 	
 	} else {
+	  Double_t effdata, effmc;
+	  Double_t corr=1;
+	  
+	  effdata=1; effmc=1;    
+          if(q1>0) { 
+            effdata *= (1.-dataHLTEff_pos.getEff((lep1->Eta()), lep1->Pt())); 
+            effmc   *= (1.-zmmHLTEff_pos.getEff((lep1->Eta()), lep1->Pt())); 
+          } else {
+            effdata *= (1.-dataHLTEff_neg.getEff((lep1->Eta()), lep1->Pt())); 
+            effmc   *= (1.-zmmHLTEff_neg.getEff((lep1->Eta()), lep1->Pt())); 
+          }
+          if(q2>0) {
+            effdata *= (1.-dataHLTEff_pos.getEff((lep2->Eta()), lep2->Pt())); 
+            effmc   *= (1.-zmmHLTEff_pos.getEff((lep2->Eta()), lep2->Pt()));
+          } else {
+            effdata *= (1.-dataHLTEff_neg.getEff((lep2->Eta()), lep2->Pt())); 
+            effmc   *= (1.-zmmHLTEff_neg.getEff((lep2->Eta()), lep2->Pt()));
+          }
+          effdata = 1.-effdata;
+          effmc   = 1.-effmc;
+          corr *= effdata/effmc;
+    
+          effdata=1; effmc=1;
+          if(q1>0) { 
+            effdata *= dataSelEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
+            effmc   *= zmmSelEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
+          } else {
+            effdata *= dataSelEff_neg.getEff((lep1->Eta()), lep1->Pt()); 
+            effmc   *= zmmSelEff_neg.getEff((lep1->Eta()), lep1->Pt()); 
+          }
+          if(q2>0) {
+            effdata *= dataSelEff_pos.getEff((lep2->Eta()), lep2->Pt()); 
+            effmc   *= zmmSelEff_pos.getEff((lep2->Eta()), lep2->Pt());
+          } else {
+            effdata *= dataSelEff_neg.getEff((lep2->Eta()), lep2->Pt()); 
+            effmc   *= zmmSelEff_neg.getEff((lep2->Eta()), lep2->Pt());
+          }
+          corr *= effdata/effmc;
+    
+          effdata=1; effmc=1;
+          if(q1>0) { 
+            effdata *= dataStaEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
+            effmc   *= zmmStaEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
+          } else {
+            effdata *= dataStaEff_neg.getEff((lep1->Eta()), lep1->Pt()); 
+            effmc   *= zmmStaEff_neg.getEff((lep1->Eta()), lep1->Pt()); 
+          }
+          if(q2>0) {
+            effdata *= dataStaEff_pos.getEff((lep2->Eta()), lep2->Pt()); 
+            effmc   *= zmmStaEff_pos.getEff((lep2->Eta()), lep2->Pt());
+          } else {
+            effdata *= dataStaEff_neg.getEff((lep2->Eta()), lep2->Pt()); 
+            effmc   *= zmmStaEff_neg.getEff((lep2->Eta()), lep2->Pt());
+          }
+	  //corr *= effdata/effmc;
+	  
+          effdata=1; effmc=1;
+          if(q1>0) { 
+            effdata *= dataTrkEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
+            effmc   *= zmmTrkEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
+          } else {
+            effdata *= dataTrkEff_neg.getEff((lep1->Eta()), lep1->Pt()); 
+            effmc   *= zmmTrkEff_neg.getEff((lep1->Eta()), lep1->Pt()); 
+          }
+          if(q2>0) {
+            effdata *= dataTrkEff_pos.getEff((lep2->Eta()), lep2->Pt()); 
+            effmc   *= zmmTrkEff_pos.getEff((lep2->Eta()), lep2->Pt());
+          } else {
+            effdata *= dataTrkEff_neg.getEff((lep2->Eta()), lep2->Pt()); 
+            effmc   *= zmmTrkEff_neg.getEff((lep2->Eta()), lep2->Pt());
+          }
+          corr *= effdata/effmc;
+
 	  TLorentzVector slep1 = (*lep1);
-	  slep1 *= gRandom->Gaus(slep1.E(), getResCorr(lep1->Eta()))/slep1.E();
+	  slep1 *= gRandom->Gaus(slep1.Pt(), getMuResCorr(lep1->Eta(),0))/slep1.Pt();
 	  
 	  TLorentzVector slep2 = (*lep2);
-	  slep2 *= gRandom->Gaus(slep2.E(), getResCorr(lep2->Eta()))/slep2.E();
+	  slep2 *= gRandom->Gaus(slep2.Pt(), getMuResCorr(lep2->Eta(),0))/slep2.Pt();
 	  
 	  mass = (slep1+slep2).M();
-	
-	  hMC->Fill(mass,weight);
-	  if(typev[ifile]==eZmm) { hZmm->Fill(mass,weight); }
-	  if(typev[ifile]==eEWK) { hEWK->Fill(mass,weight); }
+	  
+	  if(typev[ifile]==eZmm) 
+	    {
+	      yield_zmm += weight*corr;
+	      yield_zmm_unc += weight*weight*corr*corr;
+	      hZmm->Fill(mass,weight*(1.0402)*corr); 
+	      hMC->Fill(mass,weight*(1.0402)*corr);
+	    }
+	  if(typev[ifile]==eEWK) 
+	    {
+	      yield_ewk += weight*corr;
+	      yield_ewk_unc += weight*weight*corr*corr;
+	      hEWK->Fill(mass,weight*corr); 
+	      hMC->Fill(mass,weight*corr);
+	    }
 	}
       }
     }
@@ -199,8 +403,8 @@ void plotZmm(const TString  outputDir,   // output directory
   
   // label for lumi
   char lumitext[100];
-  if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.2f fb^{-1}  at  #sqrt{s} = 8 TeV",lumi);  
+  if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi*1000.);
+  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);  
   
   // plot colors
   Int_t linecolorZ   = kOrange-3;
@@ -234,8 +438,10 @@ void plotZmm(const TString  outputDir,   // output directory
   CPlot plotZmumu("zmm","","",ylabel);
   plotZmumu.AddHist1D(hData,"data","E");
   plotZmumu.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumu.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotZmumu.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  //plotZmumu.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+  //plotZmumu.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotZmumu.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
+  plotZmumu.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);
   plotZmumu.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
   plotZmumu.TransLegend(-0.35,-0.15);
   plotZmumu.Draw(c,kFALSE,format,1);
@@ -252,8 +458,8 @@ void plotZmm(const TString  outputDir,   // output directory
   plotZmumu2.AddHist1D(hData,"data","E");
   plotZmumu2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
   plotZmumu2.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumu2.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);plotZmumu2.SetName("zmmlog");
-  plotZmumu2.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotZmumu2.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);plotZmumu2.SetName("zmmlog");
+  plotZmumu2.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
   plotZmumu2.SetLogy();
   plotZmumu2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
   plotZmumu2.TransLegend(-0.35,-0.15);
@@ -268,7 +474,9 @@ void plotZmm(const TString  outputDir,   // output directory
   cout << "*--------------------------------------------------" << endl;  
   cout << endl;
 
-  cout << " The Zmm event yield is " << yield << "." << endl;
+  cout << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  cout << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  cout << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
