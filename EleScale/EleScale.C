@@ -52,7 +52,7 @@ void EleScale() {
   TString outputDir = "test";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/data_select.raw.root");  // data
+  infilenamev.push_back("/data/blue/jlawhorn/Zee/ntuples/data_select.raw.root");  // data
   infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC
   
   const Double_t MASS_LOW  = 60;
@@ -65,11 +65,12 @@ void EleScale() {
   /*scEta_limits.push_back(make_pair(0.0,0.8));
   scEta_limits.push_back(make_pair(0.8,1.4442));
   scEta_limits.push_back(make_pair(1.566,2.5));*/
-  scEta_limits.push_back(make_pair(0.0,0.5));
-  scEta_limits.push_back(make_pair(0.5,1.0));
-  scEta_limits.push_back(make_pair(1.0,1.4442));
-  scEta_limits.push_back(make_pair(1.566,2.0));
-  scEta_limits.push_back(make_pair(2.0,2.5));
+  scEta_limits.push_back(make_pair(0.0,0.4));
+  scEta_limits.push_back(make_pair(0.4,0.8));
+  scEta_limits.push_back(make_pair(0.8,1.4442));
+  //scEta_limits.push_back(make_pair(1.0,1.4442));
+  scEta_limits.push_back(make_pair(1.566,2.5));
+  //scEta_limits.push_back(make_pair(2.0,2.5));
 
   CPlot::sOutDir = outputDir;
   
@@ -180,6 +181,10 @@ void EleScale() {
     infile=0, intree=0;
   }
 
+  for(UInt_t ibin=0; ibin<hMCv.size(); ibin++) {
+    cout << hDatav[ibin]->GetEntries() << ", " << hMCv[ibin]->GetEntries() << ": " << double(hMCv[ibin]->GetEntries())/hDatav[ibin]->GetEntries() << endl;
+  }
+  return;
   //
   // Fit for energy scale and resolution corrections
   //
