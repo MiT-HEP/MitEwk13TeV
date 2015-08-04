@@ -162,7 +162,7 @@ void selectWe(const TString conf="we.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(isam==0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
 
