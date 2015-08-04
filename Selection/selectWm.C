@@ -21,9 +21,11 @@
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
+#include "TRandom.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
+#include "../Utils/LeptonCorr.hh"   // muon scale and resolution corrections
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -45,7 +47,8 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectWm(const TString conf="wm.conf", // input file
-              const TString outputDir="."   // output directory
+              const TString outputDir=".",  // output directory
+	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
 ) {
   gBenchmark->Start("selectWm");
 
@@ -298,8 +301,13 @@ void selectWm(const TString conf="wm.conf", // input file
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
+          // apply scale and resolution corrections to MC
+          Double_t mupt_corr = mu->pt;
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+            mupt_corr = gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
+
           if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
-          if(mu->pt        < VETO_PT)  continue; // loose lepton pT cut
+          if(mupt_corr     < VETO_PT)  continue; // loose lepton pT cut
           if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
@@ -307,7 +315,7 @@ void selectWm(const TString conf="wm.conf", // input file
           }
           
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
-	  if(mu->pt < PT_CUT)                 continue;  // lepton pT cut   
+	  if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
           if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 
@@ -320,8 +328,13 @@ void selectWm(const TString conf="wm.conf", // input file
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
+          // apply scale and resolution corrections to MC
+          Double_t goodMuonpt_corr = goodMuon->pt;
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+            goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
+
 	  TLorentzVector vLep; 
-	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
+	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
 	  //
 	  // Fill tree
