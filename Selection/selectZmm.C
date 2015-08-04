@@ -152,6 +152,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
+    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
 
@@ -481,7 +482,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    npv      = vertexArr->GetEntries();
 	    npu      = info->nPUmean;
 	    scale1fb = weight;
-	    puWeight = npv;
+	    puWeight = h_rw->GetBinContent(npv+1);
 	    met      = info->pfMETC;
 	    metPhi   = info->pfMETCphi;
 	    sumEt    = 0;
