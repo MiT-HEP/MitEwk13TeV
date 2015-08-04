@@ -96,7 +96,7 @@ void EleScaleClosureTest() {
   enum { eData=0, eMC, eMC2 };
   
   TFile *pufile = new TFile(pufname); assert(pufile);
-  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+  TH1D  *h_rw = (TH1D*)pufile->Get("npv_rw");
 
   TH1D* hMC_Tot = new TH1D("hMC_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hMC_Tot->Sumw2();
   TH1D* hData_Tot = new TH1D("hData_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hData_Tot->Sumw2();
@@ -161,7 +161,7 @@ void EleScaleClosureTest() {
       Double_t weight = 1;
       if(ifile==eMC || ifile==eMC2) {
 	//if(!matchGen) continue;
-        weight=scale1fb*puWeight*lumi;
+        weight=scale1fb*lumi*h_rw->GetBinContent(npv+1);
       }
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
@@ -337,7 +337,7 @@ void EleScaleClosureTest() {
       a->Draw();
       b->Draw();
 
-      sprintf(pname,"comp_%i_%i.png",ibin,jbin); 
+      sprintf(pname,"ele_comp_%i_%i.png",ibin,jbin); 
       c1->SaveAs(outputDir+"/"+pname);
 
       delete hDiffMC; delete hDiffMC2;

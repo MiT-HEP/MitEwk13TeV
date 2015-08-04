@@ -105,7 +105,7 @@ void CEffUser2D::printHist2DLatex(const TH2D* hEff,const TH2D* hErrl,const TH2D*
         os << "& $" << hEff->GetXaxis()->GetBinLowEdge(ix) << "<\\eta<" << hEff->GetXaxis()->GetBinLowEdge(ix+1) << "$ ";
       } else {
         ios_base::fmtflags flags = os.flags();
-	os.precision(4);
+	os.precision(3);
 	os << "& $" << fixed << hEff->GetBinContent(hEff->GetBin(ix,iy)) << " \\pm " << hErrl->GetBinContent(hErrl->GetBin(ix,iy)) << "$ " ;
 	os.flags(flags);
       }

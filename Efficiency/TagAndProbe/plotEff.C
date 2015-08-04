@@ -234,7 +234,8 @@ void plotEff(const TString conf,            // input binning file
     npvEdges[iedge] = npvBinEdgesv[iedge];
   
   char tname[50];
-  Float_t mass,wgt;
+  Float_t mass;
+  Double_t wgt;
   
   vector<TTree*> passTreePtv;
   vector<TTree*> failTreePtv;
@@ -242,12 +243,12 @@ void plotEff(const TString conf,            // input binning file
     sprintf(tname,"passPt_%i",ibin);
     passTreePtv.push_back(new TTree(tname,""));
     passTreePtv[ibin]->Branch("m",&mass,"m/F");
-    passTreePtv[ibin]->Branch("w",&wgt,"w/F");
+    passTreePtv[ibin]->Branch("w",&wgt,"w/D");
     passTreePtv[ibin]->SetDirectory(0);
     sprintf(tname,"failPt_%i",ibin);
     failTreePtv.push_back(new TTree(tname,""));
     failTreePtv[ibin]->Branch("m",&mass,"m/F");
-    failTreePtv[ibin]->Branch("w",&wgt,"w/F");
+    failTreePtv[ibin]->Branch("w",&wgt,"w/D");
     failTreePtv[ibin]->SetDirectory(0);
   }
   
@@ -257,12 +258,12 @@ void plotEff(const TString conf,            // input binning file
     sprintf(tname,"passEta_%i",ibin);
     passTreeEtav.push_back(new TTree(tname,""));
     passTreeEtav[ibin]->Branch("m",&mass,"m/F");
-    passTreeEtav[ibin]->Branch("w",&wgt,"w/F");
+    passTreeEtav[ibin]->Branch("w",&wgt,"w/D");
     passTreeEtav[ibin]->SetDirectory(0);
     sprintf(tname,"failEta_%i",ibin);
     failTreeEtav.push_back(new TTree(tname,""));
     failTreeEtav[ibin]->Branch("m",&mass,"m/F");
-    failTreeEtav[ibin]->Branch("w",&wgt,"w/F");
+    failTreeEtav[ibin]->Branch("w",&wgt,"w/D");
     failTreeEtav[ibin]->SetDirectory(0);
   }
   
@@ -272,12 +273,12 @@ void plotEff(const TString conf,            // input binning file
     sprintf(tname,"passPhi_%i",ibin);
     passTreePhiv.push_back(new TTree(tname,""));
     passTreePhiv[ibin]->Branch("m",&mass,"m/F");
-    passTreePhiv[ibin]->Branch("w",&wgt,"w/F");
+    passTreePhiv[ibin]->Branch("w",&wgt,"w/D");
     passTreePhiv[ibin]->SetDirectory(0);
     sprintf(tname,"failPhi_%i",ibin);
     failTreePhiv.push_back(new TTree(tname,""));
     failTreePhiv[ibin]->Branch("m",&mass,"m/F");
-    failTreePhiv[ibin]->Branch("w",&wgt,"w/F");
+    failTreePhiv[ibin]->Branch("w",&wgt,"w/D");
     failTreePhiv[ibin]->SetDirectory(0);
   }
   
@@ -287,12 +288,12 @@ void plotEff(const TString conf,            // input binning file
     sprintf(tname,"passEtaPt_%i",ibin);
     passTreeEtaPtv.push_back(new TTree(tname,""));
     passTreeEtaPtv[ibin]->Branch("m",&mass,"m/F");
-    passTreeEtaPtv[ibin]->Branch("w",&wgt,"w/F");
+    passTreeEtaPtv[ibin]->Branch("w",&wgt,"w/D");
     passTreeEtaPtv[ibin]->SetDirectory(0);
     sprintf(tname,"failEtaPt_%i",ibin);
     failTreeEtaPtv.push_back(new TTree(tname,""));
     failTreeEtaPtv[ibin]->Branch("m",&mass,"m/F");
-    failTreeEtaPtv[ibin]->Branch("w",&wgt,"w/F");
+    failTreeEtaPtv[ibin]->Branch("w",&wgt,"w/D");
     failTreeEtaPtv[ibin]->SetDirectory(0);
   }
   
@@ -302,12 +303,12 @@ void plotEff(const TString conf,            // input binning file
     sprintf(tname,"passEtaPhi_%i",ibin); 
     passTreeEtaPhiv.push_back(new TTree(tname,""));
     passTreeEtaPhiv[ibin]->Branch("m",&mass,"m/F");
-    passTreeEtaPhiv[ibin]->Branch("w",&wgt,"w/F");
+    passTreeEtaPhiv[ibin]->Branch("w",&wgt,"w/D");
     passTreeEtaPhiv[ibin]->SetDirectory(0);
     sprintf(tname,"failEtaPhi_%i",ibin);
     failTreeEtaPhiv.push_back(new TTree(tname,""));
     failTreeEtaPhiv[ibin]->Branch("m",&mass,"m/F");
-    failTreeEtaPhiv[ibin]->Branch("w",&wgt,"w/F");
+    failTreeEtaPhiv[ibin]->Branch("w",&wgt,"w/D");
     failTreeEtaPhiv[ibin]->SetDirectory(0);
   }
 
@@ -317,12 +318,12 @@ void plotEff(const TString conf,            // input binning file
     sprintf(tname,"passNPV_%i",ibin);
     passTreeNPVv.push_back(new TTree(tname,""));
     passTreeNPVv[ibin]->Branch("m",&mass,"m/F");
-    passTreeNPVv[ibin]->Branch("w",&wgt,"w/F");
+    passTreeNPVv[ibin]->Branch("w",&wgt,"w/D");
     passTreeNPVv[ibin]->SetDirectory(0);
     sprintf(tname,"failNPV_%i",ibin);
     failTreeNPVv.push_back(new TTree(tname,""));
     failTreeNPVv[ibin]->Branch("m",&mass,"m/F");
-    failTreeNPVv[ibin]->Branch("w",&wgt,"w/F");
+    failTreeNPVv[ibin]->Branch("w",&wgt,"w/D");
     failTreeNPVv[ibin]->SetDirectory(0);
   }  
   
@@ -355,7 +356,8 @@ void plotEff(const TString conf,            // input binning file
   TFile *infile    = new TFile(infilename);
   TTree *eventTree = (TTree*)infile->Get("Events");
 
-  Float_t pt, eta, phi, weight;
+  Float_t pt, eta, phi;
+  Double_t weight;
   Int_t q;
   UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
   eventTree->SetBranchAddress("mass",   &mass);
@@ -1143,7 +1145,8 @@ void generateHistTemplates(const TString infilename,
   TFile infile(infilename);
   TTree *intree = (TTree*)infile.Get("Events");
 
-  Float_t mass, pt, eta, phi, weight;
+  Float_t mass, pt, eta, phi;
+  Double_t weight;
   Int_t q;
   UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
   intree->SetBranchAddress("mass",   &mass);
@@ -1482,7 +1485,8 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		  const TString name, const Double_t massLo, const Double_t massHi, const TString format, const Bool_t doAbsEta,
 		  TCanvas *cpass, TCanvas *cfail,const double lumi)
 {
-  Float_t m,w;
+  Float_t m;
+  Double_t w;
   char pname[50];
   char binlabelx[100];
   char binlabely[100];
@@ -1611,7 +1615,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
 		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail, const double lumi, const TString yaxislabel, const int charge)
 {
-  cout<<"eta from "<<xbinLo<<" to "<<xbinHi<<" and pt from "<<ybinLo<<" to "<<ybinHi<<endl;
+
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
   m.setBins(10000);
 
@@ -1704,7 +1708,20 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
     nflpass += 2;
   }
 
-  if(bkgpass==1) { 
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==0 && ybinHi==0) {
+      bkgPass = new CErfExpo(m,kTRUE);
+      nflpass += 3;
+  }
+  else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==25 && xbinHi==30 && ybinLo==0 && ybinHi==0) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("ID+Iso")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==25 && ybinHi==40) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("ID+Iso")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(bkgpass==1) { 
     bkgPass = new CExponential(m,kTRUE);
     nflpass += 1;
   
@@ -1749,7 +1766,10 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
     nflfail += 2;
   }
 
-  if(bkgfail==1) { 
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==0.5 && xbinHi==1.0 && ybinLo==25 && ybinHi==40) {
+    bkgFail = new CErfExpo(m,kTRUE);
+    nflfail += 3;
+  } else if(bkgfail==1) { 
     bkgFail = new CExponential(m,kFALSE);
     nflfail += 1;
   
@@ -1774,20 +1794,69 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   Double_t NsigMax     = doBinned ? histPass.Integral()+histFail.Integral() : passTree->GetEntries()+failTree->GetEntries();
   Double_t NbkgFailMax = doBinned ? histFail.Integral() : failTree->GetEntries();
   Double_t NbkgPassMax = doBinned ? histPass.Integral() : passTree->GetEntries();
-  RooRealVar Nsig("Nsig","Signal Yield",0.80*NsigMax,0,NsigMax);
+  RooRealVar Nsig("Nsig","Signal Yield",NsigMax,0,1.2*NsigMax);
   RooRealVar eff("eff","Efficiency",0.8,0,1.0);
-  RooRealVar NbkgPass("NbkgPass","Background count in PASS sample",50,0,NbkgPassMax);
+  RooRealVar NbkgPass("NbkgPass","Background count in PASS sample",20,0,NbkgPassMax);
   if(bkgpass==0) NbkgPass.setVal(0);
-  RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);  
+  RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);
+
   // Special conditions for failing fits
+  // *** Muon ID+Iso efficiency ***
+  cout<<"eta from "<<xbinLo<<" to "<<xbinHi<<" and pt from "<<ybinLo<<" to "<<ybinHi<<" ---> NbkgPassMax = "<<NbkgPassMax<<endl;
+  //if(yaxislabel.CompareTo("ID+Iso")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==25 && ybinHi==40) { NbkgPass.setRange(0,1500); }
+  if(yaxislabel.CompareTo("ID+Iso")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); }
+  //if(yaxislabel.CompareTo("ID+Iso")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) { NbkgPass.setRange(0.01,0.8*NbkgFailMax); }
+  // *** Muon standalone efficiency ***
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-0.9 && xbinHi==0.0 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); NbkgFail.setVal(0.8*NbkgFailMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==2.1 && xbinHi==2.4 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==40 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-0.9 && xbinHi==0.0 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==0.0 && xbinHi==0.9 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-0.9 && xbinHi==0.0 && ybinLo==0 && ybinHi==0) { NbkgFail.setVal(0.8*NbkgFailMax); }
+  //if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==0.9 && xbinHi==1.2 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==2.1 && xbinHi==2.4 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==2.1 && xbinHi==2.4 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); }
+  // *** Muon standalone efficiency with fine pT binning ***
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==25 && xbinHi==30 && ybinLo==0 && ybinHi==0) { Nsig.setVal(0.8*NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==30 && xbinHi==35 && ybinLo==0 && ybinHi==0) { Nsig.setVal(0.8*NsigMax); }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==35 && xbinHi==40 && ybinLo==0 && ybinHi==0) { NbkgFail.setVal(0.8*NbkgFailMax); }
+  //if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==40 && xbinHi==45 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); }
   // *** Muon tracking efficiency ***
-  cout<<yaxislabel<<", "<<yaxislabel.CompareTo("GSF+ID+Iso")<<", "<<charge<<", "<<xbinLo<<", "<<xbinHi<<", "<<ybinLo<<", "<<ybinHi<<endl;
-  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
-  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.0 && xbinHi==-1.566 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
-  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.0 && xbinHi==-0.5 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
-  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.0 && xbinHi==1.4 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
-  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.566 && xbinHi==2.0 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
-  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.5 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(NsigMax); NbkgPass.setVal(20); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==25 && ybinHi==40) { NbkgPass.setVal(50); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) { NbkgPass.setVal(50); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==2.1 && xbinHi==2.4 && ybinLo==25 && ybinHi==40) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==40 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==40 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==2.1 && xbinHi==2.4 && ybinLo==40 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==25 && xbinHi==40 && ybinLo==0 && ybinHi==0) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==40 && xbinHi==8000 && ybinLo==0 && ybinHi==0) { NbkgPass.setVal(50); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==0 && ybinHi==0) { NbkgPass.setVal(50); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==25 && xbinHi==30 && ybinLo==0 && ybinHi==0) { Nsig.setVal(0.8*NsigMax); NbkgPass.setVal(50); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==50 && xbinHi==60 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); }
+  // *** Electron gsfsel efficiency ***
+  // pt-eta binning
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.5 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==0.0 && xbinHi==0.5 && ybinLo==25 && ybinHi==40) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==0.5 && xbinHi==1.0 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.0 && xbinHi==1.4442 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.5 && xbinHi==-2.0 && ybinLo==40 && ybinHi==55) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.5 && ybinLo==40 && ybinHi==55) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.5 && xbinHi==-2.0 && ybinLo==55 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.0 && xbinHi==-0.5 && ybinLo==55 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.5 && ybinLo==55 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  // eta binning
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.5 && xbinHi==-2.0 && ybinLo==0 && ybinHi==0) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,0.8*NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.0 && xbinHi==-0.5 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); } // need help with this one
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==0.0 && xbinHi==0.5 && ybinLo==0 && ybinHi==0)   { Nsig.setRange(0,NsigMax); }
+  // fine pT binning
+  //if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==45 && xbinHi==50 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); } // need help with this one
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==60 && xbinHi==80 && ybinLo==0 && ybinHi==0) { Nsig.setRange(0,NsigMax); }
 
   RooFormulaVar NsigPass("NsigPass","eff*Nsig",RooArgList(eff,Nsig));
   RooFormulaVar NsigFail("NsigFail","(1.0-eff)*Nsig",RooArgList(eff,Nsig));

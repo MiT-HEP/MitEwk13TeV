@@ -18,7 +18,7 @@
 #include <iostream>                 // standard I/O
 #include <iomanip>                  // functions to format standard I/O
 #include <fstream>                  // functions for file I/O
-#include "TLorentzVector.h"     // 4-vector class
+#include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
 #include "TRandom.h"
 
@@ -48,7 +48,7 @@
 
 void selectZmm(const TString conf="zmm.conf", // input file
                const TString outputDir=".",   // output directory
-	       const Bool_t  doScaleCorr=0    // apply energy scale corrections?
+	       const Bool_t  doScaleCorr=0    // apply energy scale corrections
 ) {
   gBenchmark->Start("selectZmm");
 
@@ -152,7 +152,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
 
@@ -322,16 +321,19 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
         for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
           const baconhep::TMuon *tag = (baconhep::TMuon*)((*muonArr)[i1]);
-	
+
           // apply scale and resolution corrections to MC
           Double_t tagpt_corr = tag->pt;
           if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
             tagpt_corr = gRandom->Gaus(tag->pt*getMuScaleCorr(tag->eta,0),getMuResCorr(tag->eta,0));
-
+	
 	  if(tagpt_corr     < PT_CUT)        continue;  // lepton pT cut
 	  if(fabs(tag->eta) > ETA_CUT)       continue;  // lepton |eta| cut
 	  if(!passMuonID(tag))               continue;  // lepton selection
           if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE)) continue;
+
+	  //TLorentzVector vTag;    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, MUON_MASS);
+	  //TLorentzVector vTagSta; vTagSta.SetPtEtaPhiM(tag->staPt, tag->staEta, tag->staPhi, MUON_MASS);
 
           TLorentzVector vTag; TLorentzVector vTagSta;
           // apply scale and resolution corrections to MC
@@ -356,6 +358,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    if(probept_corr     < PT_CUT)  continue;  // lepton pT cut
 	    if(fabs(probe->eta) > ETA_CUT) continue;  // lepton |eta| cut
 	    
+	    //TLorentzVector vProbe; vProbe.SetPtEtaPhiM(probe->pt, probe->eta, probe->phi, MUON_MASS);
+	    //TLorentzVector vProbeSta(0,0,0,0);
+	    //if(probe->typeBits & baconhep::EMuType::kStandalone)
+	      //vProbeSta.SetPtEtaPhiM(probe->staPt, probe->staEta, probe->staPhi, MUON_MASS);
+
             TLorentzVector vProbe; TLorentzVector vProbeSta(0,0,0,0);
             // apply scale and resolution corrections to MC
             if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
@@ -365,7 +372,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
             } else {
               vProbe.SetPtEtaPhiM(probe->pt,probe->eta,probe->phi,MUON_MASS);
               if(probe->typeBits & baconhep::EMuType::kStandalone)
-                vProbe.SetPtEtaPhiM(probe->staPt,probe->staEta,probe->staPhi,MUON_MASS);
+                vProbeSta.SetPtEtaPhiM(probe->staPt,probe->staEta,probe->staPhi,MUON_MASS);
             }
 
 	    // mass window
@@ -388,8 +395,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    }
 	    else if(probe->typeBits & baconhep::EMuType::kGlobal) { icat=eMuMuNoSel; }
 	    else if(probe->typeBits & baconhep::EMuType::kStandalone) { icat=eMuSta; }
-            else if(probe->nTkLayers>=6 && probe->nPixHits>=1) { icat=eMuTrk; }
-            //else                                                      { icat=eMuTrk; }
+            else                                                      { icat=eMuTrk; }
+            //else if(probe->nTkLayers>=6 && probe->nPixHits>=1)        { icat=eMuTrk; }
 
 	    if(icat==0) continue;
 

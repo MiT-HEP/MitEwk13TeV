@@ -93,7 +93,8 @@ CBreitWignerConvCrystalBall::CBreitWignerConvCrystalBall(RooRealVar &m, const Bo
     sprintf(vname,"n%s",name);     n     = new RooRealVar(vname,vname,1,0,10);
   } else {
     sprintf(vname,"mean%s",name);  mean  = new RooRealVar(vname,vname,0,-10,10);
-    sprintf(vname,"sigma%s",name); sigma = new RooRealVar(vname,vname,1,0.1,5);
+    //sprintf(vname,"sigma%s",name); sigma = new RooRealVar(vname,vname,1,0.1,5);
+    sprintf(vname,"sigma%s",name); sigma = new RooRealVar(vname,vname,1,0.1,6);
     sprintf(vname,"alpha%s",name); alpha = new RooRealVar(vname,vname,5,0,20);
     sprintf(vname,"n%s",name);     n     = new RooRealVar(vname,vname,1,0,10);
   }  

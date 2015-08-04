@@ -52,8 +52,8 @@ void MuScale() {
   TString outputDir = "MuScaleResults";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/data_select.root"); // data
-  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.raw.root");  // MC
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/data_select.trkCuts.root"); // data
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.raw.trkCuts.root");  // MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
