@@ -15,7 +15,7 @@
 #include <fstream>                    // functions for file I/O
 #include <string>                     // C++ string class
 #include <sstream>                    // class for parsing strings
-#include "TLorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 #include "TRandom3.h"
 
 #include "../Utils/CPlot.hh"          // helper class for plots
@@ -49,15 +49,14 @@ void MuScale() {
   // event category enumeration
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
   
-  TString outputDir = "muon";
-  TString pufname = "../Tools/pileup_weights_2015B.root"; 
+  TString outputDir = "MuScaleResults";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/data_select.root"); // data
-  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.root");  // MC
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/data_select.root"); // data
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.raw.root");  // MC
   
-  const Double_t MASS_LOW  = 80;
-  const Double_t MASS_HIGH = 100;
+  const Double_t MASS_LOW  = 60;
+  const Double_t MASS_HIGH = 120;
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MU_MASS   = 0.105658369;  
@@ -66,21 +65,16 @@ void MuScale() {
   scEta_limits.push_back(make_pair(0.0,1.2));
   scEta_limits.push_back(make_pair(1.2,2.1));
   scEta_limits.push_back(make_pair(2.1,2.4));
-  //scEta_limits.push_back(make_pair(2.0,2.4));
 
   CPlot::sOutDir = outputDir;
   
   const TString format("png");
-  
-  
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
    
   enum { eData=0, eMC };
-  
-  TFile *pufile = new TFile(pufname); assert(pufile);
-  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
   
   char hname[100];
   vector<TH1D*> hMCv, hDatav;  
@@ -133,16 +127,15 @@ void MuScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-	weight=scale1fb*puWeight;
-	//weight*=puWeights->GetBinContent(npv+1);
+	weight=scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0;
       }
       
       if((category!=eMuMu2HLT) && (category!=eMuMu1HLT) && (category!=eMuMu1HLT1L1)) continue;
       if(q1 == q2) continue;
-      if(dilep->M()	  < MASS_LOW)  continue;
-      if(dilep->M()	  > MASS_HIGH) continue;
-      if(lep1->Pt()	  < PT_CUT)    continue;
-      if(lep2->Pt()	  < PT_CUT)    continue;
+      if(dilep->M()	   < MASS_LOW)  continue;
+      if(dilep->M()	   > MASS_HIGH) continue;
+      if(lep1->Pt()	   < PT_CUT)    continue;
+      if(lep2->Pt()	   < PT_CUT)    continue;
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
 
@@ -173,6 +166,7 @@ void MuScale() {
       if(ifile==eData) hDatav[n]->Fill(vDilep.M(),weight);
       if(ifile==eMC)   hMCv[n]->Fill(vDilep.M(),weight);
     }  
+
     delete infile;
     infile=0, intree=0;
   }
@@ -310,6 +304,8 @@ void MuScale() {
   plotRes.SetYRange(0,1.6);
   plotRes.Draw(c,kTRUE,format);
 
+double nData=0;
+
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
       UInt_t n=jbin-ibin;
@@ -340,10 +336,12 @@ void MuScale() {
       plot.GetLegend()->AddEntry(hDummyMC,"Sim","FL");
       plot.GetLegend()->AddEntry(hDummyFit,"Fit","L");
       plot.Draw(c,kTRUE,format);
+
+      nData += hDatav[n]->Integral();
     }
   }
 
-      
+  cout<<"nData = "<<nData<<endl;
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
