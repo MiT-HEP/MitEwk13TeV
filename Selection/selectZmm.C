@@ -152,6 +152,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
+    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
 
@@ -395,8 +396,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    }
 	    else if(probe->typeBits & baconhep::EMuType::kGlobal) { icat=eMuMuNoSel; }
 	    else if(probe->typeBits & baconhep::EMuType::kStandalone) { icat=eMuSta; }
-            else                                                      { icat=eMuTrk; }
-            //else if(probe->nTkLayers>=6 && probe->nPixHits>=1)        { icat=eMuTrk; }
+            else if(probe->nTkLayers>=6 && probe->nPixHits>=1)        { icat=eMuTrk; }
 
 	    if(icat==0) continue;
 
