@@ -53,8 +53,8 @@ void MuScale() {
   TString pufname = "../Tools/pileup_weights_2015B.root"; 
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/jlawhorn/Zmumu/ntuples/data_select.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/zmm_select.root");  // MC
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/data_select.root"); // data
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.root");  // MC
   
   const Double_t MASS_LOW  = 80;
   const Double_t MASS_HIGH = 100;
@@ -100,7 +100,7 @@ void MuScale() {
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
@@ -116,6 +116,7 @@ void MuScale() {
     intree->SetBranchAddress("lumiSec",  &lumiSec);   // event lumi section
     intree->SetBranchAddress("evtNum",   &evtNum);    // event number
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight
+    intree->SetBranchAddress("puWeight", &puWeight);  // pileup reweighting
     intree->SetBranchAddress("matchGen", &matchGen);  // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category", &category);  // dilepton category
     intree->SetBranchAddress("npv",      &npv);	      // number of primary vertices
@@ -132,8 +133,8 @@ void MuScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-	weight=scale1fb;
-	weight*=puWeights->GetBinContent(npv+1);
+	weight=scale1fb*puWeight;
+	//weight*=puWeights->GetBinContent(npv+1);
       }
       
       if((category!=eMuMu2HLT) && (category!=eMuMu1HLT) && (category!=eMuMu1HLT1L1)) continue;
