@@ -30,6 +30,10 @@
 #include "../Utils/WModels.hh"            // definitions of PDFs for fitting
 #include "../Utils/RecoilCorrector.hh"    // class to handle recoil corrections for MET
 
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
+#include "ZBackgrounds.hh"
+
+
 // RooFit headers
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -98,34 +102,45 @@ void fitWe(const TString  outputDir,   // output directory
   const Double_t PT_CUT  = 25;
   const Double_t ETA_CUT = 2.5;
 
+  TString pufname = "../Tools/pileup_weights_2015B.root";
+
   // file format for output plots
   const TString format("png"); 
-/*
+
   // recoil correction
-  RecoilCorrector recoilCorr("../Recoil/ZeeData/fits.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
+  RecoilCorrector recoilCorr("../Recoil/ZeeData/fits_pf.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
                              //"../Recoil/WepMC/fits.root",
 			     //"../Recoil/WemMC/fits.root",
 /////			     //"../Recoil/ZeeMC/fits.root");
   
   // Phil's bias correction
-  TFile philCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Scale.root");
-  TH1D *hPhilCorr = (TH1D*)philCorrFile.Get("Scale");
+  //TFile philCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Scale.root");
+  //TH1D *hPhilCorr = (TH1D*)philCorrFile.Get("Scale");
    
   // NNLO boson pT k-factors
-  TFile nnloCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Ratio.root");
-  TH1D *hNNLOCorr = (TH1D*)nnloCorrFile.Get("RpT_B");
-*/  
+  //TFile nnloCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Ratio.root");
+  //TH1D *hNNLOCorr = (TH1D*)nnloCorrFile.Get("RpT_B");
+  
   //
   // input ntuple file names
   //
+
+  TFile *pufile = new TFile(pufname); assert(pufile);
+  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+
   enum { eData, eWenu, eEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
 //  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Wenu/ntuples/we_select.raw.root");   typev.push_back(eWenu);
+  //fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Wenu/ntuples/we_select.raw.root");   typev.push_back(eWenu);
 //  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
 //  fnamev.push_back("/scratch/klawhorn/EWKAnaStore/8TeV/Selection/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
+   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/data_select.raw.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
+  
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -204,41 +219,49 @@ void fitWe(const TString  outputDir,   // output directory
       if(sc->Pt()        < PT_CUT)  continue;	
       if(fabs(sc->Eta()) > ETA_CUT) continue;
   
+      mt     = sqrt( 2.0 * (lep->Pt()) * (met) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metPhi))) );
+
       if(typev[ifile]==eData) {
-        hDataMet->Fill(met);
+        hDataMet->Fill(mt);
 	if(q>0) { hDataMetp->Fill(met); } 
 	else    { hDataMetm->Fill(met); }
       
       } else {
         Double_t weight = 1;
         weight *= scale1fb*lumi;
-	
+	weight *=puWeights->GetBinContent(npv+1);
+	weight *= getEleScaleCorr(sc->Eta(),0);
 	if(typev[ifile]==eWenu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-/*        
-	  Double_t philcorr=1;
+      
+	  /*  Double_t philcorr=1;
           for(Int_t ibin=1; ibin<=hPhilCorr->GetNbinsX(); ibin++) {
             if(fabs(sc->Eta()) >= hPhilCorr->GetBinLowEdge(ibin) &&
                fabs(sc->Eta()) < (hPhilCorr->GetBinLowEdge(ibin)+hPhilCorr->GetBinWidth(ibin)))
               philcorr = hPhilCorr->GetBinContent(ibin);
-          }
+	      }*/
   
 	  // apply recoil corrections to W MC
-	  Double_t lepPt = philcorr*(lep->Pt());
-	  //Double_t lepPt = philcorr*(gRandom->Gaus((lep->Pt())*getScaleCorr(sc->Eta()),getResCorr(sc->Eta())));  // (!) uncomment to apply scale/res corrections to MC
-	  recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q);
+	  //Double_t lepPt = philcorr*(lep->Pt());
+	  Double_t lepPt = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(sc->Eta(),0),getEleResCorr(sc->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
+	  //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q);
 	
-          Double_t nnlocorr=1;
+	  Double_t mvaMt     = sqrt( 2.0 * (lep->Pt()) * (corrMet) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),corrMetPhi))) );
+
+	  /*       Double_t nnlocorr=1;
           for(Int_t ibin=1; ibin<=hNNLOCorr->GetNbinsX(); ibin++) {
             if(genVPt >= hNNLOCorr->GetBinLowEdge(ibin) &&
                genVPt < (hNNLOCorr->GetBinLowEdge(ibin)+hNNLOCorr->GetBinWidth(ibin)))
               nnlocorr = hNNLOCorr->GetBinContent(ibin);
-          }
+	      }*/
 	  //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-*/	  
+	  
 	  hWenuMet->Fill(corrMet,weight);
 	  if(q>0) { hWenuMetp->Fill(corrMet,weight); } 
 	  else    { hWenuMetm->Fill(corrMet,weight); }
+	  //hWenuMet->Fill(mvaMt,weight);
+	  //if(q>0) { hWenuMetp->Fill(mvaMt,weight); } 
+	  //else    { hWenuMetm->Fill(mvaMt,weight); }
         }
         if(typev[ifile]==eEWK) {
           hEWKMet->Fill(met,weight);
@@ -293,6 +316,9 @@ void fitWe(const TString  outputDir,   // output directory
   RooDataHist ewkMetm("ewkMETm","ewkMETm",RooArgSet(pfmet),hEWKMetm); RooHistPdf pdfEWKm("ewkm","ewkm",pfmet,ewkMetm,1); 
   
   // QCD Pdfs
+  //CExponential qcd(pfmet,kTRUE);
+  //CExponential qcdp(pfmet,kTRUE);
+  //CExponential qcdm(pfmet,kTRUE);
   CPepeModel1 qcd("qcd",pfmet);
   CPepeModel1 qcdp("qcdp",pfmet);
   CPepeModel1 qcdm("qcdm",pfmet);
@@ -365,7 +391,7 @@ void fitWe(const TString  outputDir,   // output directory
   // label for lumi
   char lumitext[100];
   if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.2f fb^{-1}  at  #sqrt{s} = 8 TeV",lumi);
+  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);
   
   // plot colors
   Int_t linecolorW   = kOrange-3;
@@ -415,14 +441,16 @@ void fitWe(const TString  outputDir,   // output directory
   dataMet.plotOn(weframe,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
   
   sprintf(ylabel,"Events / %.1f GeV",hDataMet->GetBinWidth(1));
-  CPlot plotMet("fitmet",weframe,"","",ylabel);
+  CPlot plotMet("fitmet",weframe,"","mT [GeV]",ylabel);
   plotMet.SetLegend(0.68,0.57,0.93,0.77);
   plotMet.GetLegend()->AddEntry(hDummyData,"data","PL");
   plotMet.GetLegend()->AddEntry(hDummyW,"W#rightarrowe#nu","F");
   plotMet.GetLegend()->AddEntry(hDummyEWK,"EWK+t#bar{t}","F");
   plotMet.GetLegend()->AddEntry(hDummyQCD,"QCD","F");
-  plotMet.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
-  plotMet.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+  //plotMet.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  //plotMet.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+  plotMet.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
+  plotMet.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);
 //  plotMet.SetYRange(0.1,1.1*(hDataMet->GetMaximum()));
 plotMet.SetYRange(0.1,1e4);
   plotMet.Draw(c,kTRUE,format,1);

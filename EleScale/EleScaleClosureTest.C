@@ -5,6 +5,9 @@
 #include <TFile.h>                    // file handle class
 #include <TTree.h>                    // class to access ntuples
 #include <TCanvas.h>                  // class for drawing
+#include <TPaveText.h>
+#include <TLine.h>
+#include <TGaxis.h>
 #include <TH1D.h>                     // 1D histograms
 #include <TGraphErrors.h>             // graphs
 #include <vector>                     // STL vector class
@@ -20,6 +23,7 @@
 
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
+#include "../Utils/LeptonCorr.hh"
 #endif
 
 // RooFit headers
@@ -37,29 +41,8 @@
 #include "RooHistPdf.h"
 #include "RooDataHist.h"
 #include "RooFitResult.h"
-/*
-  Data->MC scale correction
-$0 < |\eta| < 1.4442$ & $0.997542$ \pm $0.0011134$ \\
-$1.566 < |\eta| < 2.5$ & $1.01507$ \pm $0.00126721$ \\
 
-  MC->Data resolution correction [GeV]
-0 < |\eta| < 1.4442 & $0.959767$ \pm $0.126489$ \\
-1.566 < |\eta| < 2.5 & $1.28455$ \pm $0.277164$ \\
-*/
-
-Double_t getScaleCorr(const Double_t eta)
-{
-  if(fabs(eta) < 1.4442) { return 1.0/0.997542; }
-  else                   { return 1.0/1.01507;  }
-}
-
-Double_t getResCorr(const Double_t eta)
-{
-  if(fabs(eta) < 1.4442) { return 0.959767; }
-  else                   { return 1.28455;  }
-}
-
-
+TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name);
 //=== MAIN MACRO ================================================================================================= 
 
 void EleScaleClosureTest() {
@@ -71,14 +54,17 @@ void EleScaleClosureTest() {
   // event category enumeration
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
-  TString outputDir = "Results";
-  TString pufname = ""; 
+  TString outputDir = "test";
+  TString pufname = "../Tools/pileup_weights_2015B.root";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/data_select.raw.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/zee_select.root");  // MC
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zee/ntuples/zee_select.root");  // MC2
+  infilenamev.push_back("/data/blue/jlawhorn/Zee/ntuples/data_select.raw.root");  // data
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC2
+
+  Float_t lumi=40.0;
   
+  const Int_t    NBINS     = 40;
   const Double_t MASS_LOW  = 80;
   const Double_t MASS_HIGH = 100;
   const Double_t PT_CUT    = 25;
@@ -86,8 +72,16 @@ void EleScaleClosureTest() {
   const Double_t ELE_MASS  = 0.000511;  
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  scEta_limits.push_back(make_pair(0.0,1.4442));
+  /*  scEta_limits.push_back(make_pair(0.0,0.5));
+  scEta_limits.push_back(make_pair(0.5,1.0));
+  scEta_limits.push_back(make_pair(1.0,1.4442));
   scEta_limits.push_back(make_pair(1.566,2.5));
+  scEta_limits.push_back(make_pair(2.0,2.5));*/
+  scEta_limits.push_back(make_pair(0.0,0.4));
+  scEta_limits.push_back(make_pair(0.4,0.8));
+  scEta_limits.push_back(make_pair(0.8,1.4442));
+  scEta_limits.push_back(make_pair(1.566,2.5));
+  //scEta_limits.push_back(make_pair(2.0,2.5));
 
   CPlot::sOutDir = outputDir;
   
@@ -101,23 +95,27 @@ void EleScaleClosureTest() {
    
   enum { eData=0, eMC, eMC2 };
   
-//  TFile *pufile = new TFile(pufname); assert(pufile);
-//  TH1D  *puWeights = (TH1D*)pufile->Get("puWeights");
+  TFile *pufile = new TFile(pufname); assert(pufile);
+  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+
+  TH1D* hMC_Tot = new TH1D("hMC_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hMC_Tot->Sumw2();
+  TH1D* hData_Tot = new TH1D("hData_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hData_Tot->Sumw2();
+  TH1D* hData2_Tot = new TH1D("hData2_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hData2_Tot->Sumw2();
   
   char hname[100];
   vector<TH1D*> hMCv, hDatav, hDatav2;  
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
       sprintf(hname,"mc_%i_%i",ibin,jbin);
-      hMCv.push_back(new TH1D(hname,"",20,MASS_LOW,MASS_HIGH));
+      hMCv.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
       hMCv.back()->Sumw2();
       
       sprintf(hname,"data_%i_%i",ibin,jbin);
-      hDatav.push_back(new TH1D(hname,"",20,MASS_LOW,MASS_HIGH));
+      hDatav.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
       hDatav.back()->Sumw2();
 
       sprintf(hname,"data2_%i_%i",ibin,jbin);
-      hDatav2.push_back(new TH1D(hname,"",20,MASS_LOW,MASS_HIGH));
+      hDatav2.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
       hDatav2.back()->Sumw2();
     }
   }
@@ -130,7 +128,7 @@ void EleScaleClosureTest() {
   UInt_t  category;
   UInt_t  npv, npu;
   Int_t   q1, q2;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// electron specific /////
   TLorentzVector *sc1=0, *sc2=0;
@@ -144,6 +142,7 @@ void EleScaleClosureTest() {
     intree->SetBranchAddress("lumiSec",  &lumiSec);   // event lumi section
     intree->SetBranchAddress("evtNum",   &evtNum);    // event number
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight
+    intree->SetBranchAddress("puWeight", &puWeight);  // pileup reweighting
     intree->SetBranchAddress("matchGen", &matchGen);  // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category", &category);  // dilepton category
     intree->SetBranchAddress("npv",      &npv);	      // number of primary vertices
@@ -162,7 +161,7 @@ void EleScaleClosureTest() {
       Double_t weight = 1;
       if(ifile==eMC || ifile==eMC2) {
 	//if(!matchGen) continue;
-        weight=scale1fb;
+        weight=scale1fb*puWeight*lumi;
       }
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
@@ -185,8 +184,8 @@ void EleScaleClosureTest() {
 	vLep2.SetPtEtaPhiM(lep2->Pt(), lep2->Eta(), lep2->Phi(), ELE_MASS);
       }
       else {
-	vLep1.SetPtEtaPhiM(gRandom->Gaus(lep1->Pt()*getScaleCorr(lep1->Eta()),getResCorr(lep1->Eta())), lep1->Eta(), lep1->Phi(), ELE_MASS);
-	vLep2.SetPtEtaPhiM(gRandom->Gaus(lep2->Pt()*getScaleCorr(lep2->Eta()),getResCorr(lep2->Eta())), lep2->Eta(), lep2->Phi(), ELE_MASS);
+	vLep1.SetPtEtaPhiM(gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0),getEleResCorr(lep1->Eta(),0)), lep1->Eta(), lep1->Phi(), ELE_MASS);
+	vLep2.SetPtEtaPhiM(gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0),getEleResCorr(lep2->Eta(),0)), lep2->Eta(), lep2->Phi(), ELE_MASS);
       }
       TLorentzVector vDilep = vLep1 + vLep2;
     
@@ -201,21 +200,50 @@ void EleScaleClosureTest() {
       assert(bin2>=0);
       Int_t ibin= (bin1<=bin2) ? bin1 : bin2;
       Int_t jbin= (bin1<=bin2) ? bin2 : bin1;
-      
+
+      if (ifile==eData) hData_Tot->Fill(vDilep.M(),weight);
+      else if (ifile==eMC) hMC_Tot->Fill(vDilep.M(),weight);
+      else if (ifile==eMC2) hData2_Tot->Fill(vDilep.M(),weight);
+
       UInt_t n=jbin-ibin;
       for(Int_t k=0; k<ibin; k++)
         n+=(scEta_limits.size()-k);
       
-      if(ifile==eData) hDatav[n]->Fill(vDilep.M(),weight);
-      if(ifile==eMC)   hMCv[n]->Fill(vDilep.M(),weight);
-      if(ifile==eMC2)   hDatav2[n]->Fill(vDilep.M(),weight);
+      if(ifile==eData) {
+	hDatav[n]->Fill(vDilep.M(),weight);
+      }
+      else if(ifile==eMC)   {
+	hMCv[n]->Fill(vDilep.M(),weight);
+      }
+      else if(ifile==eMC2) {
+	hDatav2[n]->Fill(vDilep.M(),weight);
+      }
     }  
     delete infile;
     infile=0, intree=0;
   }
 
-  TCanvas *c1 = new TCanvas("c1", "", 800, 600);
+  TCanvas *c1 = MakeCanvas("c1", "", 800, 800);
   char pname[100];
+
+  c1->Divide(1,2,0,0);
+  c1->cd(1)->SetPad(0,0.3,1.0,1.0);
+  c1->cd(1)->SetTopMargin(0.1);
+  c1->cd(1)->SetBottomMargin(0.01); //0.01
+  c1->cd(1)->SetLeftMargin(0.15);
+  c1->cd(1)->SetRightMargin(0.07);
+  c1->cd(1)->SetTickx(1);
+  c1->cd(1)->SetTicky(1);
+
+  c1->cd(2)->SetPad(0,0,1.0,0.3);
+  c1->cd(2)->SetTopMargin(0.05);
+  c1->cd(2)->SetBottomMargin(0.45);//0.25
+  c1->cd(2)->SetLeftMargin(0.15);
+  c1->cd(2)->SetRightMargin(0.07);
+  c1->cd(2)->SetTickx(1);
+  c1->cd(2)->SetTicky(0);
+
+  TGaxis::SetMaxDigits(3);
 
   for (UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
@@ -223,27 +251,212 @@ void EleScaleClosureTest() {
       for(UInt_t k=0; k<ibin; k++)
         n+=(scEta_limits.size()-k);
 
-      hMCv[n]   ->Scale(1.0/hMCv[n]->Integral());
-      hDatav[n] ->Scale(1.0/hDatav[n]->Integral());
-      hDatav2[n]->Scale(1.0/hDatav2[n]->Integral());
+      cout << hMCv[n]->Integral() << ", " << hDatav[n]->Integral() << ", " << hDatav2[n]->Integral() << endl;
+
+      //hMCv[n]   ->Scale(1.0/hMCv[n]->Integral());
+      //hDatav[n] ->Scale(1.0/hDatav[n]->Integral());
+      //hDatav2[n]->Scale(1.0/hDatav2[n]->Integral());
+
+      c1->cd(1);
 
       hMCv[n]->SetLineColor(kRed);
-      hMCv[n]->GetXaxis()->SetTitle("m_{ee}");
-      hMCv[n]->GetYaxis()->SetRangeUser(0, 1.2*hMCv[n]->GetMaximum());
+      hMCv[n]->GetYaxis()->SetTitleOffset(1.100);
+      hMCv[n]->GetYaxis()->SetTitle("Events");
+      hMCv[n]->GetYaxis()->SetRangeUser(0.01, 1.3*TMath::Max(hMCv[n]->GetMaximum(),hDatav[n]->GetMaximum()));
       hMCv[n]->Draw("hist");
-      hDatav[n]->Draw("histsame");
-      hDatav2[n]->SetLineColor(kGreen+1);
+      hDatav[n]->Draw("EX0 same");
+      hDatav2[n]->SetLineColor(kBlue);
       hDatav2[n]->Draw("histsame");
 
-      TLegend *leg = new TLegend(0.7,0.7,0.9,0.9);
-      leg->AddEntry(hMCv[n],"MC, pre-correction","l");
+      c1->cd(2);
+
+      TH1D* hDiffMC = returnRelDiff(hMCv[n],hDatav[n],"foo");
+      TH1D* hDiffMC2 = returnRelDiff(hDatav2[n],hDatav[n],"foo2");
+
+      hDiffMC->GetYaxis()->SetRangeUser(-1.0,1.0);
+      hDiffMC->GetXaxis()->SetTitle("m_{ee} [GeV]");
+      hDiffMC->GetYaxis()->SetTitle("#chi");
+
+      hDiffMC->GetYaxis()->SetTitleOffset(0.42);
+      hDiffMC->GetYaxis()->SetTitleSize(0.13);
+      hDiffMC->GetXaxis()->SetTitleSize(0.13);
+      hDiffMC->GetYaxis()->SetLabelSize(0.12);
+      hDiffMC->GetXaxis()->SetLabelSize(0.12);
+      hDiffMC->GetYaxis()->SetNdivisions(102);
+      hDiffMC->GetYaxis()->CenterTitle();
+      hDiffMC->GetXaxis()->SetTitleOffset(1.2);
+      hDiffMC->GetXaxis()->CenterTitle();
+
+      hDiffMC->Draw("hist");
+      TLine l(80,0.0,100,0.0);
+      l.Draw();
+      hDiffMC->Draw("histsame");
+
+      hDiffMC2->SetMarkerColor(kBlue);
+      hDiffMC2->SetMarkerSize(1);
+      hDiffMC2->SetLineColor(kBlue);
+      hDiffMC2->Draw("EX0 same");
+
+      c1->cd(1);
+
+      TLegend *leg = new TLegend(0.65, 0.55, 0.90, 0.80);
+      leg->SetShadowColor(0); leg->SetLineColor(0);
+      leg->AddEntry(hMCv[n],"Raw MC","l");
       leg->AddEntry(hDatav[n],"Data","l");
-      leg->AddEntry(hDatav2[n],"MC, post-correction","l");
+      leg->AddEntry(hDatav2[n],"Corr. MC","l");
       leg->Draw();
+
+      // CMS label
+      TPaveText tb1(0.65,0.92,0.95,0.99,"NDC");
+      tb1.SetFillStyle(0);
+      tb1.SetBorderSize(0);
+      tb1.SetTextAlign(32);
+      tb1.AddText("CMS Preliminary");
+      tb1.Draw();
+
+      char buffer[200];
+      // lumi label
+      sprintf(buffer,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);
+      TPaveText tb2(0.55,0.82,0.90,0.90,"NDC");
+      tb2.SetFillStyle(0);
+      tb2.SetBorderSize(0);
+      tb2.SetTextAlign(32);
+      tb2.AddText(buffer);
+      tb2.Draw();
+
+      char str1[200],str2[200];
+      sprintf(str1,"[%.1f, %.1f]",scEta_limits.at(ibin).first,scEta_limits.at(ibin).second);
+      sprintf(str2,"[%.1f, %.1f]",scEta_limits.at(jbin).first,scEta_limits.at(jbin).second);
+      TPaveText *a = new TPaveText(0.16,0.75,0.40,0.82,"NDC");
+      a->SetFillColor(0); a->SetShadowColor(0); a->SetLineColor(0);
+      a->AddText(str1);
+      TPaveText *b = new TPaveText(0.16,0.68,0.40,0.75,"NDC");
+      b->SetFillColor(0); b->SetShadowColor(0); b->SetLineColor(0);
+      b->AddText(str2);
+
+      a->Draw();
+      b->Draw();
 
       sprintf(pname,"comp_%i_%i.png",ibin,jbin); 
       c1->SaveAs(outputDir+"/"+pname);
+
+      delete hDiffMC; delete hDiffMC2;
     }
   }
 
+  cout << endl;
+  cout << hMC_Tot->Integral() << ", " << hData_Tot->Integral() << ", " << hData2_Tot->Integral() << endl;
+
+  c1->cd(1);
+
+  hMC_Tot->SetLineColor(kRed); hMC_Tot->SetMarkerColor(kRed);
+  hMC_Tot->GetYaxis()->SetTitleOffset(1.100);
+  hMC_Tot->GetYaxis()->SetTitle("Events");
+  hMC_Tot->GetYaxis()->SetRangeUser(0.01, 1.2*hMC_Tot->GetMaximum());
+  hMC_Tot->Draw("hist");
+  hData_Tot->Draw("EX0 same");
+  hData2_Tot->SetLineColor(kBlue); hData2_Tot->SetMarkerColor(kBlue);
+  hData2_Tot->Draw("hist same");
+
+  c1->cd(2);
+  
+  TH1D* hDiffMC = returnRelDiff(hMC_Tot,hData_Tot,"foo");
+  TH1D* hDiffMC2 = returnRelDiff(hData2_Tot,hData_Tot,"foo2");
+  
+  hDiffMC->GetYaxis()->SetRangeUser(-1.0,1.0);
+  hDiffMC->GetXaxis()->SetTitle("m_{ee} [GeV]");
+  hDiffMC->GetYaxis()->SetTitle("#chi");
+
+  hDiffMC->GetYaxis()->SetTitleOffset(0.42);
+  hDiffMC->GetYaxis()->SetTitleSize(0.13);
+  hDiffMC->GetXaxis()->SetTitleSize(0.13);
+  hDiffMC->GetYaxis()->SetLabelSize(0.12);
+  hDiffMC->GetXaxis()->SetLabelSize(0.12);
+  hDiffMC->GetYaxis()->SetNdivisions(102);
+  hDiffMC->GetYaxis()->CenterTitle();
+  hDiffMC->GetXaxis()->SetTitleOffset(1.2);
+  hDiffMC->GetXaxis()->CenterTitle();
+
+  hDiffMC->SetMarkerColor(kRed);
+  hDiffMC->SetMarkerSize(1);
+  hDiffMC->SetLineColor(kRed);
+  hDiffMC->Draw("hist");
+  TLine l(80,0.0,100,0.0);
+  l.Draw();
+  //hDiffMC->Draw("EX0 same");
+
+  hDiffMC2->SetMarkerColor(kBlue);
+  hDiffMC2->SetMarkerSize(1);
+  hDiffMC2->SetLineColor(kBlue);
+  hDiffMC2->Draw("EX0 same");
+
+  c1->cd(1);
+
+  TLegend *leg = new TLegend(0.65, 0.55, 0.90, 0.80);
+  leg->SetShadowColor(0); leg->SetLineColor(0);
+  leg->AddEntry(hMC_Tot,"Raw MC","l");
+  leg->AddEntry(hData_Tot,"Data","l");
+  leg->AddEntry(hData2_Tot,"Corr. MC","l");
+  leg->Draw();
+
+  // CMS label
+  TPaveText tb1(0.65,0.92,0.95,0.99,"NDC");
+  tb1.SetFillStyle(0);
+  tb1.SetBorderSize(0);
+  tb1.SetTextAlign(32);
+  tb1.AddText("CMS Preliminary");
+  tb1.Draw();
+
+  char buffer[200];
+  // lumi label
+  sprintf(buffer,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);
+  TPaveText tb2(0.55,0.82,0.90,0.90,"NDC");
+  tb2.SetFillStyle(0);
+  tb2.SetBorderSize(0);
+  tb2.SetTextAlign(32);
+  tb2.AddText(buffer);
+  tb2.Draw();
+
+  char str1[200],str2[200];
+  sprintf(str1,"[%.1f, %.1f]",scEta_limits.at(0).first,scEta_limits.at(scEta_limits.size()-1).second);
+  sprintf(str2,"[%.1f, %.1f]",scEta_limits.at(0).first,scEta_limits.at(scEta_limits.size()-1).second);
+  TPaveText *a = new TPaveText(0.16,0.75,0.40,0.82,"NDC");
+  a->SetFillColor(0); a->SetShadowColor(0); a->SetLineColor(0);
+  a->AddText(str1);
+  TPaveText *b = new TPaveText(0.16,0.68,0.40,0.75,"NDC");
+  b->SetFillColor(0); b->SetShadowColor(0); b->SetLineColor(0);
+  b->AddText(str2);
+  
+  a->Draw();
+  b->Draw();
+
+  sprintf(pname,"comp_tot.png");
+  c1->SaveAs(outputDir+"/"+pname);
+
+
+}
+
+TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name) {
+  TH1D* hRelDiff = new TH1D(name, "", h->GetNbinsX(), h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax());
+  hRelDiff->SetLineColor(h->GetLineColor());
+  hRelDiff->SetLineStyle(h->GetLineStyle());
+  hRelDiff->SetLineWidth(h->GetLineWidth());
+
+  hRelDiff->GetYaxis()->SetTitleOffset(0.42);
+  hRelDiff->GetYaxis()->SetTitleSize(0.13);
+  hRelDiff->GetYaxis()->SetLabelSize(0.10);
+  hRelDiff->GetXaxis()->SetTitleOffset(1.2);
+  hRelDiff->GetXaxis()->SetTitleSize(0.13);
+  hRelDiff->GetXaxis()->SetLabelSize(0.12);
+  //hRelDiff->GetXaxis()->CenterTitle();                                                                                   
+  hRelDiff->GetYaxis()->CenterTitle();
+  hRelDiff->GetYaxis()->SetNdivisions(303,kTRUE);
+
+  for (Int_t i=1; i<h->GetNbinsX()+1; i++) {
+    Double_t y=b->GetBinContent(i);
+    Double_t val = h->GetBinContent(i) - y;
+    if (y!=0) hRelDiff->SetBinContent(i, val/y);
+    else hRelDiff->SetBinContent(i, 0);
+  }
+  return hRelDiff;
 }

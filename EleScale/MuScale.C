@@ -53,25 +53,20 @@ void MuScale() {
   TString pufname = "../Tools/pileup_weights_2015B.root"; 
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root");  // data
+  infilenamev.push_back("/data/blue/jlawhorn/Zmumu/ntuples/data_select.root");  // data
   infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/zmm_select.root");  // MC
   
-  const Double_t MASS_LOW  = 60;
-  const Double_t MASS_HIGH = 120;
+  const Double_t MASS_LOW  = 80;
+  const Double_t MASS_HIGH = 100;
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MU_MASS   = 0.105658369;  
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  scEta_limits.push_back(make_pair(0.0,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.6));
-  scEta_limits.push_back(make_pair(1.6,2.4));
-  /*scEta_limits.push_back(make_pair(0.0,0.4));
-  scEta_limits.push_back(make_pair(0.4,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.2));
-  scEta_limits.push_back(make_pair(1.2,1.4442));
-  scEta_limits.push_back(make_pair(1.566,2.0));
-  scEta_limits.push_back(make_pair(2.0,2.5));*/
+  scEta_limits.push_back(make_pair(0.0,1.2));
+  scEta_limits.push_back(make_pair(1.2,2.1));
+  scEta_limits.push_back(make_pair(2.1,2.4));
+  //scEta_limits.push_back(make_pair(2.0,2.4));
 
   CPlot::sOutDir = outputDir;
   
@@ -92,11 +87,11 @@ void MuScale() {
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
       sprintf(hname,"mc_%i_%i",ibin,jbin);
-      hMCv.push_back(new TH1D(hname,"",60,MASS_LOW,MASS_HIGH));
+      hMCv.push_back(new TH1D(hname,"",80,MASS_LOW,MASS_HIGH));
       hMCv.back()->Sumw2();
       
       sprintf(hname,"data_%i_%i",ibin,jbin);
-      hDatav.push_back(new TH1D(hname,"",60,MASS_LOW,MASS_HIGH));
+      hDatav.push_back(new TH1D(hname,"",80,MASS_LOW,MASS_HIGH));
       hDatav.back()->Sumw2();
     }
   }
@@ -217,11 +212,11 @@ void MuScale() {
   Int_t intOrder = 1;     // Interpolation order for       
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     sprintf(vname,"scale_%i",ibin);
-    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.0,0.8,1.2);
+    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.0,0.5,1.5);
     scalebins.add(*scalebinned);
     
     sprintf(vname,"sigma_%i",ibin);
-    RooRealVar *sigmabinned = new RooRealVar(vname,vname,0.8,0.0,2.0);
+    RooRealVar *sigmabinned = new RooRealVar(vname,vname,1.0,0.0,2.0);
     sigmabins.add(*sigmabinned);
   }
     
@@ -300,13 +295,13 @@ void MuScale() {
   CPlot plotScale1("mu_scale_datatomc","","Muon |#eta|","Data scale correction");
   plotScale1.AddGraph(grScaleDatatoMC,"",kBlue);
   plotScale1.SetYRange(0.98,1.02);
-  plotScale1.AddLine(0,1,2.75,1,kBlack,7);
+  plotScale1.AddLine(0,1,2.5,1,kBlack,7);
   plotScale1.Draw(c,kTRUE,format);
   
   CPlot plotScale2("mu_scale_mctodata","","Muon |#eta|","MC#rightarrowData scale correction");
   plotScale2.AddGraph(grScaleMCtoData,"",kBlue);
   plotScale2.SetYRange(0.98,1.02);
-  plotScale2.AddLine(0,1,2.75,1,kBlack,7);
+  plotScale2.AddLine(0,1,2.5,1,kBlack,7);
   plotScale2.Draw(c,kTRUE,format);
 
   CPlot plotRes("mu_res_mctodata","","Muon |#eta|","MC#rightarrowData additional smear [GeV]");
