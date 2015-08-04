@@ -46,12 +46,6 @@ void EleScale() {
   // Settings 
   //============================================================================================================== 
 
-<<<<<<< HEAD
-=======
-  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
-  
->>>>>>> 41cca3d8c4c6e55e6826713e8d6199d4cd2524d2
   // event category enumeration
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
@@ -143,11 +137,7 @@ void EleScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-<<<<<<< HEAD
 	weight=scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0;
-=======
-	weight=scale1fb*h_rw->GetBinContent(npv+1);
->>>>>>> 41cca3d8c4c6e55e6826713e8d6199d4cd2524d2
       }
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
