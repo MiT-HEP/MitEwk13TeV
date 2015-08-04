@@ -454,7 +454,7 @@ void selectWe(const TString conf="we.conf", // input file
 	    gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-	  puWeight = h_rw->GetBinContent(info->nPVmean+1);
+	  puWeight = npv;
 	  met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
