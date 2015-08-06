@@ -165,7 +165,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       //   EleSC event does not satisfy probe requirements
       //    
       if     (category==eEleEle2HLT)    { pass=kTRUE; }
-      if     (category==eEleEle1HLT1L1) { pass=kTRUE; }
+      else if(category==eEleEle1HLT1L1) { pass=kTRUE; }
       else if(category==eEleEle1HLT)    { pass=kTRUE; }
       else if(category==eEleEleNoSel)   { pass=kFALSE; }
       else                              { continue; }
