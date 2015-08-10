@@ -56,6 +56,8 @@ void EleScaleClosureTest() {
   
   // Create output directory
   TString outputDir = "EleScaleClosureTestResults";
+  TString pufname = "../Tools/pileup_weights_2015B.root";
+
   gSystem->mkdir(outputDir,kTRUE);
   
   vector<TString> infilenamev;
@@ -89,6 +91,9 @@ void EleScaleClosureTest() {
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
+
+  TFile *pufile = new TFile(pufname); assert(pufile);
+  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
   
   TH1D* hData_Tot = new TH1D("hData_Tot","",NBINS,MASS_LOW,MASS_HIGH); hData_Tot->Sumw2();
   TH1D* hMC_Tot   = new TH1D("hMC_Tot","",NBINS,MASS_LOW,MASS_HIGH);   hMC_Tot->Sumw2();
@@ -152,7 +157,7 @@ void EleScaleClosureTest() {
       
       Double_t weight = 1;
       if(ifile==eMC || ifile==eMC2)
-        weight=scale1fb*lumi*puWeight;
+        weight=scale1fb*lumi*puWeights->GetBinContent(npv+1);
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
       if(q1 == q2) continue;
@@ -415,7 +420,7 @@ void EleScaleClosureTest() {
   a->Draw();
   b->Draw();
 
-  sprintf(pname,"comp_tot.png");
+  sprintf(pname,"ele_comp_tot.png");
   c1->SaveAs(outputDir+"/"+pname);
 
 
