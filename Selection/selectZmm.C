@@ -108,6 +108,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
+  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// muon specific /////
@@ -192,7 +193,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("mvaMetPhi",   &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
     outTree->Branch("mvaSumEt",    &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
     outTree->Branch("mvaU1",       &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
-    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("mvaU2",       &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET) 
+    outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
+    outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
+    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
+    outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
+    outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",          &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("dilep",       "TLorentzVector", &dilep);     // di-lepton 4-vector
@@ -494,11 +500,14 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    metPhi   = info->pfMETCphi;
 	    sumEt    = 0;
 	    tkMet    = info->trkMET;
-            tkMetPhi = info->trkMETphi;
-            tkSumEt  = 0;
-            mvaMet   = info->mvaMET;
-            mvaMetPhi = info->mvaMETphi;
+        tkMetPhi = info->trkMETphi;
+        tkSumEt  = 0;
+        mvaMet   = info->mvaMET;
+        mvaMetPhi = info->mvaMETphi;
 	    mvaSumEt = 0;
+        puppiMet   = info->mvaMET;
+        puppiMetPhi = info->mvaMETphi;
+        puppiSumEt = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
 	    dilep    = &vDilep;
@@ -506,7 +515,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    q2       = probe->q;
 
 	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
-            TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+        
+        TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
             TVector2 vU = -1.0*(vMet+vZPt);
             u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
@@ -520,6 +530,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
             TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
             mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+            
+        TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+            TVector2 vPuppiU = -1.0*(vPuppiMet);
+            puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+            puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
 	    ///// muon specific /////
 	    sta1        = &vTagSta;
