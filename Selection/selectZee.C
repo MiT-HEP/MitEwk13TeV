@@ -20,9 +20,11 @@
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
+#include "TRandom.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
+#include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -113,6 +115,7 @@ void selectZee(const TString conf="zee.conf", // input file
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
+  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   ///// electron specific /////
@@ -157,7 +160,7 @@ void selectZee(const TString conf="zee.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(isam==0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
@@ -197,6 +200,11 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
     outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
     outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
+    outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
+    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
+    outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
+    outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
@@ -340,23 +348,26 @@ void selectZee(const TString conf="zee.conf", // input file
 	  // check ECAL gap
 	  if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue;
 	  
-	  Double_t escale1=1;
-	  if(doScaleCorr && isam==0) {
-	    for(UInt_t ieta=0; ieta<escaleNbins; ieta++) {
-	      if(fabs(tag->scEta)<escaleEta[ieta]) {
-	        escale1 = escaleCorr[ieta];
-		break;
-	      }
-	    }
-	  }
-	  if(escale1*(tag->scEt) < PT_CUT)     continue;  // lepton pT cut
+          // apply scale and resolution corrections to MC
+          Double_t tagscEt_corr = tag->scEt;
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+            tagscEt_corr = gRandom->Gaus(tag->scEt*getEleScaleCorr(tag->scEta,0),getEleResCorr(tag->scEta,0));
+
+	  if(tagscEt_corr        < PT_CUT)     continue;  // lepton pT cut
 	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
 	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
 	  if(!isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData)) continue;
 
-	  TLorentzVector vTag;     vTag.SetPtEtaPhiM(escale1*(tag->pt),   tag->eta,   tag->phi,   ELE_MASS);
-	  TLorentzVector vTagSC; vTagSC.SetPtEtaPhiM(escale1*(tag->scEt), tag->scEta, tag->scPhi, ELE_MASS);
-	
+          TLorentzVector vTag; TLorentzVector vTagSC;
+          // apply scale and resolution corrections to MC
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+            vTag.SetPtEtaPhiM(gRandom->Gaus(tag->pt*getEleScaleCorr(tag->scEta,0),getEleResCorr(tag->scEta,0)), tag->eta, tag->phi, ELE_MASS);
+            vTagSC.SetPtEtaPhiM(tagscEt_corr, tag->scEta, tag->scPhi, ELE_MASS);
+          } else {
+  	    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
+	    vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
+          }
+
 	  for(Int_t j=0; j<scArr->GetEntriesFast(); j++) {
 	    const baconhep::TPhoton *scProbe = (baconhep::TPhoton*)((*scArr)[j]);
 	    if(scProbe->scID == tag->scID) continue;
@@ -364,17 +375,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	    // check ECAL gap
 	    if(fabs(scProbe->scEta)>=ECAL_GAP_LOW && fabs(scProbe->scEta)<=ECAL_GAP_HIGH) continue;
 	    
-	    Double_t escale2=1;
-	    if(doScaleCorr && isam==0) {
-	      for(UInt_t ieta=0; ieta<escaleNbins; ieta++) {
-	        if(fabs(scProbe->scEta)<escaleEta[ieta]) {
-	          escale2 = escaleCorr[ieta];
-		  break;
-	        }
-	      }
-	    }
-	    
-	    if(escale2*(scProbe->pt) < PT_CUT)  continue;  // Supercluster ET cut ("pt" = corrected by PV position)
+            // apply scale and resolution corrections to MC
+            Double_t scProbept_corr = scProbe->pt;
+            if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+              scProbept_corr = gRandom->Gaus(scProbe->pt*getEleScaleCorr(scProbe->scEta,0),getEleResCorr(scProbe->scEta,0));
+
+	    if(scProbept_corr        < PT_CUT)  continue;  // Supercluster ET cut ("pt" = corrected by PV position)
 	    if(fabs(scProbe->scEta)  > ETA_CUT) continue;  // Supercluster |eta| cuts
 	    
 	    const baconhep::TElectron *eleProbe=0;
@@ -390,14 +396,23 @@ void selectZee(const TString conf="zee.conf", // input file
 	      }
             }
 
-	    TLorentzVector vProbe(0,0,0,0);
-	    vProbe.SetPtEtaPhiM((eleProbe) ? escale2*(eleProbe->pt)  : escale2*(scProbe->pt),
-				(eleProbe) ? eleProbe->eta : scProbe->eta,
-				(eleProbe) ? eleProbe->phi : scProbe->phi,
-				ELE_MASS);
-	    TLorentzVector vProbeSC(0,0,0,0);
-	    vProbeSC.SetPtEtaPhiM((eleProbe) ? escale2*(eleProbe->scEt)  : escale2*(scProbe->scEt),
-				  scProbe->scEta, scProbe->scPhi, ELE_MASS);
+            // apply scale and resolution corrections to MC
+            TLorentzVector vProbe(0,0,0,0); TLorentzVector vProbeSC(0,0,0,0);
+            if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+              vProbe.SetPtEtaPhiM((eleProbe) ? gRandom->Gaus(eleProbe->pt*getEleScaleCorr(scProbe->scEta,0),getEleResCorr(scProbe->scEta,0)) : scProbept_corr,
+                                  (eleProbe) ? eleProbe->eta : scProbe->eta,
+                                  (eleProbe) ? eleProbe->phi : scProbe->phi,
+                                  ELE_MASS);
+                vProbeSC.SetPtEtaPhiM((eleProbe) ? gRandom->Gaus(eleProbe->scEt*getEleScaleCorr(scProbe->scEta,0),getEleResCorr(scProbe->scEta,0)) : gRandom->Gaus(scProbe->scEt*getEleScaleCorr(scProbe->scEta,0),getEleResCorr(scProbe->scEta,0)),
+                                      scProbe->scEta, scProbe->scPhi, ELE_MASS);
+            } else {
+              vProbe.SetPtEtaPhiM((eleProbe) ? eleProbe->pt : scProbe->pt,
+                                  (eleProbe) ? eleProbe->eta : scProbe->eta,
+                                  (eleProbe) ? eleProbe->phi : scProbe->phi,
+                                  ELE_MASS);
+              vProbeSC.SetPtEtaPhiM((eleProbe) ? eleProbe->scEt : scProbe->scEt,
+                                    scProbe->scEta, scProbe->scPhi, ELE_MASS);
+            }
 
 	    // mass window
 	    TLorentzVector vDilep = vTag + vProbe;
@@ -513,7 +528,7 @@ void selectZee(const TString conf="zee.conf", // input file
             npv      = vertexArr->GetEntries();
 	    npu      = info->nPUmean;
 	    scale1fb = weight;
-	    puWeight = h_rw->GetBinContent(info->nPUmean+1);
+	    puWeight = h_rw->GetBinContent(npv+1);
 	    met      = info->pfMETC;
 	    metPhi   = info->pfMETCphi;
 	    sumEt    = 0;
@@ -545,6 +560,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	    mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	    mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
             
+        TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+        TVector2 vPuppiU = -1.0*(vPuppiMet);
+        puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+        puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+        
 	    ///// electron specific ///// 
 	    sc1        = &vTagSC;
 	    trkIso1    = tag->trkIso;

@@ -54,13 +54,16 @@ void MuScaleClosureTest() {
   // event category enumeration
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
   
-  TString outputDir = "muon";
+  TString outputDir = "MuScaleClosureTestResults";
   TString pufname = "../Tools/pileup_weights_2015B.root";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/jlawhorn/Zmumu/ntuples/data_select.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zmm_select.root");  // MC
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zmm_select.root");  // MC2
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/data_select.root");  // data
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/zmm_select.root");  // MC
+  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/zmm_select.root");  // MC2
+  //infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/data_select.root");  // data
+  //infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.raw.root");  // MC
+  //infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.raw.root");  // MC2
 
   Float_t lumi=40.0;
   
@@ -72,9 +75,8 @@ void MuScaleClosureTest() {
   const Double_t MU_MASS   = 0.105658369;
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  scEta_limits.push_back(make_pair(0.0,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.6));
-  scEta_limits.push_back(make_pair(1.6,2.1));
+  scEta_limits.push_back(make_pair(0.0,1.2));
+  scEta_limits.push_back(make_pair(1.2,2.1));
   scEta_limits.push_back(make_pair(2.1,2.4));
 
   CPlot::sOutDir = outputDir;
@@ -151,7 +153,7 @@ void MuScaleClosureTest() {
       Double_t weight = 1;
       if(ifile==eMC || ifile==eMC2) {
 	//if(!matchGen) continue;
-        weight=scale1fb*puWeight*lumi;
+        weight=scale1fb*puWeights->GetBinContent(npv+1)*lumi;
       }
       
       if((category!=eMuMu2HLT) && (category!=eMuMu1HLT) && (category!=eMuMu1HLT1L1)) continue;
@@ -326,7 +328,7 @@ void MuScaleClosureTest() {
       a->Draw();
       b->Draw();
 
-      sprintf(pname,"comp_%i_%i.png",ibin,jbin); 
+      sprintf(pname,"mu_comp_%i_%i.png",ibin,jbin); 
       c1->SaveAs(outputDir+"/"+pname);
 
       delete hDiffMC; delete hDiffMC2;
@@ -366,6 +368,9 @@ void MuScaleClosureTest() {
   hDiffMC->GetXaxis()->SetTitleOffset(1.2);
   hDiffMC->GetXaxis()->CenterTitle();
 
+  hDiffMC2->SetMarkerColor(kBlue);
+  hDiffMC2->SetMarkerSize(1);
+  hDiffMC2->SetLineColor(kBlue);
   hDiffMC->SetMarkerColor(kRed);
   hDiffMC->SetMarkerSize(1);
   hDiffMC->SetLineColor(kRed);
@@ -414,7 +419,7 @@ void MuScaleClosureTest() {
   a->Draw();
   b->Draw();
 
-  sprintf(pname,"comp_tot.png");
+  sprintf(pname,"mu_comp_tot.png");
   c1->SaveAs(outputDir+"/"+pname);
 
 
@@ -439,7 +444,8 @@ TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name) {
   for (Int_t i=1; i<h->GetNbinsX()+1; i++) {
     Double_t y=b->GetBinContent(i);
     Double_t val = h->GetBinContent(i) - y;
-    if (y!=0) hRelDiff->SetBinContent(i, val/y);
+    //if (y!=0) hRelDiff->SetBinContent(i, val/y);
+    if (y!=0) { hRelDiff->SetBinContent(i, val/h->GetBinContent(i)); hRelDiff->SetBinError(i,TMath::Sqrt(b->GetBinContent(i))/h->GetBinContent(i)); }
     else hRelDiff->SetBinContent(i, 0);
   }
   return hRelDiff;

@@ -54,13 +54,18 @@ void EleScaleClosureTest() {
   // event category enumeration
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
-  TString outputDir = "test";
+  // Create output directory
+  TString outputDir = "EleScaleClosureTestResults";
   TString pufname = "../Tools/pileup_weights_2015B.root";
+
+  gSystem->mkdir(outputDir,kTRUE);
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/jlawhorn/Zee/ntuples/data_select.raw.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC2
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zee/ntuples/data_select.root");    // data
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zee/ntuples/zee_select.raw.root"); // MC (raw)
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zee/ntuples/zee_select.raw.root"); // MC2 (corrected)
+
+  enum { eData=0, eMC, eMC2 };
 
   Float_t lumi=40.0;
   
@@ -72,16 +77,10 @@ void EleScaleClosureTest() {
   const Double_t ELE_MASS  = 0.000511;  
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  /*  scEta_limits.push_back(make_pair(0.0,0.5));
-  scEta_limits.push_back(make_pair(0.5,1.0));
-  scEta_limits.push_back(make_pair(1.0,1.4442));
-  scEta_limits.push_back(make_pair(1.566,2.5));
-  scEta_limits.push_back(make_pair(2.0,2.5));*/
   scEta_limits.push_back(make_pair(0.0,0.4));
   scEta_limits.push_back(make_pair(0.4,0.8));
   scEta_limits.push_back(make_pair(0.8,1.4442));
   scEta_limits.push_back(make_pair(1.566,2.5));
-  //scEta_limits.push_back(make_pair(2.0,2.5));
 
   CPlot::sOutDir = outputDir;
   
@@ -92,31 +91,29 @@ void EleScaleClosureTest() {
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
-   
-  enum { eData=0, eMC, eMC2 };
-  
+
   TFile *pufile = new TFile(pufname); assert(pufile);
   TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
-
-  TH1D* hMC_Tot = new TH1D("hMC_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hMC_Tot->Sumw2();
-  TH1D* hData_Tot = new TH1D("hData_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hData_Tot->Sumw2();
-  TH1D* hData2_Tot = new TH1D("hData2_Tot", "", NBINS, MASS_LOW, MASS_HIGH); hData2_Tot->Sumw2();
+  
+  TH1D* hData_Tot = new TH1D("hData_Tot","",NBINS,MASS_LOW,MASS_HIGH); hData_Tot->Sumw2();
+  TH1D* hMC_Tot   = new TH1D("hMC_Tot","",NBINS,MASS_LOW,MASS_HIGH);   hMC_Tot->Sumw2();
+  TH1D* hMC2_Tot  = new TH1D("hMC2_Tot","",NBINS,MASS_LOW,MASS_HIGH);  hMC2_Tot->Sumw2();
   
   char hname[100];
-  vector<TH1D*> hMCv, hDatav, hDatav2;  
+  vector<TH1D*> hMCv, hDatav, hMC2v;  
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
-      sprintf(hname,"mc_%i_%i",ibin,jbin);
-      hMCv.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
-      hMCv.back()->Sumw2();
-      
       sprintf(hname,"data_%i_%i",ibin,jbin);
       hDatav.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
       hDatav.back()->Sumw2();
 
-      sprintf(hname,"data2_%i_%i",ibin,jbin);
-      hDatav2.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
-      hDatav2.back()->Sumw2();
+      sprintf(hname,"mc_%i_%i",ibin,jbin);
+      hMCv.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
+      hMCv.back()->Sumw2();
+      
+      sprintf(hname,"mc2_%i_%i",ibin,jbin);
+      hMC2v.push_back(new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH));
+      hMC2v.back()->Sumw2();
     }
   }
   
@@ -159,10 +156,8 @@ void EleScaleClosureTest() {
       intree->GetEntry(ientry);
       
       Double_t weight = 1;
-      if(ifile==eMC || ifile==eMC2) {
-	//if(!matchGen) continue;
-        weight=scale1fb*puWeight*lumi;
-      }
+      if(ifile==eMC || ifile==eMC2)
+        weight=scale1fb*lumi*puWeights->GetBinContent(npv+1);
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
       if(q1 == q2) continue;
@@ -203,21 +198,18 @@ void EleScaleClosureTest() {
 
       if (ifile==eData) hData_Tot->Fill(vDilep.M(),weight);
       else if (ifile==eMC) hMC_Tot->Fill(vDilep.M(),weight);
-      else if (ifile==eMC2) hData2_Tot->Fill(vDilep.M(),weight);
+      else if (ifile==eMC2) hMC2_Tot->Fill(vDilep.M(),weight);
 
       UInt_t n=jbin-ibin;
       for(Int_t k=0; k<ibin; k++)
         n+=(scEta_limits.size()-k);
       
-      if(ifile==eData) {
+      if(ifile==eData)
 	hDatav[n]->Fill(vDilep.M(),weight);
-      }
-      else if(ifile==eMC)   {
+      else if(ifile==eMC)
 	hMCv[n]->Fill(vDilep.M(),weight);
-      }
-      else if(ifile==eMC2) {
-	hDatav2[n]->Fill(vDilep.M(),weight);
-      }
+      else if(ifile==eMC2)
+	hMC2v[n]->Fill(vDilep.M(),weight);
     }  
     delete infile;
     infile=0, intree=0;
@@ -251,11 +243,9 @@ void EleScaleClosureTest() {
       for(UInt_t k=0; k<ibin; k++)
         n+=(scEta_limits.size()-k);
 
-      cout << hMCv[n]->Integral() << ", " << hDatav[n]->Integral() << ", " << hDatav2[n]->Integral() << endl;
-
       //hMCv[n]   ->Scale(1.0/hMCv[n]->Integral());
       //hDatav[n] ->Scale(1.0/hDatav[n]->Integral());
-      //hDatav2[n]->Scale(1.0/hDatav2[n]->Integral());
+      //hMC2v[n]->Scale(1.0/hMC2v[n]->Integral());
 
       c1->cd(1);
 
@@ -265,13 +255,13 @@ void EleScaleClosureTest() {
       hMCv[n]->GetYaxis()->SetRangeUser(0.01, 1.3*TMath::Max(hMCv[n]->GetMaximum(),hDatav[n]->GetMaximum()));
       hMCv[n]->Draw("hist");
       hDatav[n]->Draw("EX0 same");
-      hDatav2[n]->SetLineColor(kBlue);
-      hDatav2[n]->Draw("histsame");
+      hMC2v[n]->SetLineColor(kBlue);
+      hMC2v[n]->Draw("histsame");
 
       c1->cd(2);
 
       TH1D* hDiffMC = returnRelDiff(hMCv[n],hDatav[n],"foo");
-      TH1D* hDiffMC2 = returnRelDiff(hDatav2[n],hDatav[n],"foo2");
+      TH1D* hDiffMC2 = returnRelDiff(hMC2v[n],hDatav[n],"foo2");
 
       hDiffMC->GetYaxis()->SetRangeUser(-1.0,1.0);
       hDiffMC->GetXaxis()->SetTitle("m_{ee} [GeV]");
@@ -303,7 +293,7 @@ void EleScaleClosureTest() {
       leg->SetShadowColor(0); leg->SetLineColor(0);
       leg->AddEntry(hMCv[n],"Raw MC","l");
       leg->AddEntry(hDatav[n],"Data","l");
-      leg->AddEntry(hDatav2[n],"Corr. MC","l");
+      leg->AddEntry(hMC2v[n],"Corr. MC","l");
       leg->Draw();
 
       // CMS label
@@ -337,7 +327,7 @@ void EleScaleClosureTest() {
       a->Draw();
       b->Draw();
 
-      sprintf(pname,"comp_%i_%i.png",ibin,jbin); 
+      sprintf(pname,"ele_comp_%i_%i.png",ibin,jbin); 
       c1->SaveAs(outputDir+"/"+pname);
 
       delete hDiffMC; delete hDiffMC2;
@@ -345,7 +335,7 @@ void EleScaleClosureTest() {
   }
 
   cout << endl;
-  cout << hMC_Tot->Integral() << ", " << hData_Tot->Integral() << ", " << hData2_Tot->Integral() << endl;
+  cout << hMC_Tot->Integral() << ", " << hData_Tot->Integral() << ", " << hMC2_Tot->Integral() << endl;
 
   c1->cd(1);
 
@@ -355,13 +345,13 @@ void EleScaleClosureTest() {
   hMC_Tot->GetYaxis()->SetRangeUser(0.01, 1.2*hMC_Tot->GetMaximum());
   hMC_Tot->Draw("hist");
   hData_Tot->Draw("EX0 same");
-  hData2_Tot->SetLineColor(kBlue); hData2_Tot->SetMarkerColor(kBlue);
-  hData2_Tot->Draw("hist same");
+  hMC2_Tot->SetLineColor(kBlue); hMC2_Tot->SetMarkerColor(kBlue);
+  hMC2_Tot->Draw("hist same");
 
   c1->cd(2);
   
   TH1D* hDiffMC = returnRelDiff(hMC_Tot,hData_Tot,"foo");
-  TH1D* hDiffMC2 = returnRelDiff(hData2_Tot,hData_Tot,"foo2");
+  TH1D* hDiffMC2 = returnRelDiff(hMC2_Tot,hData_Tot,"foo2");
   
   hDiffMC->GetYaxis()->SetRangeUser(-1.0,1.0);
   hDiffMC->GetXaxis()->SetTitle("m_{ee} [GeV]");
@@ -396,7 +386,7 @@ void EleScaleClosureTest() {
   leg->SetShadowColor(0); leg->SetLineColor(0);
   leg->AddEntry(hMC_Tot,"Raw MC","l");
   leg->AddEntry(hData_Tot,"Data","l");
-  leg->AddEntry(hData2_Tot,"Corr. MC","l");
+  leg->AddEntry(hMC2_Tot,"Corr. MC","l");
   leg->Draw();
 
   // CMS label
@@ -430,7 +420,7 @@ void EleScaleClosureTest() {
   a->Draw();
   b->Draw();
 
-  sprintf(pname,"comp_tot.png");
+  sprintf(pname,"ele_comp_tot.png");
   c1->SaveAs(outputDir+"/"+pname);
 
 
@@ -452,10 +442,11 @@ TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name) {
   hRelDiff->GetYaxis()->CenterTitle();
   hRelDiff->GetYaxis()->SetNdivisions(303,kTRUE);
 
+  // (mc-data)/mc, uncertainty is √data
   for (Int_t i=1; i<h->GetNbinsX()+1; i++) {
-    Double_t y=b->GetBinContent(i);
+    Double_t y = b->GetBinContent(i);
     Double_t val = h->GetBinContent(i) - y;
-    if (y!=0) hRelDiff->SetBinContent(i, val/y);
+    if (y!=0) { hRelDiff->SetBinContent(i, val/h->GetBinContent(i)); hRelDiff->SetBinError(i,TMath::Sqrt(b->GetBinContent(i))/h->GetBinContent(i)); }
     else hRelDiff->SetBinContent(i, 0);
   }
   return hRelDiff;

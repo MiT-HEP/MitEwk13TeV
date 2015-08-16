@@ -45,15 +45,15 @@ void EleScale() {
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
-  
+
   // event category enumeration
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
-  TString outputDir = "test";
+  TString outputDir = "EleScaleResults";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/jlawhorn/Zee/ntuples/data_select.raw.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zee/ntuples/zee_select.root");  // MC
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zee/ntuples/data_select.root");    // data
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zee/ntuples/zee_select.raw.root"); // MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
@@ -75,8 +75,7 @@ void EleScale() {
   CPlot::sOutDir = outputDir;
   
   const TString format("png");
-  
-  
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -138,7 +137,7 @@ void EleScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-	weight=scale1fb*puWeight;
+	weight=scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0;
       }
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
@@ -184,7 +183,7 @@ void EleScale() {
   for(UInt_t ibin=0; ibin<hMCv.size(); ibin++) {
     cout << hDatav[ibin]->GetEntries() << ", " << hMCv[ibin]->GetEntries() << ": " << double(hMCv[ibin]->GetEntries())/hDatav[ibin]->GetEntries() << endl;
   }
-  return;
+
   //
   // Fit for energy scale and resolution corrections
   //
@@ -303,13 +302,13 @@ void EleScale() {
   
   CPlot plotScale1("ele_scale_datatomc","","Supercluster |#eta|","Data scale correction");
   plotScale1.AddGraph(grScaleDatatoMC,"",kBlue);
-  plotScale1.SetYRange(0.98,1.02);
+  plotScale1.SetYRange(0.96,1.04);
   plotScale1.AddLine(0,1,2.75,1,kBlack,7);
   plotScale1.Draw(c,kTRUE,format);
   
   CPlot plotScale2("ele_scale_mctodata","","Supercluster |#eta|","MC#rightarrowData scale correction");
   plotScale2.AddGraph(grScaleMCtoData,"",kBlue);
-  plotScale2.SetYRange(0.98,1.02);
+  plotScale2.SetYRange(0.96,1.04);
   plotScale2.AddLine(0,1,2.75,1,kBlack,7);
   plotScale2.Draw(c,kTRUE,format);
 
@@ -338,7 +337,7 @@ void EleScale() {
       zdatascEta_comb.plotOn(frame,Cut(cutstr),MarkerStyle(kFullCircle),MarkerSize(1.0),DrawOption("ZP"));
       combscalefit.plotOn(frame,Slice(zscEta_cat,catname),ProjWData(RooArgSet(mass,catname),zdatascEta_comb),
                           LineColor(kGreen+2));           
-      sprintf(pname,"postfit_%i_%i",ibin,jbin);
+      sprintf(pname,"ele_postfit_%i_%i",ibin,jbin);
       sprintf(str1,"[%.1f, %.1f]",scEta_limits.at(ibin).first,scEta_limits.at(ibin).second);
       sprintf(str2,"[%.1f, %.1f]",scEta_limits.at(jbin).first,scEta_limits.at(jbin).second);
       CPlot plot(pname,frame,"","m(e^{+}e^{-}) [GeV/c^{2}]","Events / 0.6 GeV/c^{2}");

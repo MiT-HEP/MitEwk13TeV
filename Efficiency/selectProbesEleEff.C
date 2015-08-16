@@ -16,6 +16,9 @@
 #include <iostream>                       // standard I/O
 #include <iomanip>                        // functions to format standard I/O
 #include "TLorentzVector.h"               // 4-vector class
+#include "TRandom.h"
+
+#include "../Utils/LeptonCorr.hh"
 
 // structure for output ntuple
 #include "EffData.hh" 
@@ -36,7 +39,6 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   //==============================================================================================================   
  
   const Double_t TAG_PT_CUT = 25;
-  
   
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -60,14 +62,15 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   TTree *outTree = new TTree("Events","Events");
   //EffData data;
   //outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
-  Float_t mass, pt, eta, phi, weight;
+  Float_t mass, pt, eta, phi;
+  Double_t weight;
   Int_t q;
   UInt_t npv, npu, passes, runNum, lumiSec, evtNum;
   outTree->Branch("mass",   &mass,   "mass/F");
   outTree->Branch("pt",     &pt,     "pt/F");
   outTree->Branch("eta",    &eta,    "eta/F");
   outTree->Branch("phi",    &phi,    "phi/F");
-  outTree->Branch("weight", &weight, "weight/F");
+  outTree->Branch("weight", &weight, "weight/D");
   outTree->Branch("q",      &q,      "q/I");
   outTree->Branch("npv",    &npv,    "npv/i");
   outTree->Branch("npu",    &npu,    "npu/i");
@@ -120,7 +123,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   //
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
-    
+
     if(sc1->Pt() < TAG_PT_CUT) continue;
 
     // check GEN match if necessary
@@ -162,7 +165,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       //   EleSC event does not satisfy probe requirements
       //    
       if     (category==eEleEle2HLT)    { pass=kTRUE; }
-      if     (category==eEleEle1HLT1L1) { pass=kTRUE; }
+      else if(category==eEleEle1HLT1L1) { pass=kTRUE; }
       else if(category==eEleEle1HLT)    { pass=kTRUE; }
       else if(category==eEleEleNoSel)   { pass=kFALSE; }
       else                              { continue; }
@@ -194,14 +197,14 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else                              { pass=kFALSE; }  
     }
     
-    nProbes += doWeighted ? scale1fb*puWeight : 1;
+    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
 
     // Fill tree
     mass    = dilep->M();
     pt	    = sc2->Pt();
     eta	    = sc2->Eta();
     phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb*puWeight : 1;
+    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -214,13 +217,13 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     if(category==eEleEle2HLT) {
       if(sc2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb*puWeight : 1;
+      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
       
       mass    = dilep->M();
       pt      = sc1->Pt();
       eta     = sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb*puWeight : 1;
+      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
       q	      = q1;
       npv     = npv;
       npu     = npu;

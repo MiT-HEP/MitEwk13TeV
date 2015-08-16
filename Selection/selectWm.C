@@ -21,9 +21,11 @@
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
+#include "TRandom.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
+#include "../Utils/LeptonCorr.hh"   // muon scale and resolution corrections
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -45,7 +47,8 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectWm(const TString conf="wm.conf", // input file
-              const TString outputDir="."   // output directory
+              const TString outputDir=".",  // output directory
+	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
 ) {
   gBenchmark->Start("selectWm");
 
@@ -103,6 +106,7 @@ void selectWm(const TString conf="wm.conf", // input file
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
+  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
@@ -145,6 +149,7 @@ void selectWm(const TString conf="wm.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
+    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     cout << outfilename << endl;
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
@@ -189,6 +194,11 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");      // transverse mass (MVA MET)
     outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
     outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
+    outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
+    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
+    outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
+    outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",        "TLorentzVector", &lep);       // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
@@ -298,8 +308,13 @@ void selectWm(const TString conf="wm.conf", // input file
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
+          // apply scale and resolution corrections to MC
+          Double_t mupt_corr = mu->pt;
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+            mupt_corr = gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
+
           if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
-          if(mu->pt        < VETO_PT)  continue; // loose lepton pT cut
+          if(mupt_corr     < VETO_PT)  continue; // loose lepton pT cut
           if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
@@ -307,7 +322,7 @@ void selectWm(const TString conf="wm.conf", // input file
           }
           
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
-	  if(mu->pt < PT_CUT)                 continue;  // lepton pT cut   
+	  if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
           if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 
@@ -320,8 +335,13 @@ void selectWm(const TString conf="wm.conf", // input file
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
+          // apply scale and resolution corrections to MC
+          Double_t goodMuonpt_corr = goodMuon->pt;
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+            goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
+
 	  TLorentzVector vLep; 
-	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
+	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
 	  //
 	  // Fill tree
@@ -393,6 +413,11 @@ void selectWm(const TString conf="wm.conf", // input file
               TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
               mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
               mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              
+              TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+              TVector2 vPuppiU = -1.0*(vPuppiMet);
+              puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      
             }
             id_1      = gen->id_1;
@@ -410,19 +435,23 @@ void selectWm(const TString conf="wm.conf", // input file
             gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-	  puWeight = h_rw->GetBinContent(info->nPUmean+1);
+	  puWeight = h_rw->GetBinContent(npv+1);
 	  met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
 	  tkMet    = info->trkMET;
-          tkMetPhi = info->trkMETphi;
-          tkSumEt  = 0;
-          tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
-          mvaMet   = info->mvaMET;
-          mvaMetPhi = info->mvaMETphi;
-          mvaSumEt  = 0;
-          mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+      tkMetPhi = info->trkMETphi;
+      tkSumEt  = 0;
+      tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+      mvaMet   = info->mvaMET;
+      mvaMetPhi = info->mvaMETphi;
+      mvaSumEt  = 0;
+      mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+      puppiMet   = info->puppET;
+      puppiMetPhi = info->puppETphi;
+      puppiSumEt  = 0;
+      puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodMuon->q;
 	  lep      = &vLep;
 	  

@@ -37,7 +37,6 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
  
   const Double_t TAG_PT_CUT = 25;
   
-
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -60,14 +59,15 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   TTree *outTree = new TTree("Events","Events");
   //EffData data;
   //outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
-  Float_t mass, pt, eta, phi, weight;
+  Float_t mass, pt, eta, phi;
+  Double_t weight;
   Int_t q;
   UInt_t npv, npu, passes, runNum, lumiSec, evtNum;
   outTree->Branch("mass",   &mass,   "mass/F");
   outTree->Branch("pt",     &pt,     "pt/F");
   outTree->Branch("eta",    &eta,    "eta/F");
   outTree->Branch("phi",    &phi,    "phi/F");
-  outTree->Branch("weight", &weight, "weight/F");
+  outTree->Branch("weight", &weight, "weight/D");
   outTree->Branch("q",      &q,      "q/I");
   outTree->Branch("npv",    &npv,    "npv/i");
   outTree->Branch("npu",    &npu,    "npu/i");
@@ -322,14 +322,14 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       m = dilep->M();    
     }
     
-    nProbes += doWeighted ? scale1fb*puWeight : 1;
+    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
 
     // Fill tree
     mass = m;
     pt	 = (effType==eTrkEff) ? sta2->Pt()  : lep2->Pt();
     eta	 = (effType==eTrkEff) ? sta2->Eta() : lep2->Eta();
     phi	 = (effType==eTrkEff) ? sta2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb*puWeight : 1;
+    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -342,13 +342,13 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
     if(category==eMuMu2HLT) {
       if(lep2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb*puWeight : 1;
+      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
 
       mass	   = m;
       pt	   = (effType==eTrkEff) ? sta1->Pt()  : lep1->Pt();
       eta	   = (effType==eTrkEff) ? sta1->Eta() : lep1->Eta();
       phi	   = (effType==eTrkEff) ? sta1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb*puWeight : 1;
+      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
       q	   = q1;
       npv	   = npv;
       npu	   = npu;

@@ -247,7 +247,7 @@ void plotDataMC(const TString outdir   = "Data/extra",
     // To make an eta-phi scale factor table using LaTex
     ofstream latexfile;
     char latexfname[100];    
-    sprintf(latexfname,"%s/scalefactors.txt",outdir.Data());
+    sprintf(latexfname,"%s/%s_scalefactors.txt",outdir.Data(),fname.Data());
     latexfile.open(latexfname);
     assert(latexfile.is_open());
 
