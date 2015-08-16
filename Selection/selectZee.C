@@ -536,15 +536,20 @@ void selectZee(const TString conf="zee.conf", // input file
 	    tkMetPhi = info->trkMETphi;
 	    tkSumEt  = 0;
 	    mvaMet   = info->mvaMET;
-            mvaMetPhi = info->mvaMETphi;
+            mvaMetPhi = info->mvaMETphi; 
 	    mvaSumEt = 0;
+	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));     
+	    TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	    puppiMet   = -(vZPt+vPuppi).Mod();
+	    puppiMetPhi = -(vZPt+vPuppi).Phi();
+	    puppiSumEt = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
 	    dilep    = &vDilep;
 	    q1       = tag->q;
 	    q2       = (eleProbe) ? eleProbe->q : -(tag->q);
 
-	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));        
+	      
 	    TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
 	    TVector2 vU = -1.0*(vMet+vZPt);
 	    u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
@@ -560,11 +565,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	    mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	    mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
             
-        TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-        TVector2 vPuppiU = -1.0*(vPuppiMet);
-        puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-        puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-        
+	    TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	    TVector2 vPuppiU = -1.0*(vPuppiMet);
+	    puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+	    puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+	    
 	    ///// electron specific ///// 
 	    sc1        = &vTagSC;
 	    trkIso1    = tag->trkIso;

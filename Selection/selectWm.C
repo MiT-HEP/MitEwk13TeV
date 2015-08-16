@@ -35,7 +35,6 @@
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
-#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
@@ -441,17 +440,19 @@ void selectWm(const TString conf="wm.conf", // input file
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
 	  tkMet    = info->trkMET;
-      tkMetPhi = info->trkMETphi;
-      tkSumEt  = 0;
-      tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
-      mvaMet   = info->mvaMET;
-      mvaMetPhi = info->mvaMETphi;
-      mvaSumEt  = 0;
-      mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-      puppiMet   = info->puppET;
-      puppiMetPhi = info->puppETphi;
-      puppiSumEt  = 0;
-      puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
+	  tkMetPhi = info->trkMETphi;
+	  tkSumEt  = 0;
+	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+	  mvaMet   = info->mvaMET;
+	  mvaMetPhi = info->mvaMETphi;
+	  mvaSumEt  = 0;
+	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+	  TVector2 vLepPt(vLep.Px(),vLep.Py());
+	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	  puppiMet   = -(vLepPt+vPuppi).Mod();
+	  puppiMetPhi = -(vLepPt+vPuppi).Phi();
+	  puppiSumEt  = 0;
+	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (puppiMet) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),puppiMetPhi))) );
 	  q        = goodMuon->q;
 	  lep      = &vLep;
 	  
