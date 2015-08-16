@@ -35,7 +35,6 @@
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
-#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
