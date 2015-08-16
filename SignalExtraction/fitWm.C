@@ -31,6 +31,7 @@
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #include "../Utils/WModels.hh"            // definitions of PDFs for fitting
 #include "../Utils/RecoilCorrector.hh"    // class to handle recoil corrections for MET
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 #include "ZBackgrounds.hh"
 
@@ -77,8 +78,8 @@ void fitWm(const TString  outputDir,   // output directory
   //==============================================================================================================   
   
   // MET histogram binning and range
-  const Int_t    NBINS   = 50;
-  const Double_t METMAX  = 100;
+  const Int_t    NBINS   = 75;
+  const Double_t METMAX  = 150;
   
   const Double_t PT_CUT  = 25;
   const Double_t ETA_CUT = 2.4;
@@ -89,7 +90,7 @@ void fitWm(const TString  outputDir,   // output directory
   const TString format("png"); 
 
   // recoil correction
-  RecoilCorrector recoilCorr("../Recoil/ZmmData/fits_mva.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
+  RecoilCorrector recoilCorr("../Recoil/ZmmData/fits_mva3.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
                              //"../Recoil/WmpMC/fits.root",
 			     //"../Recoil/WmmMC/fits.root",
 			     //"../Recoil/ZmmMC/fits.root");
@@ -109,16 +110,21 @@ void fitWm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wm_select.root");   typev.push_back(eWmunu);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/top_select.root");  typev.push_back(eEWK);
+  //fnamev.push_back("/data/blue/Bacon/Run2/wz_pfmet3/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
+  //fnamev.push_back("/data/blue/Bacon/Run2/wz_pfmet3/Wmunu/ntuples/wm_select.root");   typev.push_back(eWmunu);
+  //fnamev.push_back("/data/blue/Bacon/Run2/wz_pfmet3/Wmunu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+  //fnamev.push_back("/data/blue/Bacon/Run2/wz_pfmet3/Wmunu/ntuples/top_select.root");  typev.push_back(eEWK);
+
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_14/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_14/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_14/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_14/Wmunu/ntuples/top_select.root");  typev.push_back(eEWK);
   
   //fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_prescale/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/AntiWmunu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_preapp/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_preapp/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_preapp/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_preapp/AntiWmunu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -185,8 +191,8 @@ void fitWm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)   
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("mvaMet",      &met);       // MET
-    intree->SetBranchAddress("mvaMetPhi",   &metPhi);    // phi(MET)
+    intree->SetBranchAddress("puppiMet",      &met);       // MET
+    intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
@@ -229,13 +235,15 @@ void fitWm(const TString  outputDir,   // output directory
         Double_t weight = 1;
         weight *= scale1fb*lumi;
 	weight *=puWeights->GetBinContent(npv+1);
+	//weight *=getMuScaleCorr(lep->Eta(),0);
 	
 	if(typev[ifile]==eWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
 	  
 	  // apply recoil corrections to W MC
-	  Double_t lepPt = lep->Pt();
+	  //Double_t lepPt = lep->Pt();
 	  //Double_t lepPt = gRandom->Gaus(lep->Pt(),0.5);  // (!) uncomment to apply scale/res corrections to MC
+	  Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
 	  //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
 	  
 	  Double_t mvaMt     = sqrt( 2.0 * (lep->Pt()) * (corrMet) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),corrMetPhi))) );
@@ -261,7 +269,7 @@ void fitWm(const TString  outputDir,   // output directory
           Double_t corrMet=met, corrMetPhi=metPhi;
 	  
 	  // apply recoil corrections to W MC
-	  Double_t lepPt = lep->Pt();//gRandom->Gaus(lep->Pt(),0.5);
+	  Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
 	  //Double_t lepPt = gRandom->Gaus(lep->Pt(),0.5);  // (!) uncomment to apply scale/res corrections to MC
 	  recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
           
@@ -278,7 +286,7 @@ void fitWm(const TString  outputDir,   // output directory
 	  else    { hAntiWmunuMetm->Fill(corrMet,weight); }
         }
         if(typev[ifile]==eEWK) {
-          hEWKMet->Fill(mt,weight);
+          hEWKMet->Fill(met,weight);
 	  if(q>0) { hEWKMetp->Fill(met,weight); }
 	  else    { hEWKMetm->Fill(met,weight); }
         }
@@ -358,12 +366,15 @@ void fitWm(const TString  outputDir,   // output directory
   //CExponential qcdm(pfmet,kTRUE);
   CPepeModel1 qcd("qcd",pfmet);
   CPepeModel1 qcdp("qcdp",pfmet);
-  CPepeModel1 qcdm("qcdm",pfmet);
-  
+  CPepeModel1 qcdm("qcdm",pfmet,qcdp.a1,qcdp.sigma);
+  //CPepeModel1 qcdm("qcdm",pfmet);
+ 
+ 
   // Signal + Background PDFs
   RooAddPdf pdfMet ("pdfMet", "pdfMet", RooArgList(pdfWm,pdfEWK,*(qcd.model)),   RooArgList(nSig,nEWK,nQCD));  
   RooAddPdf pdfMetp("pdfMetp","pdfMetp",RooArgList(pdfWmp,pdfEWKp,*(qcdp.model)),RooArgList(nSigp,nEWKp,nQCDp));
   RooAddPdf pdfMetm("pdfMetm","pdfMetm",RooArgList(pdfWmm,pdfEWKm,*(qcdm.model)),RooArgList(nSigm,nEWKm,nQCDm));
+  //RooAddPdf pdfMetm("pdfMetm","pdfMetm",RooArgList(pdfWmm,pdfEWKm,*(qcdm.model)),RooArgList(nSigm,nEWKm,nQCDm));
     
   
   // Anti-Signal PDFs
@@ -392,15 +403,16 @@ void fitWm(const TString  outputDir,   // output directory
   
   // PDF for simultaneous fit
   RooCategory rooCat("rooCat","rooCat");
-  rooCat.defineType("Select");
-  //rooCat.defineType("Anti");
+  rooCat.defineType("Selectp");
+  rooCat.defineType("Selectm");
   
   RooSimultaneous pdfTotal("pdfTotal","pdfTotal",rooCat);
   pdfTotal.addPdf(pdfMet, "Select");
   //pdfTotal.addPdf(apdfMet,"Anti");
   
   RooSimultaneous pdfTotalp("pdfTotalp","pdfTotalp",rooCat);
-  pdfTotalp.addPdf(pdfMetp, "Select");
+  pdfTotalp.addPdf(pdfMetp, "Selectp");
+  pdfTotalp.addPdf(pdfMetm,"Selectm");
   //pdfTotalp.addPdf(apdfMetp,"Anti");
   
   RooSimultaneous pdfTotalm("pdfTotalm","pdfTotalm",rooCat);
@@ -414,24 +426,26 @@ void fitWm(const TString  outputDir,   // output directory
   RooDataHist dataMet("dataMet", "dataMet", RooArgSet(pfmet), hDataMet);
   RooDataHist antiMet("antiMet", "antiMet", RooArgSet(pfmet), hAntiDataMet);
   RooDataHist dataTotal("dataTotal","dataTotal", RooArgList(pfmet), Index(rooCat),
-                        Import("Select", dataMet),
-                        Import("Anti",   antiMet));
-  RooFitResult *fitRes = pdfTotal.fitTo(dataTotal,Extended(),Minos(kTRUE),Save(kTRUE));
+			Import("Select", dataMet),
+			Import("Anti",   antiMet));
+  RooFitResult *fitRes = 0;//pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE));//dataTotal.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE));
   
   RooDataHist dataMetp("dataMetp", "dataMetp", RooArgSet(pfmet), hDataMetp);
   RooDataHist antiMetp("antiMetp", "antiMetp", RooArgSet(pfmet), hAntiDataMetp);
   RooDataHist dataTotalp("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat),
-                         Import("Select", dataMetp),
-                         Import("Anti",   antiMetp));
-  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),Save(kTRUE));
+			 Import("Select", dataMetp),
+			 Import("Anti",   antiMetp));
+  RooFitResult *fitResp =0;// pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
   
   RooDataHist dataMetm("dataMetm", "dataMetm", RooArgSet(pfmet), hDataMetm);
   RooDataHist antiMetm("antiMetm", "antiMetm", RooArgSet(pfmet), hAntiDataMetm);
+  RooDataHist dataMetp2("dataMetp2", "dataMetp2", RooArgSet(pfmet), hDataMetp);
   RooDataHist dataTotalm("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat),
-                         Import("Select", dataMetm),
-                         Import("Anti",   antiMetm));
-  RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
-    
+			 Import("Selectm", dataMetm),
+			 Import("Selectp",   dataMetp2));
+  //RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResm = pdfTotalp.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
+  
   //
   // Use histogram version of fitted PDFs to make ratio plots
   // (Will also use PDF histograms later for Chi^2 and KS tests)
@@ -637,7 +651,7 @@ void fitWm(const TString  outputDir,   // output directory
   plotMetp.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
   plotMetp.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
 //  plotMetp.SetYRange(0.1,1.1*(hDataMetp->GetMaximum()));
-plotMetp.SetYRange(0.1,4100);
+  //plotMetp.SetYRange(0.1,4100);
   plotMetp.Draw(c,kFALSE,format,1);
 
   CPlot plotMetpDiff("fitmetp","","#slash{E}_{T} [GeV]","#chi");
@@ -716,7 +730,7 @@ plotAntiMetp.SetYRange(0.1,1500);
   plotMetm.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
   plotMetm.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
 //  plotMetm.SetYRange(0.1,1.1*(hDataMetm->GetMaximum()));
-plotMetm.SetYRange(0.1,4100);
+//plotMetm.SetYRange(0.1,4100);
   plotMetm.Draw(c,kFALSE,format,1);
 
   CPlot plotMetmDiff("fitmetm","","#slash{E}_{T} [GeV]","#chi");
@@ -802,15 +816,15 @@ plotAntiMetm.SetYRange(0.1,1500);
   txtfile << setprecision(10);
   txtfile << " *** Yields *** " << endl;
   txtfile << "Selected: " << hDataMet->Integral() << endl;
-  txtfile << "  Signal: " << nSig.getVal() << " +/- " << nSig.getPropagatedError(*fitRes) << endl;
-  txtfile << "     QCD: " << nQCD.getVal() << " +/- " << nQCD.getPropagatedError(*fitRes) << endl;
-  txtfile << "   Other: " << nEWK.getVal() << " +/- " << nEWK.getPropagatedError(*fitRes) << endl;
+  //txtfile << "  Signal: " << nSig.getVal() << " +/- " << nSig.getPropagatedError(*fitRes) << endl;
+  //txtfile << "     QCD: " << nQCD.getVal() << " +/- " << nQCD.getPropagatedError(*fitRes) << endl;
+  //txtfile << "   Other: " << nEWK.getVal() << " +/- " << nEWK.getPropagatedError(*fitRes) << endl;
   txtfile << endl;
   txtfile.flags(flags);
   
-  fitRes->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  //fitRes->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
-  printCorrelations(txtfile, fitRes);
+  //printCorrelations(txtfile, fitRes);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
   txtfile.close();
@@ -827,15 +841,15 @@ plotAntiMetm.SetYRange(0.1,1500);
   txtfile << setprecision(10);
   txtfile << " *** Yields *** " << endl;
   txtfile << "Selected: " << hDataMetp->Integral() << endl;
-  txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResp) << endl;
-  txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResp) << endl;
-  txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResp) << endl;
+  //txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResp) << endl;
+  //txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResp) << endl;
+  //txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResp) << endl;
   txtfile << endl; 
   txtfile.flags(flags);
   
-  fitResp->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  //fitResp->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
-  printCorrelations(txtfile, fitResp);
+  //printCorrelations(txtfile, fitResp);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
   txtfile.close();
@@ -855,6 +869,9 @@ plotAntiMetm.SetYRange(0.1,1500);
   txtfile << "  Signal: " << nSigm.getVal() << " +/- " << nSigm.getPropagatedError(*fitResm) << endl;
   txtfile << "     QCD: " << nQCDm.getVal() << " +/- " << nQCDm.getPropagatedError(*fitResm) << endl;
   txtfile << "   Other: " << nEWKm.getVal() << " +/- " << nEWKm.getPropagatedError(*fitResm) << endl;
+  txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResm) << endl;
+  txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResm) << endl;
+  txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResm) << endl;
   txtfile << endl;
   txtfile.flags(flags);
   
