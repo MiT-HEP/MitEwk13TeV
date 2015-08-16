@@ -282,7 +282,7 @@ void CSummaryPlot::Draw(TCanvas *c, TString format)
   char buffer[200]; 
   
   // lumi label
-  sprintf(buffer,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi);
+  sprintf(buffer,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);
   TPaveText tb2(0.65,0.93,0.97,0.99,"NDC");
   tb2.SetFillStyle(0);
   tb2.SetBorderSize(0);
@@ -293,7 +293,7 @@ void CSummaryPlot::Draw(TCanvas *c, TString format)
   // theory predictions text
   sprintf(buffer,"%.2f #pm %.2f",theoryval,theoryerr);
   if(lumiErr[0]>0) sprintf(buffer,"%s nb",buffer);
-  TPaveText tb3(0.61,0.70,0.91,0.75,"NDC");
+  TPaveText tb3(0.49,0.70,0.79,0.75,"NDC");
   tb3.SetFillStyle(0);
   tb3.SetBorderSize(0);
   tb3.SetTextAlign(22);
@@ -305,8 +305,8 @@ void CSummaryPlot::Draw(TCanvas *c, TString format)
   tb4.SetFillStyle(0);
   tb4.SetBorderSize(0);
   tb4.SetTextAlign(12);
-  tb4.AddText("NNLO, FEWZ+MSTW2008 prediction");
-  tb4.AddText("[with MSTW2008 68% CL uncertainty]");
+  tb4.AddText("NNLO, FEWZ+NNPDF3.0 prediction");
+  tb4.AddText("[with NNPDF3.0 68% CL uncertainty]");
   tb4.Draw();
 
   // electron channel: label text
