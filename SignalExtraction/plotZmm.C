@@ -47,7 +47,7 @@ void plotZmm(const TString  outputDir,   // output directory
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //==============================================================================================================   
-  
+  const Double_t mu_MASS  = 0.1057;
   //
   // input ntuple file names
   //
@@ -55,16 +55,11 @@ void plotZmm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zmm_select.root");   typev.push_back(eZmm);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/zmm_select.root");   typev.push_back(eZmm);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
   
-//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  // fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zmumu/ntuples/zmm_select.root");  typev.push_back(eZmm);
-//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
-
   //
   // Fit options
   //
@@ -75,29 +70,31 @@ void plotZmm(const TString  outputDir,   // output directory
   const Double_t ETA_CUT   = 2.4;
 
   // efficiency files
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_fullDataset/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_fullDataset/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_fullDataset/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root";
 
   
   // plot output file format
   const TString format("png");
+
+  TString pufname = "../Tools/pileup_weights_2015B.root";
 
   Int_t yield = 0;
   Double_t yield_zmm = 0, yield_zmm_unc=0;
@@ -109,6 +106,12 @@ void plotZmm(const TString  outputDir,   // output directory
 
   // event category enumeration
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk }; // event category enum
+
+
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
+
     
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
@@ -262,34 +265,50 @@ void plotZmm(const TString  outputDir,   // output directory
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
    
-      if(dilep->M()        < MASS_LOW)  continue;
-      if(dilep->M()        > MASS_HIGH) continue;
-      if(lep1->Pt()        < PT_CUT)    continue;
-      if(lep2->Pt()        < PT_CUT)    continue;
+      //if(dilep->M()        < MASS_LOW)  continue;
+      //if(dilep->M()        > MASS_HIGH) continue;
+      //if(lep1->Pt()        < PT_CUT)    continue;
+      //if(lep2->Pt()        < PT_CUT)    continue;
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
+      //if(q1*q2<0) continue;
       
       Float_t mass = dilep->M();
       
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
-	weight *= puWeight;
-	weight *= getMuScaleCorr(lep1->Eta(),0)*getMuScaleCorr(lep2->Eta(),0);
+	weight*= h_rw->GetBinContent(npv+1);
+	//weight *= getMuScaleCorr(lep1->Eta(),0)*getMuScaleCorr(lep2->Eta(),0);
       }
       
       // fill Z events passing selection (MuMu2HLT + MuMu1HLT)
       if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
 	//if((category==eMuMu2HLT) || (category==eMuMu1HLT)) {
         if(typev[ifile]==eData) { 
+	  if(dilep->M()        < MASS_LOW)  continue;
+	  if(dilep->M()        > MASS_HIGH) continue;
+	  if(lep1->Pt()        < PT_CUT)    continue;
+	  if(lep2->Pt()        < PT_CUT)    continue;
 	  hData->Fill(mass); 
-
+	  
 	  yield++;
 	
 	} else {
+	  //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getMuScaleCorr(lep1->Eta(),0), getMuResCorr(lep1->Eta(),0));
+	  //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getMuScaleCorr(lep2->Eta(),0), getMuResCorr(lep2->Eta(),0));
+	  Double_t lp1 = lep1->Pt();
+	  Double_t lp2 = lep2->Pt();
+	  TLorentzVector l1, l2;
+	  l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
+	  l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
+	  double mll=(l1+l2).M();
 	  Double_t effdata, effmc;
 	  Double_t corr=1;
-	  
+	  if(mll       < MASS_LOW)  continue;
+	  if(mll       > MASS_HIGH) continue;
+	  if(lp1        < PT_CUT)    continue;
+	  if(lp2        < PT_CUT)    continue;
 	  effdata=1; effmc=1;    
           if(q1>0) { 
             effdata *= (1.-dataHLTEff_pos.getEff((lep1->Eta()), lep1->Pt())); 
@@ -326,7 +345,7 @@ void plotZmm(const TString  outputDir,   // output directory
           }
           corr *= effdata/effmc;
     
-          effdata=1; effmc=1;
+	  effdata=1; effmc=1;
           if(q1>0) { 
             effdata *= dataStaEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
             effmc   *= zmmStaEff_pos.getEff((lep1->Eta()), lep1->Pt()); 
@@ -341,7 +360,7 @@ void plotZmm(const TString  outputDir,   // output directory
             effdata *= dataStaEff_neg.getEff((lep2->Eta()), lep2->Pt()); 
             effmc   *= zmmStaEff_neg.getEff((lep2->Eta()), lep2->Pt());
           }
-	  //corr *= effdata/effmc;
+	  //corr *= effdata/effmc; 
 	  
           effdata=1; effmc=1;
           if(q1>0) { 
@@ -358,22 +377,25 @@ void plotZmm(const TString  outputDir,   // output directory
             effdata *= dataTrkEff_neg.getEff((lep2->Eta()), lep2->Pt()); 
             effmc   *= zmmTrkEff_neg.getEff((lep2->Eta()), lep2->Pt());
           }
-          corr *= effdata/effmc;
-
-	  TLorentzVector slep1 = (*lep1);
-	  slep1 *= gRandom->Gaus(slep1.Pt(), getMuResCorr(lep1->Eta(),0))/slep1.Pt();
+          //corr *= effdata/effmc;
+	  //corr=1;
+	  //TLorentzVector slep1 = (*lep1);
+	  //slep1 *= gRandom->Gaus(slep1.Pt(), getMuResCorr(lep1->Eta(),0))/slep1.Pt();
 	  
-	  TLorentzVector slep2 = (*lep2);
-	  slep2 *= gRandom->Gaus(slep2.Pt(), getMuResCorr(lep2->Eta(),0))/slep2.Pt();
+	  //TLorentzVector slep2 = (*lep2);
+	  //slep2 *= gRandom->Gaus(slep2.Pt(), getMuResCorr(lep2->Eta(),0))/slep2.Pt();
 	  
-	  mass = (slep1+slep2).M();
+	  //mass = (slep1+slep2).M();
+	  //mass = (l1+l2).M();	
 	  
 	  if(typev[ifile]==eZmm) 
 	    {
 	      yield_zmm += weight*corr;
 	      yield_zmm_unc += weight*weight*corr*corr;
-	      hZmm->Fill(mass,weight*(1.0402)*corr); 
-	      hMC->Fill(mass,weight*(1.0402)*corr);
+	      //hZmm->Fill(mass,weight*(1.0402)*corr); 
+	      //hMC->Fill(mass,weight*(1.0402)*corr);
+	      hZmm->Fill(mass,weight*(1.0)*corr); 
+	      hMC->Fill(mass,weight*(1.0)*corr);
 	    }
 	  if(typev[ifile]==eEWK) 
 	    {
@@ -389,6 +411,8 @@ void plotZmm(const TString  outputDir,   // output directory
     delete infile;
     infile=0, intree=0;
   } 
+
+  hZmm->Scale((hData->Integral()-hEWK->Integral())/hZmm->Integral());
 
   TH1D *hZmumuDiff = makeDiffHist(hData,hMC,"hZmumuDiff");
   hZmumuDiff->SetMarkerStyle(kFullCircle); 

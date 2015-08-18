@@ -34,7 +34,6 @@
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
-#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
@@ -500,23 +499,25 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    metPhi   = info->pfMETCphi;
 	    sumEt    = 0;
 	    tkMet    = info->trkMET;
-        tkMetPhi = info->trkMETphi;
-        tkSumEt  = 0;
-        mvaMet   = info->mvaMET;
-        mvaMetPhi = info->mvaMETphi;
+	    tkMetPhi = info->trkMETphi;
+	    tkSumEt  = 0;
+	    mvaMet   = info->mvaMET;
+	    mvaMetPhi = info->mvaMETphi;
 	    mvaSumEt = 0;
-        puppiMet   = info->mvaMET;
-        puppiMetPhi = info->mvaMETphi;
-        puppiSumEt = 0;
+	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
+	    TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	    puppiMet   = -(vZPt+vPuppi).Mod();
+	    puppiMetPhi = -(vZPt+vPuppi).Phi();
+	    puppiSumEt = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
 	    dilep    = &vDilep;
 	    q1       = tag->q;
 	    q2       = probe->q;
 
-	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
-        
-        TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+	   
+	    
+	    TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
             TVector2 vU = -1.0*(vMet+vZPt);
             u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # output ntuple directory
-NTUPDIR=/data/blue/cmedlock/wz-ntuples
+NTUPDIR=/data/blue/Bacon/Run2/wz_flat_app3
 
 # integrated luminosity for data
-LUMI=40.0
+LUMI=41.8556
 
-root -l -q selectZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu\",0\)
-#root -l -q selectWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu\"\)
+#root -l -q selectZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu\",0\)
+root -l -q selectWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu\"\)
 #root -l -q selectAntiWm.C+\(\"wm.conf\",\"${NTUPDIR}/AntiWmunu\"\)
 #root -l -q rootlogon.plot.C plotZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu/ntuples\",\"Zmumu\",${LUMI}\)
 #root -l -q rootlogon.plot.C plotWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu/ntuples\",\"Wmunu\",${LUMI}\)

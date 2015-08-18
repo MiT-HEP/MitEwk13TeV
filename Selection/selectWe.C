@@ -38,7 +38,6 @@
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
-#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
@@ -371,7 +370,7 @@ void selectWe(const TString conf="we.conf", // input file
             vSC.SetPtEtaPhiM(gRandom->Gaus(goodEle->scEt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0)), goodEle->scEta, goodEle->scPhi, ELE_MASS);
           } else {
             vLep.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
-            vTagSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
+            vSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
           }
 
 	  //
@@ -399,9 +398,9 @@ void selectWe(const TString conf="we.conf", // input file
 	  tkU1      = -999;
 	  tkU2      = -999;
 	  mvaU1     = -999;
-      mvaU2     = -999;
-      puppiU1     = -999;
-      puppiU2     = -999;
+	  mvaU2     = -999;
+	  puppiU1     = -999;
+	  puppiU2     = -999;
 	  id_1      = -999;
 	  id_2      = -999;
 	  x_1       = -999;
@@ -481,10 +480,12 @@ void selectWe(const TString conf="we.conf", // input file
 	  mvaMetPhi = info->mvaMETphi;
 	  mvaSumEt  = 0;
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-      puppiMet   = info->puppET;
-      puppiMetPhi = info->puppETphi;
-      puppiSumEt  = 0;
-      puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
+	  TVector2 vLepPt(vLep.Px(),vLep.Py());
+	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	  puppiMet   = -(vLepPt+vPuppi).Mod();
+	  puppiMetPhi = -(vLepPt+vPuppi).Phi();
+	  puppiSumEt  = 0;
+	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (puppiMet) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),puppiMetPhi))) );
 	  q        = goodEle->q;
 	  lep      = &vLep;
 	  
