@@ -482,8 +482,9 @@ void selectWe(const TString conf="we.conf", // input file
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
 	  TVector2 vLepPt(vLep.Px(),vLep.Py());
 	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-	  puppiMet   = -(vLepPt+vPuppi).Mod();
-	  puppiMetPhi = -(vLepPt+vPuppi).Phi();
+	  TVector2 vpp; vpp=vPuppi-vLepPt;
+          puppiMet   = vpp.Mod();
+	  puppiMetPhi = vpp.Phi();
 	  puppiSumEt  = 0;
 	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (puppiMet) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),puppiMetPhi))) );
 	  q        = goodEle->q;

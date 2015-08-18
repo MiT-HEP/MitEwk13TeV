@@ -539,8 +539,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	    mvaSumEt = 0;
 	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));     
 	    TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-	    puppiMet   = -(vZPt+vPuppi).Mod();
-	    puppiMetPhi = -(vZPt+vPuppi).Phi();
+	    TVector2 vpp; vpp=vPuppi-vZPt;
+            puppiMet   = vpp.Mod();
+	    puppiMetPhi = vpp.Phi();
 	    puppiSumEt = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
