@@ -1486,7 +1486,8 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		  TCanvas *cpass, TCanvas *cfail,const double lumi)
 {
   // skip ECAL gap region
-  if(fabs(xbinLo==1.4442) && fabs(xbinHi)==1.566) return;
+  if(xbinLo==1.4442 && xbinHi==1.566) return;
+  if(xbinLo==-1.566 && xbinHi==-1.4442) return;
 
   Float_t m;
   Double_t w;
@@ -1618,7 +1619,8 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 {
 
   // skip ECAL gap region
-  if(fabs(xbinLo==1.4442) && fabs(xbinHi==1.566)) return;
+  if(xbinLo==1.4442 && xbinHi==1.566) return;
+  if(xbinLo==-1.566 && xbinHi==-1.4442) return;
 
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
   m.setBins(10000);
