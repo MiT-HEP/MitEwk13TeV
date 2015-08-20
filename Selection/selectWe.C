@@ -38,7 +38,6 @@
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
-#include "BaconProd/Utils/interface/TriggerTools.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
@@ -117,6 +116,7 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
+  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
@@ -207,6 +207,11 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");       // transverse mass (mva MET)
     outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
     outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
+    outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
+    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
+    outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
+    outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",       "TLorentzVector", &lep);        // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
@@ -365,7 +370,7 @@ void selectWe(const TString conf="we.conf", // input file
             vSC.SetPtEtaPhiM(gRandom->Gaus(goodEle->scEt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0)), goodEle->scEta, goodEle->scPhi, ELE_MASS);
           } else {
             vLep.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
-            vTagSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
+            vSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
           }
 
 	  //
@@ -393,7 +398,9 @@ void selectWe(const TString conf="we.conf", // input file
 	  tkU1      = -999;
 	  tkU2      = -999;
 	  mvaU1     = -999;
-          mvaU2     = -999;
+	  mvaU2     = -999;
+	  puppiU1     = -999;
+	  puppiU2     = -999;
 	  id_1      = -999;
 	  id_2      = -999;
 	  x_1       = -999;
@@ -438,6 +445,12 @@ void selectWe(const TString conf="we.conf", // input file
 	      TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
 	      mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
 	      mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+          
+          TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+          TVector2 vPuppiU = -1.0*(vPuppiMet);
+          puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+          puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+          
 	    }
 	    id_1      = gen->id_1;
 	    id_2      = gen->id_2;
@@ -467,6 +480,13 @@ void selectWe(const TString conf="we.conf", // input file
 	  mvaMetPhi = info->mvaMETphi;
 	  mvaSumEt  = 0;
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+	  TVector2 vLepPt(vLep.Px(),vLep.Py());
+	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	  TVector2 vpp; vpp=vPuppi-vLepPt;
+          puppiMet   = vpp.Mod();
+	  puppiMetPhi = vpp.Phi();
+	  puppiSumEt  = 0;
+	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (puppiMet) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),puppiMetPhi))) );
 	  q        = goodEle->q;
 	  lep      = &vLep;
 	  

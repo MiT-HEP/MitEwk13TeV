@@ -23,6 +23,7 @@
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
 #include "TLorentzVector.h"
+#include <TRandom3.h>
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -34,12 +35,17 @@
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
 #include "CEffUser1D.hh"
 #include "CEffUser2D.hh"
 #endif
 
+
+// load pileup reweighting file
+TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -65,21 +71,21 @@ void computeAccSelWe(const TString conf,       // input file
   const Int_t LEPTON_ID = 11;
  
   // efficiency files
-  TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
-  TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root");
-  TString dataGsfSelEffName("/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root");
-  TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
+  TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root");
+  TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root");
+  TString dataGsfSelEffName("/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root");
+  TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
   }
   
   //--------------------------------------------------------------------------------------------------------------
@@ -174,6 +180,7 @@ void computeAccSelWe(const TString conf,       // input file
   baconhep::TGenEventInfo *gen  = new baconhep::TGenEventInfo();
   TClonesArray *electronArr = new TClonesArray("baconhep::TElectron");
   TClonesArray *genPartArr  = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -188,12 +195,7 @@ void computeAccSelWe(const TString conf,       // input file
   vector<Double_t> accErrCorrv, accErrBCorrv, accErrECorrv;
 
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
-  //need to clean this up                                                                                                           
-  UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");                           
-  UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");  
-  
-  //
+ 
   // loop through files
   //
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {  
@@ -208,6 +210,7 @@ void computeAccSelWe(const TString conf,       // input file
     eventTree->SetBranchAddress("GenEvtInfo",        &gen); TBranch *genBr      = eventTree->GetBranch("GenEvtInfo");
     eventTree->SetBranchAddress("GenParticle",&genPartArr); TBranch *genPartBr  = eventTree->GetBranch("GenParticle");
     eventTree->SetBranchAddress("Electron",  &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+    eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -242,16 +245,20 @@ void computeAccSelWe(const TString conf,       // input file
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
-
+  
       if (charge==-1 && toolbox::flavor(genPartArr, -BOSON_ID)!=LEPTON_ID) continue;
       if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
     
-      Double_t weight=gen->weight;
+      vertexArr->Clear();
+      vertexBr->GetEntry(ientry);
+      double npv  = vertexArr->GetEntries();
+      Double_t weight=gen->weight/225892.;
+      weight*=h_rw->GetBinContent(npv+1);
       nEvtsv[ifile]+=weight;
       
       // trigger requirement                
-      if(!(info->triggerBits[trigger])) continue;
+      if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE)) continue;
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -261,25 +268,29 @@ void computeAccSelWe(const TString conf,       // input file
       Int_t nLooseLep=0;
       const baconhep::TElectron *goodEle=0;
       Bool_t passSel=kFALSE;
+     
       for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
         const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
-        
+	
+	double ele_pt = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0), getEleResCorr(ele->scEta,0));
+
         // check ECAL gap
         if(fabs(ele->scEta)>=ETA_BARREL && fabs(ele->scEta)<=ETA_ENDCAP) continue;
         
         if(fabs(ele->scEta) > VETO_ETA) continue;             // loose lepton |eta| cut
-        if(ele->scEt	    < VETO_PT)  continue;             // loose lepton pT cut
+        if(ele_pt	    < VETO_PT)  continue;             // loose lepton pT cut
         if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;     // loose lepton selection
         if(nLooseLep>1) {  // extra lepton veto
           passSel=kFALSE;
           break;
         }
-        
+
         if(fabs(ele->scEta) > ETA_CUT)       continue;  // lepton |eta| cut
-        if(ele->scEt < PT_CUT)  	     continue;  // lepton pT cut
+        if(ele_pt < PT_CUT)  	     continue;  // lepton pT cut
         if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
-        if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
-        
+	if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, kFALSE)) continue;
+        //if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+
 	if(charge!=0 && ele->q!=charge) continue;  // check charge (if necessary)
         
 	passSel=kTRUE;
@@ -296,13 +307,14 @@ void computeAccSelWe(const TString conf,       // input file
         Double_t corr=1;
         if(dataHLTEffFile && zeeHLTEffFile) {
 	  Float_t sceta = goodEle->scEta;
-	  if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
+	  //if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
           Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt);
           corr *= effdata/effmc;
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
-          Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
+	  Float_t sceta = goodEle->scEta;
+	  //Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
 	  Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt);
           corr *= effdata/effmc;
@@ -311,7 +323,7 @@ void computeAccSelWe(const TString conf,       // input file
 	// scale factor uncertainties
         if(dataHLTEffFile && zeeHLTEffFile) {
 	  Float_t sceta = goodEle->scEta;
-	  if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
+	  //if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
           Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt);
 	  Double_t errdata = TMath::Max(dataHLTEff.getErrLow(sceta, goodEle->scEt),dataHLTEff.getErrHigh(sceta, goodEle->scEt));
@@ -322,7 +334,8 @@ void computeAccSelWe(const TString conf,       // input file
 	  else         hHLTErrE->Fill(sceta,goodEle->scEt,err);
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
-          Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
+	  Float_t sceta = goodEle->scEta;;
+          //Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
 	  Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt);
           Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt);
           Double_t errdata = TMath::Max(dataGsfSelEff.getErrLow(sceta, goodEle->scEt),dataGsfSelEff.getErrHigh(sceta, goodEle->scEt));
@@ -360,8 +373,6 @@ void computeAccSelWe(const TString conf,       // input file
       }
     }
 
-    cout << "var1: " << var << endl;
-
     for(Int_t iy=0; iy<=hGsfSelErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hGsfSelErr->GetNbinsX(); ix++) {
         Double_t err;
@@ -371,16 +382,14 @@ void computeAccSelWe(const TString conf,       // input file
       }
     }
 
-    cout << "var2: " << var << endl;
-
     nSelCorrVarv[ifile]+=var;
     nSelBCorrVarv[ifile]+=varB;
     nSelECorrVarv[ifile]+=varE;
     
     // compute acceptances
-    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(sqrt(accv[ifile]*(1.-accv[ifile])/nEvtsv[ifile]));
-    accBv.push_back(nSelBv[ifile]/nEvtsv[ifile]); accErrBv.push_back(sqrt(accBv[ifile]*(1.-accBv[ifile])/nEvtsv[ifile]));
-    accEv.push_back(nSelEv[ifile]/nEvtsv[ifile]); accErrEv.push_back(sqrt(accEv[ifile]*(1.-accEv[ifile])/nEvtsv[ifile]));
+    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(sqrt(accv[ifile]*(1.+accv[ifile])/nEvtsv[ifile]));
+    accBv.push_back(nSelBv[ifile]/nEvtsv[ifile]); accErrBv.push_back(sqrt(accBv[ifile]*(1.+accBv[ifile])/nEvtsv[ifile]));
+    accEv.push_back(nSelEv[ifile]/nEvtsv[ifile]); accErrEv.push_back(sqrt(accEv[ifile]*(1.+accEv[ifile])/nEvtsv[ifile]));
     
     accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]);   accErrCorrv.push_back(accCorrv[ifile]*sqrt(nSelCorrVarv[ifile]/nSelCorrv[ifile]/nSelCorrv[ifile] + 1./nEvtsv[ifile]));
     accBCorrv.push_back(nSelBCorrv[ifile]/nEvtsv[ifile]); accErrBCorrv.push_back(accBCorrv[ifile]*sqrt(nSelBCorrVarv[ifile]/nSelBCorrv[ifile]/nSelBCorrv[ifile] + 1./nEvtsv[ifile]));
