@@ -44,14 +44,13 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
-  
-  enum { eHLTEff, eL1Eff, eSelEff, eGsfEff, eGsfSelEff, eSCEff };  // event category enum
-  if(effType > eSCEff) {
+
+  enum { eHLTEff, eL1Eff, eSelEff, eGsfEff, eGsfSelEff, eSCEff, eIDEff, eIsoEff };  // efficiency type enum
+  if(effType > eIsoEff) {
     cout << "Invalid effType option! Exiting..." << endl;
     return;
   }
-
-  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC, eTrkSC, eTrkNoSC };
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC, eTrkSC, eTrkNoSC, eEleIso, eEleNoIso };  // event category enum
   
   Double_t nProbes = 0;
   
@@ -178,7 +177,29 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else if(category==eEleEle1HLT)    { pass=kTRUE; }
       else if(category==eEleEleNoSel)   { pass=kFALSE; }
       else                              { continue; }
+    } else if(effType==eIDEff) {
+      //
+      // probe = electron
+      // pass  = passing selection without isolation requirement
+      // * EleIso, EleNoIso event means a passing probe, EleEleNoSel event means a failing probe,
+      //   EleSC event does not satisfy probe requirements
+      //    
+      if     (category==eEleIso)      { pass=kTRUE; }
+      else if(category==eEleNoIso)    { pass=kTRUE; }
+      else if(category==eEleEleNoSel) { pass=kFALSE; }
+      else                            { continue; }
     
+    } else if(effType==eIsoEff) {
+      //
+      // probe = electron passing selection without the isolation requirement
+      // pass  = passing the isolation requirement
+      // * EleIso event means a passing probe, EleNoIso event means a failing probe,
+      //   EleEleNoSel, EleSC event does not satisfy probe requirements
+      //    
+      if     (category==eEleIso)    { pass=kTRUE; }
+      else if(category==eEleNoIso)  { pass=kFALSE; }
+      else                          { continue; }
+        
     } else if(effType==eGsfEff) {
       //
       // probe = supercluster
@@ -216,14 +237,14 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else                         { continue; }
     }
     
-    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
 
     // Fill tree
     mass    = dilep->M();
     pt	    = (effType==eSCEff) ? lep2->Pt()  : sc2->Pt();
     eta	    = (effType==eSCEff) ? lep2->Eta() : sc2->Eta();
     phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -236,13 +257,13 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     if(category==eEleEle2HLT) {
       if(sc2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
       
       mass    = dilep->M();
       pt      = sc1->Pt();
       eta     = sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
       q	      = q1;
       npv     = npv;
       npu     = npu;
