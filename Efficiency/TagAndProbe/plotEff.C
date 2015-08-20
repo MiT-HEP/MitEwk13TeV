@@ -432,10 +432,6 @@ void plotEff(const TString conf,            // input binning file
   delete infile;
   infile=0, eventTree=0;
 
-  int wz_nbin0 = passTreeEtaPtv[0]->GetEntries();
-  cout<<"WZ ntuple: "<<endl;
-  cout<<"	Bin 0: 0.0 <= |eta| < 0.8 and 25 <= pT < 30: "<<wz_nbin0<<" events ---> should equal 834, diff = "<<wz_nbin0-834<<endl;
-
   //
   // Compute efficiencies and make plots 
   // 
