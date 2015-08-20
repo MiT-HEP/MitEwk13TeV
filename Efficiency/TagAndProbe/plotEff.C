@@ -371,7 +371,7 @@ void plotEff(const TString conf,            // input binning file
   eventTree->SetBranchAddress("runNum", &runNum);
   eventTree->SetBranchAddress("lumiSec",&lumiSec);
   eventTree->SetBranchAddress("evtNum", &evtNum);
-  
+
   for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     eventTree->GetEntry(ientry);
     if((q)*charge < 0)    continue;
@@ -431,8 +431,11 @@ void plotEff(const TString conf,            // input binning file
   }  
   delete infile;
   infile=0, eventTree=0;
-  
-  
+
+  int wz_nbin0 = passTreeEtaPtv[0]->GetEntries();
+  cout<<"WZ ntuple: "<<endl;
+  cout<<"	Bin 0: 0.0 <= |eta| < 0.8 and 25 <= pT < 30: "<<wz_nbin0<<" events ---> should equal 834, diff = "<<wz_nbin0-834<<endl;
+
   //
   // Compute efficiencies and make plots 
   // 
@@ -570,7 +573,6 @@ void plotEff(const TString conf,            // input binning file
     }
        
   } else {
-    
     // efficiency in pT
     if(opts[0]) {
       grEffPt = makeEffGraph(ptBinEdgesv, passTreePtv, failTreePtv, sigModPass, bkgModPass, sigModFail, bkgModFail, "pt", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
@@ -631,21 +633,24 @@ void plotEff(const TString conf,            // input binning file
       makeEffHist2D(hEffEtaPt, hErrlEtaPt, hErrhEtaPt, passTreeEtaPtv, failTreeEtaPtv, sigModPass, bkgModPass, sigModFail, bkgModFail, "etapt", massLo, massHi, fitMassLo, fitMassHi, format, doAbsEta, lumi, yaxislabel, charge);
 
       hEffEtaPt->SetTitleOffset(1.2,"Y");
-      hEffEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
+      if(ptBinEdgesv.size()<3) hEffEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-1]);
+      else                     hEffEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
       CPlot plotEffEtaPt("effetapt","","probe #eta","probe p_{T} [GeV/c]");
       if(doAbsEta) plotEffEtaPt.SetXTitle("probe |#eta|");
       plotEffEtaPt.AddHist2D(hEffEtaPt,"COLZ");
       plotEffEtaPt.Draw(c,kTRUE,format);    
 
       hErrlEtaPt->SetTitleOffset(1.2,"Y");
-      hErrlEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
+      if(ptBinEdgesv.size()<3) hErrlEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-1]);
+      else                     hErrlEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
       CPlot plotErrlEtaPt("errletapt","","probe #eta","probe p_{T} [GeV/c]");
       if(doAbsEta) plotErrlEtaPt.SetXTitle("probe |#eta|");
       plotErrlEtaPt.AddHist2D(hErrlEtaPt,"COLZ");
       plotErrlEtaPt.Draw(c,kTRUE,format);
 
       hErrhEtaPt->SetTitleOffset(1.2,"Y");
-      hErrhEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
+      if(ptBinEdgesv.size()<3) hErrhEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-1]);
+      else                     hErrhEtaPt->GetYaxis()->SetRangeUser(ptBinEdgesv[0],ptBinEdgesv[ptNbins-2]);
       CPlot plotErrhEtaPt("errhetapt","","probe #eta","probe p_{T} [GeV/c]");
       if(doAbsEta) plotErrhEtaPt.SetXTitle("probe |#eta|");
       plotErrhEtaPt.AddHist2D(hErrhEtaPt,"COLZ");
@@ -1022,21 +1027,21 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
                    const Int_t sigpass, const Int_t bkgpass, const Int_t sigfail, const Int_t bkgfail, 
 		   const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
 		   const TString format, const Bool_t doAbsEta, const double lumi, const TString yaxislabel, const int charge)
-{  
+{ 
+
   TCanvas *cpass = MakeCanvas("cpass","cpass",720,540);
   cpass->SetWindowPosition(cpass->GetWindowTopX()+cpass->GetBorderSize()+800,0);
   TCanvas *cfail = MakeCanvas("cfail","cfail",720,540); 
   cfail->SetWindowPosition(cfail->GetWindowTopX()+cfail->GetBorderSize()+800,cpass->GetWindowTopX()+cfail->GetBorderSize()+540);
-  
+
   for(Int_t iy=0; iy<hEff->GetNbinsY(); iy++) {
     for(Int_t ix=0; ix<hEff->GetNbinsX(); ix++) {
       Int_t ibin = iy*(hEff->GetNbinsX()) + ix;
-
       ifstream rfile;
-      char rname[100];
+      char rname[200];
       sprintf(rname,"%s/fitres%s_%i.txt",CPlot::sOutDir.Data(),name.Data(),ibin);
       rfile.open(rname);
-      
+
       Double_t eff, errl, errh;
       if(rfile.is_open()) {	
 	parseFitResults(rfile,eff,errl,errh);
@@ -1484,6 +1489,9 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		  const TString name, const Double_t massLo, const Double_t massHi, const TString format, const Bool_t doAbsEta,
 		  TCanvas *cpass, TCanvas *cfail,const double lumi)
 {
+  // skip ECAL gap region
+  if(fabs(xbinLo==1.4442) && fabs(xbinHi)==1.566) return;
+
   Float_t m;
   Double_t w;
   char pname[50];
@@ -1542,7 +1550,7 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   sprintf(effstr,"#varepsilon = %.4f_{ -%.4f}^{ +%.4f}",resEff,resErrl,resErrh);
   
   char lumitext[100]; // lumi label
-  sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
 
   //
   // Plot passing probes
@@ -1560,17 +1568,16 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   sprintf(ylabel,"Events / %.1f GeV/c^{2}",(Double_t)BIN_SIZE_PASS);
   CPlot plotPass(pname,"Passing probes","tag-probe mass [GeV/c^{2}]",ylabel);
   plotPass.AddHist1D(hpass,"E");
-  plotPass.AddTextBox(binlabelx,0.21,0.85,0.51,0.90,0,kBlack,-1);
+  plotPass.AddTextBox(binlabelx,0.21,0.78,0.51,0.83,0,kBlack,-1);
   if((name.CompareTo("etapt")==0) || (name.CompareTo("etaphi")==0)) {
-    plotPass.AddTextBox(binlabely,0.21,0.80,0.51,0.85,0,kBlack,-1);        
-    plotPass.AddTextBox(yield,0.21,0.76,0.51,0.80,0,kBlack,-1);    
+    plotPass.AddTextBox(binlabely,0.21,0.73,0.51,0.78,0,kBlack,-1);        
+    plotPass.AddTextBox(yield,0.21,0.69,0.51,0.73,0,kBlack,-1);    
   } else {
     plotPass.AddTextBox(yield,0.21,0.81,0.51,0.85,0,kBlack,-1);
   }
   plotPass.AddTextBox(effstr,0.70,0.85,0.95,0.90,0,kBlack,-1);
-  plotPass.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  //plotPass.AddTextBox(lumitext,0.58,0.70,0.93,0.76,0);
-  plotPass.AddTextBox(lumitext,0.62,0.73,0.95,0.80,0);
+  plotPass.AddTextBox("CMS Preliminary",0.19,0.83,0.54,0.89,0);
+  plotPass.AddTextBox(lumitext,0.62,0.92,0.94,0.99,0,kBlack,-1);
   plotPass.Draw(cpass,kTRUE,format);
   
   //
@@ -1589,17 +1596,16 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   sprintf(ylabel,"Events / %.1f GeV/c^{2}",(Double_t)BIN_SIZE_FAIL);
   CPlot plotFail(pname,"Failing probes","tag-probe mass [GeV/c^{2}]",ylabel);
   plotFail.AddHist1D(hfail,"E");
-  plotFail.AddTextBox(binlabelx,0.21,0.85,0.51,0.90,0,kBlack,-1);
+  plotFail.AddTextBox(binlabelx,0.21,0.78,0.51,0.83,0,kBlack,-1);
   if((name.CompareTo("etapt")==0) || (name.CompareTo("etaphi")==0)) {
-    plotFail.AddTextBox(binlabely,0.21,0.80,0.51,0.85,0,kBlack,-1);    
-    plotFail.AddTextBox(yield,0.21,0.76,0.51,0.80,0,kBlack,-1);    
+    plotFail.AddTextBox(binlabely,0.21,0.73,0.51,0.78,0,kBlack,-1);    
+    plotFail.AddTextBox(yield,0.21,0.69,0.51,0.73,0,kBlack,-1);    
   } else {
     plotFail.AddTextBox(yield,0.21,0.81,0.51,0.85,0,kBlack,-1);
   }
   plotFail.AddTextBox(effstr,0.70,0.85,0.95,0.90,0,kBlack,-1);
-  plotFail.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  //plotFail.AddTextBox(lumitext,0.58,0.70,0.93,0.76,0);
-  plotFail.AddTextBox(lumitext,0.62,0.73,0.95,0.80,0);
+  plotFail.AddTextBox("CMS Preliminary",0.19,0.83,0.54,0.89,0);
+  plotFail.AddTextBox(lumitext,0.62,0.92,0.94,0.99,0,kBlack,-1);
   plotFail.Draw(cfail,kTRUE,format);
   
   delete hpass;
@@ -1614,6 +1620,9 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
 		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail, const double lumi, const TString yaxislabel, const int charge)
 {
+
+  // skip ECAL gap region
+  if(fabs(xbinLo==1.4442) && fabs(xbinHi==1.566)) return;
 
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
   m.setBins(10000);
@@ -1711,7 +1720,36 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==25 && ybinHi==40) {
     bkgPass = new CErfExpo(m,kTRUE);
     nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
   } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  // with coarse eta binning
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.4 && xbinHi==-2.0 && ybinLo==25 && ybinHi==8000) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.0 && xbinHi==-1.0 && ybinLo==25 && ybinHi==8000) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.0 && xbinHi==2.0 && ybinLo==25 && ybinHi==8000) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.4 && ybinLo==25 && ybinHi==8000) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  // with fine pT binning
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==25 && xbinHi==30 && ybinLo==0 && ybinHi==0) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==0 && ybinHi==0) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==0.9 && xbinHi==1.2 && ybinLo==0 && ybinHi==0) {
+    bkgPass = new CErfExpo(m,kTRUE);
+    nflpass += 3;
+  } else if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==0 && ybinHi==0) {
     bkgPass = new CErfExpo(m,kTRUE);
     nflpass += 3;
   } else if(bkgpass==1) { 
@@ -1833,12 +1871,16 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 
   // Special conditions for failing fits
   // *** Electron GSF+ID+ISO efficiency ***
-  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.4442 && xbinHi==-1.0 && ybinLo==55 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.4442 && xbinHi==-1.0 && ybinLo==55 && ybinHi==8000) { Nsig.setVal(0.8*NsigMax); Nsig.setRange(0,NsigMax); }
+  // with coarse eta binning
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.5 && xbinHi==-1.566 && ybinLo==25 && ybinHi==8000) { Nsig.setRange(0,NsigMax); NbkgPass.setRange(0,NbkgPassMax); }
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.566 && xbinHi==2.5 && ybinLo==25 && ybinHi==8000) { NbkgPass.setRange(0,NbkgPassMax); NbkgFail.setVal(0.3*NbkgFailMax); }
   // *** Muon standalone efficiency ***
   if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) { Nsig.setRange(0,NsigMax); }
   if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==0.9 && xbinHi==1.2 && ybinLo==40 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
   // *** Muon tracking efficiency ***
-  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); NbkgPass.setRange(0,NbkgPassMax); NbkgFail.setRange(0,NbkgFailMax); }
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) { Nsig.setVal(0.8*NsigMax); NbkgPass.setRange(0,NbkgPassMax); NbkgFail.setRange(0,NbkgFailMax); }
 
   RooFormulaVar NsigPass("NsigPass","eff*Nsig",RooArgList(eff,Nsig));
   RooFormulaVar NsigFail("NsigFail","(1.0-eff)*Nsig",RooArgList(eff,Nsig));
@@ -1871,8 +1913,13 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 
   int strategy = 2;
   if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.4442 && xbinHi==-1.0 && ybinLo==55 && ybinHi==8000) strategy = 1;
-  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.2 && xbinHi==2.1 && ybinLo==25 && ybinHi==40) strategy = 1;
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==30 && xbinHi==35 && ybinLo==0 && ybinHi==0) strategy = 1;
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==35 && xbinHi==40 && ybinLo==0 && ybinHi==0) strategy = 1;
+  if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-1.0 && xbinHi==-0.5 && ybinLo==0 && ybinHi==0) strategy = 1;
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) strategy = 1;
   if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==-2.4 && xbinHi==-2.1 && ybinLo==40 && ybinHi==8000) strategy = 1;
+  if(yaxislabel.CompareTo("tracking")==0 && charge==0 && xbinLo==1.0 && xbinHi==2.0 && ybinLo==25 && ybinHi==8000) strategy = 1;
+  if(yaxislabel.CompareTo("selection")==0 && charge==0 && xbinLo==50 && xbinHi==60 && ybinLo==0 && ybinHi==0) strategy = 1;
 
   RooFitResult *fitResult=0;
   fitResult = totalPdf.fitTo(*dataCombined,
@@ -1927,7 +1974,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   modelFail->plotOn(mframeFail,Components("backgroundFail"),LineStyle(kDashed),LineColor(kRed));
   
   char lumitext[100]; // lumi label
-  sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
 
   //
   // Plot passing probes
@@ -1941,22 +1988,27 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   if(bkgpass>0)
     sprintf(nbkgstr,"N_{bkg} = %.1f #pm %.1f",NbkgPass.getVal(),NbkgPass.getPropagatedError(*fitResult));
   CPlot plotPass(pname,mframePass,"Passing probes","tag-probe mass [GeV/c^{2}]",ylabel);
-  plotPass.AddTextBox(binlabelx,0.21,0.85,0.51,0.90,0,kBlack,-1);
+  plotPass.AddTextBox(binlabelx,0.21,0.78,0.51,0.83,0,kBlack,-1);
   if((name.CompareTo("etapt")==0) || (name.CompareTo("etaphi")==0)) {
-    plotPass.AddTextBox(binlabely,0.21,0.80,0.51,0.85,0,kBlack,-1);        
-    plotPass.AddTextBox(yield,0.21,0.76,0.51,0.80,0,kBlack,-1);    
+    plotPass.AddTextBox(binlabely,0.21,0.73,0.51,0.78,0,kBlack,-1);        
+    plotPass.AddTextBox(yield,0.21,0.69,0.51,0.73,0,kBlack,-1);    
   } else {
     plotPass.AddTextBox(yield,0.21,0.81,0.51,0.85,0,kBlack,-1);
   }
   plotPass.AddTextBox(effstr,0.70,0.85,0.94,0.90,0,kBlack,-1);
-  if(bkgpass>0)
-    plotPass.AddTextBox(0.70,0.68,0.94,0.83,0,kBlack,-1,2,nsigstr,nbkgstr);//,chi2str);
-  else
-    plotPass.AddTextBox(0.70,0.73,0.94,0.83,0,kBlack,-1,1,nsigstr);//,chi2str);
-  plotPass.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotPass.AddTextBox(lumitext,0.62,0.60,0.95,0.68,0,kBlack,-1);
+  if(bkgpass>0) {
+    plotPass.AddTextBox(0.70,0.68,0.94,0.83,0,kBlack,-1,2,nsigstr,nbkgstr);
+    plotPass.AddTextBox(chi2str,0.70,0.62,0.94,0.67,0,kBlack,0);
+  } else {
+    plotPass.AddTextBox(0.70,0.73,0.94,0.83,0,kBlack,-1,1,nsigstr);
+    plotPass.AddTextBox(chi2str,0.70,0.62,0.94,0.67,0,kBlack,0);
+  }
+  plotPass.AddTextBox("CMS Preliminary",0.19,0.83,0.54,0.89,0);
+  plotPass.AddTextBox(lumitext,0.62,0.92,0.94,0.99,0,kBlack,-1);
+  if(yaxislabel.CompareTo("supercluster")==0 && xbinLo==0.0 && xbinHi==1.4442 && ybinLo==25 && ybinHi==100) plotPass.SetYRange(0,2000);
+  else if(yaxislabel.CompareTo("supercluster")==0 && xbinLo==1.566 && xbinHi==2.5 && ybinLo==25 && ybinHi==100) plotPass.SetYRange(0,350);
   plotPass.Draw(cpass,kTRUE,format);
- 
+
   //
   // Plot failing probes
   //
@@ -1968,17 +2020,20 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   sprintf(nbkgstr,"N_{bkg} = %.1f #pm %.1f",NbkgFail.getVal(),NbkgFail.getPropagatedError(*fitResult));
   sprintf(chi2str,"#chi^{2}/DOF = %.3f",mframePass->chiSquare(nflfail));
   CPlot plotFail(pname,mframeFail,"Failing probes","tag-probe mass [GeV/c^{2}]",ylabel);
-  plotFail.AddTextBox(binlabelx,0.21,0.85,0.51,0.90,0,kBlack,-1);
+  plotFail.AddTextBox(binlabelx,0.21,0.75,0.51,0.80,0,kBlack,-1);
   if((name.CompareTo("etapt")==0) || (name.CompareTo("etaphi")==0)) {
-    plotFail.AddTextBox(binlabely,0.21,0.80,0.51,0.85,0,kBlack,-1);    
-    plotFail.AddTextBox(yield,0.21,0.76,0.51,0.80,0,kBlack,-1);    
+    plotFail.AddTextBox(binlabely,0.21,0.70,0.51,0.75,0,kBlack,-1);    
+    plotFail.AddTextBox(yield,0.21,0.66,0.51,0.70,0,kBlack,-1);    
   } else {
     plotFail.AddTextBox(yield,0.21,0.81,0.51,0.85,0,kBlack,-1);
   }
   plotFail.AddTextBox(effstr,0.70,0.85,0.94,0.90,0,kBlack,-1);  
-  plotFail.AddTextBox(0.70,0.68,0.94,0.83,0,kBlack,-1,2,nsigstr,nbkgstr);//,chi2str);
-  plotFail.AddTextBox(lumitext,0.62,0.60,0.95,0.68,0,kBlack,-1);
-  plotFail.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+  plotFail.AddTextBox(0.70,0.68,0.94,0.83,0,kBlack,-1,2,nsigstr,nbkgstr);
+  plotFail.AddTextBox(chi2str,0.70,0.62,0.94,0.67,0,kBlack,-1);
+  plotFail.AddTextBox("CMS Preliminary",0.19,0.83,0.54,0.89,0);
+  plotFail.AddTextBox(lumitext,0.62,0.92,0.94,0.99,0,kBlack,-1);
+  if(yaxislabel.CompareTo("supercluster")==0 && xbinLo==0.0 && xbinHi==1.4442 && ybinLo==25 && ybinHi==100) plotFail.SetYRange(0,200);
+  else if(yaxislabel.CompareTo("supercluster")==0 && xbinLo==1.566 && xbinHi==2.5 && ybinLo==25 && ybinHi==100) plotFail.SetYRange(0,100);
   plotFail.Draw(cfail,kTRUE,format);  
 
   //
