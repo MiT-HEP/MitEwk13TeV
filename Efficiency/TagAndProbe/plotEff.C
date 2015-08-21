@@ -1873,6 +1873,8 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   // with coarse eta binning
   if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==-2.5 && xbinHi==-1.566 && ybinLo==25 && ybinHi==8000) { Nsig.setRange(0,NsigMax); NbkgPass.setRange(0,NbkgPassMax); }
   if(yaxislabel.CompareTo("GSF+ID+Iso")==0 && charge==0 && xbinLo==1.566 && xbinHi==2.5 && ybinLo==25 && ybinHi==8000) { NbkgPass.setRange(0,NbkgPassMax); NbkgFail.setVal(0.3*NbkgFailMax); }
+  // *** Electron GSF efficiency ***
+  if(yaxislabel.CompareTo("GSF")==0 && charge==0 && xbinLo==2.0 && xbinHi==2.5 && ybinLo==25 && ybinHi==8000) { NbkgFail.setRange(0,NbkgFailMax); }
   // *** Muon standalone efficiency ***
   if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40) { Nsig.setRange(0,NsigMax); }
   if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo==0.9 && xbinHi==1.2 && ybinLo==40 && ybinHi==8000) { Nsig.setRange(0,NsigMax); }
