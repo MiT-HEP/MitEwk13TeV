@@ -72,7 +72,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
   TString format = "png";
 
   char lumitext[300]; // lumi label
-  sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -303,14 +303,15 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
 
       TGraphAsymmErrors *grScaleEta = scale_vs_eta_per_ptv[ig];
 
+      // Remove ECAL gap
       if(xaxislabel.CompareTo("Supercluster")==0) {
-        //grMCEffEta->RemovePoint(2);   grMCEffEta->RemovePoint(8);
-        //grDataEffEta->RemovePoint(2); grDataEffEta->RemovePoint(8);
-        //grScaleEta->RemovePoint(2);   grScaleEta->RemovePoint(8);
+        grMCEffEta->RemovePoint(2);   grMCEffEta->RemovePoint(8);
+        grDataEffEta->RemovePoint(2); grDataEffEta->RemovePoint(8);
+        grScaleEta->RemovePoint(2);   grScaleEta->RemovePoint(8);
         // Comment out the above 3 lines and uncomment the next 3 lines for electron supercluster efficiencies
-        grMCEffEta->RemovePoint(1);
-        grDataEffEta->RemovePoint(1);
-        grScaleEta->RemovePoint(1);
+        //grMCEffEta->RemovePoint(1);
+        //grDataEffEta->RemovePoint(1);
+        //grScaleEta->RemovePoint(1);
       }
 
       // Add entries to legend

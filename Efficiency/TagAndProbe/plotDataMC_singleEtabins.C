@@ -72,7 +72,7 @@ void plotDataMC_singleEtabins(const TString outdir   = "Data/extra",
   TString format = "png";
 
   char lumitext[100]; // lumi label
-  sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
