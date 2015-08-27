@@ -414,7 +414,7 @@ void selectWm(const TString conf="wm.conf", // input file
               mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
               
               TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-              TVector2 vPuppiU = -1.0*(vPuppiMet);
+              TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
               puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
               puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 	      
@@ -447,13 +447,10 @@ void selectWm(const TString conf="wm.conf", // input file
 	  mvaMetPhi = info->mvaMETphi;
 	  mvaSumEt  = 0;
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-	  TVector2 vLepPt(vLep.Px(),vLep.Py());
-	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-	  TVector2 vpp;  vpp = vPuppi-vLepPt;
-          puppiMet   = vpp.Mod();
-	  puppiMetPhi = vpp.Phi();
+      puppiMet = info->puppET;
+      puppiMetPhi = info->puppETphi;
 	  puppiSumEt  = 0;
-	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (puppiMet) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),puppiMetPhi))) );
+	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodMuon->q;
 	  lep      = &vLep;
 	  
