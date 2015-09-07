@@ -28,63 +28,47 @@ using namespace std;
 
 enum {CTEQ=1, NNPDF, MSTW};
 
-void comEM(TString e_list, TString m_list, Double_t e_yield, Double_t m_yield, std::vector<Double_t> &combined);
+void toVec(TString e_list, std::vector<Double_t> &e_vec);
 
 void addPdf(CorrPlot *plot, Int_t pdf, TString label, Int_t color, Double_t x_xs, Double_t y_xs, std::vector<Double_t> &x, std::vector<Double_t> &y);
 
 void addData(CorrPlot *plot, TString label, Int_t color, Double_t x_xs, Double_t y_xs, std::vector<Double_t> &x, std::vector<Double_t> &y, Int_t doFill);
 
-void wpmCorrPlot() {
+void wpmCorrPlotFidM() {
 
   TString folder = "for2Dplots";
 
   // theory
-  Double_t wp_xs_nnpdf=11.33;
-  Double_t wm_xs_nnpdf=8.37;
+  Double_t wp_xs_nnpdf=11.33*0.440;
+  Double_t wm_xs_nnpdf=8.37*0.457;
 
-  Double_t wp_xs_cteq=11.50;
-  Double_t wm_xs_cteq=8.52;
+  Double_t wp_xs_cteq=11.50*0.436;
+  Double_t wm_xs_cteq=8.52*0.451;
 
-  Double_t wp_xs_mmht=11.58;
-  Double_t wm_xs_mmht=8.59;
-
-  // measured
-  Double_t wpe_yield=123267;
-  Double_t wpm_yield=169662;
-  Double_t wme_yield=99407;
-  Double_t wmm_yield=130277;
+  Double_t wp_xs_mmht=11.58*0.435;
+  Double_t wm_xs_mmht=8.59*0.453;
 
   //measured cross sections
-  Double_t wp_xs_meas = 11.74;
-  Double_t wm_xs_meas = 8.69;
+  Double_t wp_xs_meas = 5.17;
+  Double_t wm_xs_meas = 3.95;
 
   //statistical
-  Double_t wp_stat = 0.06;
-  Double_t wm_stat = 0.05;
+  Double_t wp_stat = 0.03;
+  Double_t wm_stat = 0.03;
 
   //lepton reco+id uncertainties
-  Double_t wpe_lep = 3.2*0.01; 
-  Double_t wme_lep = 3.2*0.01;
-  Double_t wpm_lep = 1.0*0.01;
-  Double_t wmm_lep = 1.0*0.01;
+  Double_t wp_lep = 1.0*0.01; 
+  Double_t wm_lep = 1.0*0.01;
 
   //background subtraction/modelling
-  Double_t wpe_bkg = 0.9*0.01;
-  Double_t wme_bkg = 1.9*0.01;
-  Double_t wpm_bkg = 0.1*0.01;
-  Double_t wmm_bkg = 0.1*0.01;
-
-  //theory
-  Double_t wpe_theo = 1.5*0.01;
-  Double_t wme_theo = 1.0*0.01;
-  Double_t wpm_theo = 2.0*0.01;
-  Double_t wmm_theo = 1.4*0.01;
+  Double_t wp_bkg = 0.1*0.01;
+  Double_t wm_bkg = 0.1*0.01;
 
   //lumi
-  Double_t wp_lumi = 1.41;
-  Double_t wm_lumi = 1.04;
+  Double_t wp_lumi = 0.62;
+  Double_t wm_lumi = 0.47;
 
-  CorrPlot plot("cplot","","#sigma^{tot}_{W}xBR(W^{-}#rightarrow l#nu) [nb]","#sigma^{tot}_{W}xBR(W^{+}#rightarrow l#nu) [nb]",7.5,10,10,13.5);
+  CorrPlot plot("cplot","","#sigma^{acc}_{W}xBR(W^{-}#rightarrow #mu#nu) [nb]","#sigma^{acc}_{W}xBR(W^{+}#rightarrow #mu#nu) [nb]",3.4,4.6,4.3,5.9);
 
   //data
   std::vector<Double_t> wmUncert;
@@ -92,18 +76,10 @@ void wpmCorrPlot() {
   wpUncert.push_back(wp_stat); wmUncert.push_back(0);
   wpUncert.push_back(0); wmUncert.push_back(wm_stat);
 
-  wpUncert.push_back(wp_xs_meas*(wpm_yield*wpm_lep)/(wpe_yield+wpm_yield)); wmUncert.push_back(wm_xs_meas*(wmm_yield*wmm_lep)/(wme_yield+wmm_yield));
-  wpUncert.push_back(wp_xs_meas*(wpe_yield*wpe_lep)/(wpe_yield+wpm_yield)); wmUncert.push_back(wm_xs_meas*(wme_yield*wme_lep)/(wme_yield+wmm_yield));
+  wpUncert.push_back(wp_xs_meas*wp_lep); wmUncert.push_back(wm_xs_meas*wm_lep);
 
-  wpUncert.push_back(wp_xs_meas*(wpm_yield*wpm_bkg)/(wpe_yield+wpm_yield)); wmUncert.push_back(0);
-  wpUncert.push_back(0);                                                    wmUncert.push_back(wm_xs_meas*(wmm_yield*wmm_bkg)/(wme_yield+wmm_yield));
-  wpUncert.push_back(wp_xs_meas*(wpe_yield*wpe_bkg)/(wpe_yield+wpm_yield)); wmUncert.push_back(0);
-  wpUncert.push_back(0);                                                    wmUncert.push_back(wm_xs_meas*(wme_yield*wme_bkg)/(wme_yield+wmm_yield));
-
-  wpUncert.push_back(wp_xs_meas*(wpm_yield*wpm_theo)/(wpe_yield+wpm_yield)); wmUncert.push_back(0);
-  wpUncert.push_back(0);                                                     wmUncert.push_back(wm_xs_meas*(wmm_yield*wmm_theo)/(wme_yield+wmm_yield));
-  wpUncert.push_back(wp_xs_meas*(wpe_yield*wpe_theo)/(wpe_yield+wpm_yield)); wmUncert.push_back(0);
-  wpUncert.push_back(0);                                                     wmUncert.push_back(wm_xs_meas*(wme_yield*wme_theo)/(wme_yield+wmm_yield));
+  wpUncert.push_back(wp_xs_meas*wp_bkg); wmUncert.push_back(0);
+  wpUncert.push_back(0);                  wmUncert.push_back(wm_xs_meas*wm_bkg);
 
   addData(&plot, "Data", kViolet, wm_xs_meas, wp_xs_meas, wmUncert, wpUncert,1);
 
@@ -112,99 +88,64 @@ void wpmCorrPlot() {
   addData(&plot, "Data, with Lumi", kBlack, wm_xs_meas, wp_xs_meas, wmUncert, wpUncert,0);
 
   std::vector<Double_t> ct14_minus;
-  comEM(folder+"/wme_ct14.txt",
-	folder+"/wmm_ct14.txt",
-	wme_yield,
-	wmm_yield,
+  toVec(folder+"/wmm_ct14.txt",
 	ct14_minus);
 
   std::vector<Double_t> ct14_plus;
-  comEM(folder+"/wpe_ct14.txt",
-	folder+"/wpm_ct14.txt",
-	wpe_yield,
-	wpm_yield,
+  toVec(folder+"/wpm_ct14.txt",
 	ct14_plus);
 
+  cout << wm_xs_cteq << ", " << wp_xs_cteq << endl;
   //CT14nlo
   addPdf(&plot, CTEQ, "CT14nlo", kGreen, wm_xs_cteq, wp_xs_cteq, ct14_minus, ct14_plus);
 
   std::vector<Double_t> nnpdf23_minus;
-  comEM(folder+"/wme_nnpdf30.txt",
-	folder+"/wmm_nnpdf30.txt",
-	wme_yield,
-	wmm_yield,
+  toVec(folder+"/wmm_nnpdf30.txt",
 	nnpdf23_minus);
 
   std::vector<Double_t> nnpdf23_plus;
-  comEM(folder+"/wpe_nnpdf30.txt",
-	folder+"/wpm_nnpdf30.txt",
-	wpe_yield,
-	wpm_yield,
+  toVec(folder+"/wpm_nnpdf30.txt",
 	nnpdf23_plus);
 
   //NNPDF2.3nlo
   addPdf(&plot, NNPDF, "NNPDF3.0nlo", kBlue, wm_xs_nnpdf, wp_xs_nnpdf, nnpdf23_minus, nnpdf23_plus);
 
   std::vector<Double_t> mstw2008_minus;
-  comEM(folder+"/wme_mmht2014.txt",
-	folder+"/wmm_mmht2014.txt",
-	wme_yield,
-	wmm_yield,
+  toVec(folder+"/wmm_mmht2014.txt",
 	mstw2008_minus);
 
   std::vector<Double_t> mstw2008_plus;
-  comEM(folder+"/wpe_mmht2014.txt",
-	folder+"/wpm_mmht2014.txt",
-	wpe_yield,
-	wpm_yield,
+  toVec(folder+"/wpm_mmht2014.txt",
 	mstw2008_plus);
 
   //MSTW2008
   addPdf(&plot, MSTW, "MMMHT2014nlo", kRed, wm_xs_mmht, wp_xs_mmht, mstw2008_minus, mstw2008_plus);
 
   TCanvas *c1 = MakeCanvas("c1", "", 800, 600);
-  plot.Draw(c1, "wpm_inc.png",42);
+  plot.Draw(c1, "wpm_fid_mu.png",42);
 
 }
 
-void comEM(TString e_list, 
-	   TString m_list,
-	   Double_t e_yield,
-	   Double_t m_yield,
-	   std::vector<Double_t> &combined) {
+void toVec(TString e_list, 
+	   std::vector<Double_t> &e_vec) {
 
   ifstream ifs;
   ifs.open(e_list);
   assert(ifs.is_open());
   string line;
 
-  vector<Double_t>  vE;
   while (getline(ifs,line)) {
     stringstream ss(line);
     Double_t acc;
     ss >> acc;
-    vE.push_back(acc);
+    e_vec.push_back(acc);
   }
   ifs.close();
 
-  ifs.open(m_list);
-  assert(ifs.is_open());
-
-  vector<Double_t> vM;
-  while (getline(ifs,line)) {
-    stringstream ss(line);
-    Double_t acc;
-    ss >> acc;
-    vM.push_back(acc);
+  for (UInt_t i=1; i<e_vec.size(); i++) {
+    e_vec[i]/=e_vec[0];
   }
-  ifs.close();
-
-  combined.push_back(1.0);
-
-  for (UInt_t i=1; i<vE.size(); i++) {
-    Double_t c = (e_yield/(e_yield+m_yield))*(vE[i]/vE[0]) + (m_yield/(e_yield+m_yield))*(vM[i]/vM[0]);
-    combined.push_back(c);
-  }
+  e_vec[0]=1.0;
 
 }
 
@@ -249,26 +190,26 @@ void addPdf(CorrPlot *plot,
     covMatrix(1,0)+=dX*dY;
   }
 
-  cout << "matrix: " << endl;
-  cout << covMatrix(0,0) << " " << covMatrix(1,0) << endl;
-  cout << covMatrix(0,1) << " " << covMatrix(1,1) << endl;
+  //cout << "matrix: " << endl;
+  //cout << covMatrix(0,0) << " " << covMatrix(1,0) << endl;
+  //cout << covMatrix(0,1) << " " << covMatrix(1,1) << endl;
 
   TVectorD eigVals(2); eigVals=TMatrixDSymEigen(covMatrix).GetEigenValues();
   TMatrixD eigVecs(2,2); eigVecs=TMatrixDSymEigen(covMatrix).GetEigenVectors();
   
-  cout << "eigen-values" << endl;
-  cout << eigVals(0) << " " << eigVals(1) << endl;
-  cout << "eigen-vectors: " << endl;
-  cout << eigVecs(0,0) << " " << eigVecs(1,0) << " " << eigVecs(0,1) << " " << eigVecs(1,1) << endl;
+  //cout << "eigen-values" << endl;
+  //cout << eigVals(0) << " " << eigVals(1) << endl;
+  //cout << "eigen-vectors: " << endl;
+  //cout << eigVecs(0,0) << " " << eigVecs(1,0) << " " << eigVecs(0,1) << " " << eigVecs(1,1) << endl;
   
   TLorentzVector vec(0,0,0,0);
   vec.SetPx(eigVecs(0,0));
   vec.SetPy(eigVecs(1,0));
 
-  cout << x[0] << " " << y[0] << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
+  //cout << x[0] << " " << y[0] << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
 
   TEllipse *ell = new TEllipse(x_xs*x[0],y_xs*y[0],sqrt(eigVals(0)),sqrt(eigVals(1)),0,360,vec.Phi()/TMath::Pi()*180);
-  //cout << "00000" << endl;
+  ////cout << "00000" << endl;
   plot->AddCorrPlot(nom, ell, label, color);
 }
 
@@ -288,7 +229,7 @@ void addData(CorrPlot *plot,
   TMatrixDSym covMatrix(2); covMatrix=0;
   for (UInt_t i=0; i<x.size(); i++) {
     gr->SetPoint(i,x[i],y[i]);
-    cout << x[i] << ", " << y[i] << endl;
+    //cout << x[i] << ", " << y[i] << endl;
     Double_t dX=x[i];
     Double_t dY=y[i];
     
@@ -298,17 +239,17 @@ void addData(CorrPlot *plot,
     covMatrix(1,0)+=dX*dY;
   }
 
-  cout << "matrix: " << endl;
-  cout << covMatrix(0,0) << " " << covMatrix(1,0) << endl;
-  cout << covMatrix(0,1) << " " << covMatrix(1,1) << endl;
+  //cout << "matrix: " << endl;
+  //cout << covMatrix(0,0) << " " << covMatrix(1,0) << endl;
+  //cout << covMatrix(0,1) << " " << covMatrix(1,1) << endl;
 
   TVectorD eigVals(2); eigVals=TMatrixDSymEigen(covMatrix).GetEigenValues();
   TMatrixD eigVecs(2,2); eigVecs=TMatrixDSymEigen(covMatrix).GetEigenVectors();
   
-  cout << "eigen-values" << endl;
-  cout << eigVals(0) << " " << eigVals(1) << endl;
-  cout << "eigen-vectors: " << endl;
-  cout << eigVecs(0,0) << " " << eigVecs(1,0) << " " << eigVecs(0,1) << " " << eigVecs(1,1) << endl;
+  //cout << "eigen-values" << endl;
+  //cout << eigVals(0) << " " << eigVals(1) << endl;
+  //cout << "eigen-vectors: " << endl;
+  //cout << eigVecs(0,0) << " " << eigVecs(1,0) << " " << eigVecs(0,1) << " " << eigVecs(1,1) << endl;
   
   TLorentzVector vec(0,0,0,0);
   vec.SetPx(eigVecs(0,0));
@@ -317,7 +258,6 @@ void addData(CorrPlot *plot,
   cout << x_xs << " " << y_xs << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
 
   TEllipse *ell = new TEllipse(x_xs,y_xs,sqrt(eigVals(0)),sqrt(eigVals(1)),0,360,vec.Phi()/TMath::Pi()*180);
-  //cout << "00000" << endl;
   if (doFill) plot->AddCorrPlot(nom, ell, label, color, kFullDotLarge, 1, 1001);
   else 
     plot->AddCorrPlot(nom, ell, label, color);
