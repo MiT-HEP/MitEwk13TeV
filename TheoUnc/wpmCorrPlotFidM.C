@@ -39,14 +39,16 @@ void wpmCorrPlotFidM() {
   TString folder = "for2Dplots";
 
   // theory
-  Double_t wp_xs_nnpdf=11.33*0.440;
-  Double_t wm_xs_nnpdf=8.37*0.457;
+  Double_t wp_xs_nnpdf=11.33*0.440428;
+  Double_t wm_xs_nnpdf=8.37*0.457414;
 
-  Double_t wp_xs_cteq=11.50*0.436;
-  Double_t wm_xs_cteq=8.52*0.451;
+  cout << wp_xs_nnpdf << ", " << wm_xs_nnpdf << endl;
 
-  Double_t wp_xs_mmht=11.58*0.435;
-  Double_t wm_xs_mmht=8.59*0.453;
+  Double_t wp_xs_cteq=11.50*0.43837;
+  Double_t wm_xs_cteq=8.52*0.456915;
+
+  Double_t wp_xs_mmht=11.58*0.438495;
+  Double_t wm_xs_mmht=8.59*0.458218;
 
   //measured cross sections
   Double_t wp_xs_meas = 5.17;
@@ -95,7 +97,6 @@ void wpmCorrPlotFidM() {
   toVec(folder+"/wpm_ct14.txt",
 	ct14_plus);
 
-  cout << wm_xs_cteq << ", " << wp_xs_cteq << endl;
   //CT14nlo
   addPdf(&plot, CTEQ, "CT14nlo", kGreen, wm_xs_cteq, wp_xs_cteq, ct14_minus, ct14_plus);
 
@@ -255,7 +256,7 @@ void addData(CorrPlot *plot,
   vec.SetPx(eigVecs(0,0));
   vec.SetPy(eigVecs(1,0));
 
-  cout << x_xs << " " << y_xs << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
+  //cout << x_xs << " " << y_xs << " " << sqrt(eigVals(0)) << " " << sqrt(eigVals(1)) << " " << vec.Phi() << " " << vec.Phi()/TMath::Pi()*180 << endl;
 
   TEllipse *ell = new TEllipse(x_xs,y_xs,sqrt(eigVals(0)),sqrt(eigVals(1)),0,360,vec.Phi()/TMath::Pi()*180);
   if (doFill) plot->AddCorrPlot(nom, ell, label, color, kFullDotLarge, 1, 1001);

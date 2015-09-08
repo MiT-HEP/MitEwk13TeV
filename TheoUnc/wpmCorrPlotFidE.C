@@ -39,14 +39,15 @@ void wpmCorrPlotFidE() {
   TString folder = "for2Dplots";
 
   // theory
-  Double_t wp_xs_nnpdf=11.33*0.427;
-  Double_t wm_xs_nnpdf=8.37*0.441;
+  Double_t wp_xs_nnpdf=11.33*0.423065;
+  Double_t wm_xs_nnpdf=8.37*0.43617;
+  cout << wp_xs_nnpdf << ", " << wm_xs_nnpdf << endl;
 
-  Double_t wp_xs_cteq=11.50*0.422;
-  Double_t wm_xs_cteq=8.52*0.437;
+  Double_t wp_xs_cteq=11.50*0.422735;
+  Double_t wm_xs_cteq=8.52*0.436485;
 
-  Double_t wp_xs_mmht=11.58*0.421;
-  Double_t wm_xs_mmht=8.59*0.435;
+  Double_t wp_xs_mmht=11.58*0.422139;
+  Double_t wm_xs_mmht=8.59*0.435294;
 
   //measured cross sections
   Double_t wp_xs_meas = 4.96;
@@ -95,7 +96,6 @@ void wpmCorrPlotFidE() {
   toVec(folder+"/wpe_ct14.txt",
 	ct14_plus);
 
-  cout << wm_xs_cteq << ", " << wp_xs_cteq << endl;
   //CT14nlo
   addPdf(&plot, CTEQ, "CT14nlo", kGreen, wm_xs_cteq, wp_xs_cteq, ct14_minus, ct14_plus);
 

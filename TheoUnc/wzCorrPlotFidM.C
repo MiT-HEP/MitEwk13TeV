@@ -42,20 +42,23 @@ void wzCorrPlotFidM() {
   CorrPlot plot("cplot","","#sigma^{acc}_{W}xBR(W#rightarrow #mu#nu) [nb]","#sigma^{acc}_{Z}xBR(Z#rightarrow #mu#mu) [nb]",7.9,10.5,0.6,0.8);
 
   // theory
-  Double_t w_xs_nnpdf=19.70*0.448;
-  Double_t wp_xs_nnpdf=11.33*0.440;
-  Double_t wm_xs_nnpdf=8.37*0.457;
-  Double_t z_xs_nnpdf=1.87*0.363;
 
-  Double_t w_xs_mmht=20.17*0.443;
-  Double_t wp_xs_mmht=11.58*0.435;
-  Double_t wm_xs_mmht=8.59*0.453;
-  Double_t z_xs_mmht=1.92*0.365;
+  Double_t wp_xs_nnpdf=11.33*0.440428;
+  Double_t wm_xs_nnpdf=8.37*0.457414;
+  Double_t w_xs_nnpdf=wm_xs_nnpdf+wp_xs_nnpdf;
+  Double_t z_xs_nnpdf=1.87*0.362546;
+  
+  cout << w_xs_nnpdf << ", " << z_xs_nnpdf << endl;
 
-  Double_t w_xs_cteq=20.02*0.442;
-  Double_t wp_xs_cteq=11.50*0.436;
-  Double_t wm_xs_cteq=8.52*0.451;
-  Double_t z_xs_cteq=1.91*0.366;
+  Double_t wp_xs_mmht=11.58*0.43837;
+  Double_t wm_xs_mmht=8.59*0.456915;
+  Double_t w_xs_mmht=wm_xs_mmht+wp_xs_mmht;
+  Double_t z_xs_mmht=1.92*0.362161;
+
+  Double_t wp_xs_cteq=11.50*0.438495;
+  Double_t wm_xs_cteq=8.52*0.458218;
+  Double_t w_xs_cteq=wp_xs_cteq+wm_xs_cteq;
+  Double_t z_xs_cteq=1.91*0.362458;
 
   // measured
   Double_t we_yield=299939;
@@ -116,7 +119,6 @@ void wzCorrPlotFidM() {
   toVec(folder+"/zee_ct14.txt",
 	ct14_z);
 
-  cout << w_xs_cteq << ", " << z_xs_cteq << ", " << ct14_w[0] << ", " << ct14_z[0] <<  endl;
   addPdf(&plot, CTEQ, "CT14nlo", kGreen, w_xs_cteq, z_xs_cteq, ct14_w, ct14_z);
 
   // NNPDF3.0nlo
@@ -146,7 +148,7 @@ void wzCorrPlotFidM() {
   addPdf(&plot, MSTW, "MMHT2014nlo", kRed, w_xs_mmht, z_xs_mmht, mmht2014_w, mmht2014_z);
 
   TCanvas *c1 = MakeCanvas("c1", "", 800, 600);
-  plot.Draw(c1, "wz_fid_ele.png",42);
+  plot.Draw(c1, "wz_fid_mu.png",42);
 
 }
 

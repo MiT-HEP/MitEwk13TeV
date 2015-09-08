@@ -42,20 +42,22 @@ void wzCorrPlotFidE() {
   CorrPlot plot("cplot","","#sigma^{acc}_{W}xBR(W#rightarrow e#nu) [nb]","#sigma^{acc}_{Z}xBR(Z#rightarrow ee) [nb]",7.5,10.2,0.55,0.77);
 
   // theory
-  Double_t w_xs_nnpdf=19.70*0.433;
-  Double_t wp_xs_nnpdf=11.33*0.427;
-  Double_t wm_xs_nnpdf=8.37*0.441;
-  Double_t z_xs_nnpdf=1.87*0.334;
+  Double_t wp_xs_nnpdf=11.33*0.423065;
+  Double_t wm_xs_nnpdf=8.37*0.43617;
+  Double_t w_xs_nnpdf=wp_xs_nnpdf+wm_xs_nnpdf;
+  Double_t z_xs_nnpdf=1.87*0.334706;
 
-  Double_t w_xs_mmht=20.17*0.427;
-  Double_t wp_xs_mmht=11.58*0.421;
-  Double_t wm_xs_mmht=8.59*0.435;
-  Double_t z_xs_mmht=1.92*0.336;
+  cout << w_xs_nnpdf << ", " << z_xs_nnpdf << endl;
 
-  Double_t w_xs_cteq=20.02*0.428;
-  Double_t wp_xs_cteq=11.50*0.422;
-  Double_t wm_xs_cteq=8.52*0.437;
-  Double_t z_xs_cteq=1.91*0.336;
+  Double_t wp_xs_mmht=11.58*0.422139;
+  Double_t wm_xs_mmht=8.59*0.435294;
+  Double_t w_xs_mmht=wp_xs_mmht+wm_xs_mmht;
+  Double_t z_xs_mmht=1.92*0.335192;
+
+  Double_t wp_xs_cteq=11.50*0.422735;
+  Double_t wm_xs_cteq=8.52*0.436485;
+  Double_t w_xs_cteq=wp_xs_cteq+wm_xs_cteq;;
+  Double_t z_xs_cteq=1.91*0.335572;
 
   // measured
   Double_t we_yield=222791;
