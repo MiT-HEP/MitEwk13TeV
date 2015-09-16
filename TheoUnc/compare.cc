@@ -506,7 +506,6 @@ Double_t calcAcc(Channel chan, Config f) {
 
 }
 
-
 TH1D* returnPlot(Channel chan, Config f, Int_t nbins, Double_t xmin, Double_t xmax, TString var) {
   
   TTree *t1 = (TTree*) f.file->Get("Events");
@@ -544,6 +543,32 @@ TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name) {
   for (Int_t i=1; i<h->GetNbinsX()+1; i++) {
     Double_t val = h->GetBinContent(i) - b->GetBinContent(i);
     if (b->GetBinContent(i)>0) hRelDiff->SetBinContent(i, val/b->GetBinContent(i));
+    else hRelDiff->SetBinContent(i, 0);
+  }
+  return hRelDiff;
+}
+
+TH1D* returnRelDiff(TH1D* h, TGraph* b, TString name) {
+  TH1D* hRelDiff = new TH1D(name, "", h->GetNbinsX(), h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax());
+  hRelDiff->SetLineColor(h->GetLineColor());
+  hRelDiff->SetLineStyle(h->GetLineStyle());
+  hRelDiff->SetLineWidth(h->GetLineWidth());
+
+  hRelDiff->GetYaxis()->SetTitleOffset(0.42);
+  hRelDiff->GetYaxis()->SetTitleSize(0.13);
+  hRelDiff->GetYaxis()->SetLabelSize(0.10);
+  hRelDiff->GetXaxis()->SetTitleOffset(1.2);
+  hRelDiff->GetXaxis()->SetTitleSize(0.13);
+  hRelDiff->GetXaxis()->SetLabelSize(0.12);
+  //hRelDiff->GetXaxis()->CenterTitle();
+  hRelDiff->GetYaxis()->CenterTitle();
+  hRelDiff->GetYaxis()->SetNdivisions(303,kTRUE);
+
+  for (Int_t i=1; i<h->GetNbinsX()+1; i++) {
+    Double_t x=0, y=0;
+    b->GetPoint(i-1, x, y);
+    Double_t val = h->GetBinContent(i) - y;
+    if (y!=0) hRelDiff->SetBinContent(i, val/y);
     else hRelDiff->SetBinContent(i, 0);
   }
   return hRelDiff;
