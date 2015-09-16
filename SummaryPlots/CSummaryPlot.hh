@@ -146,6 +146,8 @@ void CSummaryPlot::Draw(TCanvas *c, TString format)
   Double_t statErrComb = sqrt(statErr[0]*statErr[0]*wgt[0]*wgt[0] + statErr[1]*statErr[1]*wgt[1]*wgt[1]);
   Double_t systErrComb = sqrt(systErr[0]*systErr[0]*wgt[0]*wgt[0] + systErr[1]*systErr[1]*wgt[1]*wgt[1]);
   Double_t lumiErrComb = lumiErr[0]/val[0]*xval;
+
+  cout << "Combined " << setw(8) << valComb  << " +/- " << setw(7) << statErrComb   << " (stat) +/- " << setw(7) << systErrComb   << " (syst)" <<  setw(7) << lumiErrComb   << " (lumi)" << endl;
   
   //--------------------------------------------------------------------------------------------------------------
   // Drawing
