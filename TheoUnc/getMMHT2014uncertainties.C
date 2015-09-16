@@ -171,6 +171,22 @@ void getMMHT2014uncertainties() {
   vector<Double_t> wzmScaleA;
   for (UInt_t i=0; i<wpmScaleA.size(); i++) { wzmScaleA.push_back(((wpmScaleA[i]*wpXsec+wmmScaleA[i]*wmXsec)/(zmmScaleA[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
 
+  Double_t wewmNom=weNom/wmNom;
+  vector<Double_t> wewmScales;
+  for (UInt_t i=0; i<weScales.size(); i++) { wewmScales.push_back(weScales[i]/wmScales[i]); }
+
+  Double_t wewmNomA=weNomA/wmNomA;
+  vector<Double_t> wewmScaleA;
+  for (UInt_t i=0; i<weScaleA.size(); i++) { wewmScaleA.push_back(weScaleA[i]/wmScaleA[i]); }
+
+  Double_t zezmNom=zeeNom/zmmNom;
+  vector<Double_t> zezmScales;
+  for (UInt_t i=0; i<zeeScales.size(); i++) { zezmScales.push_back(zeeScales[i]/zmmScales[i]); }
+
+  Double_t zezmNomA=zeeNomA/zmmNomA;
+  vector<Double_t> zezmScaleA;
+  for (UInt_t i=0; i<zeeScaleA.size(); i++) { zezmScaleA.push_back(zeeScaleA[i]/zmmScaleA[i]); }
+
   cout << "PDF: MMHT2014 " << endl;
   cout << "W+m:      " << setprecision(3) <<  wpmNom  <<  endl;
   cout << "W-m:      " << setprecision(3) <<  wmmNom  <<  endl;
@@ -190,6 +206,9 @@ void getMMHT2014uncertainties() {
   cout << "W-/Z(e):  " << setprecision(3) <<  wmzeNom <<  endl;
   cout << "W/Z(e):   " << setprecision(3) <<  wzeNom  <<  endl;
   cout << "-----" << endl;
+  cout << "W(e)/W(m):   " << setprecision(3) <<  wewmNom  <<  endl;
+  cout << "Z(e)/Z(m):   " << setprecision(3) <<  zezmNom  <<  endl;
+  cout << "-----" << endl;
   cout << "W+m:      " << setprecision(3) << uncert(wpmScales,  wpmScaleA)  <<  endl;
   cout << "W-m:      " << setprecision(3) << uncert(wmmScales,  wmmScaleA)  <<  endl;
   cout << "W(m):     " << setprecision(3) << uncert(wmScales,   wmScaleA)   <<  endl;
@@ -207,6 +226,9 @@ void getMMHT2014uncertainties() {
   cout << "W+/Z(e):  " << setprecision(3) << uncert(wpzeScales, wpzeScaleA) <<  endl;
   cout << "W-/Z(e):  " << setprecision(3) << uncert(wmzeScales, wmzeScaleA) <<  endl;
   cout << "W/Z(e):   " << setprecision(3) << uncert(wzeScales,  wzeScaleA)  <<  endl;
+  cout << "-----" << endl;
+  cout << "W(e)/W(m):   " << setprecision(3) << uncert(wewmScales,  wewmScaleA)  <<  endl;
+  cout << "Z(e)/Z(m):   " << setprecision(3) << uncert(zezmScales,  zezmScaleA)  <<  endl;
 
 }
 void makeScaleVector(TString inDir, TString chan, Double_t &nom, vector<Double_t> &vScales, TString sname) {

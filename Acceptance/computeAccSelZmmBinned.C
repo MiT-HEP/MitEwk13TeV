@@ -61,25 +61,29 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+  
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
   
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -115,6 +119,8 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);  
 
+  TH2D *h=0;
+
   //
   // HLT efficiency
   //
@@ -135,6 +141,12 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);
   CEffUser2D zmmHLTEff_neg;
   zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
+
+  h =(TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt");
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
   
   //
   // Selection efficiency
@@ -156,7 +168,13 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);
   CEffUser2D zmmSelEff_neg;
   zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
- 
+
+  h =(TH2D*)dataSelEffFile_pos->Get("hEffEtaPt");
+  TH2D *hSelErr_pos = new TH2D("hSelErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hSelErr_neg = new TH2D("hSelErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+
   //
   // Standalone efficiency
   //
@@ -177,7 +195,13 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);
   CEffUser2D zmmStaEff_neg;
   zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt"));
- 
+
+  h =(TH2D*)dataStaEffFile_pos->Get("hEffEtaPt");
+  TH2D *hStaErr_pos = new TH2D("hStaErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hStaErr_neg = new TH2D("hStaErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+
   //
   // Tracker efficiency
   //
@@ -199,25 +223,29 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   CEffUser2D zmmTrkEff_neg;
   zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
 
+  h =(TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt");
+  TH2D *hTrkErr_pos = new TH2D("hTrkErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hTrkErr_neg = new TH2D("hTrkErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr        = new TClonesArray("baconhep::TMuon");
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
    
   // Variables to store acceptances and uncertainties (per input file)
-  vector<Double_t> nEvtsv, nSelv, nSelCorrv;
+  vector<Double_t> nEvtsv, nSelv;
+  vector<Double_t> nSelCorrv, nSelCorrVarv;
   vector<Double_t> accv, accCorrv;
-  vector<Double_t> accErrv, accCorrErrv;
+  vector<Double_t> accErrv, accErrCorrv;
 
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
-  UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");
-  UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",
-  //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09");
   
   //
   // loop through files
@@ -234,11 +262,13 @@ void computeAccSelZmmBinned(const TString conf,      // input file
     eventTree->SetBranchAddress("GenEvtInfo",        &gen); TBranch *genBr  = eventTree->GetBranch("GenEvtInfo");
     eventTree->SetBranchAddress("GenParticle",&genPartArr); TBranch* genPartBr = eventTree->GetBranch("GenParticle");
     eventTree->SetBranchAddress("Muon",          &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");   
+    eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
     nSelCorrv.push_back(0);
-    
+    nSelCorrVarv.push_back(0);
+
     //
     // loop over events
     //      
@@ -255,12 +285,17 @@ void computeAccSelZmmBinned(const TString conf,      // input file
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
       delete vec; delete lep1; delete lep2;
 
-      Double_t weight=gen->weight;
+      vertexArr->Clear();
+      vertexBr->GetEntry(ientry);
+      double npv  = vertexArr->GetEntries();
+      Double_t weight=gen->weight/23443.4;
+      weight*=h_rw->GetBinContent(npv+1);
+      //std::cout << weight << std::endl;
       nEvtsv[ifile]+=weight;
       
       // trigger requirement               
-      if(!(info->triggerBits[trigger])) continue;  
-      
+      if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
     
@@ -288,12 +323,11 @@ void computeAccSelZmmBinned(const TString conf,      // input file
 	  vMu2.SetPtEtaPhiM(mu2->pt, mu2->eta, mu2->phi, MUON_MASS);  
 
           // trigger match
-	  if(!(mu1->hltMatchBits[trigObjHLT]) && !(mu2->hltMatchBits[trigObjHLT])) continue;
+	  if(!isMuonTriggerObj(triggerMenu, mu1->hltMatchBits, kFALSE) && !isMuonTriggerObj(triggerMenu, mu2->hltMatchBits, kFALSE)) continue;
 	  
 	  // mass window
           TLorentzVector vDilep = vMu1 + vMu2;
           if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
-          
           
           /******** We have a Z candidate! HURRAY! ********/
           Double_t effdata, effmc;
@@ -337,47 +371,242 @@ void computeAccSelZmmBinned(const TString conf,      // input file
     
           effdata=1; effmc=1;
           if(mu1->q>0) { 
-            effdata *= dataStaEff_pos.getEff(fabs(mu1->eta), mu1->pt); 
-            effmc   *= zmmStaEff_pos.getEff(fabs(mu1->eta), mu1->pt); 
+            effdata *= dataStaEff_pos.getEff(mu1->eta, mu1->pt); 
+            effmc   *= zmmStaEff_pos.getEff(mu1->eta, mu1->pt); 
           } else {
-            effdata *= dataStaEff_neg.getEff(fabs(mu1->eta), mu1->pt); 
-            effmc   *= zmmStaEff_neg.getEff(fabs(mu1->eta), mu1->pt); 
+            effdata *= dataStaEff_neg.getEff(mu1->eta, mu1->pt); 
+            effmc   *= zmmStaEff_neg.getEff(mu1->eta, mu1->pt); 
           }
           if(mu2->q>0) {
-            effdata *= dataStaEff_pos.getEff(fabs(mu2->eta), mu2->pt); 
-            effmc   *= zmmStaEff_pos.getEff(fabs(mu2->eta), mu2->pt);
+            effdata *= dataStaEff_pos.getEff(mu2->eta, mu2->pt); 
+            effmc   *= zmmStaEff_pos.getEff(mu2->eta, mu2->pt);
           } else {
-            effdata *= dataStaEff_neg.getEff(fabs(mu2->eta), mu2->pt); 
-            effmc   *= zmmStaEff_neg.getEff(fabs(mu2->eta), mu2->pt);
+            effdata *= dataStaEff_neg.getEff(mu2->eta, mu2->pt); 
+            effmc   *= zmmStaEff_neg.getEff(mu2->eta, mu2->pt);
           }
           corr *= effdata/effmc;
     
           effdata=1; effmc=1;
           if(mu1->q>0) { 
-            effdata *= dataTrkEff_pos.getEff(fabs(mu1->eta), mu1->pt); 
-            effmc   *= zmmTrkEff_pos.getEff(fabs(mu1->eta), mu1->pt); 
+            effdata *= dataTrkEff_pos.getEff(mu1->eta, mu1->pt); 
+            effmc   *= zmmTrkEff_pos.getEff(mu1->eta, mu1->pt); 
           } else {
-            effdata *= dataTrkEff_neg.getEff(fabs(mu1->eta), mu1->pt); 
-            effmc   *= zmmTrkEff_neg.getEff(fabs(mu1->eta), mu1->pt); 
+            effdata *= dataTrkEff_neg.getEff(mu1->eta, mu1->pt); 
+            effmc   *= zmmTrkEff_neg.getEff(mu1->eta, mu1->pt); 
           }
           if(mu2->q>0) {
-            effdata *= dataTrkEff_pos.getEff(fabs(mu2->eta), mu2->pt); 
-            effmc   *= zmmTrkEff_pos.getEff(fabs(mu2->eta), mu2->pt);
+            effdata *= dataTrkEff_pos.getEff(mu2->eta, mu2->pt); 
+            effmc   *= zmmTrkEff_pos.getEff(mu2->eta, mu2->pt);
           } else {
-            effdata *= dataTrkEff_neg.getEff(fabs(mu2->eta), mu2->pt); 
-            effmc   *= zmmTrkEff_neg.getEff(fabs(mu2->eta), mu2->pt);
+            effdata *= dataTrkEff_neg.getEff(mu2->eta, mu2->pt); 
+            effmc   *= zmmTrkEff_neg.getEff(mu2->eta, mu2->pt);
           }
-          corr *= effdata/effmc;
-    
+          //corr *= effdata/effmc;
+	  
+	  // scale factor uncertainties                                                                                                                                         
+	  // TRACKER
+          if(mu1->q>0) {
+            Double_t effdata = dataTrkEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataTrkEff_pos.getErrLow(mu1->eta, mu1->pt), dataTrkEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmTrkEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(mu1->eta, mu1->pt), zmmTrkEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hTrkErr_pos->Fill(mu1->eta, mu1->pt, errTrk);
+          } else {
+            Double_t effdata = dataTrkEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataTrkEff_neg.getErrLow(mu1->eta, mu1->pt), dataTrkEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmTrkEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(mu1->eta, mu1->pt), zmmTrkEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hTrkErr_neg->Fill(mu1->eta, mu1->pt, errTrk);
+          }
+
+          if(mu2->q>0) {
+            Double_t effdata = dataTrkEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataTrkEff_pos.getErrLow(mu2->eta, mu2->pt), dataTrkEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmTrkEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(mu2->eta, mu2->pt), zmmTrkEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    /*   if(mu2->eta>1.2 && mu2->eta<2.1) 
+	      {
+		errTrk=0.0013;
+		}*/
+            hTrkErr_pos->Fill(mu2->eta, mu2->pt, errTrk);
+          } else {
+            Double_t effdata = dataTrkEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataTrkEff_neg.getErrLow(mu2->eta, mu2->pt), dataTrkEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmTrkEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(mu2->eta, mu2->pt), zmmTrkEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    /*  if(mu2->eta>1.2 && mu2->eta<2.1) 
+	      {
+		errTrk=0.0013;
+	      }
+	      hTrkErr_neg->Fill(mu2->eta, mu2->pt, errTrk);*/
+          }
+	  // STANDALONE
+          if(mu1->q>0) {
+            Double_t effdata = dataStaEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataStaEff_pos.getErrLow(mu1->eta, mu1->pt), dataStaEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmStaEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmStaEff_pos.getErrLow(mu1->eta, mu1->pt), zmmStaEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hStaErr_pos->Fill(mu1->eta, mu1->pt, errSta);
+          } else {
+            Double_t effdata = dataStaEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataStaEff_neg.getErrLow(mu1->eta, mu1->pt), dataStaEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmStaEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmStaEff_neg.getErrLow(mu1->eta, mu1->pt), zmmStaEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hStaErr_neg->Fill(mu1->eta, mu1->pt, errSta);
+          }
+
+          if(mu2->q>0) {
+            Double_t effdata = dataStaEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataStaEff_pos.getErrLow(mu2->eta, mu2->pt), dataStaEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmStaEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmStaEff_pos.getErrLow(mu2->eta, mu2->pt), zmmStaEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errSta = ((effdata/effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hStaErr_pos->Fill(mu2->eta, mu2->pt, errSta);
+          } else {
+            Double_t effdata = dataStaEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataStaEff_neg.getErrLow(mu2->eta, mu2->pt), dataStaEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmStaEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmStaEff_neg.getErrLow(mu2->eta, mu2->pt), zmmStaEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hStaErr_neg->Fill(mu2->eta, mu2->pt, errSta);
+	  }
+
+	  // SELECTION
+          if(mu1->q>0) {
+            Double_t effdata = dataSelEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataSelEff_pos.getErrLow(mu1->eta, mu1->pt), dataSelEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmSelEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmSelEff_pos.getErrLow(mu1->eta, mu1->pt), zmmSelEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hSelErr_pos->Fill(mu1->eta, mu1->pt, errSel);
+          } else {
+            Double_t effdata = dataSelEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataSelEff_neg.getErrLow(mu1->eta, mu1->pt), dataSelEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmSelEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmSelEff_neg.getErrLow(mu1->eta, mu1->pt), zmmSelEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hSelErr_neg->Fill(mu1->eta, mu1->pt, errSel);
+          }
+
+          if(mu2->q>0) {
+            Double_t effdata = dataSelEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataSelEff_pos.getErrLow(mu2->eta, mu2->pt), dataSelEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmSelEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmSelEff_pos.getErrLow(mu2->eta, mu2->pt), zmmSelEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hSelErr_pos->Fill(mu2->eta, mu2->pt, errSel);
+          } else {
+            Double_t effdata = dataSelEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataSelEff_neg.getErrLow(mu2->eta, mu2->pt), dataSelEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmSelEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmSelEff_neg.getErrLow(mu2->eta, mu2->pt), zmmSelEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hSelErr_neg->Fill(mu2->eta, mu2->pt, errSel);
+	  }
+
+	  //HLT
+          if(mu1->q>0) {
+            Double_t effdata = dataHLTEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(mu1->eta, mu1->pt), dataHLTEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmHLTEff_pos.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmHLTEff_pos.getErrLow(mu1->eta, mu1->pt), zmmHLTEff_pos.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_pos->Fill(mu1->eta, mu1->pt, errHLT);
+          } else {
+            Double_t effdata = dataHLTEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(mu1->eta, mu1->pt), dataHLTEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t effmc   = zmmHLTEff_neg.getEff(mu1->eta, mu1->pt);
+            Double_t errmc   = TMath::Max(zmmHLTEff_neg.getErrLow(mu1->eta, mu1->pt), zmmHLTEff_neg.getErrHigh(mu1->eta, mu1->pt));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_neg->Fill(mu1->eta, mu1->pt, errHLT);
+          }
+
+          if(mu2->q>0) {
+            Double_t effdata = dataHLTEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(mu2->eta, mu2->pt), dataHLTEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmHLTEff_pos.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmHLTEff_pos.getErrLow(mu2->eta, mu2->pt), zmmHLTEff_pos.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_pos->Fill(mu2->eta, mu2->pt, errHLT);
+          } else {
+            Double_t effdata = dataHLTEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(mu2->eta, mu2->pt), dataHLTEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t effmc   = zmmHLTEff_neg.getEff(mu2->eta, mu2->pt);
+            Double_t errmc   = TMath::Max(zmmHLTEff_neg.getErrLow(mu2->eta, mu2->pt), zmmHLTEff_neg.getErrHigh(mu2->eta, mu2->pt));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_neg->Fill(mu2->eta, mu2->pt, errHLT);
+          }
+	  
 	  nSelv[ifile]    +=weight;
 	  nSelCorrv[ifile]+=weight*corr;
+	  nSelCorrVarv[ifile]+=weight*weight*corr*corr;
         }
       }      
     }
-   
+
+    Double_t var=0;
+    for(Int_t iy=0; iy<=hHLTErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hHLTErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hHLTErr_pos->GetBinContent(ix,iy);
+        var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hHLTErr_neg->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hHLTErr_neg->GetNbinsX(); ix++) {
+        Double_t err=hHLTErr_neg->GetBinContent(ix,iy);
+        var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hSelErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hSelErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hSelErr_pos->GetBinContent(ix,iy);
+        var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hSelErr_neg->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hSelErr_neg->GetNbinsX(); ix++) {
+        Double_t err=hSelErr_neg->GetBinContent(ix,iy);
+        var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hTrkErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hTrkErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hTrkErr_pos->GetBinContent(ix,iy);
+        //var+=err*err;
+	var+=0.0;
+      }
+    }
+    for(Int_t iy=0; iy<=hTrkErr_neg->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hTrkErr_neg->GetNbinsX(); ix++) {
+        Double_t err=hTrkErr_neg->GetBinContent(ix,iy);
+	var+=0.0;
+        //var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hStaErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hStaErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hStaErr_pos->GetBinContent(ix,iy);
+	var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hStaErr_neg->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hStaErr_neg->GetNbinsX(); ix++) {
+        Double_t err=hStaErr_neg->GetBinContent(ix,iy);
+	var+=err*err;
+      }
+    }
+
+    nSelCorrVarv[ifile]+=var;
+
     // compute acceptances
-    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);     accErrv.push_back(accv[ifile]*sqrt((1.-accv[ifile])/nEvtsv[ifile]));
-    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); accCorrErrv.push_back(accCorrv[ifile]*sqrt((1.-accCorrv[ifile])/nEvtsv[ifile]));
+    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);     accErrv.push_back(accv[ifile]*sqrt((1.+accv[ifile])/nEvtsv[ifile]));
+    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); accErrCorrv.push_back(accCorrv[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
     
     delete infile;
     infile=0, eventTree=0;  
@@ -406,7 +635,7 @@ void computeAccSelZmmBinned(const TString conf,      // input file
     cout << endl;
     cout << "    *** Acceptance ***" << endl;
     cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    cout << "     SF corrected: " << accCorrv[ifile] << " +/- " << accCorrErrv[ifile] << endl;
+    cout << "     SF corrected: " << accCorrv[ifile] << " +/- " << accErrCorrv[ifile] << endl;
     cout << endl;
   }
   
@@ -430,7 +659,7 @@ void computeAccSelZmmBinned(const TString conf,      // input file
     txtfile << endl;
     txtfile << "    *** Acceptance ***" << endl;
     txtfile << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    txtfile << "     SF corrected: " << accCorrv[ifile] << " +/- " << accCorrErrv[ifile] << endl;
+    txtfile << "     SF corrected: " << accCorrv[ifile] << " +/- " << accErrCorrv[ifile] << endl;
     txtfile << endl;
   }
   txtfile.close();

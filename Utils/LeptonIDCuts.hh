@@ -3,7 +3,6 @@
 
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
-#include "BaconProd/Utils/interface/TriggerTools.hh"
 #include "BaconAna/DataFormats/interface/TElectron.hh"
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include <TMath.h>

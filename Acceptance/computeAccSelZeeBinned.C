@@ -23,6 +23,7 @@
 #include <string>                   // C++ string class
 #include <sstream>                  // class for parsing strings
 #include "TLorentzVector.h"         // 4-vector class
+#include <TRandom3.h>
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -30,7 +31,10 @@
 #include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"
 #include "BaconAna/DataFormats/interface/TElectron.hh"
+#include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
+
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -56,6 +60,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const Double_t PT_CUT     = 25;
   const Double_t ETA_CUT    = 2.5;
   const Double_t ELE_MASS   = 0.000511;
+
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
 
@@ -78,6 +83,10 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -174,21 +183,18 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   TClonesArray *genPartArr     = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
-  
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
+
   TFile *infile=0;
   TTree *eventTree=0;
   
   // Variables to store acceptances and uncertainties (per input file)
-  vector<Double_t> nEvtsv, nSelv, nSelCorrv;
-  vector<Double_t> statErr2v, effErr2v;
+  vector<Double_t> nEvtsv, nSelv;
+  vector<Double_t> nSelCorrv, nSelCorrVarv;
   vector<Double_t> accv, accCorrv;
-  vector<Double_t> accErrv, accCorrErrv;
+  vector<Double_t> accErrv, accErrCorrv;
 
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_Ele23_WP75_Gsf_v*");
-  //need to clean this up
-  UInt_t trigObjL1  = 4;//triggerMenu.getTriggerObjectBit("HLT_Ele22_WP75_Gsf_v*", "hltL1sL1SingleEG20");
-  UInt_t trigObjHLT = 5;//triggerMenu.getTriggerObjectBit("HLT_Ele23_WP75_Gsf_v*", "hltEle23WP75GsfTrackIsoFilter");    
 
   //
   // loop through files
@@ -205,48 +211,61 @@ void computeAccSelZeeBinned(const TString conf,            // input file
     eventTree->SetBranchAddress("GenEvtInfo",         &gen); TBranch *genBr      = eventTree->GetBranch("GenEvtInfo");
     eventTree->SetBranchAddress("GenParticle", &genPartArr); TBranch *genPartBr  = eventTree->GetBranch("GenParticle");
     eventTree->SetBranchAddress("Electron",   &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
+    eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
     nSelCorrv.push_back(0);
-    statErr2v.push_back(0);
+    nSelCorrVarv.push_back(0);
 
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<100; ientry++) {
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
+
+      Double_t weight=gen->weight/23443.4;
+      //Double_t weight=gen->weight;
+      //std::cout << gen->weight << std::endl;
+      //Double_t weight=1.0;
 
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       TLorentzVector *vec=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
-      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
+      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;      
       delete vec; delete lep1; delete lep2;
-    
-      Double_t weight=gen->weight;
-      nEvtsv[ifile]+=weight;
-    
+
+      vertexArr->Clear();
+      vertexBr->GetEntry(ientry);
+      double npv  = vertexArr->GetEntries();
+      weight*=h_rw->GetBinContent(npv+1);
+      nEvtsv[ifile]+=weight;        
       // trigger requirement               
-      if(!(info->triggerBits[trigger])) continue;
+      if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE)) continue;
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
-
+      
       electronArr->Clear();
       electronBr->GetEntry(ientry);
+
       for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
   	const baconhep::TElectron *ele1 = (baconhep::TElectron*)((*electronArr)[i1]);
 	
 	// check ECAL gap
 	if(fabs(ele1->scEta)>=ETA_BARREL && fabs(ele1->scEta)<=ETA_ENDCAP) continue;
-        
-	if(ele1->scEt	     < PT_CUT)	  continue;  // lepton pT cut
-        if(fabs(ele1->scEta) > ETA_CUT)	  continue;  // lepton |eta| cut
+	
+	//double ele1_pt = gRandom->Gaus(ele1->pt*getEleScaleCorr(ele1->scEta,0), getEleResCorr(ele1->scEta,0));
+
+	if(ele1->pt	     < PT_CUT && ele1->scEt < PT_CUT)	  continue;  // lepton pT cut
+        if(fabs(ele1->scEta) > ETA_CUT && fabs(ele1->eta) > ETA_CUT)	  continue;  // lepton |eta| cut
         if(!passEleID(ele1,info->rhoIso)) continue;  // lepton selection
+	//if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE)) continue;
 
         TLorentzVector vEle1(0,0,0,0);
 	vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
@@ -257,17 +276,17 @@ void computeAccSelZeeBinned(const TString conf,            // input file
 	  
 	  // check ECAL gap
 	  if(fabs(ele2->scEta)>=ETA_BARREL && fabs(ele2->scEta)<=ETA_ENDCAP) continue;
+	  //double ele2_pt = gRandom->Gaus(ele2->scEt*getEleScaleCorr(ele2->scEta,0), getEleResCorr(ele2->scEta,0));
         
-          if(ele2->scEt        < PT_CUT)    continue;  // lepton pT cut
-          if(fabs(ele2->scEta) > ETA_CUT)   continue;  // lepton |eta| cut
+          if(ele2->pt        < PT_CUT && ele2->scEt < PT_CUT)    continue;  // lepton pT cut
+          if(fabs(ele2->scEta) > ETA_CUT && fabs(ele2->eta) > ETA_CUT)   continue;  // lepton |eta| cut
 	  if(!passEleID(ele2,info->rhoIso)) continue;  // lepton selection
 
           TLorentzVector vEle2(0,0,0,0);
 	  vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
           Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
-          // trigger match
-	  if(!(ele1->hltMatchBits[trigObjHLT]) && !(ele2->hltMatchBits[trigObjHLT])) continue;
+	  if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE) && !isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE)) continue;
 	  
 	  // mass window
           TLorentzVector vDilep = vEle1 + vEle2;
@@ -275,15 +294,17 @@ void computeAccSelZeeBinned(const TString conf,            // input file
           
           /******** We have a Z candidate! HURRAY! ********/
           Double_t effdata, effmc;
-          Double_t sceta1 = (fabs(ele1->scEta)<2.5) ? ele1->scEta : 0.99*(ele1->scEta);
-          Double_t sceta2 = (fabs(ele2->scEta)<2.5) ? ele2->scEta : 0.99*(ele2->scEta);
-    
+          //Double_t sceta1 = (fabs(ele1->scEta)<2.5) ? ele1->scEta : 0.99*(ele1->scEta);
+	  Double_t sceta1 = ele1->scEta;
+          //Double_t sceta2 = (fabs(ele2->scEta)<2.5) ? ele2->scEta : 0.99*(ele2->scEta);
+    	  Double_t sceta2 = ele2->scEta;
+
           Double_t corr=1;
 	  
 	  effdata=1; effmc=1;
           if(ele1->q>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(sceta1, ele1->scEt)); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(sceta1, ele1->scEt)); 
+            effdata *= (1.-dataHLTEff_pos.getEff(sceta1, ele1->scEt));
+            effmc   *= (1.-zeeHLTEff_pos.getEff(sceta1, ele1->scEt));
           } else {
             effdata *= (1.-dataHLTEff_neg.getEff(sceta1, ele1->scEt)); 
             effmc   *= (1.-zeeHLTEff_neg.getEff(sceta1, ele1->scEt)); 
@@ -298,83 +319,99 @@ void computeAccSelZeeBinned(const TString conf,            // input file
           effdata = 1.-effdata;
           effmc   = 1.-effmc;
           corr *= effdata/effmc;
-    
+
+
           effdata=1; effmc=1;
           if(ele1->q>0) { 
-            effdata *= dataGsfSelEff_pos.getEff(fabs(sceta1), ele1->scEt); 
-            effmc   *= zeeGsfSelEff_pos.getEff(fabs(sceta1), ele1->scEt); 
+            effdata *= dataGsfSelEff_pos.getEff(sceta1, ele1->scEt); 
+            effmc   *= zeeGsfSelEff_pos.getEff(sceta1, ele1->scEt); 
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(fabs(sceta1), ele1->scEt); 
-            effmc   *= zeeGsfSelEff_neg.getEff(fabs(sceta1), ele1->scEt); 
+            effdata *= dataGsfSelEff_neg.getEff(sceta1, ele1->scEt); 
+            effmc   *= zeeGsfSelEff_neg.getEff(sceta1, ele1->scEt); 
           }
           if(ele2->q>0) {
-            effdata *= dataGsfSelEff_pos.getEff(fabs(sceta2), ele2->scEt); 
-            effmc   *= zeeGsfSelEff_pos.getEff(fabs(sceta2), ele2->scEt);
+            effdata *= dataGsfSelEff_pos.getEff(sceta2, ele2->scEt); 
+            effmc   *= zeeGsfSelEff_pos.getEff(sceta2, ele2->scEt);
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(fabs(sceta2), ele2->scEt); 
-            effmc   *= zeeGsfSelEff_neg.getEff(fabs(sceta2), ele2->scEt);
+            effdata *= dataGsfSelEff_neg.getEff(sceta2, ele2->scEt); 
+            effmc   *= zeeGsfSelEff_neg.getEff(sceta2, ele2->scEt);
           }
           corr *= effdata/effmc;
-	  nSelv[ifile]+=weight;
-	  nSelCorrv[ifile]+=weight*corr;
-	  statErr2v[ifile]+=weight*weight*corr*corr;
 	  
 	  // scale factor uncertainties
-//	  Double_t dataerr=0, mcerr=0;
-//	  if(ele1->q>0) {	    
-//	    effdata = dataGsfSelEff_pos.getEff(fabs(sceta1), ele1->scEt);
-//	    errdata = TMath::Max(dataGsfSelEff_pos.getErrl(fabs(sceta1), ele1->scEt), dataGsfSelEff_pos.getErrh(fabs(sceta1), ele1->scEt));
-//            effmc   = zeeGsfSelEff_pos.getEff(fabs(sceta1), ele1->scEt); 
-//	    errmc   = TMath::Max(zeeGsfSelEff_pos.getErrl(fabs(sceta1), ele1->scEt), zeeGsfSelEff_pos.getErrh(fabs(sceta1), ele1->scEt));
-//	    Double_t errGsfSel = weight*corr*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-//	    hGsfSelErr_pos->Fill(fabs(sceta1), ele1->scEt, errGsfSel);
-//
-//	  } else {
-//	    effdata = dataGsfSelEff_neg.getEff(fabs(sceta1), ele1->scEt);
-//	    errdata = TMath::Max(dataGsfSelEff_neg.getErrl(fabs(sceta1), ele1->scEt), dataGsfSelEff_neg.getErrh(fabs(sceta1), ele1->scEt));
-//            effmc   = zeeGsfSelEff_neg.getEff(fabs(sceta1), ele1->scEt); 
-//	    errmc   = TMath::Max(zeeGsfSelEff_neg.getErrl(fabs(sceta1), ele1->scEt), zeeGsfSelEff_neg.getErrh(fabs(sceta1), ele1->scEt));
-//	    Double_t errGsfSel = weight*corr*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-//	    hGsfSelErr_neg->Fill(fabs(sceta1), ele1->scEt, errGsfSel);
-//	  }
-//	  if(ele2->q>0) {	    
-//	    effdata = dataGsfSelEff_pos.getEff(fabs(sceta2), ele2->scEt);
-//	    errdata = TMath::Max(dataGsfSelEff_pos.getErrl(fabs(sceta2), ele2->scEt), dataGsfSelEff_pos.getErrh(fabs(sceta2), ele2->scEt));
-//            effmc   = zeeGsfSelEff_pos.getEff(fabs(sceta2), ele2->scEt); 
-//	    errmc   = TMath::Max(zeeGsfSelEff_pos.getErrl(fabs(sceta2), ele2->scEt), zeeGsfSelEff_pos.getErrh(fabs(sceta2), ele2->scEt));
-//	    Double_t errGsfSel = weight*corr*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-//	    hGsfSelErr_pos->Fill(fabs(sceta2), ele2->scEt, errGsfSel);
-//
-//	  } else {
-//	    effdata = dataGsfSelEff_neg.getEff(fabs(sceta2), ele2->scEt);
-//	    errdata = TMath::Max(dataGsfSelEff_neg.getErrl(fabs(sceta2), ele2->scEt), dataGsfSelEff_neg.getErrh(fabs(sceta2), ele2->scEt));
-//            effmc   = zeeGsfSelEff_neg.getEff(fabs(sceta2), ele2->scEt); 
-//	    errmc   = TMath::Max(zeeGsfSelEff_neg.getErrl(fabs(sceta2), ele2->scEt), zeeGsfSelEff_neg.getErrh(fabs(sceta2), ele2->scEt));
-//	    Double_t errGsfSel = weight*corr*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-//	    hGsfSelErr_neg->Fill(fabs(sceta2), ele2->scEt, errGsfSel);
-//	  }
-        }
-      }      
+	  if(ele1->q>0) {	    
+	    Double_t effdata = dataGsfSelEff_pos.getEff(sceta1, ele1->scEt);
+	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(sceta1, ele1->scEt), dataGsfSelEff_pos.getErrHigh(sceta1, ele1->scEt));
+            Double_t effmc   = zeeGsfSelEff_pos.getEff(sceta1, ele1->scEt); 
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(sceta1, ele1->scEt), zeeGsfSelEff_pos.getErrHigh(sceta1, ele1->scEt));
+	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    hGsfSelErr_pos->Fill(sceta1, ele1->scEt, errGsfSel);
+	  } else {
+	    Double_t effdata = dataGsfSelEff_neg.getEff(sceta1, ele1->scEt);
+	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(sceta1, ele1->scEt), dataGsfSelEff_neg.getErrHigh(sceta1, ele1->scEt));
+            Double_t effmc   = zeeGsfSelEff_neg.getEff(sceta1, ele1->scEt); 
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(sceta1, ele1->scEt), zeeGsfSelEff_neg.getErrHigh(sceta1, ele1->scEt));
+	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    hGsfSelErr_neg->Fill(sceta1, ele1->scEt, errGsfSel);
+	  }
+
+	  if(ele2->q>0) {	    
+	    Double_t effdata = dataHLTEff_pos.getEff(sceta2, ele2->scEt);
+	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(sceta2, ele2->scEt), dataHLTEff_pos.getErrHigh(sceta2, ele2->scEt));
+            Double_t effmc   = zeeHLTEff_pos.getEff(sceta2, ele2->scEt); 
+	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(sceta2, ele2->scEt), zeeHLTEff_pos.getErrHigh(sceta2, ele2->scEt));
+	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    hHLTErr_pos->Fill(sceta2, ele2->scEt, errHLT);
+	  } else {
+	    Double_t effdata = dataHLTEff_neg.getEff(sceta2, ele2->scEt);
+	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(sceta2, ele2->scEt), dataHLTEff_neg.getErrHigh(sceta2, ele2->scEt));
+            Double_t effmc   = zeeHLTEff_neg.getEff(sceta2, ele2->scEt); 
+	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(sceta2, ele2->scEt), zeeHLTEff_neg.getErrHigh(sceta2, ele2->scEt));
+	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    hHLTErr_neg->Fill(sceta2, ele2->scEt, errHLT);
+	  }
+
+	  nSelv[ifile]+=weight;
+	  nSelCorrv[ifile]+=weight*corr;
+	  nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+	}
+      }
     }
     
-//    Double_t err2=0;
-//    for(Int_t iy=0; iy<=hGsfSelErr_pos->GetNbinsY(); iy++) {
-//      for(Int_t ix=0; ix<=hGsfSelErr_pos->GetNbinsX(); ix++) {
-//	err=hSelErr_pos->GetBinContent(ix,iy);
-//	err2+=err*err;
-//      }
-//    }
-//    for(Int_t iy=0; iy<=hGsfSelErr_neg->GetNbinsY(); iy++) {
-//      for(Int_t ix=0; ix<=hGsfSelErr_neg->GetNbinsX(); ix++) {
-//	err=hSelErr_neg->GetBinContent(ix,iy);
-//	err2+=err*err;
-//      }
-//    }
-//    effErr2v.push_back(err2);
-    
+    Double_t var=0;
+    for(Int_t iy=0; iy<=hHLTErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hHLTErr_pos->GetNbinsX(); ix++) {
+	Double_t err=hHLTErr_pos->GetBinContent(ix,iy);
+	var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hHLTErr_neg->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hHLTErr_neg->GetNbinsX(); ix++) {
+	Double_t err=hHLTErr_neg->GetBinContent(ix,iy);
+	var+=err*err;
+      }
+    }
+    cout << "var1: " << var << endl;
+    for(Int_t iy=0; iy<=hGsfSelErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hGsfSelErr_pos->GetNbinsX(); ix++) {
+	Double_t err=hGsfSelErr_pos->GetBinContent(ix,iy);
+	var+=err*err;
+      }
+    }
+    for(Int_t iy=0; iy<=hGsfSelErr_neg->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hGsfSelErr_neg->GetNbinsX(); ix++) {
+	Double_t err=hGsfSelErr_neg->GetBinContent(ix,iy);
+	var+=err*err;
+      }
+    }
+    cout << "var2: " << var << endl;
+
+    nSelCorrVarv[ifile]+=var;
+
     // compute acceptances
-    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);         accErrv.push_back(sqrt(accv[ifile]*(1.-accv[ifile])/nEvtsv[ifile]));
-    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); accCorrErrv.push_back(sqrt(accCorrv[ifile]*(1.-accCorrv[ifile])/nEvtsv[ifile]));
+    std::cout << nEvtsv[ifile] << " " << nSelv[ifile] << std::endl;
+    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);         accErrv.push_back(sqrt(accv[ifile]*(1. +accv[ifile])/nEvtsv[ifile]));
+    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); accErrCorrv.push_back(accCorrv[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
     
     delete infile;
     infile=0, eventTree=0;  
@@ -403,7 +440,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
     cout << endl;
     cout << "    *** Acceptance ***" << endl;
     cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    cout << "     SF corrected: " << accCorrv[ifile] << " +/- " << accCorrErrv[ifile] << endl;
+    cout << "     SF corrected: " << accCorrv[ifile] << " +/- " << accErrCorrv[ifile] << endl;
     cout << endl;
   }
   
@@ -427,7 +464,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
     txtfile << endl;
     txtfile << "    *** Acceptance ***" << endl;
     txtfile << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    txtfile << "     SF corrected: " << accCorrv[ifile] << " +/- " << accCorrErrv[ifile] << endl;
+    txtfile << "     SF corrected: " << accCorrv[ifile] << " +/- " << accErrCorrv[ifile] << endl;
     txtfile << endl;
   }
   txtfile.close();

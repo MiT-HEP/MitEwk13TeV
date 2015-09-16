@@ -27,22 +27,18 @@
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
+
+// helper class to handle efficiency tables
+#include "CEffUser1D.hh"
+#include "CEffUser2D.hh"
+
 #endif
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
-
-Double_t getResCorr(const Double_t eta)
-{
-  if	 (fabs(eta) < 0.4)    { return 0.464061;   }
-  else if(fabs(eta) < 0.8)    { return 0.00985329; }
-  else if(fabs(eta) < 1.2)    { return 0.822958;   }
-  else if(fabs(eta) < 1.4442) { return 0.71369;    }
-  else if(fabs(eta) < 1.566)  { return 1.35987;    }
-  else  		      { return 1.27686;    }
-}
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -55,45 +51,71 @@ void plotZee(const TString  outputDir,   // output directory
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //==============================================================================================================   
-  
+  const Double_t ELE_MASS  = 0.000511;
   //
   // input ntuple file names
   //
   enum { eData, eZee, eEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
-  
-//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zee/ntuples/zee_select.raw.root");  typev.push_back(eZee);
-//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/ewk_select.root");  typev.push_back(eEWK);
-//  fnamev.push_back("/data/blue/ksung/EWKAna/8TeV/Selection/Zee/ntuples/top_select.root");  typev.push_back(eEWK);
 
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/zee_select.raw.root");   typev.push_back(eZee);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/top_select.raw.root");   typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
+ 
   //
   // Fit options
   //
   const Int_t    NBINS     = 60;
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
+  //const Int_t    NBINS     = 20;
+  //const Double_t MASS_LOW  = 80;
+  //const Double_t MASS_HIGH = 100;  
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.5;
   
   // plot output file format
   const TString format("png");
 
+   // efficiency files
+  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  
+  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+
+
   Int_t yield = 0;
- 
+  Double_t yield_zee = 0, yield_zee_unc=0;
+  Double_t yield_ewk = 0, yield_ewk_unc=0; 
+
+  TString pufname = "../Tools/pileup_weights_2015B.root";
    
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
 
   // event category enumeration
-  enum { eEleEle2HLT=1, eEleEle1HLT, eEleEleNoSel, eEleSC };
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
   
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
-    
+  
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
+
 
   // histograms for full selection (EleEle2HLT + EleEle1HLT)
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
@@ -111,9 +133,67 @@ void plotZee(const TString  outputDir,   // output directory
   Float_t genVPt, genVPhi;
   Float_t scale1fb;
   Float_t met, metPhi, sumEt, u1, u2;
+  Float_t puWeight;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
+  
+  TH2D *h=0;
+   //
+  // HLT efficiency
+  //
+  cout << "Loading trigger efficiencies..." << endl;
+
+  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
+  CEffUser2D dataHLTEff_pos;
+  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
+  CEffUser2D dataHLTEff_neg;
+  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
+  
+  TFile *zeeHLTEffFile_pos = new TFile(zeeHLTEffName_pos);
+  CEffUser2D zeeHLTEff_pos;
+  zeeHLTEff_pos.loadEff((TH2D*)zeeHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *zeeHLTEffFile_neg = new TFile(zeeHLTEffName_neg);
+  CEffUser2D zeeHLTEff_neg;
+  zeeHLTEff_neg.loadEff((TH2D*)zeeHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrhEtaPt"));
+  
+  h =(TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt");
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+                                                 h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+                                                 h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  
+  //
+  // Selection efficiency
+  //
+  cout << "Loading GSF+selection efficiencies..." << endl;
+  
+  TFile *dataGsfSelEffFile_pos = new TFile(dataGsfSelEffName_pos);
+  CEffUser2D dataGsfSelEff_pos;
+  dataGsfSelEff_pos.loadEff((TH2D*)dataGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrhEtaPt"));
+  
+  TFile *dataGsfSelEffFile_neg = new TFile(dataGsfSelEffName_neg);
+  CEffUser2D dataGsfSelEff_neg;
+  dataGsfSelEff_neg.loadEff((TH2D*)dataGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrhEtaPt"));
+
+  TFile *zeeGsfSelEffFile_pos = new TFile(zeeGsfSelEffName_pos);
+  CEffUser2D zeeGsfSelEff_pos;
+  zeeGsfSelEff_pos.loadEff((TH2D*)zeeGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrhEtaPt"));
+
+  TFile *zeeGsfSelEffFile_neg = new TFile(zeeGsfSelEffName_neg);
+  CEffUser2D zeeGsfSelEff_neg;
+  zeeGsfSelEff_neg.loadEff((TH2D*)zeeGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrhEtaPt"));
+ 
+  h =(TH2D*)dataGsfSelEffFile_pos->Get("hEffEtaPt");
+  TH2D *hGsfSelErr_pos = new TH2D("hGsfSelErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+                                                       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hGsfSelErr_neg = new TH2D("hGsfSelErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+                                                       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *markus = new TH2D("plot","plot",60,60,120,60,0.8,1.2);
+
 
   TFile *infile=0;
   TTree *intree=0;
@@ -147,47 +227,119 @@ void plotZee(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
     intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
     intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector 
-  
+    intree->SetBranchAddress("puWeight",      &puWeight);        // pu weight
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
 
-      if(dilep->M()       < MASS_LOW)  continue;
-      if(dilep->M()       > MASS_HIGH) continue;
-      if(sc1->Pt()        < PT_CUT)    continue;
-      if(sc2->Pt()        < PT_CUT)    continue;
-      if(fabs(sc1->Eta()) > ETA_CUT)   continue;      
-      if(fabs(sc2->Eta()) > ETA_CUT)   continue;
-   
+      if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
+      if(fabs(lep2->Eta()) > ETA_CUT)   continue;
+
+      //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),1), getEleResCorr(lep1->Eta(),-1));
+      //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),1), getEleResCorr(lep2->Eta(),-1));
+      //TLorentzVector l1, l2;
+      //l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+      //l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+      //double mass=(l1+l2).M();
       Float_t mass = dilep->M();
       
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
+	weight*= h_rw->GetBinContent(npv+1);
       }
       
       // fill Z events passing selection (EleEle2HLT + EleEle1HLT)
-      if((category==eEleEle2HLT) || (category==eEleEle1HLT)) {
-        if(typev[ifile]==eData) { 
-	  hData->Fill(mass); 
-
-	  yield++;
+      if((category==eEleEle2HLT) || (category==eEleEle1HLT) || (category==eEleEle1HLT1L1)) {
+      if(typev[ifile]==eData) { 
+	 
+	if(dilep->M()       < MASS_LOW)  continue;
+	if(dilep->M()       > MASS_HIGH) continue;
+	if(lep1->Pt()        < PT_CUT)    continue;
+	if(lep2->Pt()        < PT_CUT)    continue;
 	
-	} else {
-          
-	  TLorentzVector slep1 = (*lep1);
-	  slep1 *= gRandom->Gaus(slep1.E(), getResCorr(sc1->Eta()))/slep1.E();
+	  //if(mass       < MASS_LOW)  continue;
+	  //if(mass       > MASS_HIGH) continue;
+	  //if(lp1        < PT_CUT)    continue;
+	  //if(lp2        < PT_CUT)    continue;
+	  //if(q1*q2>0)  continue;
+	  hData->Fill(mass); 
 	  
-	  TLorentzVector slep2 = (*lep2);
-	  slep2 *= gRandom->Gaus(slep2.E(), getResCorr(sc2->Eta()))/slep2.E();
+	  yield++;
 	  
-	  mass = (slep1+slep2).M();	  
+      } else {
+	  Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
+	  Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
+	  TLorentzVector l1, l2;
+	  l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+	  l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+	  double mll=(l1+l2).M();
+	  if(mll       < MASS_LOW)  continue;
+	  if(mll       > MASS_HIGH) continue;
+	  if(lp1        < PT_CUT)    continue;
+	  if(lp2        < PT_CUT)    continue;
+	  Double_t effdata, effmc;
+	  Double_t corr=1;
+	  effdata=1; effmc=1;
+          if(q1>0) { 
+            effdata *= (1.-dataHLTEff_pos.getEff(sc1->Eta(), sc1->Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(sc1->Eta(), sc1->Pt())); 
+          } else {
+            effdata *= (1.-dataHLTEff_neg.getEff(sc1->Eta(), sc1->Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(sc1->Eta(), sc1->Pt())); 
+          }
+          if(q2>0) {
+            effdata *= (1.-dataHLTEff_pos.getEff(sc2->Eta(), sc2->Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(sc2->Eta(), sc2->Pt()));
+          } else {
+            effdata *= (1.-dataHLTEff_neg.getEff(sc2->Eta(), sc2->Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(sc2->Eta(), sc2->Pt()));
+          }
+          effdata = 1.-effdata;
+          effmc   = 1.-effmc;
+          corr *= effdata/effmc;
+    
+          effdata=1; effmc=1;
+          if(q1>0) { 
+            effdata *= dataGsfSelEff_pos.getEff(sc1->Eta(), sc1->Pt()); 
+            effmc   *= zeeGsfSelEff_pos.getEff(sc1->Eta(), sc1->Pt()); 
+          } else {
+            effdata *= dataGsfSelEff_neg.getEff(sc1->Eta(), sc1->Pt()); 
+            effmc   *= zeeGsfSelEff_neg.getEff(sc1->Eta(), sc1->Pt()); 
+          }
+          if(q2>0) {
+            effdata *= dataGsfSelEff_pos.getEff(sc2->Eta(), sc2->Pt()); 
+            effmc   *= zeeGsfSelEff_pos.getEff(sc2->Eta(), sc2->Pt());
+          } else {
+            effdata *= dataGsfSelEff_neg.getEff(sc2->Eta(), sc2->Pt()); 
+            effmc   *= zeeGsfSelEff_neg.getEff(sc2->Eta(), sc2->Pt());
+          }
+          corr *= effdata/effmc;
+	  corr=1;
+	  //TLorentzVector slep1 = (*lep1);
+	  //slep1 *= gRandom->Gaus(slep1.Pt(), getEleResCorr(sc1->Eta(),0))/slep1.Pt();
 	  
-	  hMC->Fill(mass,weight);
-	  if(typev[ifile]==eZee) { hZee->Fill(mass,weight); }
-	  if(typev[ifile]==eEWK) { hEWK->Fill(mass,weight); }
+	  //TLorentzVector slep2 = (*lep2);
+	  //slep2 *= gRandom->Gaus(slep2.Pt(), getEleResCorr(sc2->Eta(),0))/slep2.Pt();
+	  mass = (l1+l2).M();	
+	  
+	  if(typev[ifile]==eZee) 
+	    { 
+	      yield_zee += weight*corr;
+	      yield_zee_unc += weight*weight*corr*corr;
+	      hZee->Fill(mass,weight*corr); 
+	      hMC->Fill(mass,weight*corr);
+	      markus->Fill(mass, corr);
+	    }
+	  if(typev[ifile]==eEWK) 
+	    { 
+	      yield_ewk += weight*corr;
+	      yield_ewk_unc += weight*weight*corr*corr;
+	      hEWK->Fill(mass,weight*corr); 
+	      hMC->Fill(mass,weight*corr);
+	    }
 	}
       }
     }
@@ -200,6 +352,8 @@ void plotZee(const TString  outputDir,   // output directory
   hZeeDiff->SetMarkerStyle(kFullCircle); 
   hZeeDiff->SetMarkerSize(0.9);
   
+  hZee->Scale((hData->Integral()-hEWK->Integral())/hZee->Integral());
+  
 
   //--------------------------------------------------------------------------------------------------------------
   // Make plots 
@@ -210,7 +364,7 @@ void plotZee(const TString  outputDir,   // output directory
   // label for lumi
   char lumitext[100];
   if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.2f fb^{-1}  at  #sqrt{s} = 8 TeV",lumi);  
+  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);  
   
   // plot colors
   Int_t linecolorZ   = kOrange-3;
@@ -244,26 +398,26 @@ void plotZee(const TString  outputDir,   // output directory
   CPlot plotZee("zee","","",ylabel);
   plotZee.AddHist1D(hData,"data","E");
   plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZee.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotZee.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotZee.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);
+  plotZee.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
   plotZee.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
   plotZee.TransLegend(-0.35,-0.15);
   plotZee.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeDiff("zee","","M(e^{+}e^{-}) [GeV/c^{2}]","#chi");
+  CPlot plotZeeDiff("zee","","M(e^{+}e^{-}) [GeV/c^{2}]","#frac{Data-Pred}{Data}");
   plotZeeDiff.AddHist1D(hZeeDiff,"EX0",ratioColor);
-  plotZeeDiff.SetYRange(-8,8);
+  plotZeeDiff.SetYRange(-0.2,0.2);
   plotZeeDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotZeeDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotZeeDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
+  plotZeeDiff.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZeeDiff.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
   plotZeeDiff.Draw(c,kTRUE,format,2);
   
   CPlot plotZee2("zeelog","","",ylabel);
   plotZee2.AddHist1D(hData,"data","E");
   plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
   plotZee2.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZee2.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);plotZee2.SetName("zeelog");
-  plotZee2.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotZee2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZee2.SetName("zeelog");
+  plotZee2.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
   plotZee2.SetLogy();
   plotZee2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
   plotZee2.TransLegend(-0.35,-0.15);
@@ -279,6 +433,8 @@ void plotZee(const TString  outputDir,   // output directory
   cout << endl;
 
   cout << " Total Zee event yield is " << yield << "." << endl;
+  cout << " The Zee expected event yield is " << yield_zee << " +/-" << sqrt(yield_zee_unc) << "." << endl;
+  cout << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
@@ -291,7 +447,7 @@ void plotZee(const TString  outputDir,   // output directory
 //=== FUNCTION DEFINITIONS ======================================================================================
 
 //--------------------------------------------------------------------------------------------------
-TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+/*TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
@@ -304,6 +460,34 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     if(err>0) hDiff->SetBinContent(ibin,diff/err);
     else      hDiff->SetBinContent(ibin,0);
     hDiff->SetBinError(ibin,1);   
+  }
+  
+  hDiff->GetYaxis()->SetTitleOffset(0.42);
+  hDiff->GetYaxis()->SetTitleSize(0.13);
+  hDiff->GetYaxis()->SetLabelSize(0.10);
+  hDiff->GetYaxis()->SetNdivisions(104);
+  hDiff->GetYaxis()->CenterTitle();
+  hDiff->GetXaxis()->SetTitleOffset(1.2);
+  hDiff->GetXaxis()->SetTitleSize(0.13);
+  hDiff->GetXaxis()->SetLabelSize(0.12);
+  hDiff->GetXaxis()->CenterTitle();
+  
+  return hDiff;
+  }*/
+TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+{
+  TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
+  for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
+    
+    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+    Double_t diff = diff0/hData->GetBinContent(ibin);
+    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    //Double_t err = sqrt(hData->GetBinContent(ibin));
+    //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
+    //if(err>0) hDiff->SetBinContent(ibin,diff/err);
+    //else      hDiff->SetBinContent(ibin,0);
+    hDiff->SetBinContent(ibin,diff);
+    hDiff->SetBinError(ibin,err);   
   }
   
   hDiff->GetYaxis()->SetTitleOffset(0.42);

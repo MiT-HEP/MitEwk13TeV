@@ -56,41 +56,45 @@ void computeAccSelWm(const TString conf,       // input file
   const Double_t ETA_BARREL = 1.2;
   const Double_t ETA_ENDCAP = 1.2;
 
-  const Double_t VETO_PT   = 20;
+  const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.4;
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  TString dataHLTEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root");
-  TString zmmHLTEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root");
-  TString dataSelEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root");
-  TString zmmSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root");
-  TString dataTrkEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root");
-  TString zmmTrkEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root");
-  TString dataStaEffName("/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root");
-  TString zmmStaEffName( "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root");
+  TString dataHLTEffName("/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root");
+  TString zmmHLTEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root");
+  TString dataSelEffName("/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root");
+  TString zmmSelEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root");
+  TString dataTrkEffName("/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root");
+  TString zmmTrkEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root");
+  TString dataStaEffName("/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root");
+  TString zmmStaEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root");
   if(charge==1) {
-    dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-    zmmHLTEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-    dataSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-    zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-    dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-    zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
-    zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
+    dataHLTEffName ="/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+    zmmHLTEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
+    dataSelEffName ="/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+    zmmSelEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
+    dataTrkEffName ="/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmTrkEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+    dataStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-    zmmHLTEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-    dataSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-    zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-    dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-    zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff/eff.root";
-    zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff/eff.root";
+    dataHLTEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+    zmmHLTEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
+    dataSelEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+    zmmSelEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
+    dataTrkEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmTrkEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+    dataStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
   }
+
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -234,6 +238,7 @@ void computeAccSelWm(const TString conf,       // input file
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
   TClonesArray     *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray        *muonArr = new TClonesArray("baconhep::TMuon");
+  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -248,10 +253,6 @@ void computeAccSelWm(const TString conf,       // input file
   vector<Double_t> accErrCorrv, accErrBCorrv, accErrECorrv;
 
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
-  UInt_t trigger    = triggerMenu.getTriggerBit("HLT_IsoMu20_v*");
-  UInt_t trigObjL1  = 6;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*", "hltL1sL1SingleMu16");                                  
-  UInt_t trigObjHLT = 7;//triggerMenu.getTriggerObjectBit("HLT_IsoMu20_v*",                                                         
-  //"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"); 
   
   //
   // loop through files
@@ -268,6 +269,7 @@ void computeAccSelWm(const TString conf,       // input file
     eventTree->SetBranchAddress("GenEvtInfo",        &gen); TBranch *genBr     = eventTree->GetBranch("GenEvtInfo");
     eventTree->SetBranchAddress("GenParticle",&genPartArr); TBranch *genPartBr = eventTree->GetBranch("GenParticle");
     eventTree->SetBranchAddress("Muon",          &muonArr); TBranch *muonBr    = eventTree->GetBranch("Muon"); 
+    eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
 
     nEvtsv.push_back(0);
     nSelv.push_back(0);
@@ -312,7 +314,7 @@ void computeAccSelWm(const TString conf,       // input file
     //
     // loop over events
     //    
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries()/10; ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
@@ -325,13 +327,17 @@ void computeAccSelWm(const TString conf,       // input file
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);*/
-
-      Double_t weight=gen->weight;
+      
+      vertexArr->Clear();
+      vertexBr->GetEntry(ientry);
+      double npv  = vertexArr->GetEntries();
+      Double_t weight=gen->weight/225892.;
+      weight*=h_rw->GetBinContent(npv+1);
       nEvtsv[ifile]+=weight;
       
       // trigger requirement               
-      if(!(info->triggerBits[trigger])) continue;  
-      
+      if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+   
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
     
@@ -354,7 +360,7 @@ void computeAccSelWm(const TString conf,       // input file
         if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
         if(mu->pt < PT_CUT)		    continue;  // lepton pT cut	
         if(!passMuonID(mu))		    continue;  // lepton selection
-        if(!(mu->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+	if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 	
 	if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
 	
@@ -381,13 +387,13 @@ void computeAccSelWm(const TString conf,       // input file
 	  corr *= effdata/effmc;
 	}
 	if(dataTrkEffFile && zmmTrkEffFile) {
-	  Double_t effdata = dataTrkEff.getEff(fabs(goodMuon->eta), goodMuon->pt);
-	  Double_t effmc   = zmmTrkEff.getEff(fabs(goodMuon->eta), goodMuon->pt);
-	  corr *= effdata/effmc;
+	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
+	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);
+	  //corr *= effdata/effmc;
 	}
 	if(dataStaEffFile && zmmStaEffFile) {
-	  Double_t effdata = dataStaEff.getEff(fabs(goodMuon->eta), goodMuon->pt);
-	  Double_t effmc   = zmmStaEff.getEff(fabs(goodMuon->eta), goodMuon->pt);
+	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);
+	  Double_t effmc   = zmmStaEff.getEff(goodMuon->eta, goodMuon->pt);
 	  corr *= effdata/effmc;
 	}
 	
@@ -397,7 +403,7 @@ void computeAccSelWm(const TString conf,       // input file
 	  Double_t effmc   = zmmHLTEff.getEff(goodMuon->eta, goodMuon->pt);	  
 	  Double_t errdata = TMath::Max(dataHLTEff.getErrLow(goodMuon->eta, goodMuon->pt),dataHLTEff.getErrHigh(goodMuon->eta, goodMuon->pt));
 	  Double_t errmc   = TMath::Max(zmmHLTEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmHLTEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
 	  hHLTErr->Fill(goodMuon->eta,goodMuon->pt,err);
 	  if(isBarrel) hHLTErrB->Fill(goodMuon->eta,goodMuon->pt,err);
 	  else         hHLTErrE->Fill(goodMuon->eta,goodMuon->pt,err);
@@ -407,30 +413,34 @@ void computeAccSelWm(const TString conf,       // input file
 	  Double_t effmc   = zmmSelEff.getEff(goodMuon->eta, goodMuon->pt);	  
 	  Double_t errdata = TMath::Max(dataSelEff.getErrLow(goodMuon->eta, goodMuon->pt),dataSelEff.getErrHigh(goodMuon->eta, goodMuon->pt));
 	  Double_t errmc   = TMath::Max(zmmSelEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmSelEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
 	  hSelErr->Fill(goodMuon->eta,goodMuon->pt,err);
 	  if(isBarrel) hSelErrB->Fill(goodMuon->eta,goodMuon->pt,err);
 	  else         hSelErrE->Fill(goodMuon->eta,goodMuon->pt,err);
 	}
 	if(dataTrkEffFile && zmmTrkEffFile) {
-	  Double_t effdata = dataTrkEff.getEff(fabs(goodMuon->eta), goodMuon->pt);
-	  Double_t effmc   = zmmTrkEff.getEff(fabs(goodMuon->eta), goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataTrkEff.getErrLow(fabs(goodMuon->eta), goodMuon->pt),dataTrkEff.getErrHigh(fabs(goodMuon->eta), goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmTrkEff.getErrLow(fabs(goodMuon->eta), goodMuon->pt), zmmTrkEff.getErrHigh(fabs(goodMuon->eta), goodMuon->pt));
-	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hTrkErr->Fill(fabs(goodMuon->eta),goodMuon->pt,err);
-	  if(isBarrel) hTrkErrB->Fill(fabs(goodMuon->eta),goodMuon->pt,err);
-	  else         hTrkErrE->Fill(fabs(goodMuon->eta),goodMuon->pt,err);
+	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
+	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);	  
+	  Double_t errdata = TMath::Max(dataTrkEff.getErrLow(goodMuon->eta, goodMuon->pt),dataTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
+	  Double_t errmc   = TMath::Max(zmmTrkEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
+	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+	  /* if(goodMuon->eta>1.2 && goodMuon->eta<2.1) 
+	    {
+	      err=0.0013;
+	      }*/
+	  hTrkErr->Fill(goodMuon->eta,goodMuon->pt,err);
+	  if(isBarrel) hTrkErrB->Fill(goodMuon->eta,goodMuon->pt,err);
+	  else         hTrkErrE->Fill(goodMuon->eta,goodMuon->pt,err);
 	}
 	if(dataStaEffFile && zmmStaEffFile) {
-	  Double_t effdata = dataStaEff.getEff(fabs(goodMuon->eta), goodMuon->pt);
-	  Double_t effmc   = zmmStaEff.getEff(fabs(goodMuon->eta), goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataStaEff.getErrLow(fabs(goodMuon->eta), goodMuon->pt),dataStaEff.getErrHigh(fabs(goodMuon->eta), goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmStaEff.getErrLow(fabs(goodMuon->eta), goodMuon->pt), zmmStaEff.getErrHigh(fabs(goodMuon->eta), goodMuon->pt));
-	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hStaErr->Fill(fabs(goodMuon->eta),goodMuon->pt,err);
-	  if(isBarrel) hStaErrB->Fill(fabs(goodMuon->eta),goodMuon->pt,err);
-	  else         hStaErrE->Fill(fabs(goodMuon->eta),goodMuon->pt,err);
+	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);
+	  Double_t effmc   = zmmStaEff.getEff(goodMuon->eta, goodMuon->pt);	  
+	  Double_t errdata = TMath::Max(dataStaEff.getErrLow(goodMuon->eta, goodMuon->pt),dataStaEff.getErrHigh(goodMuon->eta, goodMuon->pt));
+	  Double_t errmc   = TMath::Max(zmmStaEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmStaEff.getErrHigh(goodMuon->eta, goodMuon->pt));
+	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+	  hStaErr->Fill(goodMuon->eta,goodMuon->pt,err);
+	  if(isBarrel) hStaErrB->Fill(goodMuon->eta,goodMuon->pt,err);
+	  else         hStaErrE->Fill(goodMuon->eta,goodMuon->pt,err);
 	}
 	
 	nSelv[ifile]+=weight;
@@ -469,9 +479,9 @@ void computeAccSelWm(const TString conf,       // input file
     for(Int_t iy=0; iy<=hTrkErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hTrkErr->GetNbinsX(); ix++) {
         Double_t err;
-	err=hTrkErr->GetBinContent(ix,iy);  var+=err*err;
-        err=hTrkErrB->GetBinContent(ix,iy); varB+=err*err;
-        err=hTrkErrE->GetBinContent(ix,iy); varE+=err*err;
+	err=hTrkErr->GetBinContent(ix,iy);  var+=0;//err*err;
+        err=hTrkErrB->GetBinContent(ix,iy); varB+=0;//err*err;
+        err=hTrkErrE->GetBinContent(ix,iy); varE+=0;//err*err;
       }
     }
     for(Int_t iy=0; iy<=hStaErr->GetNbinsY(); iy++) {
@@ -487,13 +497,13 @@ void computeAccSelWm(const TString conf,       // input file
     nSelECorrVarv[ifile]+=varE;
     
     // compute acceptances
-    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(sqrt(accv[ifile]*(1.-accv[ifile])/nEvtsv[ifile]));
-    accBv.push_back(nSelBv[ifile]/nEvtsv[ifile]); accErrBv.push_back(sqrt(accBv[ifile]*(1.-accBv[ifile])/nEvtsv[ifile]));
-    accEv.push_back(nSelEv[ifile]/nEvtsv[ifile]); accErrEv.push_back(sqrt(accEv[ifile]*(1.-accEv[ifile])/nEvtsv[ifile]));
+    accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(sqrt(accv[ifile]*(1.+accv[ifile])/nEvtsv[ifile]));
+    accBv.push_back(nSelBv[ifile]/nEvtsv[ifile]); accErrBv.push_back(sqrt(accBv[ifile]*(1.+accBv[ifile])/nEvtsv[ifile]));
+    accEv.push_back(nSelEv[ifile]/nEvtsv[ifile]); accErrEv.push_back(sqrt(accEv[ifile]*(1.+accEv[ifile])/nEvtsv[ifile]));
     
-    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]);   accErrCorrv.push_back(accCorrv[ifile]*sqrt(nSelCorrVarv[ifile]/nSelCorrv[ifile]/nSelCorrv[ifile] + 1./nEvtsv[ifile]));
+    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]);   accErrCorrv.push_back(accCorrv[ifile]*sqrt(nSelCorrVarv[ifile]/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
     accBCorrv.push_back(nSelBCorrv[ifile]/nEvtsv[ifile]); accErrBCorrv.push_back(accBCorrv[ifile]*sqrt(nSelBCorrVarv[ifile]/nSelBCorrv[ifile]/nSelBCorrv[ifile] + 1./nEvtsv[ifile]));
-    accECorrv.push_back(nSelECorrv[ifile]/nEvtsv[ifile]); accErrECorrv.push_back(accECorrv[ifile]*sqrt(nSelECorrVarv[ifile]/nSelECorrv[ifile]/nSelECorrv[ifile] + 1./nEvtsv[ifile]));
+    accECorrv.push_back(nSelECorrv[ifile]/nEvtsv[ifile]); accErrECorrv.push_back(accECorrv[ifile]*sqrt(nSelECorrVarv[ifile]/(nSelECorrv[ifile]*nSelECorrv[ifile]) + 1./nEvtsv[ifile]));
    
     delete infile;
     infile=0, eventTree=0;  

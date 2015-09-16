@@ -25,10 +25,12 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
   Double_t ze, zm, zl, ze_stat, zm_stat, zl_stat, ze_sys, zm_sys, zl_sys, ze_lumi, zm_lumi, zl_lumi;
   Double_t wre, wrm, wrl, wre_stat, wrm_stat, wrl_stat, wre_sys, wrm_sys, wrl_sys, wre_lumi, wrm_lumi, wrl_lumi;
   Double_t wzre, wzrm, wzrl, wzre_stat, wzrm_stat, wzrl_stat, wzre_sys, wzrm_sys, wzrl_sys, wzre_lumi, wzrm_lumi, wzrl_lumi;
-  Double_t theo_wp, theo_wm, theo_w, theo_z, theo_wr, theo_wzr, theo_wp_unc, theo_wm_unc, theo_w_unc, theo_z_unc, theo_wr_unc, theo_wzr_unc;
-  Double_t acc_ze, acc_we, acc_wpe, acc_wme, acc_zm, acc_wm, acc_wpm, acc_wmm, acc_wre, acc_wzre, acc_wrm, acc_wzrm;
+  Double_t wpzre, wpzrm, wpzrl, wpzre_stat, wpzrm_stat, wpzrl_stat, wpzre_sys, wpzrm_sys, wpzrl_sys, wpzre_lumi, wpzrm_lumi, wpzrl_lumi;
+  Double_t wmzre, wmzrm, wmzrl, wmzre_stat, wmzrm_stat, wmzrl_stat, wmzre_sys, wmzrm_sys, wmzrl_sys, wmzre_lumi, wmzrm_lumi, wmzrl_lumi;
+  Double_t theo_wp, theo_wm, theo_w, theo_z, theo_wr, theo_wzr,theo_wpzr,theo_wmzr, theo_wp_unc, theo_wm_unc, theo_w_unc, theo_z_unc, theo_wr_unc, theo_wzr_unc,theo_wpzr_unc,theo_wmzr_unc;
+  Double_t acc_ze, acc_we, acc_wpe, acc_wme, acc_zm, acc_wm, acc_wpm, acc_wmm, acc_wre, acc_wzre,acc_wpzre,acc_wmzre,  acc_wrm, acc_wzrm, acc_wpzrm, acc_wmzrm;
   Double_t acc_ze_unc, acc_we_unc, acc_wpe_unc, acc_wme_unc, acc_zm_unc, acc_wm_unc, acc_wpm_unc, acc_wmm_unc;
-  Double_t acc_wre_unc, acc_wzre_unc, acc_wrm_unc, acc_wzrm_unc;
+  Double_t acc_wre_unc, acc_wzre_unc,acc_wpzre_unc, acc_wmzre_unc, acc_wrm_unc, acc_wzrm_unc, acc_wpzrm_unc, acc_wmzrm_unc;
   
   //--------------------------------------------------------------------------------------------------------------
   // Parse text file
@@ -380,7 +382,100 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
       ss >> label >> acc_wzrm_unc;
       state++; continue;
     }
-
+    // w+/z(e)
+    if (state==56) {
+      stringstream ss(line);
+      ss >> label >> wpzre >> label >> wpzre_stat >> label >> label >> wpzre_sys >> label >> label >> wpzre_lumi;
+      state++; continue;
+    }
+    // w+/z(m)
+    if (state==57) {
+      stringstream ss(line);
+      ss >> label >> wpzrm >> label >> wpzrm_stat >> label >> label >> wpzrm_sys >> label >> label >> wpzrm_lumi;
+      state++; continue;
+    }
+    // w+/z(l)
+    if (state==58) {
+      stringstream ss(line);
+      ss >> label >> wpzrl >> label >> wpzrl_stat >> label >> label >> wpzrl_sys >> label >> label >> wpzrl_lumi;
+      state++; continue;
+    }
+    // w-/z(e)
+    if (state==59) {
+      stringstream ss(line);
+      ss >> label >> wmzre >> label >> wmzre_stat >> label >> label >> wmzre_sys >> label >> label >> wmzre_lumi;
+      state++; continue;
+    }
+    // w-/z(m)
+    if (state==60) {
+      stringstream ss(line);
+      ss >> label >> wmzrm >> label >> wmzrm_stat >> label >> label >> wmzrm_sys >> label >> label >> wmzrm_lumi;
+      state++; continue;
+    }
+    // w-/z(l)
+    if (state==61) {
+      stringstream ss(line);
+      ss >> label >> wmzrl >> label >> wmzrl_stat >> label >> label >> wmzrl_sys >> label >> label >> wmzrl_lumi;
+      state++; continue;
+    }
+    // theo w+/z
+    if (state==62) {
+      stringstream ss(line);
+      ss >> label >> theo_wpzr >> label >> theo_wpzr_unc;
+      state++; continue;
+    }
+    if (state==63) {
+      stringstream ss(line);
+      ss >> label >> theo_wmzr >> label >> theo_wmzr_unc;
+      state++; continue;
+    }
+    // sys wpzre
+    if (state==64) {
+      stringstream ss(line);
+      ss >> label >> wpzre_sys;
+      state++; continue;
+    }
+    // sys wpzrm
+    if (state==65) {
+      stringstream ss(line);
+      ss >> label >> wpzrm_sys;
+      state++; continue;
+    } 
+    // sys wmzre
+    if (state==66) {
+      stringstream ss(line);
+      ss >> label >> wmzre_sys;
+      state++; continue;
+    }
+    // sys wmmzrm
+    if (state==67) {
+      stringstream ss(line);
+      ss >> label >> wmzrm_sys;
+      state++; continue;
+    }
+    // theo wpzre
+    if (state==68) {
+      stringstream ss(line);
+      ss >> label >> acc_wpzre_unc;
+      state++; continue;
+    }
+    // theo wpzre
+    if (state==69) {
+      stringstream ss(line);
+      ss >> label >> acc_wpzrm_unc;
+      state++; continue;
+    } 
+    // theo wpzrm
+    if (state==70) {
+      stringstream ss(line);
+      ss >> label >> acc_wmzre_unc;
+      state++; continue;
+    }
+    if (state==71) {
+      stringstream ss(line);
+      ss >> label >> acc_wmzrm_unc;
+      state++; continue;
+    }
   }
   ifs.close();
   //cout << setprecision(3) << fixed; 
@@ -416,6 +511,22 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
   wzrm*=acc_wm/acc_zm; wzrm_stat*=acc_wm/acc_zm; wzrm_lumi*=acc_wm/acc_zm;
   wzrm_sys*=wzrm/100;
   wzrm_lumi=0;
+
+  wpzre*=acc_wpe/acc_ze; wpzre_stat*=acc_wpe/acc_ze; wpzre_lumi*=acc_wpe/acc_ze;
+  wpzre_sys*=wpzre/100;
+  wpzre_lumi=0;
+
+  wpzrm*=acc_wpm/acc_zm; wpzrm_stat*=acc_wpm/acc_zm; wpzrm_lumi*=acc_wpm/acc_zm;
+  wpzrm_sys*=wpzrm/100;
+  wpzrm_lumi=0;
+
+  wmzre*=acc_wme/acc_ze; wmzre_stat*=acc_wme/acc_ze; wmzre_lumi*=acc_wme/acc_ze;
+  wmzre_sys*=wmzre/100;
+  wmzre_lumi=0;
+
+  wmzrm*=acc_wmm/acc_zm; wmzrm_stat*=acc_wmm/acc_zm; wmzrm_lumi*=acc_wmm/acc_zm;
+  wmzrm_sys*=wmzrm/100;
+  wmzrm_lumi=0;
 
   // 
   // COMBINE CHANNELS
@@ -480,6 +591,26 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
   wzrl_sys=TMath::Sqrt(wzre_weight*wzre_weight*wzre_sys*wzre_sys+wzrm_weight*wzrm_weight*wzrm_sys*wzrm_sys);
   wzrl_lumi=wzre_weight*wzre_lumi+wzrm_weight*wzrm_lumi;
   wzrl = wzre*wzre_weight+wzrm*wzrm_weight;
+ 
+  Double_t wpzre_weight = (1/(wpzre_sys*wpzre_sys+wpzre_stat*wpzre_stat))/(1/(wpzre_sys*wpzre_sys+wpzre_stat*wpzre_stat)+1/(wpzrm_sys*wpzrm_sys+wpzrm_stat*wpzrm_stat));
+  Double_t wpzrm_weight = (1/(wpzrm_sys*wpzrm_sys+wpzrm_stat*wpzrm_stat))/(1/(wpzre_sys*wpzre_sys+wpzre_stat*wpzre_stat)+1/(wpzrm_sys*wpzrm_sys+wpzrm_stat*wpzrm_stat));
+
+  cout << "wpzre " << wpzre_weight << " " << wpzrm_weight << endl;
+
+  wpzrl_stat=TMath::Sqrt(wpzre_weight*wpzre_weight*wpzre_stat*wpzre_stat+wpzrm_weight*wpzrm_weight*wpzrm_stat*wpzrm_stat);
+  wpzrl_sys=TMath::Sqrt(wpzre_weight*wpzre_weight*wpzre_sys*wpzre_sys+wpzrm_weight*wpzrm_weight*wpzrm_sys*wpzrm_sys);
+  wpzrl_lumi=wpzre_weight*wpzre_lumi+wpzrm_weight*wpzrm_lumi;
+  wpzrl = wpzre*wpzre_weight+wpzrm*wpzrm_weight;
+
+  Double_t wmzre_weight = (1/(wmzre_sys*wmzre_sys+wmzre_stat*wmzre_stat))/(1/(wmzre_sys*wmzre_sys+wmzre_stat*wmzre_stat)+1/(wmzrm_sys*wmzrm_sys+wmzrm_stat*wmzrm_stat));
+  Double_t wmzrm_weight = (1/(wmzrm_sys*wmzrm_sys+wmzrm_stat*wmzrm_stat))/(1/(wmzre_sys*wmzre_sys+wmzre_stat*wmzre_stat)+1/(wmzrm_sys*wmzrm_sys+wmzrm_stat*wmzrm_stat));
+
+  cout << "wmzre " << wmzre_weight << " " << wmzrm_weight << endl;
+
+  wmzrl_stat=TMath::Sqrt(wmzre_weight*wmzre_weight*wmzre_stat*wmzre_stat+wmzrm_weight*wmzrm_weight*wmzrm_stat*wmzrm_stat);
+  wmzrl_sys=TMath::Sqrt(wmzre_weight*wmzre_weight*wmzre_sys*wmzre_sys+wmzrm_weight*wmzrm_weight*wmzrm_sys*wmzrm_sys);
+  wmzrl_lumi=wmzre_weight*wmzre_lumi+wmzrm_weight*wmzrm_lumi;
+  wmzrl = wmzre*wmzre_weight+wmzrm*wmzrm_weight;
 
   cout << endl;
   cout << "    MEASURED FIDUCIAL XSECS " << endl;
@@ -508,6 +639,14 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
   cout << "W/Z(m)   " << wzrm << " +/- " << wzrm_stat << "_{stat} +/- " << wzrm_sys << "_{sys} +/- " << wzrm_lumi << "_{lumi}" << endl;
   cout << "W/Z      " << wzrl << " +/- " << wzrl_stat << "_{stat} +/- " << wzrl_sys << "_{sys} +/- " << wzrl_lumi << "_{lumi}" << endl;
   cout << endl;
+  cout << "W+/Z(e)   " << wpzre << " +/- " << wpzre_stat << "_{stat} +/- " << wpzre_sys << "_{sys} +/- " << wpzre_lumi << "_{lumi}" << endl;
+  cout << "W+/Z(m)   " << wpzrm << " +/- " << wpzrm_stat << "_{stat} +/- " << wpzrm_sys << "_{sys} +/- " << wpzrm_lumi << "_{lumi}" << endl;
+  cout << "W+/Z      " << wpzrl << " +/- " << wpzrl_stat << "_{stat} +/- " << wpzrl_sys << "_{sys} +/- " << wpzrl_lumi << "_{lumi}" << endl;
+  cout << endl;
+  cout << "W-/Z(e)   " << wmzre << " +/- " << wmzre_stat << "_{stat} +/- " << wmzre_sys << "_{sys} +/- " << wmzre_lumi << "_{lumi}" << endl;
+  cout << "W-/Z(m)   " << wmzrm << " +/- " << wmzrm_stat << "_{stat} +/- " << wmzrm_sys << "_{sys} +/- " << wmzrm_lumi << "_{lumi}" << endl;
+  cout << "W-/Z      " << wmzrl << " +/- " << wmzrl_stat << "_{stat} +/- " << wmzrl_sys << "_{sys} +/- " << wmzrl_lumi << "_{lumi}" << endl;
+  cout << endl;
   cout << "    THEORETICAL FIDUCIAL XSECS" << endl;
 
   acc_wpe_unc*=acc_wpe/100;
@@ -522,12 +661,20 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
   acc_wre=acc_wpe/acc_wme;
   acc_wrm=acc_wpm/acc_wmm;
   acc_wzre=acc_we/acc_ze;
+  acc_wpzre=acc_wpe/acc_zm;
+  acc_wmzre=acc_wme/acc_zm;
   acc_wzrm=acc_wm/acc_zm;
+  acc_wpzrm=acc_wpm/acc_zm;
+  acc_wmzrm=acc_wmm/acc_zm;
 
   acc_wre_unc*=acc_wre/100;
   acc_wrm_unc*=acc_wrm/100;
   acc_wzre_unc*=acc_wzre/100;
   acc_wzrm_unc*=acc_wzrm/100;
+  acc_wpzrm_unc*=acc_wpzrm/100;
+  acc_wmzrm_unc*=acc_wmzrm/100;
+  acc_wpzre_unc*=acc_wpzre/100;
+  acc_wmzre_unc*=acc_wmzre/100;
 
   Double_t acc_wpl = wpe_weight*acc_wpe+wpm_weight*acc_wpm;
   Double_t acc_wml = wme_weight*acc_wme+wmm_weight*acc_wmm;
@@ -575,5 +722,20 @@ void make_fiducial(const TString infilename="make_fiducial.txt")
   cout << "W/Z(m)   " << theo_wzr*acc_wm/acc_zm << " +/- " << tf_wzrm_unc << endl;
   cout << "W/Z(l)   " << tf_wzre*wzre_weight+tf_wzrm*wzrm_weight << " +/- " << TMath::Sqrt(tf_wzre_unc*tf_wzre_unc*wzre_weight*wzre_weight+tf_wzrm_unc*tf_wzrm_unc*wzrm_weight*wzrm_weight) << endl;
   cout << endl;
-
+  Double_t tf_wpzre = theo_wpzr*acc_wpe/acc_ze;
+  Double_t tf_wpzre_unc = theo_wpzr*acc_wpe/acc_ze*TMath::Sqrt(theo_wpzr_unc*theo_wpzr_unc/(theo_wpzr*theo_wpzr)+acc_wpzre_unc*acc_wpzre_unc/(acc_wpzre*acc_wpzre));
+  cout << "W+/Z(e)   " << theo_wpzr*acc_wpe/acc_ze << " +/- " << tf_wpzre_unc << endl;
+  Double_t tf_wpzrm = theo_wpzr*acc_wpm/acc_zm;
+  Double_t tf_wpzrm_unc = theo_wpzr*acc_wpm/acc_zm*TMath::Sqrt(theo_wpzr_unc*theo_wpzr_unc/(theo_wpzr*theo_wpzr)+acc_wpzrm_unc*acc_wpzrm_unc/(acc_wpzrm*acc_wpzrm));
+  cout << "W+/Z(m)   " << theo_wpzr*acc_wpm/acc_zm << " +/- " << tf_wpzrm_unc << endl;
+  cout << "W+/Z(l)   " << tf_wpzre*wpzre_weight+tf_wpzrm*wpzrm_weight << " +/- " << TMath::Sqrt(tf_wpzre_unc*tf_wpzre_unc*wpzre_weight*wpzre_weight+tf_wpzrm_unc*tf_wpzrm_unc*wpzrm_weight*wpzrm_weight) << endl;
+  cout << endl;
+  Double_t tf_wmzre = theo_wmzr*acc_wme/acc_ze;
+  Double_t tf_wmzre_unc = theo_wmzr*acc_wme/acc_ze*TMath::Sqrt(theo_wmzr_unc*theo_wmzr_unc/(theo_wmzr*theo_wmzr)+acc_wmzre_unc*acc_wmzre_unc/(acc_wmzre*acc_wmzre));
+  cout << "W-/Z(e)   " << theo_wmzr*acc_wme/acc_ze << " +/- " << tf_wmzre_unc << endl;
+  Double_t tf_wmzrm = theo_wmzr*acc_wmm/acc_zm;
+  Double_t tf_wmzrm_unc = theo_wmzr*acc_wmm/acc_zm*TMath::Sqrt(theo_wmzr_unc*theo_wmzr_unc/(theo_wmzr*theo_wmzr)+acc_wmzrm_unc*acc_wmzrm_unc/(acc_wmzrm*acc_wmzrm));
+  cout << "W-/Z(m)   " << theo_wmzr*acc_wmm/acc_zm << " +/- " << tf_wmzrm_unc << endl;
+  cout << "W-/Z(l)   " << tf_wmzre*wmzre_weight+tf_wmzrm*wmzrm_weight << " +/- " << TMath::Sqrt(tf_wmzre_unc*tf_wmzre_unc*wmzre_weight*wmzre_weight+tf_wmzrm_unc*tf_wmzrm_unc*wmzrm_weight*wmzrm_weight) << endl;
+  cout << endl;
 }

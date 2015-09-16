@@ -15,7 +15,7 @@
 #include <fstream>                    // functions for file I/O
 #include <string>                     // C++ string class
 #include <sstream>                    // class for parsing strings
-#include "TLorentzVector.h"       // 4-vector class
+#include "TLorentzVector.h"           // 4-vector class
 #include "TRandom3.h"
 
 #include "../Utils/CPlot.hh"          // helper class for plots
@@ -49,12 +49,11 @@ void MuScale() {
   // event category enumeration
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };  // event category enum
   
-  TString outputDir = "muon";
-  TString pufname = "../Tools/pileup_weights_2015B.root"; 
+  TString outputDir = "MuScaleResults";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root");  // data
-  infilenamev.push_back("/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/zmm_select.root");  // MC
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/data_select.trkCuts.root"); // data
+  infilenamev.push_back("/afs/cern.ch/work/c/cmedlock/public/wz-ntuples/Zmumu/ntuples/zmm_select.raw.trkCuts.root");  // MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
@@ -63,40 +62,30 @@ void MuScale() {
   const Double_t MU_MASS   = 0.105658369;  
   
   vector<pair<Double_t,Double_t> > scEta_limits;
-  scEta_limits.push_back(make_pair(0.0,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.6));
-  scEta_limits.push_back(make_pair(1.6,2.4));
-  /*scEta_limits.push_back(make_pair(0.0,0.4));
-  scEta_limits.push_back(make_pair(0.4,0.8));
-  scEta_limits.push_back(make_pair(0.8,1.2));
-  scEta_limits.push_back(make_pair(1.2,1.4442));
-  scEta_limits.push_back(make_pair(1.566,2.0));
-  scEta_limits.push_back(make_pair(2.0,2.5));*/
+  scEta_limits.push_back(make_pair(0.0,1.2));
+  scEta_limits.push_back(make_pair(1.2,2.1));
+  scEta_limits.push_back(make_pair(2.1,2.4));
 
   CPlot::sOutDir = outputDir;
   
   const TString format("png");
-  
-  
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
    
   enum { eData=0, eMC };
   
-  TFile *pufile = new TFile(pufname); assert(pufile);
-  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
-  
   char hname[100];
   vector<TH1D*> hMCv, hDatav;  
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
       sprintf(hname,"mc_%i_%i",ibin,jbin);
-      hMCv.push_back(new TH1D(hname,"",60,MASS_LOW,MASS_HIGH));
+      hMCv.push_back(new TH1D(hname,"",80,MASS_LOW,MASS_HIGH));
       hMCv.back()->Sumw2();
       
       sprintf(hname,"data_%i_%i",ibin,jbin);
-      hDatav.push_back(new TH1D(hname,"",60,MASS_LOW,MASS_HIGH));
+      hDatav.push_back(new TH1D(hname,"",80,MASS_LOW,MASS_HIGH));
       hDatav.back()->Sumw2();
     }
   }
@@ -105,7 +94,7 @@ void MuScale() {
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight;
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
@@ -121,6 +110,7 @@ void MuScale() {
     intree->SetBranchAddress("lumiSec",  &lumiSec);   // event lumi section
     intree->SetBranchAddress("evtNum",   &evtNum);    // event number
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight
+    intree->SetBranchAddress("puWeight", &puWeight);  // pileup reweighting
     intree->SetBranchAddress("matchGen", &matchGen);  // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category", &category);  // dilepton category
     intree->SetBranchAddress("npv",      &npv);	      // number of primary vertices
@@ -137,16 +127,15 @@ void MuScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-	weight=scale1fb;
-	weight*=puWeights->GetBinContent(npv+1);
+	weight=scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0;
       }
       
       if((category!=eMuMu2HLT) && (category!=eMuMu1HLT) && (category!=eMuMu1HLT1L1)) continue;
       if(q1 == q2) continue;
-      if(dilep->M()	  < MASS_LOW)  continue;
-      if(dilep->M()	  > MASS_HIGH) continue;
-      if(lep1->Pt()	  < PT_CUT)    continue;
-      if(lep2->Pt()	  < PT_CUT)    continue;
+      if(dilep->M()	   < MASS_LOW)  continue;
+      if(dilep->M()	   > MASS_HIGH) continue;
+      if(lep1->Pt()	   < PT_CUT)    continue;
+      if(lep2->Pt()	   < PT_CUT)    continue;
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
 
@@ -177,6 +166,7 @@ void MuScale() {
       if(ifile==eData) hDatav[n]->Fill(vDilep.M(),weight);
       if(ifile==eMC)   hMCv[n]->Fill(vDilep.M(),weight);
     }  
+
     delete infile;
     infile=0, intree=0;
   }
@@ -202,7 +192,7 @@ void MuScale() {
   TH1D *hDummyFit = new TH1D("hDummyFit","",0,0,10);
   hDummyFit->SetLineColor(kGreen+2);
 
-  RooRealVar mass("mass","M_{ee}",60.0,120.0,"GeV") ;
+  RooRealVar mass("mass","M_{#mu#mu}",60.0,120.0,"GeV") ;
   mass.setBins(1600,"cache");
   
   RooRealVar massmc("massmc","massmc",0.0,150.0,"GeV");  // mass variable for building MC template
@@ -217,11 +207,11 @@ void MuScale() {
   Int_t intOrder = 1;     // Interpolation order for       
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     sprintf(vname,"scale_%i",ibin);
-    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.0,0.8,1.2);
+    RooRealVar *scalebinned = new RooRealVar(vname,vname,1.0,0.5,1.5);
     scalebins.add(*scalebinned);
     
     sprintf(vname,"sigma_%i",ibin);
-    RooRealVar *sigmabinned = new RooRealVar(vname,vname,0.8,0.0,2.0);
+    RooRealVar *sigmabinned = new RooRealVar(vname,vname,1.0,0.0,2.0);
     sigmabins.add(*sigmabinned);
   }
     
@@ -297,22 +287,24 @@ void MuScale() {
   TGraphErrors *grScaleMCtoData = new TGraphErrors(scEta_limits.size(),xval,scaleMCtoData,xerr,scaleMCtoDataerr);
   TGraphErrors *grSigmaMCtoData = new TGraphErrors(scEta_limits.size(),xval,sigmaMCtoData,xerr,sigmaMCtoDataerr);
   
-  CPlot plotScale1("ele_scale_datatomc","","Supercluster |#eta|","Data scale correction");
+  CPlot plotScale1("mu_scale_datatomc","","Muon |#eta|","Data scale correction");
   plotScale1.AddGraph(grScaleDatatoMC,"",kBlue);
   plotScale1.SetYRange(0.98,1.02);
-  plotScale1.AddLine(0,1,2.75,1,kBlack,7);
+  plotScale1.AddLine(0,1,2.5,1,kBlack,7);
   plotScale1.Draw(c,kTRUE,format);
   
-  CPlot plotScale2("ele_scale_mctodata","","Supercluster |#eta|","MC#rightarrowData scale correction");
+  CPlot plotScale2("mu_scale_mctodata","","Muon |#eta|","MC#rightarrowData scale correction");
   plotScale2.AddGraph(grScaleMCtoData,"",kBlue);
   plotScale2.SetYRange(0.98,1.02);
-  plotScale2.AddLine(0,1,2.75,1,kBlack,7);
+  plotScale2.AddLine(0,1,2.5,1,kBlack,7);
   plotScale2.Draw(c,kTRUE,format);
 
-  CPlot plotRes("ele_res_mctodata","","Supercluster |#eta|","MC#rightarrowData additional smear [GeV]");
+  CPlot plotRes("mu_res_mctodata","","Muon |#eta|","MC#rightarrowData additional smear [GeV]");
   plotRes.AddGraph(grSigmaMCtoData,"",kBlue);
   plotRes.SetYRange(0,1.6);
   plotRes.Draw(c,kTRUE,format);
+
+double nData=0;
 
   for(UInt_t ibin=0; ibin<scEta_limits.size(); ibin++) {
     for(UInt_t jbin=ibin; jbin<scEta_limits.size(); jbin++) {
@@ -336,7 +328,7 @@ void MuScale() {
       sprintf(pname,"postfit_%i_%i",ibin,jbin);
       sprintf(str1,"[%.1f, %.1f]",scEta_limits.at(ibin).first,scEta_limits.at(ibin).second);
       sprintf(str2,"[%.1f, %.1f]",scEta_limits.at(jbin).first,scEta_limits.at(jbin).second);
-      CPlot plot(pname,frame,"","m(e^{+}e^{-}) [GeV/c^{2}]","Events / 0.6 GeV/c^{2}");
+      CPlot plot(pname,frame,"","m(#mu^{+}#mu^{-}) [GeV/c^{2}]","Events / 0.6 GeV/c^{2}");
       plot.AddTextBox(str1,0.21,0.80,0.45,0.87,0,kBlack,-1);
       plot.AddTextBox(str2,0.21,0.73,0.45,0.80,0,kBlack,-1);
       plot.SetLegend(0.75,0.64,0.93,0.88);
@@ -344,10 +336,12 @@ void MuScale() {
       plot.GetLegend()->AddEntry(hDummyMC,"Sim","FL");
       plot.GetLegend()->AddEntry(hDummyFit,"Fit","L");
       plot.Draw(c,kTRUE,format);
+
+      nData += hDatav[n]->Integral();
     }
   }
 
-      
+  cout<<"nData = "<<nData<<endl;
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================

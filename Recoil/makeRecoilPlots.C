@@ -1,35 +1,35 @@
 {
 
-  TFile *f = new TFile("test.root", "read");
+  TFile *f = new TFile("testWe.root", "read");
   
-  TTree *RawWm = (TTree*) f->Get("RawWm");
+  TTree *RawWe = (TTree*) f->Get("RawWe");
   TH1D *hRaw = new TH1D("hRaw", "hRaw", 40, 0, 80);
-  RawWm->Draw("out_met>>hRaw", "weight");
+  RawWe->Draw("out_met>>hRaw", "weight");
 
-  TTree *CorrWm = (TTree*) f->Get("CorrWm");
+  TTree *CorrWe = (TTree*) f->Get("CorrWe");
   TH1D *hCorr = new TH1D("hCorr", "hCorr", 40, 0, 80);
-  CorrWm->Draw("out_met>>hCorr", "weight");
+  CorrWe->Draw("out_met>>hCorr", "weight");
 
-  TTree *CorrUpWm = (TTree*) f->Get("CorrUpWm");
+  TTree *CorrUpWe = (TTree*) f->Get("CorrUpWe");
   TH1D *hCorrUp = new TH1D("hCorrUp", "hCorrUp", 40, 0, 80);
-  CorrUpWm->Draw("out_met>>hCorrUp", "weight");
-  TTree *CorrDownWm = (TTree*) f->Get("CorrDownWm");
+  CorrUpWe->Draw("out_met>>hCorrUp", "weight");
+  TTree *CorrDownWe = (TTree*) f->Get("CorrDownWe");
   TH1D *hCorrDown = new TH1D("hCorrDown", "hCorrDown", 40, 0, 80);
-  CorrDownWm->Draw("out_met>>hCorrDown", "weight");
+  CorrDownWe->Draw("out_met>>hCorrDown", "weight");
 
-  TTree *LepScaleUpWm = (TTree*) f->Get("LepScaleUpWm");
+  TTree *LepScaleUpWe = (TTree*) f->Get("LepScaleUpWe");
   TH1D *hLepScaleUp = new TH1D("hLepScaleUp", "hLepScaleUp", 40, 0, 80);
-  LepScaleUpWm->Draw("out_met>>hLepScaleUp", "weight");
-  TTree *LepScaleDownWm = (TTree*) f->Get("LepScaleDownWm");
+  LepScaleUpWe->Draw("out_met>>hLepScaleUp", "weight");
+  TTree *LepScaleDownWe = (TTree*) f->Get("LepScaleDownWe");
   TH1D *hLepScaleDown = new TH1D("hLepScaleDown", "hLepScaleDown", 40, 0, 80);
-  LepScaleDownWm->Draw("out_met>>hLepScaleDown", "weight");
+  LepScaleDownWe->Draw("out_met>>hLepScaleDown", "weight");
 
-  TTree *LepResUpWm = (TTree*) f->Get("LepResUpWm");
+  TTree *LepResUpWe = (TTree*) f->Get("LepResUpWe");
   TH1D *hLepResUp = new TH1D("hLepResUp", "hLepResUp", 40, 0, 80);
-  LepResUpWm->Draw("out_met>>hLepResUp", "weight");
-  TTree *LepResDownWm = (TTree*) f->Get("LepResDownWm");
+  LepResUpWe->Draw("out_met>>hLepResUp", "weight");
+  TTree *LepResDownWe = (TTree*) f->Get("LepResDownWe");
   TH1D *hLepResDown = new TH1D("hLepResDown", "hLepResDown", 40, 0, 80);
-  LepResDownWm->Draw("out_met>>hLepResDown", "weight");
+  LepResDownWe->Draw("out_met>>hLepResDown", "weight");
 
   TCanvas *c1 = MakeCanvas("c1", "", 800, 600);
   TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.9);
@@ -47,7 +47,7 @@
   hCorr->Draw("histsame");
   leg->Draw();
 
-  c1->SaveAs("rawVsCorr.png");
+  c1->SaveAs("rawVsCorrWe.png");
 
   hCorr->SetLineColor(kBlack); hCorrUp->SetLineColor(kRed); hCorrDown->SetLineColor(kBlue);
   hCorrUp->SetLineStyle(2); hCorrUp->SetLineWidth(2);
@@ -66,7 +66,7 @@
   hCorrDown->Draw("histsame");
   leg->Draw();
 
-  c1->SaveAs("recoilVariations.png");
+  c1->SaveAs("recoilVariationsWe.png");
 
   hLepScaleUp->SetLineColor(kRed); hLepScaleDown->SetLineColor(kBlue);
   hLepScaleUp->SetLineStyle(2); hLepScaleUp->SetLineWidth(2);
@@ -85,7 +85,7 @@
   hLepScaleDown->Draw("histsame");
   leg->Draw();
 
-  c1->SaveAs("lepScaleVariations.png");
+  c1->SaveAs("lepScaleVariationsWe.png");
 
   hLepResUp->SetLineColor(kRed); hLepResDown->SetLineColor(kBlue);
   hLepResUp->SetLineStyle(2); hLepResUp->SetLineWidth(2);
@@ -104,6 +104,6 @@
   hLepResDown->Draw("histsame");
   leg->Draw();
 
-  c1->SaveAs("lepResVariations.png");
+  c1->SaveAs("lepResVariationsWe.png");
 
 }

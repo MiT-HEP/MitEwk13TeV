@@ -20,15 +20,17 @@
 void xsec(const TString infilename="input.txt", const TString outputDir=".")
 {   
   // theory predictions
-  const Double_t theory_xsW   = 12.503;   const Double_t theory_xsWerr   = theory_xsW*0.27/10.44;//0.018;
-  const Double_t theory_xsWp  =  7.322;   const Double_t theory_xsWperr  = theory_xsWp*0.17/6.15;//0.015;
-  const Double_t theory_xsWm  =  5.181;   const Double_t theory_xsWmerr  = theory_xsWm*0.11/4.29;//0.010;
-  const Double_t theory_xsZ   =  1.1323;  const Double_t theory_xsZerr   = theory_xsZ*0.03/0.97;//0.0009;
+  const Double_t theory_xsW   = 19.70;   const Double_t theory_xsWerr   = 0.45;//theory_xsW*0.27/10.44;//0.018;
+  const Double_t theory_xsWp  =  11.33;   const Double_t theory_xsWperr  = 0.26;//theory_xsWp*0.17/6.15;//0.015;
+  const Double_t theory_xsWm  =  8.37;   const Double_t theory_xsWmerr  = 0.20;//theory_xsWm*0.11/4.29;//0.010;
+  const Double_t theory_xsZ   =  1.87;  const Double_t theory_xsZerr   = 0.04;//theory_xsZ*0.03/0.97;//0.0009;
   
-  const Double_t theory_xsWZ  = 11.04;    const Double_t theory_xsWZerr  = theory_xsWZ*0.04/10.74;//0.02;
-  const Double_t theory_xsWpm =  1.413;   const Double_t theory_xsWpmerr = theory_xsWpm*0.01/1.43;//0.004;
-  
-  
+  const Double_t theory_xsWZ  = 10.55;    const Double_t theory_xsWZerr  = 0.05;//theory_xsWZ*0.04/10.74;//0.02;
+  const Double_t theory_xsWpm =  1.35;   const Double_t theory_xsWpmerr = 0.01;//theory_xsWpm*0.01/1.43;//0.004;
+
+  const Double_t theory_xsWpZ  = 6.06;    const Double_t theory_xsWpZerr  = 0.04;//theory_xsWZ*0.04/10.74;//0.02;
+  const Double_t theory_xsWmZ  = 4.48;    const Double_t theory_xsWmZerr  = 0.02;//theory_xsWZ*0.04/10.74;//0.02;
+    
   CSummaryPlot::sOutDir = outputDir;
   TString format("png");
   
@@ -43,8 +45,8 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
   Double_t accWmpErr, accWmmErr, accWmErr, accZmmErr, accWepErr, accWemErr, accWeErr, accZeeErr;
   Double_t lumi, lumiErr;
   
-  Double_t errWmp=0, errWmm=0, errWm=0, errZmm=0, errWmpm=0, errWZm=0;
-  Double_t errWep=0, errWem=0, errWe=0, errZee=0, errWepm=0, errWZe=0; 
+  Double_t errWmp=0, errWmm=0, errWm=0, errZmm=0, errWmpm=0, errWZm=0, errWmpZm=0, errWmmZm=0;
+  Double_t errWep=0, errWem=0, errWe=0, errZee=0, errWepm=0, errWZe=0, errWepZe=0, errWemZe=0; 
   
   ifstream ifs;
   ifs.open(infilename.Data());
@@ -87,24 +89,30 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
       errWm   = accWmErr*accWmErr/accWm/accWm;
       errZmm  = accZmmErr*accZmmErr/accZmm/accZmm;
       errWmpm = errWmp+errWmm;
+      errWmpZm  = errWmp+errZmm;
+      errWmmZm  = errWmm+errZmm;
       errWZm  = errWm+errZmm;
       errWep  = accWepErr*accWepErr/accWep/accWep;
       errWem  = accWemErr*accWemErr/accWem/accWem;
       errWe   = accWeErr*accWeErr/accWe/accWe;
       errZee  = accZeeErr*accZeeErr/accZee/accZee;
       errWepm = errWep+errWem;
+      errWepZe  = errWep+errZee;
+      errWemZe  = errWem+errZee;
       errWZe  = errWe+errZee;
     
     } else {
       stringstream ss(line);
       string label;
-      Double_t err[12];
-      ss >> label >> err[0] >> err[1] >> err[2] >> err[3] >> err[4] >> err[5] >> err[6] >> err[7] >> err[8] >> err[9] >> err[10] >> err[11];
+      Double_t err[16];
+      ss >> label >> err[0] >> err[1] >> err[2] >> err[3] >> err[4] >> err[5] >> err[6] >> err[7] >> err[8] >> err[9] >> err[10] >> err[11] >>err[12] >> err[13] >> err[14] >> err[15];
       errWmp  += err[0] *err[0];
       errWmm  += err[1] *err[1];
       errWm   += err[2] *err[2];
       errZmm  += err[3] *err[3];
       errWmpm += err[4] *err[4];
+      errWmpZm  += err[14] *err[14];
+      errWmmZm  += err[15] *err[15];
       errWZm  += err[5] *err[5];
       errWep  += err[6] *err[6];
       errWem  += err[7] *err[7];
@@ -112,6 +120,8 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
       errZee  += err[9] *err[9];
       errWepm += err[10]*err[10];
       errWZe  += err[11]*err[11];
+      errWepZe  += err[12] *err[12];
+      errWemZe  += err[13] *err[13];
     }
   }
   ifs.close();
@@ -138,6 +148,12 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
   Double_t xsWmpm = nWmp/nWmm/accWmp*accWmm;
   cout << " W+/W-(mu): " << setw(8) << xsWmpm << " +/- " << setw(7) << sqrt(nWmpErr*nWmpErr/nWmp/nWmp+nWmmErr*nWmmErr/nWmm/nWmm)*xsWmpm << " (stat) +/- " << setw(7) << sqrt(errWmpm)*xsWmpm << " (syst)" << endl;
   
+  Double_t xsWmpZm = xsWmp/xsZmm;
+  cout << "   W+/Z(mu): " << setw(8) << xsWmpZm  << " +/- " << setw(7) << sqrt(nWmpErr*nWmpErr/nWmp/nWmp+nZmmErr*nZmmErr/nZmm/nZmm)*xsWmpZm      << " (stat) +/- " << setw(7) << sqrt(errWmpZm)*xsWmpZm   << " (syst)" << endl;
+
+  Double_t xsWmmZm = xsWmm/xsZmm;
+  cout << "   W-/Z(mu): " << setw(8) << xsWmmZm  << " +/- " << setw(7) << sqrt(nWmmErr*nWmmErr/nWmm/nWmm+nZmmErr*nZmmErr/nZmm/nZmm)*xsWmmZm      << " (stat) +/- " << setw(7) << sqrt(errWmmZm)*xsWmmZm   << " (syst)" << endl;
+
   Double_t xsWZm = xsWm/xsZmm;
   cout << "   W/Z(mu): " << setw(8) << xsWZm  << " +/- " << setw(7) << sqrt(nWmErr*nWmErr/nWm/nWm+nZmmErr*nZmmErr/nZmm/nZmm)*xsWZm      << " (stat) +/- " << setw(7) << sqrt(errWZm)*xsWZm   << " (syst)" << endl;
 
@@ -162,6 +178,12 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
   
   Double_t xsWepm = nWep/nWem/accWep*accWem;
   cout << "  W+/W-(e): " << setw(8) << xsWepm << " +/- " << setw(7) << sqrt(nWepErr*nWepErr/nWep/nWep+nWemErr*nWemErr/nWem/nWem)*xsWepm << " (stat) +/- " << setw(7) << sqrt(errWepm)*xsWepm << " (syst)" << endl;
+
+  Double_t xsWepZe = xsWep/xsZee;
+  cout << "   W+/Z(e): " << setw(8) << xsWepZe  << " +/- " << setw(7) << sqrt(nWepErr*nWepErr/nWep/nWep+nZeeErr*nZeeErr/nZee/nZee)*xsWepZe      << " (stat) +/- " << setw(7) << sqrt(errWepZe)*xsWepZe   << " (syst)" << endl;
+
+  Double_t xsWemZe = xsWem/xsZee;
+  cout << "   W-/Z(e): " << setw(8) << xsWemZe  << " +/- " << setw(7) << sqrt(nWemErr*nWemErr/nWem/nWem+nZeeErr*nZeeErr/nZee/nZee)*xsWemZe      << " (stat) +/- " << setw(7) << sqrt(errWemZe)*xsWemZe   << " (syst)" << endl;
   
   Double_t xsWZe = xsWe/xsZee;
   cout << "    W/Z(e): " << setw(8) << xsWZe  << " +/- " << setw(7) << sqrt(nWeErr*nWeErr/nWe/nWe+nZeeErr*nZeeErr/nZee/nZee)*xsWZe      << " (stat) +/- " << setw(7) << sqrt(errWZe)*xsWZe   << " (syst)" << endl;
@@ -190,17 +212,17 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
                          "W^{+}#rightarrowe^{+}#nu",
 			 "W^{+}#rightarrow#mu^{+}#nu",
 			 "W^{+}#rightarrowl^{+}#nu (combined)",
-		         lumi*1e3,theory_xsWp,theory_xsWperr,0,9.3);
+		         lumi*1e3,theory_xsWp,theory_xsWperr,-5,20);
   plotWplus.SetResults(kEle,xsWep, xsWep*nWepErr/nWep, sqrt(errWep)*xsWep, xsWep*lumiErr);
   plotWplus.SetResults(kMu ,xsWmp, xsWmp*nWmpErr/nWmp, sqrt(errWmp)*xsWmp, xsWmp*lumiErr);
   plotWplus.Draw(c,format);
   
   CSummaryPlot plotWminus("xsWminus",
-                          "#sigma(pp#rightarrowW^{-})#timesBR(W^{+}#rightarrowl^{-}#nu) [nb]",
+                          "#sigma(pp#rightarrowW^{-})#timesBR(W^{-}#rightarrowl^{-}#nu) [nb]",
                           "W^{-}#rightarrowe^{-}#nu",
 			  "W^{-}#rightarrow#mu^{-}#nu",
 			  "W^{-}#rightarrowl^{-}#nu (combined)",
-		          lumi*1e3,theory_xsWm,theory_xsWmerr,0,6.5);
+		          lumi*1e3,theory_xsWm,theory_xsWmerr,-5,15);
   plotWminus.SetResults(kEle,xsWem, xsWem*nWemErr/nWem, sqrt(errWem)*xsWem, xsWem*lumiErr);
   plotWminus.SetResults(kMu ,xsWmm, xsWmm*nWmmErr/nWmm, sqrt(errWmm)*xsWmm, xsWmm*lumiErr);
   plotWminus.Draw(c,format);
@@ -210,7 +232,7 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
                      "W#rightarrowe#nu",
 		     "W#rightarrow#mu#nu",
 		     "W#rightarrowl#nu (combined)",
-		     lumi*1e3,theory_xsW,theory_xsWerr,0,16);
+		     lumi*1e3,theory_xsW,theory_xsWerr,0,30);
   plotW.SetResults(kEle,xsWe, xsWe*nWeErr/nWe, sqrt(errWe)*xsWe, xsWe*lumiErr);
   plotW.SetResults(kMu ,xsWm, xsWm*nWmErr/nWm, sqrt(errWm)*xsWm, xsWm*lumiErr);
   plotW.Draw(c,format);
@@ -230,7 +252,7 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
                      "Z#rightarrowee",
 		     "Z#rightarrow#mu#mu",
 		     "Z#rightarrowll (combined)",
-		     lumi*1e3,theory_xsZ,theory_xsZerr,0,1.45);
+		     lumi*1e3,theory_xsZ,theory_xsZerr,0,3.0);
   plotZ.SetResults(kEle,xsZee, xsZee*nZeeErr/nZee, sqrt(errZee)*xsZee, xsZee*lumiErr);
   plotZ.SetResults(kMu ,xsZmm, xsZmm*nZmmErr/nZmm, sqrt(errZmm)*xsZmm, xsZmm*lumiErr);
   plotZ.Draw(c,format);
@@ -244,4 +266,25 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
   plotWZ.SetResults(kEle,xsWZe,sqrt(nWeErr*nWeErr/nWe/nWe+nZeeErr*nZeeErr/nZee/nZee)*xsWZe,sqrt(errWZe)*xsWZe);
   plotWZ.SetResults(kMu, xsWZm,sqrt(nWmErr*nWmErr/nWm/nWm+nZmmErr*nZmmErr/nZmm/nZmm)*xsWZm,sqrt(errWZm)*xsWZm);
   plotWZ.Draw(c,format);  
+
+  CSummaryPlot plotWpZ("ratioWpZ",
+                      "R_{W^{+}/Z} = [ #sigma#timesBR ](W) / [ #sigma#timesBR ](Z)",
+                      "W^{+}#rightarrowe#nu, Z#rightarrowee",
+		      "W^{+}#rightarrow#mu#nu, Z#rightarrow#mu#mu",
+		      "W^{+}#rightarrowl#nu, Z#rightarrowll (combined)",
+		      lumi*1e3,theory_xsWpZ,theory_xsWpZerr,0,10);
+  plotWpZ.SetResults(kEle,xsWepZe,sqrt(nWepErr*nWepErr/nWep/nWep+nZeeErr*nZeeErr/nZee/nZee)*xsWepZe,sqrt(errWepZe)*xsWepZe);
+  plotWpZ.SetResults(kMu, xsWmpZm,sqrt(nWmpErr*nWmpErr/nWmp/nWmp+nZmmErr*nZmmErr/nZmm/nZmm)*xsWmpZm,sqrt(errWmpZm)*xsWmpZm);
+  plotWpZ.Draw(c,format);  
+
+   CSummaryPlot plotWmZ("ratioWmZ",
+                      "R_{W^{-}/Z} = [ #sigma#timesBR ](W) / [ #sigma#timesBR ](Z)",
+                      "W^{-}#rightarrowe#nu, Z#rightarrowee",
+		      "W^{-}#rightarrow#mu#nu, Z#rightarrow#mu#mu",
+		      "W^{-}#rightarrowl#nu, Z#rightarrowll (combined)",
+		      lumi*1e3,theory_xsWmZ,theory_xsWmZerr,-4,7);
+  plotWmZ.SetResults(kEle,xsWemZe,sqrt(nWemErr*nWemErr/nWem/nWem+nZeeErr*nZeeErr/nZee/nZee)*xsWemZe,sqrt(errWemZe)*xsWemZe);
+  plotWmZ.SetResults(kMu, xsWmmZm,sqrt(nWmmErr*nWmmErr/nWmm/nWmm+nZmmErr*nZmmErr/nZmm/nZmm)*xsWmmZm,sqrt(errWmmZm)*xsWmmZm);
+  plotWmZ.Draw(c,format);  
+  
 }

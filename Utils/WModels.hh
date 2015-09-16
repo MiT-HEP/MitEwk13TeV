@@ -21,9 +21,9 @@ class CPepeModel1
 {
 public:
   CPepeModel1():model(0){}
-  CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1=0);
+  CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1=0, RooRealVar *sigma0=0);
   ~CPepeModel1() {
-    delete sigma;
+    //delete sigma;
     //delete a1;
     delete model;
   }
@@ -80,11 +80,19 @@ CPepeModel0::CPepeModel0(const char *name, RooRealVar &x)
 }
 
 //--------------------------------------------------------------------------------------------------
-CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1)
+CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1,RooRealVar *sigma0)
 {
   char sigmaName[50];
-  sprintf(sigmaName,"sigma_%s",name);
-  sigma = new RooRealVar(sigmaName,sigmaName,10,5,20);
+  if(sigma0) {
+    sprintf(sigmaName,"%s",sigma0->GetName());
+    sigma = sigma0;
+  } else {
+    sprintf(sigmaName,"sigma_%s",name);
+    sigma = new RooRealVar(sigmaName,sigmaName,10,1,30);
+  }
+
+  //sprintf(sigmaName,"sigma_%s",name);
+  //sigma = new RooRealVar(sigmaName,sigmaName,10,1,20);
   
   char a1Name[50];
   if(sigma1) {
@@ -92,6 +100,7 @@ CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1)
     a1 = sigma1;
   } else {
     sprintf(a1Name,"a1_%s",name);
+    //a1 = new RooRealVar(a1Name,a1Name,0.01,-1,1);
     a1 = new RooRealVar(a1Name,a1Name,0.01,-1,1);
   }
   
@@ -114,8 +123,10 @@ CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1)
 CPepeModel2::CPepeModel2(const char *name, RooRealVar &x)
 {
   char a1Name[50]; sprintf(a1Name, "a1_%s", name); a1 = new RooRealVar(a1Name,a1Name,0.1,-1,1);
-  char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,10);
-  char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,400);
+  //char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,10);
+  //char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,400);
+  char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,8);
+  char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,600);
   
   // f(x) = x*exp[-x^2 / a*x*x + b*x + c]
   char formula[300];

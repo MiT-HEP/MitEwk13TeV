@@ -165,6 +165,22 @@ void getCT14uncertainties() {
   vector<Double_t> wzmScaleAs;
   for (UInt_t i=0; i<wpmScaleAs.size(); i++) { wzmScaleAs.push_back(((wpmScaleAs[i]*wpXsec+wmmScaleAs[i]*wmXsec)/(zmmScaleAs[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
 
+  Double_t wewmNom=weNom/wmNom;
+  vector<Double_t> wewmScales;
+  for (UInt_t i=0; i<weScales.size(); i++) { wewmScales.push_back(weScales[i]/wmScales[i]); }
+
+  Double_t wewmNomAs=weNomAs/wmNomAs;
+  vector<Double_t> wewmScaleAs;
+  for (UInt_t i=0; i<weScaleAs.size(); i++) { wewmScaleAs.push_back(weScaleAs[i]/wmScaleAs[i]); }
+
+  Double_t zezmNom=zeeNom/zmmNom;
+  vector<Double_t> zezmScales;
+  for (UInt_t i=0; i<zeeScales.size(); i++) { zezmScales.push_back(zeeScales[i]/zmmScales[i]); }
+
+  Double_t zezmNomAs=zeeNomAs/zmmNomAs;
+  vector<Double_t> zezmScaleAs;
+  for (UInt_t i=0; i<zeeScaleAs.size(); i++) { zezmScaleAs.push_back(zeeScaleAs[i]/zmmScaleAs[i]); }
+
   cout << "PDF: CT14 " << endl;
   cout << "W+m:      " << setprecision(3) <<  wpmNom  <<  endl;
   cout << "W-m:      " << setprecision(3) <<  wmmNom  <<  endl;
@@ -184,6 +200,9 @@ void getCT14uncertainties() {
   cout << "W-/Z(e):  " << setprecision(3) <<  wmzeNom <<  endl;
   cout << "W/Z(e):   " << setprecision(3) <<  wzeNom  <<  endl;
   cout << "-----" << endl;
+  cout << "W(e)/W(m): " << setprecision(3) << wewmNom << endl;
+  cout << "Z(e)/Z(m): " << setprecision(3) << zezmNom << endl;
+  cout << "-----" << endl;
   cout << "W+m:      " << setprecision(3) << uncert(wpmScales,  wpmScaleAs,  wpmNom,  wpmNomAs)  <<  endl;
   cout << "W-m:      " << setprecision(3) << uncert(wmmScales,  wmmScaleAs,  wmmNom,  wmmNomAs)  <<  endl;
   cout << "W(m):     " << setprecision(3) << uncert(wmScales,   wmScaleAs,   wmNom,   wmNomAs)   <<  endl;
@@ -201,7 +220,9 @@ void getCT14uncertainties() {
   cout << "W+/Z(e):  " << setprecision(3) << uncert(wpzeScales, wpzeScaleAs, wpzeNom, wpzeNomAs) <<  endl;
   cout << "W-/Z(e):  " << setprecision(3) << uncert(wmzeScales, wmzeScaleAs, wmzeNom, wmzeNomAs) <<  endl;
   cout << "W/Z(e):   " << setprecision(3) << uncert(wzeScales,  wzeScaleAs,  wzeNom,  wzeNomAs)  <<  endl;
-
+  cout << "-----" << endl;
+  cout << "W(e)/W(m): " << setprecision(3) << uncert(wewmScales,  wewmScaleAs,  wewmNom,  wewmNomAs)  <<  endl;
+  cout << "Z(e)/Z(m): " << setprecision(3) << uncert(zezmScales,  zezmScaleAs,  zezmNom,  zezmNomAs)  <<  endl;
 }
 void makeScaleVector(TString inDir, TString chan, Double_t &nom, Double_t &nomAs, vector<Double_t> &vScales, vector<Double_t> &alphaS) {
   TString inFile = inDir+chan+"_CT14nlo.root";
