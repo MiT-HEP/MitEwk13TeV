@@ -18,10 +18,13 @@
 #include <TEllipse.h>
 #include <TLine.h>
 #include <TBox.h>
+#include <TH2D.h>
 #include <TCanvas.h>
+#include <TColor.h>
+#include <TLatex.h>
 #include <TLorentzVector.h>     // 4-vector class
 
-#include "../Utils/MitStyleRemix.hh"
+#include "../Utils/MitStyleRemix.cc"
 #include "CorrPlot.hh"
 
 using namespace std;
@@ -137,50 +140,118 @@ void rPlot() {
 
   TCanvas *c1 = MakeCanvas("c1", "", 800, 600);
 
-  TLegend *l = new TLegend(0.2,0.2,0.5,0.5);
+  TLegend *l = new TLegend(0.2,0.2,0.45,0.5);
   l->SetShadowColor(0); l->SetLineColor(0);
 
-  Double_t xmin=0.8, xmax=1.1;
+  l->SetTextFont(42);
+  l->SetTextSize(0.04);
+
+  Double_t xmin=0.85 + 0.001, xmax=1.1 -0.001;
+  Double_t ymin=0.85 + 0.001, ymax=1.1 -0.001;
+
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+
+  // setGrid draws it on top of everything, but it shouldn't. It's related to some redraw
+  Float_t gridX[] = { 0.90,.95,1.00,1.05 };
+  Float_t gridY[] = { 0.90,.95,1.00,1.05 };
+
+  TH2D *axis = new TH2D("axis","",1000,xmin,xmax,1000,ymin,ymax);
+  axis->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow e#nu)/#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)");
+  axis->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow ee)/#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)");
+  axis->GetXaxis()->SetLimits(xmin,xmax);
+  axis->GetYaxis()->SetRangeUser(ymin,ymax);
+
+  axis->GetXaxis()->SetTitleOffset(1.4);
+  axis->GetYaxis()->SetTitleOffset(1.4);
+
+  axis->GetXaxis()->SetDecimals(); // 2 digi decimals
+  axis->GetYaxis()->SetDecimals();
+
+  axis->GetXaxis()->SetNdivisions(505);
+  axis->GetYaxis()->SetNdivisions(505);
+  axis->Draw("AXIS");
+
+  for(unsigned i=0;i< sizeof(gridX)/sizeof(Float_t) ;++i)
+  {
+ 	TLine *l = new TLine(  gridX[i], ymin, gridX[i] ,ymax);
+	l->SetLineColor(kGray);
+	l->SetLineStyle(3);
+	l->SetLineWidth(1);
+	l->Draw("L SAME");
+  }
+
+  for(unsigned i=0;i< sizeof(gridY)/sizeof(Float_t) ;++i)
+  {
+ 	TLine *l = new TLine(  xmin, gridY[i], xmax ,gridY[i]);
+	l->SetLineColor(kGray);
+	l->SetLineStyle(3);
+	l->SetLineWidth(1);
+	l->Draw("L SAME");
+  }
 
   nom->SetTitle("");
-  nom->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow e#nu)/#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)");
-  nom->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow ee)/#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)");
-  nom->Draw("");
-  nom->GetXaxis()->SetLimits(xmin,xmax);
-  nom->GetYaxis()->SetRangeUser(xmin,xmax);
+  //nom->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow e#nu)/#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)");
+  //nom->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow ee)/#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)");
+  //nom->Draw("");
+  //nom->GetXaxis()->SetLimits(xmin,xmax);
+  //nom->GetYaxis()->SetRangeUser(xmin,xmax);
+  //
+  // CMS
+  TLatex *cms=new TLatex();
+  cms->SetNDC();
+  cms->SetTextFont(42);
+  cms->SetTextSize(0.05);
+  cms->SetTextAlign(13);
+  //cms->DrawLatex(0.20,.9,"#bf{CMS},#scale[0.75]{ #it{Preliminary}}"); // one-line
+  cms->DrawLatex(0.20,.9,"#splitline{#bf{CMS}}{#scale[0.7]{#it{Preliminary}}}"); // two-lines
+
+  cms->SetTextSize(0.03);
+  cms->SetTextAlign(31);
+  cms->DrawLatex(.95,.93,"42 pb^{-1} (13 TeV)");
 
   //pdg
   TBox *b1 = new TBox(xmin,0.9991-0.0024,xmax,0.9991+0.0024);
   b1->SetFillColor(kGreen-7);
-  b1->SetLineColor(kGreen+1);
+  b1->SetLineColor(kGreen+2);
+  b1->SetLineWidth(2);
   TLine *l1 = new TLine(xmin,0.9991,xmax,0.9991);
-  l1->SetLineWidth(3);
-  l1->SetLineColor(kGreen+1);
+  l1->SetLineWidth(2);
+  l1->SetLineColor(kGreen+2);
 
-  b1->Draw("same f");
-  l1->Draw("same l");
 
   //pdg
-  TBox *b2 = new TBox(1.0075-0.0207,xmin,1.0075+0.0207,xmax);
-  b2->SetFillColor(kAzure+7);
-  b2->SetLineColor(kAzure-1);
-  TLine *l2 = new TLine(1.0075,xmin,1.0075,xmax);
-  l2->SetLineWidth(3);
-  l2->SetLineColor(kAzure-1);
+  TColor *mylightblue = new TColor(2350,  145./255, 212./255.,254./255.);
+  TColor *mydarkblue = new TColor(2351, 0, 147./255., 250./255.);
+
+  TBox *b2 = new TBox(1.0075-0.0207,ymin,1.0075+0.0207,ymax);
+  b2->SetFillColor( 2350 );
+  b2->SetLineColor( 2351 );
+  b2->SetLineWidth(2);
+
+  TLine *l2 = new TLine(1.0075,ymin,1.0075,ymax);
+  l2->SetLineWidth(2);
+  l2->SetLineColor(2351);
 
   b2->Draw("same f");
+  b1->Draw("same f");
+  // line draw last
   l2->Draw("same l");
+  l1->Draw("same l");
 
   nom->SetMarkerColor(kBlack);
   nom->SetMarkerStyle(20);
-  ell->SetLineWidth(3);
-  ell->SetLineColor(797);
-  ell->SetFillColor(798);
-  ell->SetFillStyle(1001);
+  nom->SetMarkerSize(0.8);
+
+  ell->SetLineWidth(2);
+  ell->SetLineColor(kBlack);
+  ell->SetFillColor(kBlack);
+  ell->SetFillStyle(3004);
 
   TGraph *sm = new TGraph();
   sm->SetPoint(0,1.0,1.0);
-  sm->SetMarkerStyle(24);
+  sm->SetMarkerStyle(21);
+  sm->SetMarkerColor(kRed);
 
   ell->Draw("same l");
   nom->Draw("same p");
@@ -194,7 +265,11 @@ void rPlot() {
 
   l->Draw();
 
+  axis->Draw("AXIS X+Y+ SAME"); // Redraw
+  axis->Draw("AXIS  SAME"); // Redraw
+
   c1->SaveAs("rat_el_mu.png");
+  c1->SaveAs("rat_el_mu.pdf");
 
 }
 
