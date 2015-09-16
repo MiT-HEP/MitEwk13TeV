@@ -68,21 +68,21 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const Int_t LEPTON_ID = 11;
   
   // efficiency files
-  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
 
-  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
   
-  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
 
-  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
@@ -260,15 +260,15 @@ void computeAccSelZeeBinned(const TString conf,            // input file
 	// check ECAL gap
 	if(fabs(ele1->scEta)>=ETA_BARREL && fabs(ele1->scEta)<=ETA_ENDCAP) continue;
 	
-	double ele1_pt = gRandom->Gaus(ele1->pt*getEleScaleCorr(ele1->scEta,0), getEleResCorr(ele1->scEta,0));
+	//double ele1_pt = gRandom->Gaus(ele1->pt*getEleScaleCorr(ele1->scEta,0), getEleResCorr(ele1->scEta,0));
 
-	if(ele1_pt	     < PT_CUT)	  continue;  // lepton pT cut
-        if(fabs(ele1->scEta) > ETA_CUT)	  continue;  // lepton |eta| cut
+	if(ele1->pt	     < PT_CUT && ele1->scEt < PT_CUT)	  continue;  // lepton pT cut
+        if(fabs(ele1->scEta) > ETA_CUT && fabs(ele1->eta) > ETA_CUT)	  continue;  // lepton |eta| cut
         if(!passEleID(ele1,info->rhoIso)) continue;  // lepton selection
 	//if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE)) continue;
 
         TLorentzVector vEle1(0,0,0,0);
-	vEle1.SetPtEtaPhiM(ele1_pt, ele1->eta, ele1->phi, ELE_MASS);
+	vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
 	Bool_t isB1 = (fabs(ele1->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
         for(Int_t i2=i1+1; i2<electronArr->GetEntriesFast(); i2++) {          
@@ -276,14 +276,14 @@ void computeAccSelZeeBinned(const TString conf,            // input file
 	  
 	  // check ECAL gap
 	  if(fabs(ele2->scEta)>=ETA_BARREL && fabs(ele2->scEta)<=ETA_ENDCAP) continue;
-	  double ele2_pt = gRandom->Gaus(ele2->scEt*getEleScaleCorr(ele2->scEta,0), getEleResCorr(ele2->scEta,0));
+	  //double ele2_pt = gRandom->Gaus(ele2->scEt*getEleScaleCorr(ele2->scEta,0), getEleResCorr(ele2->scEta,0));
         
-          if(ele2_pt        < PT_CUT)    continue;  // lepton pT cut
-          if(fabs(ele2->scEta) > ETA_CUT)   continue;  // lepton |eta| cut
+          if(ele2->pt        < PT_CUT && ele2->scEt < PT_CUT)    continue;  // lepton pT cut
+          if(fabs(ele2->scEta) > ETA_CUT && fabs(ele2->eta) > ETA_CUT)   continue;  // lepton |eta| cut
 	  if(!passEleID(ele2,info->rhoIso)) continue;  // lepton selection
 
           TLorentzVector vEle2(0,0,0,0);
-	  vEle2.SetPtEtaPhiM(ele2_pt, ele2->eta, ele2->phi, ELE_MASS);  
+	  vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
           Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
 	  if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE) && !isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE)) continue;
