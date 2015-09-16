@@ -59,12 +59,11 @@ void plotZee(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zee/ntuples/data_select.raw.root"); typev.push_back(eData);
-  //fnamev.push_back("/data/blue/Bacon/Run2/wz_ttt_gen/Zee/ntuples/zee_select.root");   typev.push_back(eZee);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zee/ntuples/zee_select.root");   typev.push_back(eZee);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zee/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zee/ntuples/top_select.root");  typev.push_back(eEWK);
-  
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/zee_select.raw.root");   typev.push_back(eZee);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/top_select.raw.root");   typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zee/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
+ 
   //
   // Fit options
   //
@@ -81,19 +80,19 @@ void plotZee(const TString  outputDir,   // output directory
   const TString format("png");
 
    // efficiency files
-  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
+  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
   
-  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
 
 
   Int_t yield = 0;
@@ -237,31 +236,40 @@ void plotZee(const TString  outputDir,   // output directory
 
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
-   
+
+      //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),1), getEleResCorr(lep1->Eta(),-1));
+      //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),1), getEleResCorr(lep2->Eta(),-1));
+      //TLorentzVector l1, l2;
+      //l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+      //l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+      //double mass=(l1+l2).M();
       Float_t mass = dilep->M();
       
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
-	//weight *= puWeight; 
 	weight*= h_rw->GetBinContent(npv+1);
-	//weight *= getEleScaleCorr(sc1->Eta(),0)*getEleScaleCorr(sc2->Eta(),0);
       }
       
       // fill Z events passing selection (EleEle2HLT + EleEle1HLT)
       if((category==eEleEle2HLT) || (category==eEleEle1HLT) || (category==eEleEle1HLT1L1)) {
-        if(typev[ifile]==eData) { 
+      if(typev[ifile]==eData) { 
 	 
-	  if(dilep->M()       < MASS_LOW)  continue;
-	  if(dilep->M()       > MASS_HIGH) continue;
-	  if(lep1->Pt()        < PT_CUT)    continue;
-	  if(lep2->Pt()        < PT_CUT)    continue;
+	if(dilep->M()       < MASS_LOW)  continue;
+	if(dilep->M()       > MASS_HIGH) continue;
+	if(lep1->Pt()        < PT_CUT)    continue;
+	if(lep2->Pt()        < PT_CUT)    continue;
+	
+	  //if(mass       < MASS_LOW)  continue;
+	  //if(mass       > MASS_HIGH) continue;
+	  //if(lp1        < PT_CUT)    continue;
+	  //if(lp2        < PT_CUT)    continue;
 	  //if(q1*q2>0)  continue;
 	  hData->Fill(mass); 
-
+	  
 	  yield++;
-	
-	} else {
+	  
+      } else {
 	  Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
 	  Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
 	  TLorentzVector l1, l2;
@@ -315,7 +323,7 @@ void plotZee(const TString  outputDir,   // output directory
 	  
 	  //TLorentzVector slep2 = (*lep2);
 	  //slep2 *= gRandom->Gaus(slep2.Pt(), getEleResCorr(sc2->Eta(),0))/slep2.Pt();
-	  //mass = (l1+l2).M();	
+	  mass = (l1+l2).M();	
 	  
 	  if(typev[ifile]==eZee) 
 	    { 
@@ -396,25 +404,24 @@ void plotZee(const TString  outputDir,   // output directory
   plotZee.TransLegend(-0.35,-0.15);
   plotZee.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeDiff("zee","","M(e^{+}e^{-}) [GeV/c^{2}]","#chi");
+  CPlot plotZeeDiff("zee","","M(e^{+}e^{-}) [GeV/c^{2}]","#frac{Data-Pred}{Data}");
   plotZeeDiff.AddHist1D(hZeeDiff,"EX0",ratioColor);
-  plotZeeDiff.SetYRange(-8,8);
+  plotZeeDiff.SetYRange(-0.2,0.2);
   plotZeeDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotZeeDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotZeeDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
+  plotZeeDiff.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZeeDiff.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
   plotZeeDiff.Draw(c,kTRUE,format,2);
   
   CPlot plotZee2("zeelog","","",ylabel);
   plotZee2.AddHist1D(hData,"data","E");
   plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
   plotZee2.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZee2.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);plotZee2.SetName("zeelog");
+  plotZee2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZee2.SetName("zeelog");
   plotZee2.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
   plotZee2.SetLogy();
   plotZee2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
   plotZee2.TransLegend(-0.35,-0.15);
   plotZee2.Draw(c,kTRUE,format,1);
-
 
   //--------------------------------------------------------------------------------------------------------------
   // Output
@@ -440,7 +447,7 @@ void plotZee(const TString  outputDir,   // output directory
 //=== FUNCTION DEFINITIONS ======================================================================================
 
 //--------------------------------------------------------------------------------------------------
-TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+/*TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
@@ -453,6 +460,34 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     if(err>0) hDiff->SetBinContent(ibin,diff/err);
     else      hDiff->SetBinContent(ibin,0);
     hDiff->SetBinError(ibin,1);   
+  }
+  
+  hDiff->GetYaxis()->SetTitleOffset(0.42);
+  hDiff->GetYaxis()->SetTitleSize(0.13);
+  hDiff->GetYaxis()->SetLabelSize(0.10);
+  hDiff->GetYaxis()->SetNdivisions(104);
+  hDiff->GetYaxis()->CenterTitle();
+  hDiff->GetXaxis()->SetTitleOffset(1.2);
+  hDiff->GetXaxis()->SetTitleSize(0.13);
+  hDiff->GetXaxis()->SetLabelSize(0.12);
+  hDiff->GetXaxis()->CenterTitle();
+  
+  return hDiff;
+  }*/
+TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+{
+  TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
+  for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
+    
+    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+    Double_t diff = diff0/hData->GetBinContent(ibin);
+    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    //Double_t err = sqrt(hData->GetBinContent(ibin));
+    //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
+    //if(err>0) hDiff->SetBinContent(ibin,diff/err);
+    //else      hDiff->SetBinContent(ibin,0);
+    hDiff->SetBinContent(ibin,diff);
+    hDiff->SetBinError(ibin,err);   
   }
   
   hDiff->GetYaxis()->SetTitleOffset(0.42);
