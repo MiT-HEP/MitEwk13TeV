@@ -30,7 +30,8 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
                         const TString outputDir,            // output directory
 			const Int_t   effType,              // type of efficiency to compute
 		        const Bool_t  doGenMatch = kFALSE,  // match to generator leptons
-			const Bool_t  doWeighted = kFALSE   // store events with weights
+			const Bool_t  doWeighted = kFALSE,  // store events with weights
+                        const UInt_t  desiredrunNum = 0     // select a specific run (0 for all runs)
 ) {
   gBenchmark->Start("selectProbesEleEff");
   
@@ -43,14 +44,13 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
-  
-  enum { eHLTEff, eL1Eff, eSelEff, eGsfEff, eGsfSelEff };  // event category enum
-  if(effType > eGsfSelEff) {
+
+  enum { eHLTEff, eL1Eff, eSelEff, eGsfEff, eGsfSelEff, eSCEff, eIDEff, eIsoEff };  // efficiency type enum
+  if(effType > eIsoEff) {
     cout << "Invalid effType option! Exiting..." << endl;
     return;
   }
-
-  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC };
+  enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC, eTrkSC, eTrkNoSC, eEleIso, eEleNoIso };  // event category enum
   
   Double_t nProbes = 0;
   
@@ -82,7 +82,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   // Declare input ntuple variables
   //
   //UInt_t  runNum, lumiSec, evtNum;
-  UInt_t  matchGen;
+  UInt_t  matchGen, matchGenSCEff;
   UInt_t  category;
   //UInt_t  npv, npu;
   Float_t scale1fb, puWeight;
@@ -100,6 +100,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("lumiSec",  &lumiSec);    // event lumi section
   intree->SetBranchAddress("evtNum",   &evtNum);     // event number
   intree->SetBranchAddress("matchGen", &matchGen);   // event has both leptons matched to MC Z->ll
+  if(effType==eSCEff) intree->SetBranchAddress("matchGenSCEff", &matchGenSCEff);
   intree->SetBranchAddress("category", &category);   // dilepton category
   intree->SetBranchAddress("npv",      &npv);	     // number of primary vertices
   intree->SetBranchAddress("npu",      &npu);	     // number of in-time PU events (MC)
@@ -122,13 +123,20 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   // loop over events
   //
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+  //for(UInt_t ientry=0; ientry<15; ientry++) {
     intree->GetEntry(ientry);
+
+    if(desiredrunNum!=0 && runNum!=desiredrunNum) continue;
 
     if(sc1->Pt() < TAG_PT_CUT) continue;
 
     // check GEN match if necessary
-    if(doGenMatch && !matchGen) continue;
-    
+    if(effType==eSCEff) {
+      if(doGenMatch && !matchGenSCEff) continue;
+    } else {
+      if(doGenMatch && !matchGen) continue;
+    }
+
     Bool_t  pass=kFALSE;
     
     if(effType==eHLTEff) {
@@ -169,7 +177,29 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else if(category==eEleEle1HLT)    { pass=kTRUE; }
       else if(category==eEleEleNoSel)   { pass=kFALSE; }
       else                              { continue; }
+    } else if(effType==eIDEff) {
+      //
+      // probe = electron
+      // pass  = passing selection without isolation requirement
+      // * EleIso, EleNoIso event means a passing probe, EleEleNoSel event means a failing probe,
+      //   EleSC event does not satisfy probe requirements
+      //    
+      if     (category==eEleIso)      { pass=kTRUE; }
+      else if(category==eEleNoIso)    { pass=kTRUE; }
+      else if(category==eEleEleNoSel) { pass=kFALSE; }
+      else                            { continue; }
     
+    } else if(effType==eIsoEff) {
+      //
+      // probe = electron passing selection without the isolation requirement
+      // pass  = passing the isolation requirement
+      // * EleIso event means a passing probe, EleNoIso event means a failing probe,
+      //   EleEleNoSel, EleSC event does not satisfy probe requirements
+      //    
+      if     (category==eEleIso)    { pass=kTRUE; }
+      else if(category==eEleNoIso)  { pass=kFALSE; }
+      else                          { continue; }
+        
     } else if(effType==eGsfEff) {
       //
       // probe = supercluster
@@ -195,16 +225,26 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else if(category==eEleEle1HLT)    { pass=kTRUE; }
       else if(category==eEleEleNoSel)   { pass=kFALSE; }
       else                              { pass=kFALSE; }  
+    } else if(effType==eSCEff) {
+      //
+      // probe = supercluster
+      // pass  = passing selection
+      // * EleEle2HLT, EleEle1HLT(1L1), EleEleNoSel event means a passing probe,
+      //   EleSC event means a failing probe
+      //    
+      if     (category==eTrkSC)    { pass=kTRUE; }
+      else if(category==eTrkNoSC)  { pass=kFALSE; }
+      else                         { continue; }
     }
     
-    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
 
     // Fill tree
     mass    = dilep->M();
-    pt	    = sc2->Pt();
-    eta	    = sc2->Eta();
+    pt	    = (effType==eSCEff) ? lep2->Pt()  : sc2->Pt();
+    eta	    = (effType==eSCEff) ? lep2->Eta() : sc2->Eta();
     phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -213,17 +253,17 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     lumiSec = lumiSec;
     evtNum  = evtNum;
     outTree->Fill();
-    
+
     if(category==eEleEle2HLT) {
       if(sc2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
       
       mass    = dilep->M();
       pt      = sc1->Pt();
       eta     = sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
       q	      = q1;
       npv     = npv;
       npu     = npu;

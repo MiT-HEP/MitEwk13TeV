@@ -505,9 +505,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	    mvaMetPhi = info->mvaMETphi;
 	    mvaSumEt = 0;
 	    TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
-	    TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-	    puppiMet   = -(vZPt+vPuppi).Mod();
-	    puppiMetPhi = -(vZPt+vPuppi).Phi();
+// 	    TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+// 	    puppiMet   = -(vZPt+vPuppi).Mod();
+// 	    puppiMetPhi = -(vZPt+vPuppi).Phi();
+        puppiMet = info->puppET;
+        puppiMetPhi = info->puppETphi;
 	    puppiSumEt = 0;
 	    lep1     = &vTag;
 	    lep2     = &vProbe;
@@ -533,7 +535,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
             mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
             
         TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-            TVector2 vPuppiU = -1.0*(vPuppiMet);
+            TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
             puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
             puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 
