@@ -38,6 +38,12 @@ void wpmCorrPlot() {
 
   TString folder = "for2Dplots";
 
+<<<<<<< HEAD
+  Double_t wme_yield=109451;
+  Double_t wmm_yield=122375;
+  Double_t wpe_yield=140481;
+  Double_t wpm_yield=157017;
+=======
   // theory
   Double_t wp_xs_nnpdf=11.33;
   Double_t wm_xs_nnpdf=8.37;
@@ -94,6 +100,7 @@ void wpmCorrPlot() {
 
   wpUncert.push_back(wp_xs_meas*(wpm_yield*wpm_lep)/(wpe_yield+wpm_yield)); wmUncert.push_back(wm_xs_meas*(wmm_yield*wmm_lep)/(wme_yield+wmm_yield));
   wpUncert.push_back(wp_xs_meas*(wpe_yield*wpe_lep)/(wpe_yield+wpm_yield)); wmUncert.push_back(wm_xs_meas*(wme_yield*wme_lep)/(wme_yield+wmm_yield));
+>>>>>>> ca01ba804896793bb77be166f140f4f1f8e542d5
 
   wpUncert.push_back(wp_xs_meas*(wpm_yield*wpm_bkg)/(wpe_yield+wpm_yield)); wmUncert.push_back(0);
   wpUncert.push_back(0);                                                    wmUncert.push_back(wm_xs_meas*(wmm_yield*wmm_bkg)/(wme_yield+wmm_yield));
@@ -114,15 +121,17 @@ void wpmCorrPlot() {
   std::vector<Double_t> ct14_minus;
   comEM(folder+"/wme_ct14.txt",
 	folder+"/wmm_ct14.txt",
-	wme_yield,
-	wmm_yield,
+	//wme_yield,
+	//wmm_yield,
+	1.0,1.0,
 	ct14_minus);
 
   std::vector<Double_t> ct14_plus;
   comEM(folder+"/wpe_ct14.txt",
 	folder+"/wpm_ct14.txt",
-	wpe_yield,
-	wpm_yield,
+	//wpe_yield,
+	//wpm_yield,
+	1.0,1.0,
 	ct14_plus);
 
   //CT14nlo
@@ -131,15 +140,17 @@ void wpmCorrPlot() {
   std::vector<Double_t> nnpdf23_minus;
   comEM(folder+"/wme_nnpdf30.txt",
 	folder+"/wmm_nnpdf30.txt",
-	wme_yield,
-	wmm_yield,
+	//wme_yield,
+	//wmm_yield,
+	1.0,1.0,
 	nnpdf23_minus);
 
   std::vector<Double_t> nnpdf23_plus;
   comEM(folder+"/wpe_nnpdf30.txt",
 	folder+"/wpm_nnpdf30.txt",
-	wpe_yield,
-	wpm_yield,
+	//wpe_yield,
+	//wpm_yield,
+	1.0,1.0,
 	nnpdf23_plus);
 
   //NNPDF2.3nlo
@@ -148,15 +159,17 @@ void wpmCorrPlot() {
   std::vector<Double_t> mstw2008_minus;
   comEM(folder+"/wme_mmht2014.txt",
 	folder+"/wmm_mmht2014.txt",
-	wme_yield,
-	wmm_yield,
+	//wme_yield,
+	//wmm_yield,
+	1.0,1.0,
 	mstw2008_minus);
 
   std::vector<Double_t> mstw2008_plus;
   comEM(folder+"/wpe_mmht2014.txt",
 	folder+"/wpm_mmht2014.txt",
-	wpe_yield,
-	wpm_yield,
+	//wpe_yield,
+	//wpm_yield,
+	1.0,1.0,
 	mstw2008_plus);
 
   //MSTW2008

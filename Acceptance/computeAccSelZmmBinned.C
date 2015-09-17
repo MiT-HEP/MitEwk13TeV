@@ -61,25 +61,25 @@ void computeAccSelZmmBinned(const TString conf,      // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelEff/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_iso/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_iso/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
   
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
@@ -401,7 +401,7 @@ void computeAccSelZmmBinned(const TString conf,      // input file
             effdata *= dataTrkEff_neg.getEff(mu2->eta, mu2->pt); 
             effmc   *= zmmTrkEff_neg.getEff(mu2->eta, mu2->pt);
           }
-          corr *= effdata/effmc;
+          //corr *= effdata/effmc;
 	  
 	  // scale factor uncertainties                                                                                                                                         
 	  // TRACKER
@@ -411,10 +411,6 @@ void computeAccSelZmmBinned(const TString conf,      // input file
             Double_t effmc   = zmmTrkEff_pos.getEff(mu1->eta, mu1->pt);
             Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(mu1->eta, mu1->pt), zmmTrkEff_pos.getErrHigh(mu1->eta, mu1->pt));
             Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    //if(mu1->eta>1.2 && mu1->eta<2.1) 
-	    //  {
-	    //	errTrk=0.0013;
-	    // }
             hTrkErr_pos->Fill(mu1->eta, mu1->pt, errTrk);
           } else {
             Double_t effdata = dataTrkEff_neg.getEff(mu1->eta, mu1->pt);
@@ -422,10 +418,6 @@ void computeAccSelZmmBinned(const TString conf,      // input file
             Double_t effmc   = zmmTrkEff_neg.getEff(mu1->eta, mu1->pt);
             Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(mu1->eta, mu1->pt), zmmTrkEff_neg.getErrHigh(mu1->eta, mu1->pt));
             Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    //if(mu1->eta>1.2 && mu1->eta<2.1) 
-	    //  {
-	    //		errTrk=0.0013;
-	    //  }
             hTrkErr_neg->Fill(mu1->eta, mu1->pt, errTrk);
           }
 
@@ -435,10 +427,10 @@ void computeAccSelZmmBinned(const TString conf,      // input file
             Double_t effmc   = zmmTrkEff_pos.getEff(mu2->eta, mu2->pt);
             Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(mu2->eta, mu2->pt), zmmTrkEff_pos.getErrHigh(mu2->eta, mu2->pt));
             Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    if(mu2->eta>1.2 && mu2->eta<2.1) 
+	    /*   if(mu2->eta>1.2 && mu2->eta<2.1) 
 	      {
 		errTrk=0.0013;
-	      }
+		}*/
             hTrkErr_pos->Fill(mu2->eta, mu2->pt, errTrk);
           } else {
             Double_t effdata = dataTrkEff_neg.getEff(mu2->eta, mu2->pt);
@@ -446,11 +438,11 @@ void computeAccSelZmmBinned(const TString conf,      // input file
             Double_t effmc   = zmmTrkEff_neg.getEff(mu2->eta, mu2->pt);
             Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(mu2->eta, mu2->pt), zmmTrkEff_neg.getErrHigh(mu2->eta, mu2->pt));
             Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    if(mu2->eta>1.2 && mu2->eta<2.1) 
+	    /*  if(mu2->eta>1.2 && mu2->eta<2.1) 
 	      {
 		errTrk=0.0013;
 	      }
-            hTrkErr_neg->Fill(mu2->eta, mu2->pt, errTrk);
+	      hTrkErr_neg->Fill(mu2->eta, mu2->pt, errTrk);*/
           }
 	  // STANDALONE
           if(mu1->q>0) {
@@ -586,15 +578,15 @@ void computeAccSelZmmBinned(const TString conf,      // input file
     for(Int_t iy=0; iy<=hTrkErr_pos->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hTrkErr_pos->GetNbinsX(); ix++) {
         Double_t err=hTrkErr_pos->GetBinContent(ix,iy);
-        var+=err*err;
-	//var+=0.0;
+        //var+=err*err;
+	var+=0.0;
       }
     }
     for(Int_t iy=0; iy<=hTrkErr_neg->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hTrkErr_neg->GetNbinsX(); ix++) {
         Double_t err=hTrkErr_neg->GetBinContent(ix,iy);
-	//var+=0.0;
-        var+=err*err;
+	var+=0.0;
+        //var+=err*err;
       }
     }
     for(Int_t iy=0; iy<=hStaErr_pos->GetNbinsY(); iy++) {

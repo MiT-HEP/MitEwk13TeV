@@ -25,8 +25,8 @@ void compareZmm();
 
 void compareDistribs() {
 
-  compareWmm();
-  compareWpm();
+  //compareWmm();
+  //compareWpm();
   compareZmm();
 
 }

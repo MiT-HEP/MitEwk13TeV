@@ -30,14 +30,15 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
 Bool_t acceptB(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 Bool_t acceptE(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 
-//void acceptGenZ(TString input="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/DYJetsToLL.root",
-void acceptGenZ(TString input="dy_ct10nlo.root",
+void acceptGenZ(TString input="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/DYJetsToLL.root",
+//void acceptGenZ(TString input="dyellell_ct10_v2.root",
 		TString outputDir="idfk/",
 		//TString pdfName="NNPDF30_nlo_nf_5_pdfas",
-		TString pdfName="CT10nlo",
+		//TString pdfName="CT14nlo",
+		TString pdfName="MMHT2014nlo68cl",
 		Int_t setMin=0,
 		Int_t setMax=0,
-		Int_t proc=1) {
+		Int_t proc=0) {
   
   TString procName[2]={"zee", "zmm"};
   char output[150];
@@ -95,9 +96,9 @@ void acceptGenZ(TString input="dy_ct10nlo.root",
   chain.SetBranchAddress("genL2f_m",   &genL2f_m);
 
   TFile *outFile = new TFile(output, "recreate");
-  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
+  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
   //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(25100);
-  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(11000);
+  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(11000);
   //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(13100);
 
   for (Int_t iPdfSet=setMin; iPdfSet<setMax+1; iPdfSet++) {
@@ -229,6 +230,7 @@ Bool_t acceptE(Double_t genL_id, Double_t genL_pt, Double_t genL_eta) {
   }
   else if (fabs(genL_id)==13) {
     if (genL_pt>25 && fabs(genL_eta)>1.2 && fabs(genL_eta)<2.4) return kTRUE;
+    //if (genL_pt>25 && fabs(genL_eta)>1.2 && fabs(genL_eta)<2.1) return kTRUE;
     else return kFALSE;
   }
   return kFALSE;

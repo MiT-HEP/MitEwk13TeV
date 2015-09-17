@@ -25,7 +25,7 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
   const Double_t theory_xsWm  =  8.37;   const Double_t theory_xsWmerr  = 0.20;//theory_xsWm*0.11/4.29;//0.010;
   const Double_t theory_xsZ   =  1.87;  const Double_t theory_xsZerr   = 0.04;//theory_xsZ*0.03/0.97;//0.0009;
   
-  const Double_t theory_xsWZ  = 10.54;    const Double_t theory_xsWZerr  = 0.05;//theory_xsWZ*0.04/10.74;//0.02;
+  const Double_t theory_xsWZ  = 10.55;    const Double_t theory_xsWZerr  = 0.05;//theory_xsWZ*0.04/10.74;//0.02;
   const Double_t theory_xsWpm =  1.35;   const Double_t theory_xsWpmerr = 0.01;//theory_xsWpm*0.01/1.43;//0.004;
 
   const Double_t theory_xsWpZ  = 6.06;    const Double_t theory_xsWpZerr  = 0.04;//theory_xsWZ*0.04/10.74;//0.02;

@@ -55,11 +55,11 @@ void plotZmm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/zmm_select.root");   typev.push_back(eZmm);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_08_04/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
-  
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/zmm_select.raw.root");   typev.push_back(eZmm);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
+
   //
   // Fit options
   //
@@ -70,25 +70,25 @@ void plotZmm(const TString  outputDir,   // output directory
   const Double_t ETA_CUT   = 2.4;
 
   // efficiency files
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuHLTEff/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelStaEff_iso/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuSelStaEff_iso/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelStaEff_iso/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuSelStaEff_iso/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuTrkEff/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_iso/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZmm_MuStaEff_iso/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zmm_MuStaEff_iso/eff.root";
 
   
   // plot output file format
@@ -295,10 +295,10 @@ void plotZmm(const TString  outputDir,   // output directory
 	  yield++;
 	
 	} else {
-	  //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getMuScaleCorr(lep1->Eta(),0), getMuResCorr(lep1->Eta(),0));
-	  //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getMuScaleCorr(lep2->Eta(),0), getMuResCorr(lep2->Eta(),0));
-	  Double_t lp1 = lep1->Pt();
-	  Double_t lp2 = lep2->Pt();
+	  Double_t lp1 = gRandom->Gaus(lep1->Pt()*getMuScaleCorr(lep1->Eta(),0), getMuResCorr(lep1->Eta(),0));
+	  Double_t lp2 = gRandom->Gaus(lep2->Pt()*getMuScaleCorr(lep2->Eta(),0), getMuResCorr(lep2->Eta(),0));
+	  //Double_t lp1 = lep1->Pt();
+	  //Double_t lp2 = lep2->Pt();
 	  TLorentzVector l1, l2;
 	  l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
 	  l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
@@ -377,8 +377,8 @@ void plotZmm(const TString  outputDir,   // output directory
             effdata *= dataTrkEff_neg.getEff((lep2->Eta()), lep2->Pt()); 
             effmc   *= zmmTrkEff_neg.getEff((lep2->Eta()), lep2->Pt());
           }
-          //corr *= effdata/effmc;
-	  //corr=1;
+          corr *= effdata/effmc;
+	  corr=1;
 	  //TLorentzVector slep1 = (*lep1);
 	  //slep1 *= gRandom->Gaus(slep1.Pt(), getMuResCorr(lep1->Eta(),0))/slep1.Pt();
 	  
@@ -386,7 +386,7 @@ void plotZmm(const TString  outputDir,   // output directory
 	  //slep2 *= gRandom->Gaus(slep2.Pt(), getMuResCorr(lep2->Eta(),0))/slep2.Pt();
 	  
 	  //mass = (slep1+slep2).M();
-	  //mass = (l1+l2).M();	
+	  mass = (l1+l2).M();	
 	  
 	  if(typev[ifile]==eZmm) 
 	    {
@@ -465,24 +465,24 @@ void plotZmm(const TString  outputDir,   // output directory
   //plotZmumu.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
   //plotZmumu.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
   plotZmumu.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
-  plotZmumu.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);
+  plotZmumu.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);
   plotZmumu.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
   plotZmumu.TransLegend(-0.35,-0.15);
   plotZmumu.Draw(c,kFALSE,format,1);
 
-  CPlot plotZmumuDiff("zmm","","M(#mu^{+}#mu^{-}) [GeV/c^{2}]","#chi");
+  CPlot plotZmumuDiff("zmm","","M(#mu^{+}#mu^{-}) [GeV/c^{2}]","#frac{Data-Pred}{Data}");
   plotZmumuDiff.AddHist1D(hZmumuDiff,"EX0",ratioColor);
-  plotZmumuDiff.SetYRange(-8,8);
+  plotZmumuDiff.SetYRange(-0.2,0.2);
   plotZmumuDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotZmumuDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotZmumuDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
+  plotZmumuDiff.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZmumuDiff.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
   plotZmumuDiff.Draw(c,kTRUE,format,2);
   
   CPlot plotZmumu2("zmmlog","","",ylabel);
   plotZmumu2.AddHist1D(hData,"data","E");
   plotZmumu2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
   plotZmumu2.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumu2.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);plotZmumu2.SetName("zmmlog");
+  plotZmumu2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZmumu2.SetName("zmmlog");
   plotZmumu2.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
   plotZmumu2.SetLogy();
   plotZmumu2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
@@ -513,7 +513,7 @@ void plotZmm(const TString  outputDir,   // output directory
 //=== FUNCTION DEFINITIONS ======================================================================================
 
 //--------------------------------------------------------------------------------------------------
-TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+/*TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
@@ -539,4 +539,33 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
   hDiff->GetXaxis()->CenterTitle();
   
   return hDiff;
+  }*/
+TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+{
+  TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
+  for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
+    
+    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+    Double_t diff = diff0/hData->GetBinContent(ibin);
+    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    //Double_t err = sqrt(hData->GetBinContent(ibin));
+    //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
+    //if(err>0) hDiff->SetBinContent(ibin,diff/err);
+    //else      hDiff->SetBinContent(ibin,0);
+    hDiff->SetBinContent(ibin,diff);
+    hDiff->SetBinError(ibin,err);   
+  }
+  
+  hDiff->GetYaxis()->SetTitleOffset(0.42);
+  hDiff->GetYaxis()->SetTitleSize(0.13);
+  hDiff->GetYaxis()->SetLabelSize(0.10);
+  hDiff->GetYaxis()->SetNdivisions(104);
+  hDiff->GetYaxis()->CenterTitle();
+  hDiff->GetXaxis()->SetTitleOffset(1.2);
+  hDiff->GetXaxis()->SetTitleSize(0.13);
+  hDiff->GetXaxis()->SetLabelSize(0.12);
+  hDiff->GetXaxis()->CenterTitle();
+  
+  return hDiff;
 }
+

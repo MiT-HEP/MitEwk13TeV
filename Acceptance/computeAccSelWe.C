@@ -71,21 +71,21 @@ void computeAccSelWe(const TString conf,       // input file
   const Int_t LEPTON_ID = 11;
  
   // efficiency files
-  TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root");
-  TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root");
-  TString dataGsfSelEffName("/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root");
-  TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root");
+  TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
+  TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root");
+  TString dataGsfSelEffName("/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root");
+  TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZee_EleGsfSelEff/eff.root";
-    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   
   //--------------------------------------------------------------------------------------------------------------
@@ -272,21 +272,22 @@ void computeAccSelWe(const TString conf,       // input file
       for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
         const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
 	
-	double ele_pt = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0), getEleResCorr(ele->scEta,0));
+	//double ele_pt = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0), getEleResCorr(ele->scEta,0));
+        //double ele_pt = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0), getEleResCorr(ele->scEta,0));
 
         // check ECAL gap
         if(fabs(ele->scEta)>=ETA_BARREL && fabs(ele->scEta)<=ETA_ENDCAP) continue;
         
         if(fabs(ele->scEta) > VETO_ETA) continue;             // loose lepton |eta| cut
-        if(ele_pt	    < VETO_PT)  continue;             // loose lepton pT cut
+        if(ele->scEt < VETO_PT)  continue;             // loose lepton pT cut
         if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;     // loose lepton selection
         if(nLooseLep>1) {  // extra lepton veto
           passSel=kFALSE;
           break;
         }
 
-        if(fabs(ele->scEta) > ETA_CUT)       continue;  // lepton |eta| cut
-        if(ele_pt < PT_CUT)  	     continue;  // lepton pT cut
+        if(fabs(ele->scEta) > ETA_CUT && fabs(ele->eta) > ETA_CUT)       continue;  // lepton |eta| cut
+        if(ele->pt < PT_CUT && ele->scEt < PT_CUT)  	     continue;  // lepton pT cut
         if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
 	if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, kFALSE)) continue;
         //if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching

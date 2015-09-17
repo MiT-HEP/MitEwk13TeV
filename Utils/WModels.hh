@@ -88,7 +88,7 @@ CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1,Roo
     sigma = sigma0;
   } else {
     sprintf(sigmaName,"sigma_%s",name);
-    sigma = new RooRealVar(sigmaName,sigmaName,10,1,60);
+    sigma = new RooRealVar(sigmaName,sigmaName,10,1,30);
   }
 
   //sprintf(sigmaName,"sigma_%s",name);
@@ -125,8 +125,8 @@ CPepeModel2::CPepeModel2(const char *name, RooRealVar &x)
   char a1Name[50]; sprintf(a1Name, "a1_%s", name); a1 = new RooRealVar(a1Name,a1Name,0.1,-1,1);
   //char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,10);
   //char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,400);
-  char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,12);
-  char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,1200);
+  char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,8);
+  char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,600);
   
   // f(x) = x*exp[-x^2 / a*x*x + b*x + c]
   char formula[300];

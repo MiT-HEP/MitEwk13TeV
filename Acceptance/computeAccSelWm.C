@@ -63,33 +63,33 @@ void computeAccSelWm(const TString conf,       // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  TString dataHLTEffName("/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root");
-  TString zmmHLTEffName( "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root");
-  TString dataSelEffName("/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root");
-  TString zmmSelEffName( "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root");
-  TString dataTrkEffName("/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root");
-  TString zmmTrkEffName( "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root");
-  TString dataStaEffName("/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root");
-  TString zmmStaEffName( "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root");
+  TString dataHLTEffName("/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root");
+  TString zmmHLTEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root");
+  TString dataSelEffName("/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root");
+  TString zmmSelEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root");
+  TString dataTrkEffName("/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root");
+  TString zmmTrkEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root");
+  TString dataStaEffName("/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root");
+  TString zmmStaEffName( "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root");
   if(charge==1) {
-    dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root";
-    zmmHLTEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root";
-    dataSelEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root";
-    zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root";
-    dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root";
-    zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root";
-    zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root";
+    dataHLTEffName ="/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+    zmmHLTEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
+    dataSelEffName ="/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+    zmmSelEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
+    dataTrkEffName ="/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmTrkEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+    dataStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuHLTEff/eff.root";
-    zmmHLTEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuHLTEff/eff.root";
-    dataSelEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuSelEff/eff.root";
-    zmmSelEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuSelEff/eff.root";
-    dataTrkEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuTrkEff/eff.root";
-    zmmTrkEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuTrkEff/eff.root";
-    dataStaEffName = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/DataZmm_MuStaEff_iso/eff.root";
-    zmmStaEffName  = "/data/blue/cmedlock/wz-efficiency-results-coarsebinning/Zmm_MuStaEff_iso/eff.root";
+    dataHLTEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/MG/eff.root";
+    zmmHLTEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuHLTEff/CT/eff.root";
+    dataSelEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/MG/eff.root";
+    zmmSelEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuSelIsoTrkEff/CT/eff.root";
+    dataTrkEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmTrkEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
+    dataStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/MG/eff.root";
+    zmmStaEffName = "/data/blue/xniu/WZXSection/CorrectMu/MuStaEff/CT/eff.root";
   }
 
   // load pileup reweighting file
@@ -389,7 +389,7 @@ void computeAccSelWm(const TString conf,       // input file
 	if(dataTrkEffFile && zmmTrkEffFile) {
 	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
 	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  corr *= effdata/effmc;
+	  //corr *= effdata/effmc;
 	}
 	if(dataStaEffFile && zmmStaEffFile) {
 	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);
@@ -424,10 +424,10 @@ void computeAccSelWm(const TString conf,       // input file
 	  Double_t errdata = TMath::Max(dataTrkEff.getErrLow(goodMuon->eta, goodMuon->pt),dataTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
 	  Double_t errmc   = TMath::Max(zmmTrkEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
 	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  if(goodMuon->eta>1.2 && goodMuon->eta<2.1) 
+	  /* if(goodMuon->eta>1.2 && goodMuon->eta<2.1) 
 	    {
 	      err=0.0013;
-	    }
+	      }*/
 	  hTrkErr->Fill(goodMuon->eta,goodMuon->pt,err);
 	  if(isBarrel) hTrkErrB->Fill(goodMuon->eta,goodMuon->pt,err);
 	  else         hTrkErrE->Fill(goodMuon->eta,goodMuon->pt,err);
@@ -479,9 +479,9 @@ void computeAccSelWm(const TString conf,       // input file
     for(Int_t iy=0; iy<=hTrkErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hTrkErr->GetNbinsX(); ix++) {
         Double_t err;
-	err=hTrkErr->GetBinContent(ix,iy);  var+=err*err;
-        err=hTrkErrB->GetBinContent(ix,iy); varB+=err*err;
-        err=hTrkErrE->GetBinContent(ix,iy); varE+=err*err;
+	err=hTrkErr->GetBinContent(ix,iy);  var+=0;//err*err;
+        err=hTrkErrB->GetBinContent(ix,iy); varB+=0;//err*err;
+        err=hTrkErrE->GetBinContent(ix,iy); varE+=0;//err*err;
       }
     }
     for(Int_t iy=0; iy<=hStaErr->GetNbinsY(); iy++) {
