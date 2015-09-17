@@ -152,7 +152,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {0,5,10,15,20,25,30,40,55,70,100};
+  Double_t ptbins[] = {0,2,6,10,20,30,40,55,70,100};
+//   Double_t ptbins[] = {0,5,10,20,30,40,60,80,100};
+//   Double_t ptbins[] = {0,2.5,5.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   Double_t corrbins[] = { 0, 10, 30, 50 };
@@ -164,13 +166,13 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zz_select.root"); isBkgv.push_back(kTRUE); 
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wz_select.root"); isBkgv.push_back(kTRUE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/ww_select.root"); isBkgv.push_back(kTRUE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/wx_select.root"); isBkgv.push_back(kTRUE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Zmumu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
-  
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/zz_select.raw.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/wz_select.raw.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/ww_select.raw.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/wx_select.raw.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/zxx_select.raw.root"); isBkgv.push_back(kTRUE);
+//   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
@@ -209,27 +211,28 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   TFitResultPtr fitresPFu2sigma2; TF1 *fcnPFu2sigma2 = new TF1("fcnPFu2sigma2",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2frac2;  TF1 *fcnPFu2frac2  = new TF1("fcnPFu2frac2",frac2Func,0,7000,12);
-/*      
-  fcnPFu1sigma1->SetParameter(0,0); fcnPFu1sigma1->SetParLimits(0,-5e-2,0);
+      
+  fcnPFu1sigma1->SetParameter(0,0); fcnPFu1sigma1->SetParLimits(0,-5e-2,5e5);
    fcnPFu1sigma1->SetParameter(1,0.25); //fcnPFu1sigma1->SetParLimits(1,-1,1);
 //   fcnPFu1sigma1->SetParameter(2,12);   fcnPFu1sigma1->SetParLimits(2,0,20);
   
  fcnPFu1sigma2->SetParameter(0,-2e-3);  fcnPFu1sigma2->SetParLimits(0,-2e-3,-1e-5);
   fcnPFu1sigma2->SetParameter(1,0.5);  fcnPFu1sigma2->SetParLimits(1,-1,3);
   fcnPFu1sigma2->SetParameter(2,16);   fcnPFu1sigma2->SetParLimits(2,5,25);
-//   fcnPFu1sigma0->SetParameter(0,-2e-5); fcnPFu1sigma0->SetParLimits(0,-1e-3,0);
-//   fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
-//   fcnPFu1sigma0->SetParameter(2,14);     fcnPFu1sigma0->SetParLimits(2,0,20); 
-  */
-  fcnPFu2sigma1->SetParameter(0,-5e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-4,0);
- // fcnPFu2sigma1->SetParameter(1,0.15); //  fcnPFu2sigma1->SetParLimits(1,-1,1);
-//  fcnPFu2sigma1->SetParameter(2,9);     // fcnPFu2sigma1->SetParLimits(2,2,7);
- // fcnPFu2sigma2->SetParameter(0,0);  fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
-//  fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
-//  fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
-   // fcnPFu2sigma0->SetParameter(0,-1e-3);  fcnPFu2sigma0->SetParLimits(0,-1e-2,-1e-3);
-   // fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,2);
-   // fcnPFu2sigma0->SetParameter(2,12);      fcnPFu2sigma0->SetParLimits(2,1,20);
+  fcnPFu1sigma0->SetParameter(0,-2e-5); fcnPFu1sigma0->SetParLimits(0,-1e-3,0);
+  fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
+  fcnPFu1sigma0->SetParameter(2,14);     fcnPFu1sigma0->SetParLimits(2,0,20); 
+  
+  /*fcnPFu2sigma1->SetParameter(0,-5e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-4,0);*/// on data
+  fcnPFu2sigma1->SetParameter(0,0);  fcnPFu2sigma1->SetParLimits(0,-5e-4,5e4);
+  fcnPFu2sigma1->SetParameter(1,0.15); //  fcnPFu2sigma1->SetParLimits(1,-1,1);
+  fcnPFu2sigma1->SetParameter(2,7);    fcnPFu2sigma1->SetParLimits(2,4,8);
+ fcnPFu2sigma2->SetParameter(0,0);  fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
+ fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
+ fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
+   fcnPFu2sigma0->SetParameter(0,-1e-3);  fcnPFu2sigma0->SetParLimits(0,-1e-2,-1e-3);
+   fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,2);
+   fcnPFu2sigma0->SetParameter(2,12);      fcnPFu2sigma0->SetParLimits(2,1,20);
     
   TFile *infile = 0;
   TTree *intree = 0;  
@@ -249,6 +252,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2; // tk met
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  Float_t puWeight;
   
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
@@ -281,6 +285,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
     intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
     intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
+    intree->SetBranchAddress("puWeight",     &puWeight); 
   
     //
     // Loop over events
@@ -288,7 +293,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
     
-      if(category!=1 && category!=2)                                 continue;
+      if(category!=1 && category!=2 && category != 3)                continue;
       if(dilep->M() < MASS_LOW || dilep->M() > MASS_HIGH)            continue;
       if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
       if(fabs(lep1->Eta()) > ETA_CUT || fabs(lep2->Eta()) > ETA_CUT) continue;
@@ -697,11 +702,12 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
     intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
     intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
+    intree->SetBranchAddress("puWeight",     &puWeight);
     
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
     
-      if(category!=1 && category!=2)                                 continue;
+      if(category!=1 && category!=2 && category !=3)                 continue;
       if(dilep->M() < MASS_LOW || dilep->M() > MASS_HIGH)            continue;
       if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
       if(fabs(lep1->Eta()) > ETA_CUT || fabs(lep2->Eta()) > ETA_CUT) continue;
@@ -1048,8 +1054,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
                     hv[ibin]->GetMean(),
                     hv[ibin]->GetXaxis()->GetXmin(),
                     hv[ibin]->GetXaxis()->GetXmax());
-    RooRealVar sigma1("sigma1","sigma1",0.8*(hv[ibin]->GetRMS()),0,20);
-    RooRealVar sigma2("sigma2","sigma2",1.2*(hv[ibin]->GetRMS()),0,50);
+    RooRealVar sigma1("sigma1","sigma1",0.7*(hv[ibin]->GetRMS()),0,20);
+    RooRealVar sigma2("sigma2","sigma2",0.9*(hv[ibin]->GetRMS()),0,30);
     RooRealVar sigma3("sigma3","sigma3",10.*(hv[ibin]->GetRMS()),0,200); 
     RooRealVar frac2("frac2","frac2",0.5,0.1,0.9);
     RooRealVar frac3("frac3","frac3",0.05,0,0.15);
@@ -1059,12 +1065,12 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     if(ibin>0) {
       mean.setVal(meanArr[ibin-1]);
-      sigma1.setMin(0.6*(sigma0Arr[ibin-1]));
+      sigma1.setMin(0.65*(sigma0Arr[ibin-1]));
       sigma1.setMax(1.0*(sigma0Arr[ibin-1]));
-      sigma1.setVal(0.8*(sigma0Arr[ibin-1]));
+      sigma1.setVal(0.6*(sigma0Arr[ibin-1]));
       sigma2.setMin(0.7*(sigma0Arr[ibin-1]));
       sigma2.setMax(1.5*(sigma0Arr[ibin-1]));
-      sigma2.setVal(1.2*(sigma0Arr[ibin-1]));
+      sigma2.setVal(1.0*(sigma0Arr[ibin-1]));
     }
     
     //
