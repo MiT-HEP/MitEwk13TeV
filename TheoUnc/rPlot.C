@@ -35,19 +35,55 @@ void comPM(TString p_list, TString m_list, Double_t p_xsec, Double_t m_xsec, std
 void rPlot() {
 
   // theory
-  Double_t we_xs=19.70; Double_t wm_xs=19.70; 
-  Double_t ze_xs=1.87; Double_t zm_xs=1.87;
+  Double_t we_xs=19.6976; Double_t wm_xs=19.6796; 
+  Double_t ze_xs=1.86766; Double_t zm_xs=1.86766;
 
   // measured
   Double_t we_yield=222674; Double_t wm_yield=299939;
   Double_t ze_yield=15288; Double_t zm_yield=23666;
 
   //measured cross sections
-  Double_t we_xs_meas = 20.71; Double_t wm_xs_meas = 20.38;
-  Double_t rw_meas = we_xs_meas/wm_xs_meas;
-  Double_t ze_xs_meas = 1.96; Double_t zm_xs_meas = 1.94;
-  Double_t rz_meas = ze_xs_meas/zm_xs_meas;
+  Double_t we_xs_meas = 20.712; Double_t wm_xs_meas = 20.375;
+  Double_t rw_meas = 1.0/(we_xs_meas/wm_xs_meas);
+  Double_t ze_xs_meas = 1.962; Double_t zm_xs_meas = 1.940;
+  Double_t rz_meas = 1.0/(ze_xs_meas/zm_xs_meas);
 
+  //lepton reco+id uncertainties
+  Double_t we_lep = 3.178*0.01*we_xs_meas;
+  Double_t ze_lep = 6.220129*0.01*ze_xs;
+
+  //background subtraction/modeling
+  Double_t we_bkg = 1.14337*0.01*we_xs_meas;
+  Double_t ze_bkg = 0.64*0.01*ze_xs;
+  
+  //theory
+  Double_t we_theo = 0.988686*0.01*we_xs_meas;
+  Double_t ze_theo = 1.403923*0.01*ze_xs;
+  
+  //lepton reco+id uncertainties
+  Double_t wm_lep = 0.9775*0.01*wm_xs_meas;
+  Double_t zm_lep = 1.86075*0.01*zm_xs_meas;
+
+  //background subtraction/modeling
+  Double_t wm_bkg = 0.09*0.01*wm_xs_meas;
+  Double_t zm_bkg = 0.55*0.01*zm_xs_meas;
+
+  //theory
+  Double_t wm_theo = 1.266136*0.01*wm_xs_meas;
+  Double_t zm_theo = 1.121561*0.01*zm_xs_meas;
+
+  //sys
+  Double_t we_sys = sqrt(we_bkg*we_bkg+we_theo*we_theo); 
+  Double_t wm_sys = sqrt(wm_bkg*wm_bkg+wm_theo*wm_theo); 
+  Double_t rw_unc_sys = rw_meas*sqrt(we_sys*we_sys/we_xs_meas/we_xs_meas + wm_sys*wm_sys/wm_xs_meas/wm_xs_meas);
+  Double_t ze_sys = sqrt(ze_bkg*ze_bkg+ze_theo*ze_theo); 
+  Double_t zm_sys = sqrt(zm_bkg*zm_bkg+zm_theo*zm_theo); 
+  Double_t rz_unc_sys = rz_meas*sqrt(ze_sys*ze_sys/ze_xs_meas/ze_xs_meas + zm_sys*zm_sys/zm_xs_meas/zm_xs_meas);
+
+  Double_t rw_unc_lep = rw_meas*sqrt(we_lep*we_lep/we_xs_meas/we_xs_meas + wm_lep*wm_lep/wm_xs_meas/wm_xs_meas);
+  Double_t rz_unc_lep = rz_meas*sqrt(ze_lep*ze_lep/ze_xs_meas/ze_xs_meas + zm_lep*zm_lep/zm_xs_meas/zm_xs_meas);
+
+  
   //lepton reco+id uncertainties
   //Double_t we_lep = 3.2*0.01; Double_t wm_lep = 1.0*0.01;
   //Double_t rw_unc_lep = rw_meas*(we_lep*we_lep+wm_lep*wm_lep);
@@ -61,16 +97,10 @@ void rPlot() {
   //Double_t rz_unc_bkg = rz_meas*(ze_bkg*we_bkg+zm_bkg*wm_bkg);
 
   //statistical
-  Double_t we_stat = 0.15; Double_t wm_stat = 0.09;
-  Double_t rw_unc_stat = rw_meas*(we_stat*we_stat/we_xs_meas/we_xs_meas + wm_stat*wm_stat/wm_xs_meas/wm_xs_meas);
-  Double_t ze_stat = 0.02; Double_t zm_stat = 0.01;
-  Double_t rz_unc_stat = rz_meas*(ze_stat*ze_stat/ze_xs_meas/ze_xs_meas + zm_stat*zm_stat/zm_xs_meas/zm_xs_meas);
-
-  //sys
-  Double_t we_sys = 0.78; Double_t wm_sys = 0.35;
-  Double_t rw_unc_sys = rw_meas*(we_sys*we_sys/we_xs_meas/we_xs_meas + wm_sys*wm_sys/wm_xs_meas/wm_xs_meas);
-  Double_t ze_sys = 0.13; Double_t zm_sys = 0.05;
-  Double_t rz_unc_sys = rz_meas*(ze_sys*ze_sys/ze_xs_meas/ze_xs_meas + zm_sys*zm_sys/zm_xs_meas/zm_xs_meas);
+  Double_t we_stat = 0.151; Double_t wm_stat = 0.086;
+  Double_t rw_unc_stat = rw_meas*sqrt(we_stat*we_stat/we_xs_meas/we_xs_meas + wm_stat*wm_stat/wm_xs_meas/wm_xs_meas);
+  Double_t ze_stat = 0.016; Double_t zm_stat = 0.013;
+  Double_t rz_unc_stat = rz_meas*sqrt(ze_stat*ze_stat/ze_xs_meas/ze_xs_meas + zm_stat*zm_stat/zm_xs_meas/zm_xs_meas);
 
   //theo
   //Double_t we_theo = 2.49; Double_t wm_theo = 0.09;
@@ -89,12 +119,13 @@ void rPlot() {
   //data
   std::vector<Double_t> wUncert;
   std::vector<Double_t> zUncert;
-  wUncert.push_back(0.043); zUncert.push_back(0);
-  wUncert.push_back(0);     zUncert.push_back(0.072);
-  //wUncert.push_back(rw_unc_stat); zUncert.push_back(0);
-  //wUncert.push_back(0);           zUncert.push_back(rz_unc_stat);
-  //wUncert.push_back(rw_unc_sys); zUncert.push_back(0);
-  //wUncert.push_back(0);           zUncert.push_back(rz_unc_sys);
+  //wUncert.push_back(0.043); zUncert.push_back(0);
+  //wUncert.push_back(0);     zUncert.push_back(0.072);
+  wUncert.push_back(rw_unc_stat); zUncert.push_back(0);
+  wUncert.push_back(0);           zUncert.push_back(rz_unc_stat);
+  wUncert.push_back(rw_unc_sys); zUncert.push_back(0);
+  wUncert.push_back(0);           zUncert.push_back(rz_unc_sys);
+  wUncert.push_back(rw_unc_lep);           zUncert.push_back(rz_unc_lep);
   //wUncert.push_back(rw_unc_lep); zUncert.push_back(0);
   //wUncert.push_back(0);          zUncert.push_back(rz_unc_lep);
   //wUncert.push_back(rw_unc_bkg); zUncert.push_back(0);
@@ -143,17 +174,17 @@ void rPlot() {
   Double_t xmin=0.8, xmax=1.1;
 
   nom->SetTitle("");
-  nom->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow e#nu)/#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)");
-  nom->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow ee)/#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)");
+  nom->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)/#sigma^{tot}_{W}xBR(W#rightarrow e#nu)");
+  nom->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)/#sigma^{tot}_{Z}xBR(Z#rightarrow ee)");
   nom->Draw("");
   nom->GetXaxis()->SetLimits(xmin,xmax);
   nom->GetYaxis()->SetRangeUser(xmin,xmax);
 
   //pdg
-  TBox *b1 = new TBox(xmin,0.9991-0.0024,xmax,0.9991+0.0024);
+  TBox *b1 = new TBox(xmin,1.0009-0.0028,xmax,1.0009+0.0028);
   b1->SetFillColor(kGreen-7);
   b1->SetLineColor(kGreen+1);
-  TLine *l1 = new TLine(xmin,0.9991,xmax,0.9991);
+  TLine *l1 = new TLine(xmin,1.0009,xmax,1.0009);
   l1->SetLineWidth(3);
   l1->SetLineColor(kGreen+1);
 
@@ -161,10 +192,10 @@ void rPlot() {
   l1->Draw("same l");
 
   //pdg
-  TBox *b2 = new TBox(1.0075-0.0207,xmin,1.0075+0.0207,xmax);
+  TBox *b2 = new TBox(0.993-0.019,xmin,0.993+0.019,xmax);
   b2->SetFillColor(kAzure+7);
   b2->SetLineColor(kAzure-1);
-  TLine *l2 = new TLine(1.0075,xmin,1.0075,xmax);
+  TLine *l2 = new TLine(0.993,xmin,0.993,xmax);
   l2->SetLineWidth(3);
   l2->SetLineColor(kAzure-1);
 
