@@ -140,35 +140,33 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {
-     0,  5, 10, 15, 20, 25, 30, 35, 40, 50,
-    60, 70, 80, 90
-  };
+//   Double_t ptbins[] = {0,2,6,10,20,30,40,55,70,100};
+  Double_t ptbins[] = {0,2.5,5.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   Double_t corrbins[] = { 0, 10, 30, 50 };
   Int_t ncorrbins = sizeof(corrbins)/sizeof(Double_t)-1;
 
-  TString formulaPFu1mean("pol1");
-  TString formulaPFu2mean("pol1");
+  TString formulaPFu1mean("pol2");
+  TString formulaPFu2mean("pol2");
 
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
 
   if (useData == 0){
-    fnamev.push_back(TString(infoldername) + TString("wm_select.root")); isBkgv.push_back(kFALSE);
+    fnamev.push_back(TString(infoldername) + TString("wm_select.raw.root")); isBkgv.push_back(kFALSE);
   } else if (useData == 1){
     fnamev.push_back(TString(infoldername) + TString("data_select.root")); isBkgv.push_back(kFALSE);
   } else {
     cout << "useData value doesn't make sense" << endl;
   }
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
+//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
 
   
   const Double_t PT_CUT  = 25;
@@ -208,19 +206,19 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2frac2;  TF1 *fcnPFu2frac2  = new TF1("fcnPFu2frac2",frac2Func,0,7000,12);
 
-//  fcnPFu1sigma1->SetParameter(0,5e-5); fcnPFu1sigma1->SetParLimits(0,0,1e-3);
-//  fcnPFu1sigma1->SetParameter(1,0.07);  fcnPFu1sigma1->SetParLimits(1,-1,1);
-//  fcnPFu1sigma1->SetParameter(2,5.5);   fcnPFu1sigma1->SetParLimits(2,5,6);
-//  fcnPFu1sigma2->SetParameter(0,5e-5); fcnPFu1sigma2->SetParLimits(0,0,2e-4);
-//  fcnPFu1sigma2->SetParameter(1,0.06);  fcnPFu1sigma2->SetParLimits(1,-1,1);
-//  fcnPFu1sigma2->SetParameter(2,9.5);   fcnPFu1sigma2->SetParLimits(2,5,15);
+ fcnPFu1sigma1->SetParameter(0,0); fcnPFu1sigma1->SetParLimits(0,-1e-6,1e-6);
+ fcnPFu1sigma1->SetParameter(1,0.03);  fcnPFu1sigma1->SetParLimits(1,0,0.05);
+ fcnPFu1sigma1->SetParameter(2,25);   fcnPFu1sigma1->SetParLimits(2,25,26);
+ fcnPFu1sigma2->SetParameter(0,5e-5); fcnPFu1sigma2->SetParLimits(0,0,2e-4);
+ fcnPFu1sigma2->SetParameter(1,0.06);  fcnPFu1sigma2->SetParLimits(1,-1,1);
+ fcnPFu1sigma2->SetParameter(2,25);   fcnPFu1sigma2->SetParLimits(2,25,26);
 //  fcnPFu1sigma0->SetParameter(0,-2e-5); fcnPFu1sigma0->SetParLimits(0,-0.1,0.1);
 //  fcnPFu1sigma0->SetParameter(1,0.06);     fcnPFu1sigma0->SetParLimits(1,0,0.1);
 //  fcnPFu1sigma0->SetParameter(2,7);    fcnPFu1sigma0->SetParLimits(2,6,8); 
   
-//  fcnPFu2sigma1->SetParameter(0,-2e-4); fcnPFu2sigma1->SetParLimits(0,-6e-4,4e-4);
-//  fcnPFu2sigma1->SetParameter(1,0.05);  fcnPFu2sigma1->SetParLimits(1,0,0.1);
-//  fcnPFu2sigma1->SetParameter(2,15);   fcnPFu2sigma1->SetParLimits(2,5,40);
+ fcnPFu2sigma1->SetParameter(0,0); fcnPFu2sigma1->SetParLimits(0,-6e-6,4e-6);
+ fcnPFu2sigma1->SetParameter(1,0.05);  fcnPFu2sigma1->SetParLimits(1,0,0.05);
+ fcnPFu2sigma1->SetParameter(2,27);   fcnPFu2sigma1->SetParLimits(2,26.5,28);
 //  fcnPFu2sigma2->SetParameter(0,-2e-5); fcnPFu2sigma2->SetParLimits(0,-4e-4,4e-4);
 //  fcnPFu2sigma2->SetParameter(1,0.05);  fcnPFu2sigma2->SetParLimits(1,0,0.1);
 //  fcnPFu2sigma2->SetParameter(2,9.5);   fcnPFu2sigma2->SetParLimits(2,8,11);
@@ -241,6 +239,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
   TLorentzVector *lep=0;  
+  Float_t puWeight;
+//   Float_t scale1fb;
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
     cout << "Processing " << fnamev[ifile] << "..." << endl;
@@ -263,7 +263,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
-  
+    intree->SetBranchAddress("puWeight",     &puWeight); 
+//     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
     //
     // Loop over events
     //
@@ -284,12 +285,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
       if(ipt<0) continue;
     
       if(isBkgv[ifile]) {
-        hPFu1Bkgv[ipt]->Fill(u1);
-        hPFu2Bkgv[ipt]->Fill(u2);
+        hPFu1Bkgv[ipt]->Fill(u1,scale1fb*puWeight*42);
+        hPFu2Bkgv[ipt]->Fill(u2,scale1fb*puWeight*42);
       
       } else {
-        hPFu1v[ipt]->Fill(u1);
-        hPFu2v[ipt]->Fill(u2);
+        hPFu1v[ipt]->Fill(u1,scale1fb*puWeight*42);
+        hPFu2v[ipt]->Fill(u2,scale1fb*puWeight*42);
       }
     }
     
@@ -376,16 +377,16 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   plotPFu1mean.AddGraph(grPFu1mean,"");
 //  plotPFu1mean.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
   plotPFu1mean.AddGraph(grPFu1mean,"",kBlack,kOpenCircle);
-  plotPFu1mean.AddFcn(fcnPFu1mean,kRed);
-  plotPFu1mean.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-  sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(0),fcnPFu1mean->GetParError(0)); plotPFu1mean.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(1),fcnPFu1mean->GetParError(1)); plotPFu1mean.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
+//   plotPFu1mean.AddFcn(fcnPFu1mean,kRed);
+//   plotPFu1mean.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
+//   sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(0),fcnPFu1mean->GetParError(0)); plotPFu1mean.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
+//   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(1),fcnPFu1mean->GetParError(1)); plotPFu1mean.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
   plotPFu1mean.Draw(c,kTRUE,"png");
   
   grPFu1sigma1 = new TGraphErrors(nbins,xval,pfu1Sigma1,xerr,pfu1Sigma1Err);  
   grPFu1sigma1->SetName("grPFu1sigma1");
   fitresPFu1sigma1 = grPFu1sigma1->Fit("fcnPFu1sigma1","QMRN0SE");
-  sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1sigma1->GetChisquare())/(fcnPFu1sigma1->GetNDF()));
+//   sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1sigma1->GetChisquare())/(fcnPFu1sigma1->GetNDF()));
 //  errBand->SetPoint(0,0.002*(xval[nbins-1]),fcnPFu1sigma1->Eval(0.002*(xval[nbins-1])));
 //  errBand->SetPointError(0,0,dSigma(fcnPFu1sigma1,0.002*(xval[nbins-1]),fitresPFu1sigma1));
 //  for(Int_t i=1; i<=nbins; i++) {
@@ -398,12 +399,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   plotPFu1sigma1.AddGraph(grPFu1sigma1,"");
 //  plotPFu1sigma1.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
   plotPFu1sigma1.AddGraph(grPFu1sigma1,"",kBlack,kOpenCircle);
-  plotPFu1sigma1.AddFcn(fcnPFu1sigma1,kRed);
-  plotPFu1sigma1.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-  sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu1sigma1->GetParameter(0)),1e5*(fcnPFu1sigma1->GetParError(0))); 
-  plotPFu1sigma1.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(1),fcnPFu1sigma1->GetParError(1)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(2),fcnPFu1sigma1->GetParError(2)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//   plotPFu1sigma1.AddFcn(fcnPFu1sigma1,kRed);
+//   plotPFu1sigma1.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//   sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu1sigma1->GetParameter(0)),1e5*(fcnPFu1sigma1->GetParError(0))); 
+//   plotPFu1sigma1.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(1),fcnPFu1sigma1->GetParError(1)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//   sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(2),fcnPFu1sigma1->GetParError(2)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
 //  sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(3),fcnPFu1sigma1->GetParError(3)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //  if(njetcut==0) plotPFu1sigma1.SetYRange(0,15);
 //  else           plotPFu1sigma1.SetYRange(0,30);
@@ -413,7 +414,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     grPFu1sigma2 = new TGraphErrors(nbins,xval,pfu1Sigma2,xerr,pfu1Sigma2Err);    
     grPFu1sigma2->SetName("grPFu1sigma2");
     fitresPFu1sigma2 = grPFu1sigma2->Fit("fcnPFu1sigma2","QMRN0SE");
-    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1sigma2->GetChisquare())/(fcnPFu1sigma2->GetNDF()));    
+//     sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1sigma2->GetChisquare())/(fcnPFu1sigma2->GetNDF()));    
 //    errBand->SetPoint(0,0.002*(xval[nbins-1]),fcnPFu1sigma2->Eval(0.002*(xval[nbins-1])));
 //    errBand->SetPointError(0,0,dSigma(fcnPFu1sigma2,0.002*(xval[nbins-1]),fitresPFu1sigma2));
 //    for(Int_t i=1; i<=nbins; i++) {
@@ -426,12 +427,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     plotPFu1sigma2.AddGraph(grPFu1sigma2,"");
 //    plotPFu1sigma2.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
     plotPFu1sigma2.AddGraph(grPFu1sigma2,"",kBlack,kOpenCircle);
-    plotPFu1sigma2.AddFcn(fcnPFu1sigma2,kRed);
-    plotPFu1sigma2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu1sigma2->GetParameter(0)),1e5*(fcnPFu1sigma2->GetParError(0))); 
-    plotPFu1sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(1),fcnPFu1sigma2->GetParError(1)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(2),fcnPFu1sigma2->GetParError(2)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     plotPFu1sigma2.AddFcn(fcnPFu1sigma2,kRed);
+//     plotPFu1sigma2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//     sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu1sigma2->GetParameter(0)),1e5*(fcnPFu1sigma2->GetParError(0))); 
+//     plotPFu1sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(1),fcnPFu1sigma2->GetParError(1)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(2),fcnPFu1sigma2->GetParError(2)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(3),fcnPFu1sigma2->GetParError(3)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    if(njetcut==0) plotPFu1sigma2.SetYRange(0,30);
 //    else           plotPFu1sigma2.SetYRange(0,60);
@@ -454,12 +455,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     plotPFu1sigma0.AddGraph(grPFu1sigma0,"");
 //    plotPFu1sigma0.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
     plotPFu1sigma0.AddGraph(grPFu1sigma0,"",kBlack,kOpenCircle);
-    plotPFu1sigma0.AddFcn(fcnPFu1sigma0,kRed);
-    plotPFu1sigma0.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu1sigma0->GetParameter(0)),1e5*(fcnPFu1sigma0->GetParError(0)));
-    plotPFu1sigma0.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(1),fcnPFu1sigma0->GetParError(1)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(2),fcnPFu1sigma0->GetParError(2)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     plotPFu1sigma0.AddFcn(fcnPFu1sigma0,kRed);
+//     plotPFu1sigma0.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//     sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu1sigma0->GetParameter(0)),1e5*(fcnPFu1sigma0->GetParError(0)));
+//     plotPFu1sigma0.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(1),fcnPFu1sigma0->GetParError(1)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(2),fcnPFu1sigma0->GetParError(2)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(3),fcnPFu1sigma0->GetParError(3)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    if(njetcut==0) plotPFu1sigma0.SetYRange(6,15);
 //    else           plotPFu1sigma0.SetYRange(6,30);
@@ -505,7 +506,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   grPFu2mean = new TGraphErrors(nbins,xval,pfu2Mean,xerr,pfu2MeanErr);
   grPFu2mean->SetName("grPFu2mean");
   fitresPFu2mean = grPFu2mean->Fit("fcnPFu2mean","QMRN0FBSE");
-  sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2mean->GetChisquare())/(fcnPFu2mean->GetNDF()));  
+//   sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2mean->GetChisquare())/(fcnPFu2mean->GetNDF()));  
 //  errBand->SetPoint(0,0.002*(xval[nbins-1]),fcnPFu2mean->Eval(0.002*(xval[nbins-1])));
 //  errBand->SetPointError(0,0,dMean(fcnPFu2mean,0.002*(xval[nbins-1]),fitresPFu2mean));
 //  for(Int_t i=1; i<=nbins; i++) {
@@ -518,17 +519,17 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   plotPFu2mean.AddGraph(grPFu2mean,"");
 //  plotPFu2mean.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
   plotPFu2mean.AddGraph(grPFu2mean,"",kBlack,kOpenCircle);
-  plotPFu2mean.AddFcn(fcnPFu2mean,kRed);
-  plotPFu2mean.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-  sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(0),fcnPFu2mean->GetParError(0)); plotPFu2mean.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(1),fcnPFu2mean->GetParError(1)); plotPFu2mean.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//   plotPFu2mean.AddFcn(fcnPFu2mean,kRed);
+//   plotPFu2mean.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//   sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(0),fcnPFu2mean->GetParError(0)); plotPFu2mean.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(1),fcnPFu2mean->GetParError(1)); plotPFu2mean.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
   plotPFu2mean.Draw(c,kTRUE,"png");
 
   
   grPFu2sigma1 = new TGraphErrors(nbins,xval,pfu2Sigma1,xerr,pfu2Sigma1Err);
   grPFu2sigma1->SetName("grPFu2sigma1");
   fitresPFu2sigma1 = grPFu2sigma1->Fit("fcnPFu2sigma1","QMRN0SE");
-  sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma1->GetChisquare())/(fcnPFu2sigma1->GetNDF()));  
+//   sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma1->GetChisquare())/(fcnPFu2sigma1->GetNDF()));  
 //  errBand->SetPoint(0,0.002*(xval[nbins-1]),fcnPFu2sigma1->Eval(0.002*(xval[nbins-1])));
 //  errBand->SetPointError(0,0,dSigma(fcnPFu2sigma1,0.002*(xval[nbins-1]),fitresPFu2sigma1));
 //  for(Int_t i=1; i<=nbins; i++) {
@@ -541,12 +542,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   plotPFu2sigma1.AddGraph(grPFu2sigma1,"");
 //  plotPFu2sigma1.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
   plotPFu2sigma1.AddGraph(grPFu2sigma1,"",kBlack,kOpenCircle);
-  plotPFu2sigma1.AddFcn(fcnPFu2sigma1,kRed);
-  plotPFu2sigma1.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-  sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu2sigma1->GetParameter(0)),1e5*(fcnPFu2sigma1->GetParError(0)));
-  plotPFu2sigma1.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(1),fcnPFu2sigma1->GetParError(1)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(2),fcnPFu2sigma1->GetParError(2)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//   plotPFu2sigma1.AddFcn(fcnPFu2sigma1,kRed);
+//   plotPFu2sigma1.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//   sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu2sigma1->GetParameter(0)),1e5*(fcnPFu2sigma1->GetParError(0)));
+//   plotPFu2sigma1.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(1),fcnPFu2sigma1->GetParError(1)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//   sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(2),fcnPFu2sigma1->GetParError(2)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
 //  sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(3),fcnPFu2sigma1->GetParError(3)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);  
 //  if(njetcut==0) plotPFu2sigma1.SetYRange(0,15);
 //  else           plotPFu2sigma1.SetYRange(0,20);
@@ -556,7 +557,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     grPFu2sigma2 = new TGraphErrors(nbins,xval,pfu2Sigma2,xerr,pfu2Sigma2Err);
     grPFu2sigma2->SetName("grPFu2sigma2");
     fitresPFu2sigma2 = grPFu2sigma2->Fit("fcnPFu2sigma2","QMRN0SE");
-    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma2->GetChisquare())/(fcnPFu2sigma2->GetNDF()));        
+//     sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma2->GetChisquare())/(fcnPFu2sigma2->GetNDF()));        
 //    errBand->SetPoint(0,0.002*(xval[nbins-1]),fcnPFu2sigma2->Eval(0.002*(xval[nbins-1])));
 //    errBand->SetPointError(0,0,dSigma(fcnPFu2sigma2,0.002*(xval[nbins-1]),fitresPFu2sigma2));
 //    for(Int_t i=1; i<=nbins; i++) {
@@ -569,12 +570,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     plotPFu2sigma2.AddGraph(grPFu2sigma2,"");
 //    plotPFu2sigma2.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
     plotPFu2sigma2.AddGraph(grPFu2sigma2,"",kBlack,kOpenCircle);
-    plotPFu2sigma2.AddFcn(fcnPFu2sigma2,kRed);
-    plotPFu2sigma2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu2sigma2->GetParameter(0)),1e5*(fcnPFu2sigma2->GetParError(0)));
-    plotPFu2sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(1),fcnPFu2sigma2->GetParError(1)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(2),fcnPFu2sigma2->GetParError(2)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     plotPFu2sigma2.AddFcn(fcnPFu2sigma2,kRed);
+//     plotPFu2sigma2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//     sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu2sigma2->GetParameter(0)),1e5*(fcnPFu2sigma2->GetParError(0)));
+//     plotPFu2sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(1),fcnPFu2sigma2->GetParError(1)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(2),fcnPFu2sigma2->GetParError(2)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(3),fcnPFu2sigma2->GetParError(3)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);    
 //    if(njetcut==0) plotPFu2sigma2.SetYRange(0,30);
 //    else           plotPFu2sigma2.SetYRange(0,40);
@@ -584,7 +585,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     grPFu2sigma0 = new TGraphErrors(nbins,xval,pfu2Sigma0,xerr,pfu2Sigma0Err);
     grPFu2sigma0->SetName("grPFu2sigma0");
     fitresPFu2sigma0 = grPFu2sigma0->Fit("fcnPFu2sigma0","QMRN0SE");
-    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma0->GetChisquare())/(fcnPFu2sigma0->GetNDF()));    
+//     sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma0->GetChisquare())/(fcnPFu2sigma0->GetNDF()));    
 //    errBand->SetPoint(0,0.002*(xval[nbins-1]),fcnPFu2sigma0->Eval(0.002*(xval[nbins-1])));
 //    errBand->SetPointError(0,0,dSigma(fcnPFu2sigma0,0.002*(xval[nbins-1]),fitresPFu2sigma0));
 //    for(Int_t i=1; i<=nbins; i++) {
@@ -597,12 +598,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     plotPFu2sigma0.AddGraph(grPFu2sigma0,"");
 //    plotPFu2sigma0.AddGraph(errBand,"3",kAzure-9,kFullDotSmall);
     plotPFu2sigma0.AddGraph(grPFu2sigma0,"",kBlack,kOpenCircle);
-    plotPFu2sigma0.AddFcn(fcnPFu2sigma0,kRed);
-    plotPFu2sigma0.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu2sigma0->GetParameter(0)),1e5*(fcnPFu2sigma0->GetParError(0)));
-    plotPFu2sigma0.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(1),fcnPFu2sigma0->GetParError(1)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(2),fcnPFu2sigma0->GetParError(2)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     plotPFu2sigma0.AddFcn(fcnPFu2sigma0,kRed);
+//     plotPFu2sigma0.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
+//     sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",1e5*(fcnPFu2sigma0->GetParameter(0)),1e5*(fcnPFu2sigma0->GetParError(0)));
+//     plotPFu2sigma0.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
+//     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(1),fcnPFu2sigma0->GetParError(1)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+//     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(2),fcnPFu2sigma0->GetParError(2)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(3),fcnPFu2sigma0->GetParError(3)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);    
 //    if(njetcut==0) plotPFu2sigma0.SetYRange(6,15);
 //    else           plotPFu2sigma0.SetYRange(6,20);
@@ -672,7 +673,9 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
     intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
-    intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
+    intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector     
+    intree->SetBranchAddress("puWeight",     &puWeight); 
+//     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
     
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
@@ -694,11 +697,11 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     
       for(Int_t ibin=0; ibin<ncorrbins; ibin++) {
         if(genVPt > corrbins[ibin] && genVPt <= corrbins[ibin+1]) {
-          hPFu1u2v[ibin]->Fill(fabs(zpfu1),fabs(zpfu2));	
+          hPFu1u2v[ibin]->Fill(fabs(zpfu1),fabs(zpfu2),scale1fb*puWeight*42);	
         }
       }
       if(genVPt > corrbins[ncorrbins]) {
-        hPFu1u2v[ncorrbins-1]->Fill(fabs(zpfu1),fabs(zpfu2));    
+        hPFu1u2v[ncorrbins-1]->Fill(fabs(zpfu1),fabs(zpfu2),scale1fb*puWeight*42);    
       }
     }
   }
