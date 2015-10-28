@@ -42,18 +42,6 @@ void makeHTML(const TString outDir,  const Int_t nbins,
 
 //--------------------------------------------------------------------------------------------------
 // function to describe Gaussian widths as a function of dilepton pT
-Double_t sigmaFunc(Double_t *x, Double_t *par) {
-  // par[0]: quadratic coefficient
-  // par[1]: linear coefficient
-  // par[2]: constant term
-  
-  Double_t a  = par[0];
-  Double_t b  = par[1];
-  Double_t c  = par[2];
-    
-  return a*x[0]*x[0] + b*x[0] + c;
-}
-
 // Double_t sigmaFunc(Double_t *x, Double_t *par) {
 //   // par[0]: quadratic coefficient
 //   // par[1]: linear coefficient
@@ -62,11 +50,22 @@ Double_t sigmaFunc(Double_t *x, Double_t *par) {
 //   Double_t a  = par[0];
 //   Double_t b  = par[1];
 //   Double_t c  = par[2];
-//   Double_t d  = par[3];
-//   Double_t e  = par[4];
 //     
-//   return a*x[0]*x[0] + b*x[0] + c + d*x[0]*x[0]*x[0] + e*x[0]*x[0]*x[0]*x[0];
+//   return a*x[0]*x[0] + b*x[0] + c;
 // }
+
+Double_t sigmaFunc(Double_t *x, Double_t *par) {
+  // par[0]: quadratic coefficient
+  // par[1]: linear coefficient
+  // par[2]: constant term
+  
+  Double_t a  = par[0];
+  Double_t b  = par[1];
+  Double_t c  = par[2];
+  Double_t d  = par[3];
+    
+  return a*x[0]*x[0] + b*x[0] + c;
+}
 
 //--------------------------------------------------------------------------------------------------
 // function to describe relative fraction in a double Gaussian based on 
@@ -135,7 +134,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
+void fitRecoilHigherOrderZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
                   Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
                   Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
 	              Bool_t  sigOnly=1,     // signal event only?
@@ -152,8 +151,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   
   CPlot::sOutDir = outputDir + TString("/plots");
 
-  Double_t ptbins[] = {0,2,6,10,20,30,40,55,70,100};
-//   Double_t ptbins[] = {0,5,10,20,30,40,60,80,100};
+  Double_t ptbins[] = {5,10,20,30,40,50};
+//   
 //   Double_t ptbins[] = {0,2.5,5.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
@@ -163,6 +162,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   TString formulaPFu1mean("pol1");
   TString formulaPFu2mean("pol1");
 
+//     TString formulaPFu1mean("pol2");
+//   TString formulaPFu2mean("pol2");
+  
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
@@ -211,28 +213,31 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   TFitResultPtr fitresPFu2sigma2; TF1 *fcnPFu2sigma2 = new TF1("fcnPFu2sigma2",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2sigma0; TF1 *fcnPFu2sigma0 = new TF1("fcnPFu2sigma0",sigmaFunc,0,7000,3);  
   TFitResultPtr fitresPFu2frac2;  TF1 *fcnPFu2frac2  = new TF1("fcnPFu2frac2",frac2Func,0,7000,12);
-      
-  fcnPFu1sigma1->SetParameter(0,0); fcnPFu1sigma1->SetParLimits(0,-5e-2,5e5);
-   fcnPFu1sigma1->SetParameter(1,0.25); //fcnPFu1sigma1->SetParLimits(1,-1,1);
-//   fcnPFu1sigma1->SetParameter(2,12);   fcnPFu1sigma1->SetParLimits(2,0,20);
   
- fcnPFu1sigma2->SetParameter(0,-2e-3);  fcnPFu1sigma2->SetParLimits(0,-2e-3,-1e-5);
+//   fcnPFu1mean->SetParameter(0,4.47);fcnPFu1mean->SetParLimits(0,4.45,4.5);
+//   fcnPFu1mean->SetParameter(1,-0.964);fcnPFu1mean->SetParLimits(1,-1,-0.95);
+      
+  fcnPFu1sigma1->SetParameter(0,-5e-5); //fcnPFu1sigma1->SetParLimits(0,-5e-2,-200e-5);
+   fcnPFu1sigma1->SetParameter(1,0.25); fcnPFu1sigma1->SetParLimits(1,-1,1);
+  fcnPFu1sigma1->SetParameter(2,15);   fcnPFu1sigma1->SetParLimits(2,0,20);
+  
+ fcnPFu1sigma2->SetParameter(0,-2e-3);  //fcnPFu1sigma2->SetParLimits(0,-2e-3,-1e-5);
   fcnPFu1sigma2->SetParameter(1,0.5);  fcnPFu1sigma2->SetParLimits(1,-1,3);
   fcnPFu1sigma2->SetParameter(2,16);   fcnPFu1sigma2->SetParLimits(2,5,25);
-  fcnPFu1sigma0->SetParameter(0,-2e-5); fcnPFu1sigma0->SetParLimits(0,-1e-3,0);
+  fcnPFu1sigma0->SetParameter(0,-2e-5);// fcnPFu1sigma0->SetParLimits(0,-1e-3,0);
   fcnPFu1sigma0->SetParameter(1,0.07);  fcnPFu1sigma0->SetParLimits(1,-1,1);
-  fcnPFu1sigma0->SetParameter(2,14);     fcnPFu1sigma0->SetParLimits(2,0,20); 
+  fcnPFu1sigma0->SetParameter(2,14);     fcnPFu1sigma0->SetParLimits(2,0,25); 
   
   /*fcnPFu2sigma1->SetParameter(0,-5e-4);  fcnPFu2sigma1->SetParLimits(0,-5e-4,0);*/// on data
-  fcnPFu2sigma1->SetParameter(0,0);  fcnPFu2sigma1->SetParLimits(0,-5e-4,5e4);
+  fcnPFu2sigma1->SetParameter(0,0);  //fcnPFu2sigma1->SetParLimits(0,-5e-4,5e4);
   fcnPFu2sigma1->SetParameter(1,0.15); //  fcnPFu2sigma1->SetParLimits(1,-1,1);
-  fcnPFu2sigma1->SetParameter(2,7);    fcnPFu2sigma1->SetParLimits(2,4,8);
- fcnPFu2sigma2->SetParameter(0,0);  fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
+  fcnPFu2sigma1->SetParameter(2,7);    fcnPFu2sigma1->SetParLimits(2,4,15);
+ fcnPFu2sigma2->SetParameter(0,0);  //fcnPFu2sigma2->SetParLimits(0,-5e-3,0);
  fcnPFu2sigma2->SetParameter(1,0.05);   fcnPFu2sigma2->SetParLimits(1,-1,1);
- fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,15);
-   fcnPFu2sigma0->SetParameter(0,-1e-3);  fcnPFu2sigma0->SetParLimits(0,-1e-2,-1e-3);
+ fcnPFu2sigma2->SetParameter(2,9);      fcnPFu2sigma2->SetParLimits(2,5,25);
+   fcnPFu2sigma0->SetParameter(0,0);  //fcnPFu2sigma0->SetParLimits(0,-1e-3,-1e-4);
    fcnPFu2sigma0->SetParameter(1,0.03);   fcnPFu2sigma0->SetParLimits(1,-1,2);
-   fcnPFu2sigma0->SetParameter(2,12);      fcnPFu2sigma0->SetParLimits(2,1,20);
+   fcnPFu2sigma0->SetParameter(2,6);      fcnPFu2sigma0->SetParLimits(2,14,25);
     
   TFile *infile = 0;
   TTree *intree = 0;  
@@ -306,12 +311,12 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
       if(ipt<0) continue;
     
       if(isBkgv[ifile]) {
-        hPFu1Bkgv[ipt]->Fill(u1);
-        hPFu2Bkgv[ipt]->Fill(u2);
+        hPFu1Bkgv[ipt]->Fill(u1);//,scale1fb*puWeight*42);
+        hPFu2Bkgv[ipt]->Fill(u2);//,scale1fb*puWeight*42);
       
       } else {
-        hPFu1v[ipt]->Fill(u1);
-        hPFu2v[ipt]->Fill(u2);
+        hPFu1v[ipt]->Fill(u1);//,scale1fb*puWeight*42);
+        hPFu2v[ipt]->Fill(u2);//,scale1fb*puWeight*42);
       }
     }
     
@@ -402,6 +407,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   plotPFu1mean.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
   sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(0),fcnPFu1mean->GetParError(0)); plotPFu1mean.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(1),fcnPFu1mean->GetParError(1)); plotPFu1mean.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
+  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(2),fcnPFu1mean->GetParError(2)); plotPFu1mean.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
   plotPFu1mean.Draw(c,kTRUE,"png");
   
   grPFu1sigma1 = new TGraphErrors(nbins,xval,pfu1Sigma1,xerr,pfu1Sigma1Err);  
@@ -426,6 +432,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   plotPFu1sigma1.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(1),fcnPFu1sigma1->GetParError(1)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
   sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(2),fcnPFu1sigma1->GetParError(2)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//   sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(3),fcnPFu1sigma1->GetParError(3)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //  sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma1->GetParameter(3),fcnPFu1sigma1->GetParError(3)); plotPFu1sigma1.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //  if(njetcut==0) plotPFu1sigma1.SetYRange(0,15);
 //  else           plotPFu1sigma1.SetYRange(0,30);
@@ -454,6 +461,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     plotPFu1sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(1),fcnPFu1sigma2->GetParError(1)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(2),fcnPFu1sigma2->GetParError(2)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(3),fcnPFu1sigma2->GetParError(3)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma2->GetParameter(3),fcnPFu1sigma2->GetParError(3)); plotPFu1sigma2.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    if(njetcut==0) plotPFu1sigma2.SetYRange(0,30);
 //    else           plotPFu1sigma2.SetYRange(0,60);
@@ -482,6 +490,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     plotPFu1sigma0.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(1),fcnPFu1sigma0->GetParError(1)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(2),fcnPFu1sigma0->GetParError(2)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(3),fcnPFu1sigma0->GetParError(3)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu1sigma0->GetParameter(3),fcnPFu1sigma0->GetParError(3)); plotPFu1sigma0.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    if(njetcut==0) plotPFu1sigma0.SetYRange(6,15);
 //    else           plotPFu1sigma0.SetYRange(6,30);
@@ -544,6 +553,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   plotPFu2mean.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
   sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(0),fcnPFu2mean->GetParError(0)); plotPFu2mean.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
   sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(1),fcnPFu2mean->GetParError(1)); plotPFu2mean.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
+  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2mean->GetParameter(2),fcnPFu2mean->GetParError(2)); plotPFu2mean.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
   plotPFu2mean.Draw(c,kTRUE,"png");
 
   
@@ -600,6 +610,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     plotPFu2sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(1),fcnPFu2sigma2->GetParError(1)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(2),fcnPFu2sigma2->GetParError(2)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(3),fcnPFu2sigma2->GetParError(3)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(3),fcnPFu2sigma2->GetParError(3)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);    
 //    if(njetcut==0) plotPFu2sigma2.SetYRange(0,30);
 //    else           plotPFu2sigma2.SetYRange(0,40);
@@ -628,6 +639,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     plotPFu2sigma0.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
     sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(1),fcnPFu2sigma0->GetParError(1)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
     sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(2),fcnPFu2sigma0->GetParError(2)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
+//     sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(3),fcnPFu2sigma0->GetParError(3)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);
 //    sprintf(fitparam,"p_{3} = %.3f #pm %.3f",fcnPFu2sigma0->GetParameter(3),fcnPFu2sigma0->GetParError(3)); plotPFu2sigma0.AddTextBox(fitparam,0.21,0.65,0.51,0.60,0,kBlack,-1);    
 //    if(njetcut==0) plotPFu2sigma0.SetYRange(6,15);
 //    else           plotPFu2sigma0.SetYRange(6,20);
@@ -723,11 +735,11 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     
       for(Int_t ibin=0; ibin<ncorrbins; ibin++) {
         if(dilep->Pt() > corrbins[ibin] && dilep->Pt() <= corrbins[ibin+1]) {
-          hPFu1u2v[ibin]->Fill(fabs(zpfu1),fabs(zpfu2));	
+          hPFu1u2v[ibin]->Fill(fabs(zpfu1),fabs(zpfu2));//,scale1fb*puWeight*42);	
         }
       }
       if(dilep->Pt() > corrbins[ncorrbins]) {
-        hPFu1u2v[ncorrbins-1]->Fill(fabs(zpfu1),fabs(zpfu2));    
+        hPFu1u2v[ncorrbins-1]->Fill(fabs(zpfu1),fabs(zpfu2));//,scale1fb*puWeight*42);    
       }
     }
   }
@@ -1054,8 +1066,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
                     hv[ibin]->GetMean(),
                     hv[ibin]->GetXaxis()->GetXmin(),
                     hv[ibin]->GetXaxis()->GetXmax());
-    RooRealVar sigma1("sigma1","sigma1",0.7*(hv[ibin]->GetRMS()),0,20);
-    RooRealVar sigma2("sigma2","sigma2",0.9*(hv[ibin]->GetRMS()),0,30);
+    RooRealVar sigma1("sigma1","sigma1",0.25*(hv[ibin]->GetRMS()),0,1.5*(hv[ibin]->GetRMS()));
+    RooRealVar sigma2("sigma2","sigma2",0.5*(hv[ibin]->GetRMS()),0,2.0*(hv[ibin]->GetRMS()));
     RooRealVar sigma3("sigma3","sigma3",10.*(hv[ibin]->GetRMS()),0,200); 
     RooRealVar frac2("frac2","frac2",0.5,0.1,0.9);
     RooRealVar frac3("frac3","frac3",0.05,0,0.15);
@@ -1065,12 +1077,21 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     if(ibin>0) {
       mean.setVal(meanArr[ibin-1]);
-      sigma1.setMin(0.65*(sigma0Arr[ibin-1]));
-      sigma1.setMax(1.0*(sigma0Arr[ibin-1]));
-      sigma1.setVal(0.6*(sigma0Arr[ibin-1]));
-      sigma2.setMin(0.7*(sigma0Arr[ibin-1]));
-      sigma2.setMax(1.5*(sigma0Arr[ibin-1]));
-      sigma2.setVal(1.0*(sigma0Arr[ibin-1]));
+      sigma1.setMin(0);
+      sigma1.setMax(1.5*(hv[ibin-1]->GetRMS()));
+      sigma1.setVal(0.5*(hv[ibin-1]->GetRMS()));
+      sigma2.setMin(0);
+      sigma2.setMax(1.8*(hv[ibin-1]->GetRMS()));
+      sigma2.setVal(1.2*(hv[ibin-1]->GetRMS()));
+      
+//             mean.setVal(meanArr[ibin-1]);
+//       sigma1.setMin(0.1*(sigma0Arr[ibin-1]));
+//       sigma1.setMax(1.5*(sigma0Arr[ibin-1]));
+//       sigma1.setVal(0.65*(sigma0Arr[ibin-1]));
+//       sigma2.setMin(0.1*(sigma0Arr[ibin-1]));
+//       sigma2.setMax(1.8*(sigma0Arr[ibin-1]));
+//       sigma2.setVal(1.2*(sigma0Arr[ibin-1]));
+      
     }
     
     //
