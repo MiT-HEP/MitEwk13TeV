@@ -1,0 +1,26 @@
+imax 1 number of bins
+jmax 2 number of processes minus 1
+kmax * number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes EWKm       Wmunum      Wmunu_final_pdfTemplates.root combine_workspace:ewkm
+shapes qcd       Wmunum      Wmunu_final_pdfTemplates.root combine_workspace:pepe1Pdf_qcdm
+shapes wmm       Wmunum      Wmunu_final_pdfTemplates.root combine_workspace:wmm combine_workspace:wmm_$SYSTEMATIC 
+shapes data_obs  Wmunum      Wmunu_final_pdfTemplates.root combine_workspace:dataMetm
+----------------------------------------------------------------------------------------------------------------------------------
+bin          Wmunum
+observation  -1.0
+----------------------------------------------------------------------------------------------------------------------------------
+bin                    Wmunum       Wmunum      Wmunum   
+process                wmm      EWKm     qcd    
+process                -1        0        1        
+rate                   138416    14327.7    1.0  
+----------------------------------------------------------------------------------------------------------------------------------
+Recoil          shape   1.0         -      -  
+Scale           shape   1.0         -      -  
+#bkg_model        lnN   1.001     1.001    -        1.001    1.001    -         
+#lepton_eff       lnN   1.009     1.009    -        1.009    1.009    -         
+#lumi_8TeV        lnN   1.026     1.026    -        1.026    1.026    -         
+#met_scale_res    lnN   1.005     1.005    -        1.005    1.005    -         
+#pT_scale_res     lnN   1.003     1.003    -        1.003    1.003    -         
+#nqcd             lnN   -         -        1.7      -        -        1.7
+a1_qcdm         param   0.23456    0.5
