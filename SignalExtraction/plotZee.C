@@ -77,7 +77,7 @@ void plotZee(const TString  outputDir,   // output directory
   const Double_t ETA_CUT   = 2.5;
   
   // plot output file format
-  const TString format("png");
+  const TString format("pdf");
 
    // efficiency files
   const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
@@ -260,18 +260,18 @@ void plotZee(const TString  outputDir,   // output directory
 	if(lep1->Pt()        < PT_CUT)    continue;
 	if(lep2->Pt()        < PT_CUT)    continue;
 	
-	  //if(mass       < MASS_LOW)  continue;
-	  //if(mass       > MASS_HIGH) continue;
-	  //if(lp1        < PT_CUT)    continue;
-	  //if(lp2        < PT_CUT)    continue;
+	//if(mass       < MASS_LOW)  continue;
+	//if(mass       > MASS_HIGH) continue;
+	//if(lp1        < PT_CUT)    continue;
+	//if(lp2        < PT_CUT)    continue;
 	  //if(q1*q2>0)  continue;
-	  hData->Fill(mass); 
-	  
-	  yield++;
+	hData->Fill(mass); 
+	
+	yield++;
 	  
       } else {
-	  Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
-	  Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
+	Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
+	Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
 	  TLorentzVector l1, l2;
 	  l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
 	  l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
@@ -348,12 +348,14 @@ void plotZee(const TString  outputDir,   // output directory
     infile=0, intree=0;
   }
 
+  hZee->Scale((hData->Integral()-hEWK->Integral())/hZee->Integral());
+  hMC->Scale(hData->Integral()/hMC->Integral());
+
   TH1D *hZeeDiff = makeDiffHist(hData,hMC,"hZeeDiff");
   hZeeDiff->SetMarkerStyle(kFullCircle); 
   hZeeDiff->SetMarkerSize(0.9);
   
-  hZee->Scale((hData->Integral()-hEWK->Integral())/hZee->Integral());
-  
+
 
   //--------------------------------------------------------------------------------------------------------------
   // Make plots 
@@ -363,8 +365,7 @@ void plotZee(const TString  outputDir,   // output directory
   
   // label for lumi
   char lumitext[100];
-  if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);  
+  sprintf(lumitext,"%.0f pb^{-1}  (13 TeV)",lumi);  
   
   // plot colors
   Int_t linecolorZ   = kOrange-3;
@@ -398,8 +399,10 @@ void plotZee(const TString  outputDir,   // output directory
   CPlot plotZee("zee","","",ylabel);
   plotZee.AddHist1D(hData,"data","E");
   plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZee.AddTextBox(lumitext,0.63,0.92,0.95,0.99,0);
-  plotZee.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
+  //plotZee.AddTextBox(lumitext,0.60,0.92,0.92,0.99,0);
+  //plotZee.AddTextBox("CMS Preliminary",0.555,0.80,0.905,0.86,0);
+  plotZee.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZee.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   plotZee.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
   plotZee.TransLegend(-0.35,-0.15);
   plotZee.Draw(c,kFALSE,format,1);
@@ -414,13 +417,15 @@ void plotZee(const TString  outputDir,   // output directory
   
   CPlot plotZee2("zeelog","","",ylabel);
   plotZee2.AddHist1D(hData,"data","E");
-  plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  plotZee2.AddToStack(hEWK,"EWK+t#bar{t}",fillcolorEWK,linecolorEWK);
   plotZee2.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZee2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZee2.SetName("zeelog");
-  plotZee2.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
+  plotZee2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZee2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  //plotZee2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZee2.SetName("zeelog");
+  //plotZee2.AddTextBox("CMS Preliminary",0.555,0.80,0.905,0.86,0);
   plotZee2.SetLogy();
   plotZee2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
-  plotZee2.TransLegend(-0.35,-0.15);
+  plotZee2.TransLegend(-0.395,-0.15);
   plotZee2.Draw(c,kTRUE,format,1);
 
   //--------------------------------------------------------------------------------------------------------------
