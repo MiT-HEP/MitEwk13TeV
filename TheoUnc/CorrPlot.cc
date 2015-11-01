@@ -24,9 +24,10 @@ void CorrPlot::AddCorrPlot(TGraph *gr, TEllipse *el, TString label, int color, i
     fLeg->SetFillColor(0);
     fLeg->SetLineColor(0);
     fLeg->SetShadowColor(0);
+    fLeg->AddEntry(gr,label,"F");
   }
-  fLeg->AddEntry(gr,label,"P");
-
+  else
+    fLeg->AddEntry(gr,label,"PL");
 
   gr->SetMarkerColor(color);
   gr->SetLineColor  (color);
@@ -61,15 +62,22 @@ void CorrPlot::Draw(TCanvas *c, TString fname, Int_t nlumi) {
   fItems[0].ellipse->Draw("same s");
 
   char lumitxt[150];
-  sprintf(lumitxt,"%i pb^{-1} at #sqrt{s} = 13 TeV", nlumi);
+  sprintf(lumitxt,"#scale[0.75]{%i{#bf{pb^{-1} (13 TeV)}}}", nlumi);
   TPaveText *lumi = new TPaveText(0.65,0.93,0.97,0.99,"NDC");
   lumi->SetFillStyle(0); lumi->SetShadowColor(0); lumi->SetLineColor(0);
+  lumi->SetTextFont(62);
   lumi->AddText(lumitxt);
   TPaveText *prelim = new TPaveText(0.18,0.93,0.44,0.99,"NDC");
   prelim->SetFillStyle(0); prelim->SetShadowColor(0); prelim->SetLineColor(0);
-  prelim->AddText("CMS Preliminary");
+  //prelim->SetTextFont(62);
+  prelim->AddText("#bf{CMS} #scale[0.75]{#it{Preliminary}}");
+  TPaveText *fewz = new TPaveText(0.20,0.80,0.58,0.89,"NDC");
+  fewz->SetFillStyle(0); fewz->SetShadowColor(0); fewz->SetLineColor(0);
+  fewz->SetTextFont(62);
+  fewz->AddText("Acc. #times FEWZ NNLO Prediction");
   lumi->Draw();
   prelim->Draw();
+  fewz->Draw();
 
   for (UInt_t i=1; i<fItems.size(); i++) {
     fItems[i].ellipse->Draw("same s");
