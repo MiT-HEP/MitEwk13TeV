@@ -29,8 +29,10 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
 Bool_t acceptB(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 Bool_t acceptE(Double_t genL_id, Double_t genL_pt, Double_t genL_eta);
 
-//void acceptGenZ_HORACE(TString input="/afs/cern.ch/work/j/jlawhorn/public/Horace/z_muon_fsr_v2.root",
-void acceptGenZ_HORACE(TString input="root://eoscms//store/user/jlawhorn/Horace_new/old_z/z_muon_fsr.root",
+//void acceptGenZ_HORACE(TString input="/afs/cern.ch/work/j/jlawhorn/public/HORACE_NOT_FUCKED/z_electron_born_final.root",
+void acceptGenZ_HORACE(TString input="/afs/cern.ch/work/j/jlawhorn/public/HORACE_NOT_FUCKED/z_muon_born_final_photos.root",
+//void acceptGenZ_HORACE(TString input="z_muon_fsr_all_flat.root",
+//void acceptGenZ_HORACE(TString input="root://eoscms//store/user/jlawhorn/Horace_new/z_electron_fsr.root",
 		       TString outputDir="idfk/",
 		       Int_t proc=1) {
 

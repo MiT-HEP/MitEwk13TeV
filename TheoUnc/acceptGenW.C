@@ -29,13 +29,15 @@ Bool_t acceptEndcap(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL
 
 Bool_t acceptBarrel(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, Double_t genL2_id, Double_t genL1_pt, Double_t genL1_eta, Double_t genL2_pt, Double_t genL2_eta);
 
-void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/wp_ct10nlo.root",
+//void acceptGenW(TString input="wellnu_ct10_wp_v2.root",
+void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/theo-unc-06-10/WmJetsToLNu.root",
 		TString outputDir="idfk/",
-		TString pdfName="CT10nlo",
-		//TString pdfName="MMHT2014nlo68cl",
+		//TString pdfName="NNPDF30_nlo_nf_5_pdfas",
+		//TString pdfName="CT14nlo",
+		TString pdfName="MMHT2014nlo68cl",
 		Int_t setMin=0, 
 		Int_t setMax=0,
-		Int_t proc=3) {
+		Int_t proc=2) {
 
   TString procName[4]={"wme", "wpe", "wmm", "wpm"};
   char output[150];
@@ -93,9 +95,10 @@ void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/wp_ct10nlo.root",
   chain.SetBranchAddress("genL2f_m",   &genL2f_m);
 
   TFile *outFile = new TFile(output, "recreate");
+  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(292200);
   //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(25100);
   //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(13100);
-  LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(11000);
+  //LHAPDF::PDF* nomPdf = LHAPDF::mkPDF(11000);
 
   for (Int_t iPdfSet=setMin; iPdfSet<setMax+1; iPdfSet++) {
     
@@ -130,7 +133,7 @@ void acceptGenW(TString input="/afs/cern.ch/work/j/jlawhorn/wp_ct10nlo.root",
       Int_t fid_1 = ( id_1==0 ? 21 : id_1 );
       Int_t fid_2 = ( id_2==0 ? 21 : id_2 );
       //cout << genV_id << ", " << genL1f_pt << ", " << genL2f_pt << endl;
-      Double_t newWeight = weight;//*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
+      Double_t newWeight = weight*testPdf->xfxQ(fid_1, x_1, scalePDF)*testPdf->xfxQ(fid_2, x_2, scalePDF)/(nomPdf->xfxQ(fid_1, x_1, scalePDF)*nomPdf->xfxQ(fid_2, x_2, scalePDF));
       if (newWeight < 3e-10) continue;
 
       dTot->Fill(1.0,newWeight);
@@ -206,10 +209,12 @@ Bool_t acceptEndcap(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL
   }
   else if (proc==wmm) {
     if (genL2_pt>25 && fabs(genL2_eta)>1.2 && fabs(genL2_eta)<2.4) return kTRUE;
+    //if (genL2_pt>25 && fabs(genL2_eta)>1.2 && fabs(genL2_eta)<2.1) return kTRUE;
     else return kFALSE;
   }
   else if (proc==wpm) {
     if (genL1_pt>25 && fabs(genL1_eta)>1.2 && fabs(genL1_eta)<2.4) return kTRUE;
+    //if (genL1_pt>25 && fabs(genL1_eta)>1.2 && fabs(genL1_eta)<2.1) return kTRUE;
     else return kFALSE;
   }
   return kFALSE;

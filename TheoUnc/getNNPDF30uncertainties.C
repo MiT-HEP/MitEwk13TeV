@@ -37,23 +37,27 @@ void getNNPDF30uncertainties() {
 
   TString inDir = "/afs/cern.ch/work/j/jlawhorn/public/wz-pdf/NNPDF30_amc/";
 
-  //cout << "NNPDF3.0 acceptances" << endl;
-
+  // W- e
   Double_t wmeNom; vector<Double_t> wmeScales;
   makeScaleVector(inDir, "wme", wmeNom, wmeScales);
 
+  // W+ e
   Double_t wpeNom; vector<Double_t> wpeScales;
   makeScaleVector(inDir, "wpe", wpeNom, wpeScales);
 
+  // W- m
   Double_t wmmNom; vector<Double_t> wmmScales;
   makeScaleVector(inDir, "wmm", wmmNom, wmmScales);
 
+  // W+ m
   Double_t wpmNom; vector<Double_t> wpmScales;
   makeScaleVector(inDir, "wpm", wpmNom, wpmScales);
 
+  // Z ee
   Double_t zeeNom; vector<Double_t> zeeScales;
   makeScaleVector(inDir, "zee", zeeNom, zeeScales);
 
+  // Z mm
   Double_t zmmNom; vector<Double_t> zmmScales;
   makeScaleVector(inDir, "zmm", zmmNom, zmmScales);
 
@@ -63,26 +67,52 @@ void getNNPDF30uncertainties() {
   if (zeeScales.size()!=wpmScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
   if (zmmScales.size()!=zeeScales.size()) cout << "SOMETHING BAD HAPPENED TO FILES" << endl;
 
+  // W+/W- e
   Double_t wpmeNom=wpeNom/wmeNom; 
   vector<Double_t> wpmeScales;
   for (UInt_t i=0; i<wmeScales.size(); i++) { wpmeScales.push_back(wpeScales[i]/wmeScales[i]); }
 
+  // W+/W- m
   Double_t wpmmNom=wpmNom/wmmNom; 
   vector<Double_t> wpmmScales;
   for (UInt_t i=0; i<wmmScales.size(); i++) { wpmmScales.push_back(wpmScales[i]/wmmScales[i]); }
 
+  // W e
   Double_t weNom=(wpeNom*wpXsec+wmeNom*wmXsec)/(wpXsec+wmXsec); 
   vector<Double_t> weScales;
   for (UInt_t i=0; i<wpeScales.size(); i++) { weScales.push_back((wpeScales[i]*wpXsec+wmeScales[i]*wmXsec)/(wpXsec+wmXsec)); }
 
+  // W e
   Double_t wmNom=(wpmNom*wpXsec+wmmNom*wmXsec)/(wpXsec+wmXsec); 
   vector<Double_t> wmScales;
   for (UInt_t i=0; i<wpmScales.size(); i++) { wmScales.push_back((wpmScales[i]*wpXsec+wmmScales[i]*wmXsec)/(wpXsec+wmXsec)); }
 
+  // W+/Z e
+  Double_t wpzeNom=(wpeNom*wpXsec)/(zeeNom*zXsec)*((zXsec)/(wpXsec)); 
+  vector<Double_t> wpzeScales;
+  for (UInt_t i=0; i<wpeScales.size(); i++) { wpzeScales.push_back(((wpeScales[i]*wpXsec)/(zeeScales[i]*zXsec)*((zXsec)/(wpXsec)))); }
+
+  // W-/Z e
+  Double_t wmzeNom=(wmeNom*wmXsec)/(zeeNom*zXsec)*((zXsec)/(wmXsec)); 
+  vector<Double_t> wmzeScales;
+  for (UInt_t i=0; i<wmeScales.size(); i++) { wmzeScales.push_back(((wmeScales[i]*wmXsec)/(zeeScales[i]*zXsec)*((zXsec)/(wmXsec)))); }
+
+  // W/Z e
   Double_t wzeNom=(wpeNom*wpXsec+wmeNom*wmXsec)/(zeeNom*zXsec)*((zXsec)/(wpXsec+wmXsec)); 
   vector<Double_t> wzeScales;
   for (UInt_t i=0; i<wpeScales.size(); i++) { wzeScales.push_back(((wpeScales[i]*wpXsec+wmeScales[i]*wmXsec)/(zeeScales[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
 
+  // W+/Z m
+  Double_t wpzmNom=(wpmNom*wpXsec)/(zmmNom*zXsec)*((zXsec)/(wpXsec)); 
+  vector<Double_t> wpzmScales;
+  for (UInt_t i=0; i<wpmScales.size(); i++) { wpzmScales.push_back(((wpmScales[i]*wpXsec)/(zmmScales[i]*zXsec)*((zXsec)/(wpXsec)))); }
+
+  // W-/Z m
+  Double_t wmzmNom=(wmmNom*wmXsec)/(zmmNom*zXsec)*((zXsec)/(wmXsec)); 
+  vector<Double_t> wmzmScales;
+  for (UInt_t i=0; i<wmmScales.size(); i++) { wmzmScales.push_back(((wmmScales[i]*wmXsec)/(zmmScales[i]*zXsec)*((zXsec)/(wmXsec)))); }
+
+  // W/Z m
   Double_t wzmNom=(wpmNom*wpXsec+wmmNom*wmXsec)/(zmmNom*zXsec)*((zXsec)/(wpXsec+wmXsec)); 
   vector<Double_t> wzmScales;
   for (UInt_t i=0; i<wpmScales.size(); i++) { wzmScales.push_back(((wpmScales[i]*wpXsec+wmmScales[i]*wmXsec)/(zmmScales[i]*zXsec)*((zXsec)/(wpXsec+wmXsec)))); }
@@ -101,6 +131,8 @@ void getNNPDF30uncertainties() {
   cout << "W(m):     " << setprecision(3) <<  wmNom   <<  endl;
   cout << "W+/W-(m): " << setprecision(3) <<  wpmmNom <<  endl;
   cout << "Zmm:      " << setprecision(3) <<  zmmNom  <<  endl;
+  cout << "W+/Z(m):  " << setprecision(3) <<  wpzmNom <<  endl;
+  cout << "W-/Z(m):  " << setprecision(3) <<  wmzmNom <<  endl;
   cout << "W/Z(m):   " << setprecision(3) <<  wzmNom  <<  endl;
   cout << "-----" << endl;
   cout << "W+e:      " << setprecision(3) <<  wpeNom  <<  endl;
@@ -108,6 +140,8 @@ void getNNPDF30uncertainties() {
   cout << "W(e):     " << setprecision(3) <<  weNom   <<  endl;
   cout << "W+/W-(e): " << setprecision(3) <<  wpmeNom <<  endl;
   cout << "Zee:      " << setprecision(3) <<  zeeNom  <<  endl;
+  cout << "W+/Z(e):  " << setprecision(3) <<  wpzeNom <<  endl;
+  cout << "W-/Z(e):  " << setprecision(3) <<  wmzeNom <<  endl;
   cout << "W/Z(e):   " << setprecision(3) <<  wzeNom  <<  endl;
   cout << "-----" << endl;
   cout << "W(e)/W(m): " << setprecision(3) << wewmNom << endl;
@@ -118,6 +152,8 @@ void getNNPDF30uncertainties() {
   cout << "W(m):     " << setprecision(3) << uncert(wmScales,   wmNom)   <<  endl;
   cout << "W+/W-(m): " << setprecision(3) << uncert(wpmmScales, wpmmNom) <<  endl;
   cout << "Zmm:      " << setprecision(3) << uncert(zmmScales,  zmmNom)  <<  endl;
+  cout << "W+/Z(m):  " << setprecision(3) << uncert(wpzmScales, wpzmNom)  <<  endl;
+  cout << "W-/Z(m):  " << setprecision(3) << uncert(wmzmScales, wmzmNom)  <<  endl;
   cout << "W/Z(m):   " << setprecision(3) << uncert(wzmScales,  wzmNom)  <<  endl;
   cout << "-----" << endl;
   cout << "W+e:      " << setprecision(3) << uncert(wpeScales,  wpeNom)  <<  endl;
@@ -125,6 +161,8 @@ void getNNPDF30uncertainties() {
   cout << "W(e):     " << setprecision(3) << uncert(weScales,   weNom)   <<  endl;
   cout << "W+/W-(e): " << setprecision(3) << uncert(wpmeScales, wpmeNom) <<  endl;
   cout << "Zee:      " << setprecision(3) << uncert(zeeScales,  zeeNom)  <<  endl;
+  cout << "W+/Z(e):  " << setprecision(3) << uncert(wpzeScales, wpzeNom)  <<  endl;
+  cout << "W-/Z(e):  " << setprecision(3) << uncert(wmzeScales, wmzeNom)  <<  endl;
   cout << "W/Z(e):   " << setprecision(3) << uncert(wzeScales,  wzeNom)  <<  endl;
   cout << "-----" << endl;
   cout << "W(e)/W(m): " << setprecision(3) << uncert(wewmScales, wewmNom)  <<  endl;

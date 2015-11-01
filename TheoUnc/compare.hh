@@ -10,6 +10,7 @@
 #include <TLegend.h>
 #include <TGaxis.h>
 #include <TH1D.h>
+#include <TGraph.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -50,5 +51,6 @@ void drawTwoEta(Channel chan, TString var, Config fB, Config f1, Int_t nbinsEta,
 Double_t calcAcc(Channel chan, Config f);
 TH1D* returnPlot(Channel chan, Config f, Int_t nbins, Double_t xmin, Double_t xmax, TString var);
 TH1D* returnRelDiff(TH1D* h, TH1D* b, TString name);
+TH1D* returnRelDiff(TH1D* h, TGraph* b, TString name);
 
 #endif

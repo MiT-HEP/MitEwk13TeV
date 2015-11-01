@@ -24,7 +24,7 @@ using namespace std;
 
 void getHOC() {
 
-  TFile *f_DY = new TFile("/afs/cern.ch/work/j/jlawhorn/public/resbos-files-06-16/dy_1q_yk.root");
+  TFile *f_DY = new TFile("/afs/cern.ch/work/j/jlawhorn/resbos/drellyan_y.root");
   TTree* t_DY = (TTree*) f_DY->Get("h10");
 
   TH1D* dy_All = new TH1D("dy_All", "", 20, -20, 20); dy_All->Sumw2();
@@ -35,7 +35,7 @@ void getHOC() {
   t_DY->Draw("1>>dy_Mu", "WT00*(M_B>60 && M_B<120)*(pT_d1>25 && pT_d2>25 && abs(y_d1)<2.4 && abs(y_d2)<2.4)");
   t_DY->Draw("1>>dy_All", "WT00*(M_B>60 && M_B<120)");
 
-  TFile *f_WP = new TFile("/afs/cern.ch/work/j/jlawhorn/public/resbos-files-06-16/wp_1q_yk.root");
+  TFile *f_WP = new TFile("/afs/cern.ch/work/j/jlawhorn/resbos/wplus_y.root");
   TTree* t_WP = (TTree*) f_WP->Get("h10");
 
   TH1D* wp_All = new TH1D("wp_All", "", 20, -20, 20); wp_All->Sumw2();
@@ -46,7 +46,7 @@ void getHOC() {
   t_WP->Draw("1>>wp_Mu", "WT00*(pT_d1>25 && abs(y_d1)<2.4)");
   t_WP->Draw("1>>wp_All", "WT00");
 
-  TFile *f_WM = new TFile("/afs/cern.ch/work/j/jlawhorn/public/resbos-files-06-16/wm_1q_yk.root");
+  TFile *f_WM = new TFile("/afs/cern.ch/work/j/jlawhorn/resbos/wminus_y.root");
   TTree* t_WM = (TTree*) f_WM->Get("h10");
 
   TH1D* wm_All = new TH1D("wm_All", "", 20, -20, 20); wm_All->Sumw2();
