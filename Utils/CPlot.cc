@@ -71,6 +71,7 @@ void CPlot::AddHist1D(TH1D *h, TString drawopt, int color, int linesty, int fill
   h->SetLineStyle(linesty);
   h->SetFillColor(color);
   h->SetFillStyle(fillsty);
+  h->GetXaxis()->CenterTitle(kFALSE);
   
   if(drawopt.CompareTo("E",TString::kIgnoreCase)==0)
     h->SetMarkerSize(0.9);
@@ -145,7 +146,7 @@ void CPlot::AddToStack(TH1D *h, TString label, int color, int linecol)
     fStack = new THStack(fName+TString("_stack"),"");
   
   if(!fLeg)
-    fLeg = new TLegend(0.6,0.84,0.93,0.9);
+    fLeg = new TLegend(0.4,0.84,0.7,0.9);
   else
     fLeg->SetY1(fLeg->GetY1()-0.06);  
     
@@ -524,7 +525,9 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
       
       return;
     }
-  }    
+  } 
+  
+  
   
   // 
   // Draw 1D histograms
@@ -559,9 +562,9 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
         h->GetYaxis()->SetRangeUser(fYmin,fYmax);
       } else {
         if(ymax < h->GetMaximum()) {
-	  ymax = h->GetMaximum();
-	  ifirst = vHists.size();
-	}
+        ymax = h->GetMaximum();
+        ifirst = vHists.size();
+        }
       }
       
       vHists.push_back(h);
@@ -804,6 +807,22 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
   //
   c->SetGridx(fGridx);
   c->SetGridy(fGridy);
+  if(nHist1D>0) {   
+    
+    double ymax=0;
+    uint ifirst=0;
+    for(uint i=0; i<fItems.size(); i++) {
+    if(fItems[i].hist1D==0) continue;
+    if(fStack && fStack->GetHists()->Contains(fItems[i].hist1D)) continue;
+    if(vHists.size()>0) {
+      vHists[ifirst]->SetTitle(fTitle);
+      vHists[ifirst]->GetXaxis()->SetTitle(fXTitle);
+      vHists[ifirst]->GetYaxis()->SetTitle(fYTitle);
+      vHists[ifirst]->SetLineWidth(2);
+      vHists[ifirst]->Draw("same");
+      }
+    }
+  }
   
   //
   // Save plot if necessary

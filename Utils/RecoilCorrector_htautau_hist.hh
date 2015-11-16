@@ -339,8 +339,7 @@ void RecoilCorrector::readRecoilMC(std::vector<TGraphErrors*> &iU1Fit,std::vecto
   iU1RMS1Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
   lSS << iPrefix << "u1sigma2"; iU1RMS2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
   lSS << iPrefix << "u2mean"    << lNJet; iU2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u2sigma0"; 
-  std::cout << lSS.str().c_str() << std::endl;
+  lSS << iPrefix << "u2sigma0"; std::cout << lSS.str().c_str() << std::endl;
   iU2MRMSFit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
   lSS << iPrefix << "u2sigma1"; iU2RMS1Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
   lSS << iPrefix << "u2sigma2"; iU2RMS2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
@@ -393,22 +392,37 @@ void RecoilCorrector::metDistributionType2(double &iMet,double &iMPhi,double iGe
   double pDU1       = iU1RZDatFit ->Eval(iGenPt);
   //std::cout << "Here we are 2 ?  " << std::endl;
   //double pDU2       = 0; sPM
-  double pDFrac1    = iU1MSZDatFit->Eval(iGenPt)*lRescale;
-  double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt)*pDFrac1;
-  double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt)*pDFrac1;
-  double pDFrac2    = iU2MSZDatFit->Eval(iGenPt)*lRescale;
-  double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt)*pDFrac2;
-  double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt)*pDFrac2;
+  //double pDFrac1    = iU1MSZDatFit->Eval(iGenPt)*lRescale;
+  //double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt)*pDFrac1;
+  //double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt)*pDFrac1;
+  //double pDFrac2    = iU2MSZDatFit->Eval(iGenPt)*lRescale;
+  //double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt)*pDFrac2;
+  //double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt)*pDFrac2;
+
+  double pDFrac1    = iU1MSZDatFit->Eval(iGenPt);
+  double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt);
+  double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt);
+  double pDFrac2    = iU2MSZDatFit->Eval(iGenPt);
+  double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt);
+  double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt);
+
   //double pDMean1    = pDFrac1;
   //double pDMean2    = pDFrac2;
   double pMU1       = iU1RZMCFit  ->Eval(iGenPt);
   double pMU2       = 0; 
-  double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt)*lRescale;
-  double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt)*pMFrac1;
-  double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt)*pMFrac1;
-  double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt)*lRescale;
-  double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt)*pMFrac2;
-  double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt)*pMFrac2;
+  //double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt)*lRescale;
+  //double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt)*pMFrac1;
+  //double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt)*pMFrac1;
+  //double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt)*lRescale;
+  //double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt)*pMFrac2;
+  //double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt)*pMFrac2;
+
+  double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt);
+  double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt);
+  double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt);
+  double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt);
+  double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt);
+  double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt);
 
   
   //double pMMean1    = pMFrac1;
@@ -511,32 +525,47 @@ void RecoilCorrector::metDistributionType2MC(double &iMet,double &iMPhi,double i
 					   TGraphErrors *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,  		   		                              
 					   TGraphErrors *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit, 
 					   double &iU1,double &iU2,double iFluc,double iScale) {
-  std::cout << "Here we are 0?  " << iU1Default->Eval(iGenPt)   << std::endl;
-  std::cout << "Here we are 1?  " << iU1RZDatFit->Eval(iGenPt)  << " " << iU1RZMCFit->Eval(iGenPt) << std::endl;
-  std::cout << "Here we are 2 ?  " << iU1MSZDatFit->Eval(iGenPt)  << " " << iU1MSZMCFit->Eval(iGenPt) << std::endl;
-  std::cout << "Here we are 3 ?  " << iU1S1ZDatFit->Eval(iGenPt)  << " " << iU1S1ZMCFit->Eval(iGenPt) << std::endl;
-  std::cout << "Here we are 4 ?  " << iU1S2ZDatFit->Eval(iGenPt)  << " " << iU1S2ZMCFit->Eval(iGenPt) << std::endl;
+  //std::cout << "Here we are 0?  " << iU1Default->Eval(iGenPt)   << std::endl;
+  //std::cout << "Here we are 1?  " << iU1RZDatFit->Eval(iGenPt)  << " " << iU1RZMCFit->Eval(iGenPt) << std::endl;
+  //std::cout << "Here we are 2 ?  " << iU1MSZDatFit->Eval(iGenPt)  << " " << iU1MSZMCFit->Eval(iGenPt) << std::endl;
+  //std::cout << "Here we are 3 ?  " << iU1S1ZDatFit->Eval(iGenPt)  << " " << iU1S1ZMCFit->Eval(iGenPt) << std::endl;
+  //std::cout << "Here we are 4 ?  " << iU1S2ZDatFit->Eval(iGenPt)  << " " << iU1S2ZMCFit->Eval(iGenPt) << std::endl;
   double pDefU1    = iU1Default->Eval(iGenPt);
   double lRescale  = sqrt((TMath::Pi())/2.);		     
   double pDU1       = iU1RZDatFit ->Eval(iGenPt);
   //std::cout << "Here we are 2 ?  " << std::endl;
   //double pDU2       = 0; sPM
-  double pDFrac1    = iU1MSZDatFit->Eval(iGenPt)*lRescale;
-  double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt)*pDFrac1;
-  double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt)*pDFrac1;
-  double pDFrac2    = iU2MSZDatFit->Eval(iGenPt)*lRescale;
-  double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt)*pDFrac2;
-  double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt)*pDFrac2;
+  //double pDFrac1    = iU1MSZDatFit->Eval(iGenPt)*lRescale;
+  //double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt)*pDFrac1;
+  //double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt)*pDFrac1;
+  //double pDFrac2    = iU2MSZDatFit->Eval(iGenPt)*lRescale;
+  //double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt)*pDFrac2;
+  //double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt)*pDFrac2;
+
+  double pDFrac1    = iU1MSZDatFit->Eval(iGenPt);
+  double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt);
+  double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt);
+  double pDFrac2    = iU2MSZDatFit->Eval(iGenPt);
+  double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt);
+  double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt);
+
   //double pDMean1    = pDFrac1;
   //double pDMean2    = pDFrac2;
   double pMU1       = iU1RZMCFit  ->Eval(iGenPt);
   double pMU2       = 0; 
-  double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt)*lRescale;
-  double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt)*pMFrac1;
-  double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt)*pMFrac1;
-  double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt)*lRescale;
-  double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt)*pMFrac2;
-  double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt)*pMFrac2;
+  //double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt)*lRescale;
+  //double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt)*pMFrac1;
+  //double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt)*pMFrac1;
+  //double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt)*lRescale;
+  //double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt)*pMFrac2;
+  //double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt)*pMFrac2;
+
+  double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt);
+  double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt);
+  double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt);
+  double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt);
+  double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt);
+  double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt);
 
   //pDFrac1           = (pDFrac1-pDSigma1_1)/(pDSigma1_2-pDSigma1_1);
   //pDFrac2           = (pDFrac2-pDSigma2_1)/(pDSigma2_2-pDSigma2_1);

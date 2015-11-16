@@ -38,19 +38,67 @@ void comPM(TString p_list, TString m_list, Double_t p_xsec, Double_t m_xsec, std
 void rPlot() {
 
   // theory
-  Double_t we_xs=19.70; Double_t wm_xs=19.70; 
-  Double_t ze_xs=1.87; Double_t zm_xs=1.87;
-
-  // measured
-  Double_t we_yield=222674; Double_t wm_yield=299939;
-  Double_t ze_yield=15288; Double_t zm_yield=23666;
+  Double_t we_xs=19.6976; Double_t wm_xs=19.6796; 
+  Double_t ze_xs=1.86766; Double_t zm_xs=1.86766;
 
   //measured cross sections
-  Double_t we_xs_meas = 20.71; Double_t wm_xs_meas = 20.38;
-  Double_t rw_meas = we_xs_meas/wm_xs_meas;
-  Double_t ze_xs_meas = 1.96; Double_t zm_xs_meas = 1.94;
-  Double_t rz_meas = ze_xs_meas/zm_xs_meas;
+  Double_t we_xs_meas = 20.072; Double_t wm_xs_meas = 19.867;
+  Double_t rw_meas = 1.0/(we_xs_meas/wm_xs_meas);
+  Double_t ze_xs_meas = 1.919; Double_t zm_xs_meas = 1.898;
+  Double_t rz_meas = 1.0/(ze_xs_meas/zm_xs_meas);
 
+  //lepton reco+id uncertainties
+  Double_t we_lep = 1.589151*0.01*we_xs_meas;
+  Double_t ze_lep = 2.370844*0.01*ze_xs;
+
+  //background subtraction/modeling
+  Double_t we_bkg = 1.372443*0.01*we_xs_meas;
+  Double_t ze_bkg = 0.64*0.01*ze_xs;
+  
+  //theory
+  Double_t we_theo = 1.390827*0.01*we_xs_meas;
+  Double_t ze_theo = 1.609658*0.01*ze_xs;
+
+   //theory
+  Double_t we_ewk = 0.534883*0.01*wm_xs_meas;
+  Double_t ze_ewk = 0.813941*0.01*zm_xs_meas;
+  
+  //lepton reco+id uncertainties
+  Double_t wm_lep = 1.676842*0.01*wm_xs_meas;
+  Double_t zm_lep = 2.075331*0.01*zm_xs_meas;
+
+  //background subtraction/modeling
+  Double_t wm_bkg = 0.631506*0.01*wm_xs_meas;
+  Double_t zm_bkg = 0.55*0.01*zm_xs_meas;
+
+  //theory
+  Double_t wm_theo = 1.316283*0.01*wm_xs_meas;
+  Double_t zm_theo = 1.523023*0.01*zm_xs_meas;
+
+  //theory
+  Double_t wm_ewk = 0.534883*0.01*wm_xs_meas;
+  Double_t zm_ewk = 0.813941*0.01*zm_xs_meas;
+
+
+  //sys
+  Double_t we_sys = sqrt(we_bkg*we_bkg+we_theo*we_theo); 
+  Double_t wm_sys = sqrt(wm_bkg*wm_bkg+wm_theo*wm_theo); 
+  //Double_t we_sys = sqrt(we_bkg*we_bkg+we_ewk*we_ewk); 
+  //Double_t wm_sys = sqrt(wm_bkg*wm_bkg+wm_ewk*wm_ewk); 
+  Double_t rw_unc_sys = rw_meas*sqrt(we_sys*we_sys/we_xs_meas/we_xs_meas + wm_sys*wm_sys/wm_xs_meas/wm_xs_meas);
+  Double_t ze_sys = sqrt(ze_bkg*ze_bkg+ze_theo*ze_theo); 
+  Double_t zm_sys = sqrt(zm_bkg*zm_bkg+zm_theo*zm_theo); 
+  //Double_t ze_sys = sqrt(ze_bkg*ze_bkg+ze_ewk*ze_ewk); 
+  //Double_t zm_sys = sqrt(zm_bkg*zm_bkg+zm_ewk*zm_ewk); 
+  Double_t rz_unc_sys = rz_meas*sqrt(ze_sys*ze_sys/ze_xs_meas/ze_xs_meas + zm_sys*zm_sys/zm_xs_meas/zm_xs_meas);
+
+  Double_t rw_unc_lep = rw_meas*sqrt(we_lep*we_lep/we_xs_meas/we_xs_meas + wm_lep*wm_lep/wm_xs_meas/wm_xs_meas);
+  Double_t rz_unc_lep = rz_meas*sqrt(ze_lep*ze_lep/ze_xs_meas/ze_xs_meas + zm_lep*zm_lep/zm_xs_meas/zm_xs_meas);
+
+  //Double_t rw_unc_theo = rw_meas*sqrt(we_theo*we_theo/we_xs_meas/we_xs_meas + wm_lep*wm_lep/wm_xs_meas/wm_xs_meas);
+  //Double_t rz_unc_theo = rz_meas*sqrt(ze_lep*ze_lep/ze_xs_meas/ze_xs_meas + zm_lep*zm_lep/zm_xs_meas/zm_xs_meas);
+
+  
   //lepton reco+id uncertainties
   //Double_t we_lep = 3.2*0.01; Double_t wm_lep = 1.0*0.01;
   //Double_t rw_unc_lep = rw_meas*(we_lep*we_lep+wm_lep*wm_lep);
@@ -64,16 +112,10 @@ void rPlot() {
   //Double_t rz_unc_bkg = rz_meas*(ze_bkg*we_bkg+zm_bkg*wm_bkg);
 
   //statistical
-  Double_t we_stat = 0.15; Double_t wm_stat = 0.09;
-  Double_t rw_unc_stat = rw_meas*(we_stat*we_stat/we_xs_meas/we_xs_meas + wm_stat*wm_stat/wm_xs_meas/wm_xs_meas);
-  Double_t ze_stat = 0.02; Double_t zm_stat = 0.01;
-  Double_t rz_unc_stat = rz_meas*(ze_stat*ze_stat/ze_xs_meas/ze_xs_meas + zm_stat*zm_stat/zm_xs_meas/zm_xs_meas);
-
-  //sys
-  Double_t we_sys = 0.78; Double_t wm_sys = 0.35;
-  Double_t rw_unc_sys = rw_meas*(we_sys*we_sys/we_xs_meas/we_xs_meas + wm_sys*wm_sys/wm_xs_meas/wm_xs_meas);
-  Double_t ze_sys = 0.13; Double_t zm_sys = 0.05;
-  Double_t rz_unc_sys = rz_meas*(ze_sys*ze_sys/ze_xs_meas/ze_xs_meas + zm_sys*zm_sys/zm_xs_meas/zm_xs_meas);
+  Double_t we_stat = 0.124; Double_t wm_stat = 0.082;
+  Double_t rw_unc_stat = rw_meas*sqrt(we_stat*we_stat/we_xs_meas/we_xs_meas + wm_stat*wm_stat/wm_xs_meas/wm_xs_meas);
+  Double_t ze_stat = 0.016; Double_t zm_stat = 0.012;
+  Double_t rz_unc_stat = rz_meas*sqrt(ze_stat*ze_stat/ze_xs_meas/ze_xs_meas + zm_stat*zm_stat/zm_xs_meas/zm_xs_meas);
 
   //theo
   //Double_t we_theo = 2.49; Double_t wm_theo = 0.09;
@@ -92,17 +134,20 @@ void rPlot() {
   //data
   std::vector<Double_t> wUncert;
   std::vector<Double_t> zUncert;
-  wUncert.push_back(0.043); zUncert.push_back(0);
-  wUncert.push_back(0);     zUncert.push_back(0.072);
-  //wUncert.push_back(rw_unc_stat); zUncert.push_back(0);
-  //wUncert.push_back(0);           zUncert.push_back(rz_unc_stat);
-  //wUncert.push_back(rw_unc_sys); zUncert.push_back(0);
-  //wUncert.push_back(0);           zUncert.push_back(rz_unc_sys);
+  //wUncert.push_back(0.043); zUncert.push_back(0);
+  //wUncert.push_back(0);     zUncert.push_back(0.072);
+  wUncert.push_back(rw_unc_stat); zUncert.push_back(0);
+  wUncert.push_back(0);           zUncert.push_back(rz_unc_stat);
+  wUncert.push_back(rw_unc_sys); zUncert.push_back(0);
+  wUncert.push_back(0);           zUncert.push_back(rz_unc_sys);
+  wUncert.push_back(rw_unc_lep);           zUncert.push_back(rz_unc_lep);
+  
+
   //wUncert.push_back(rw_unc_lep); zUncert.push_back(0);
   //wUncert.push_back(0);          zUncert.push_back(rz_unc_lep);
   //wUncert.push_back(rw_unc_bkg); zUncert.push_back(0);
   //wUncert.push_back(0);          zUncert.push_back(rz_unc_bkg);
-  //wUncert.push_back(rw_unc_theo); zUncert.push_back(0);
+  //wUncert.push_back(rw_unc_theo); zUncert.push_back(rz_unc_theo);
   //wUncert.push_back(0);          zUncert.push_back(rz_unc_theo);
 
   Double_t x_xs=rw_meas; Double_t y_xs=rz_meas;
@@ -146,8 +191,8 @@ void rPlot() {
   l->SetTextFont(42);
   l->SetTextSize(0.04);
 
-  Double_t xmin=0.85 + 0.001, xmax=1.1 -0.001;
-  Double_t ymin=0.85 + 0.001, ymax=1.1 -0.001;
+  Double_t xmin=0.90 + 0.001, xmax=1.04 -0.001;
+  Double_t ymin=0.92 + 0.001, ymax=1.08 -0.001;
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
@@ -157,8 +202,8 @@ void rPlot() {
   Float_t gridY[] = { 0.90,.95,1.00,1.05 };
 
   TH2D *axis = new TH2D("axis","",1000,xmin,xmax,1000,ymin,ymax);
-  axis->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow e#nu)/#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)");
-  axis->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow ee)/#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)");
+  axis->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)/#sigma^{tot}_{W}xBR(W#rightarrow e#nu)");
+  axis->GetYaxis()->SetTitle("#sigma^{tot}_{Z}xBR(Z#rightarrow #mu#mu)/#sigma^{tot}_{Z}xBR(Z#rightarrow ee)");
   axis->GetXaxis()->SetLimits(xmin,xmax);
   axis->GetYaxis()->SetRangeUser(ymin,ymax);
 
@@ -172,7 +217,7 @@ void rPlot() {
   axis->GetYaxis()->SetNdivisions(505);
   axis->Draw("AXIS");
 
-  for(unsigned i=0;i< sizeof(gridX)/sizeof(Float_t) ;++i)
+  /*for(unsigned i=0;i< sizeof(gridX)/sizeof(Float_t) ;++i)
   {
  	TLine *l = new TLine(  gridX[i], ymin, gridX[i] ,ymax);
 	l->SetLineColor(kGray);
@@ -188,7 +233,7 @@ void rPlot() {
 	l->SetLineStyle(3);
 	l->SetLineWidth(1);
 	l->Draw("L SAME");
-  }
+	}*/
 
   nom->SetTitle("");
   //nom->GetXaxis()->SetTitle("#sigma^{tot}_{W}xBR(W#rightarrow e#nu)/#sigma^{tot}_{W}xBR(W#rightarrow #mu#nu)");
@@ -198,24 +243,39 @@ void rPlot() {
   //nom->GetYaxis()->SetRangeUser(xmin,xmax);
   //
   // CMS
-  TLatex *cms=new TLatex();
-  cms->SetNDC();
-  cms->SetTextFont(42);
-  cms->SetTextSize(0.05);
-  cms->SetTextAlign(13);
-  //cms->DrawLatex(0.20,.9,"#bf{CMS},#scale[0.75]{ #it{Preliminary}}"); // one-line
-  cms->DrawLatex(0.20,.9,"#splitline{#bf{CMS}}{#scale[0.7]{#it{Preliminary}}}"); // two-lines
+  char lumitxt[150];
+  sprintf(lumitxt,"#scale[0.75]{%i pb^{-1} (13 TeV)}", 43);
+  //sprintf(lumitxt,"#bf{%i pb^{-1} (13 TeV)}", 43);
+  TPaveText *lumi = new TPaveText(0.65,0.93,0.97,0.99,"NDC");
+  lumi->SetFillStyle(0); lumi->SetShadowColor(0); lumi->SetLineColor(0);
+  //lumi->SetTextFont(62);
+  lumi->AddText(lumitxt);
+  TPaveText *prelim = new TPaveText(0.205,0.80,0.465,0.88,"NDC");
+  prelim->SetFillStyle(0); prelim->SetShadowColor(0); prelim->SetLineColor(0);
+  //prelim->SetTextFont(62);
+  prelim->AddText("CMS #scale[0.75]{#bf{#it{Preliminary}}}");
+  lumi->Draw();
+  prelim->Draw();
 
-  cms->SetTextSize(0.03);
-  cms->SetTextAlign(31);
-  cms->DrawLatex(.95,.93,"42 pb^{-1} (13 TeV)");
+
+  //TLatex *cms=new TLatex();
+  //cms->SetNDC();
+  //cms->SetTextFont(42);
+  //cms->SetTextSize(0.05);
+  //cms->SetTextAlign(13);
+  //cms->DrawLatex(0.20,.9,"#bf{CMS},#scale[0.75]{ #it{Preliminary}}"); // one-line
+  //cms->DrawLatex(0.20,.9,"#bf{CMS} {#scale[0.75]{#it{Preliminary}}}"); // two-lines
+
+  //cms->SetTextSize(0.03);
+  //cms->SetTextAlign(31);
+  //cms->DrawLatex(.95,.93,"43 pb^{-1} (13 TeV)");
 
   //pdg
-  TBox *b1 = new TBox(xmin,0.9991-0.0024,xmax,0.9991+0.0024);
+  TBox *b1 = new TBox(xmin,1.0009-0.0028,xmax,1.0009+0.0028);
   b1->SetFillColor(kGreen-7);
   b1->SetLineColor(kGreen+2);
   b1->SetLineWidth(2);
-  TLine *l1 = new TLine(xmin,0.9991,xmax,0.9991);
+  TLine *l1 = new TLine(xmin,1.0009,xmax,1.0009);
   l1->SetLineWidth(2);
   l1->SetLineColor(kGreen+2);
 
@@ -224,12 +284,12 @@ void rPlot() {
   TColor *mylightblue = new TColor(2350,  145./255, 212./255.,254./255.);
   TColor *mydarkblue = new TColor(2351, 0, 147./255., 250./255.);
 
-  TBox *b2 = new TBox(1.0075-0.0207,ymin,1.0075+0.0207,ymax);
+  TBox *b2 = new TBox(0.993-0.019,ymin,0.993+0.019,ymax);
   b2->SetFillColor( 2350 );
   b2->SetLineColor( 2351 );
   b2->SetLineWidth(2);
 
-  TLine *l2 = new TLine(1.0075,ymin,1.0075,ymax);
+  TLine *l2 = new TLine(0.993,ymin,0.993,ymax);
   l2->SetLineWidth(2);
   l2->SetLineColor(2351);
 

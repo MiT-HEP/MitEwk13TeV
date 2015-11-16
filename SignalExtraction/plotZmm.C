@@ -55,7 +55,8 @@ void plotZmm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  //fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_final_read/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/zmm_select.raw.root");   typev.push_back(eZmm);
   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_app4/Zmumu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
@@ -413,7 +414,12 @@ void plotZmm(const TString  outputDir,   // output directory
   } 
 
   hZmm->Scale((hData->Integral()-hEWK->Integral())/hZmm->Integral());
-
+  hMC->Scale(hData->Integral()/hMC->Integral());
+  std::cout << hData->Integral() << std::endl;
+  std::cout << hMC->Integral() << std::endl;
+  std::cout << hZmm->Integral() << std::endl;
+  std::cout << hEWK->Integral() << std::endl;
+    
   TH1D *hZmumuDiff = makeDiffHist(hData,hMC,"hZmumuDiff");
   hZmumuDiff->SetMarkerStyle(kFullCircle); 
   hZmumuDiff->SetMarkerSize(0.9);
@@ -427,8 +433,7 @@ void plotZmm(const TString  outputDir,   // output directory
   
   // label for lumi
   char lumitext[100];
-  if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);  
+  sprintf(lumitext,"%.0f pb^{-1}  (13 TeV)",lumi);  
   
   // plot colors
   Int_t linecolorZ   = kOrange-3;
@@ -458,19 +463,21 @@ void plotZmm(const TString  outputDir,   // output directory
   //
   // MuMu2HLT + MuMu1HLT categories
   //   
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hData->GetBinWidth(1));
+  sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
   CPlot plotZmumu("zmm","","",ylabel);
   plotZmumu.AddHist1D(hData,"data","E");
   plotZmumu.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
   //plotZmumu.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
   //plotZmumu.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
-  plotZmumu.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
-  plotZmumu.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);
+  //plotZmumu.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.62,0.80,0.88,0.88,0);
+  plotZmumu.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  //plotZmumu.AddTextBox("CMS Preliminary",0.555,0.80,0.905,0.86,0);
+  plotZmumu.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   plotZmumu.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
   plotZmumu.TransLegend(-0.35,-0.15);
   plotZmumu.Draw(c,kFALSE,format,1);
 
-  CPlot plotZmumuDiff("zmm","","M(#mu^{+}#mu^{-}) [GeV/c^{2}]","#frac{Data-Pred}{Data}");
+  CPlot plotZmumuDiff("zmm","","M(#mu^{+}#mu^{-}) [GeV]","#frac{Data-Pred}{Data}");
   plotZmumuDiff.AddHist1D(hZmumuDiff,"EX0",ratioColor);
   plotZmumuDiff.SetYRange(-0.2,0.2);
   plotZmumuDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
@@ -480,13 +487,15 @@ void plotZmm(const TString  outputDir,   // output directory
   
   CPlot plotZmumu2("zmmlog","","",ylabel);
   plotZmumu2.AddHist1D(hData,"data","E");
-  plotZmumu2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  plotZmumu2.AddToStack(hEWK,"EWK+t#bar{t}",fillcolorEWK,linecolorEWK);
   plotZmumu2.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumu2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZmumu2.SetName("zmmlog");
-  plotZmumu2.AddTextBox("CMS Preliminary",0.55,0.80,0.90,0.86,0);
+  plotZmumu2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumu2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  //plotZmumu2.AddTextBox(lumitext,0.60,0.91,0.92,0.98,0);plotZmumu2.SetName("zmmlog");
+  //plotZmumu2.AddTextBox("CMS Preliminary",0.555,0.80,0.905,0.86,0);
   plotZmumu2.SetLogy();
   plotZmumu2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
-  plotZmumu2.TransLegend(-0.35,-0.15);
+  plotZmumu2.TransLegend(-0.395,-0.15);
   plotZmumu2.Draw(c,kTRUE,format,1);
 
   //--------------------------------------------------------------------------------------------------------------

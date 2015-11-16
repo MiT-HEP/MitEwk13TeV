@@ -1,5 +1,0 @@
-#Channel     Quantities...
-#            r           Nz_init     effGsf      effHLT      effSel      yield(EWK)
-Zee          1.52846     4793.8      0.96705     0.99901     0.82415     4789.884
-#            r           Nz_init     effHLT      effSel      effSta      effTrk      yield(EWK)
-Zmm          1.40249     5488.1      0.87293     0.92146     0.97737     0.99781     5917.081

@@ -66,12 +66,12 @@ void acceptGenZ_HORACE(TString input="/afs/cern.ch/work/j/jlawhorn/public/HORACE
   chain.SetBranchAddress("genV_pt",    &genV_pt);
   chain.SetBranchAddress("genV_eta",   &genV_eta);
   chain.SetBranchAddress("genV_phi",   &genV_phi);
-  chain.SetBranchAddress("genV_m",     &genV_m);
+  chain.SetBranchAddress("genVf_m",     &genV_m);
   chain.SetBranchAddress("genV_id",    &genV_id);
   chain.SetBranchAddress("genVf_pt",   &genVf_pt);
   chain.SetBranchAddress("genVf_eta",  &genVf_eta);
   chain.SetBranchAddress("genVf_phi",  &genVf_phi);
-  chain.SetBranchAddress("genVf_m",    &genVf_m);
+  chain.SetBranchAddress("genV_m",    &genVf_m);
   chain.SetBranchAddress("genL1_pt",   &genL1_pt);
   chain.SetBranchAddress("genL1_eta",  &genL1_eta);
   chain.SetBranchAddress("genL1_phi",  &genL1_phi);
@@ -154,11 +154,11 @@ void acceptGenZ_HORACE(TString input="/afs/cern.ch/work/j/jlawhorn/public/HORACE
   cout << "------------" << endl;
   Double_t acc=(dPreBB->Integral()+dPreBE->Integral()+dPreEE->Integral())/(dTot->Integral());
   
-  cout << "Pre-FSR acceptance: " << dPreBB->Integral() + dPreBE->Integral() + dPreEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
+  cout << "Pre-FSR acceptance: " << dPreBB->Integral() + dPreBE->Integral() + dPreEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1+acc)/dTot->GetEntries()) << endl;
   
   acc=(dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral())/(dTot->Integral());
   
-  cout << "Post-FSR acceptance: " << dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1-acc)/dTot->GetEntries()) << endl;
+  cout << "Post-FSR acceptance: " << dPostBB->Integral()+dPostBE->Integral()+dPostEE->Integral() << " / " << dTot->Integral() << " = " << acc << " +/- " << sqrt(acc*(1+acc)/dTot->GetEntries()) << endl;
   
 }
 
@@ -214,8 +214,8 @@ Bool_t isProc(Int_t proc, Double_t genV_id, Double_t genV_m, Double_t genL1_id, 
     else return kFALSE;
   }
   else if (proc==zmm) {
-    //if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>60 && genV_m<120) return kTRUE;
-    if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>55 && genV_m<125) return kTRUE;
+    if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>60 && genV_m<120) return kTRUE;
+    //if (fabs(genL1_id)==13 && fabs(genL2_id)==13 && genV_m>55 && genV_m<125) return kTRUE;
     //if (fabs(genL1_id)==13 && fabs(genL2_id)==13) return kTRUE;
     else return kFALSE;
   }
