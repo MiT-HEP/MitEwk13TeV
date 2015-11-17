@@ -76,9 +76,9 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
   const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
   
-  const TString dataGsfSelEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
-  const TString dataGsfSelEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+  const TString dataGsfSelEffName     = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
+  const TString dataGsfSelEffName_pos = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
+  const TString dataGsfSelEffName_neg = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
 
   const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";

@@ -73,21 +73,21 @@ void computeAccSelWe(const TString conf,       // input file
   // efficiency files
   TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
   TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root");
-  TString dataGsfSelEffName("/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root");
+  TString dataGsfSelEffName("/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root");
   TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
   if(charge==1) {
     dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
     zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    dataGsfSelEffName = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
     zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
   if(charge==-1) {
     dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
     zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleGsfSelEff/eff.root";
+    dataGsfSelEffName = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
     zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   }
-  
+ 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
