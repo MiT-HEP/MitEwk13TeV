@@ -1,5 +1,3 @@
-MitEwk/README.txt - Jay Lawhorn 5/25/15
-
 ------| INTRODUCTION |------
 
 This folder contains the various modules needed to go from BACON ntuples to W/Z production cross section measurements. 
@@ -40,14 +38,3 @@ Summary Plots:	     signal yields	-> cross sections and plots
 
 The Tools folder contains a number of useful macros I needed along the way including ones for merging root files, merging and doing simple logic with json files, etc. I also used tools available at https://twiki.cern.ch/twiki/bin/viewauth/CMS/LumiCalc from the official CMS Luminosity calculation tools.
 
------| SETUP INFO |------
-
-Only relevant on MIT TIER 3, and also currently outdated.
-
-Commands to execute on start up for each terminal (or add to your ~/.bashrc):
-
-export SCRAM_ARCH=slc5_amd64_gcc462
-export VO_CMS_SW_DIR=/server/02a/cmsprod/cmssoft
-source /home/cmsprod/cmssoft/cmsset_default.sh
-cd (this directory)
-cmsenv
