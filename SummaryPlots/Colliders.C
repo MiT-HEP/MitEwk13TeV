@@ -61,14 +61,14 @@ void Colliders()
   pad1_->cd();
 
   // prepare histogram for Michael's plot
-  TH2* _hist1 = new TH2F("bidon","bidon",100,0.3,30,100,0.03,30);
+  TH2* _hist1 = new TH2F("bidon","bidon",100,0.3,40,100,30,50000);
   TAxis* _ax1 = _hist1->GetXaxis();
   TAxis* _ay1 = _hist1->GetYaxis();
   _ax1->SetLabelOffset(99);
   _ax1->SetTitleSize(0.06);
   _ax1->SetTitleOffset(1.0);
   _ax1->SetTitle("Center-of-mass energy [TeV]");
-  _ay1->SetTitle("#sigma #times B [nb]");
+  _ay1->SetTitle("#sigma #times B [pb]");
   _ay1->SetTitleSize(0.060);
   _ay1->SetTitleOffset(0.9);
   _ay1->SetLabelSize(0.055);
@@ -81,7 +81,7 @@ void Colliders()
   // draw axis labels
   float xlab_ = 40;
   float ylab_ = 60;
-  float ytxt_ = 0.027;
+  float ytxt_ = 27;
   txt_->SetTextAngle(0);
   txt_->SetTextAlign(23);
   txt_->SetTextFont(42);
@@ -100,17 +100,22 @@ void Colliders()
   txt_->SetText(energy,ytxt_,Form("%-1.0f",energy)); txt_->DrawClone();
   energy = 20;
   txt_->SetText(energy,ytxt_,Form("%-2.0f",energy)); txt_->DrawClone();
-  energy = 16;
+  energy = 22;
 
   // plot the particle 
   txt_->SetTextAngle(0);
   txt_->SetTextAlign(12);
   txt_->SetTextFont(42);
   txt_->SetTextSize( 40*scale1_ );
-  txt_->SetText(energy,22,"W");     txt_->DrawClone();
-  txt_->SetText(energy,14,"W^{+}"); txt_->DrawClone();
-  txt_->SetText(energy,9,"W^{-}");  txt_->DrawClone();
-  txt_->SetText(energy,2.2,"Z");    txt_->DrawClone();
+  //txt_->SetText(energy,22,"W");     txt_->DrawClone();
+  //txt_->SetText(energy,14,"W^{+}"); txt_->DrawClone();
+  //txt_->SetText(energy,9,"W^{-}");  txt_->DrawClone();
+  //txt_->SetText(energy,2.2,"Z");    txt_->DrawClone();
+
+  txt_->SetText(energy,31000,"W");     txt_->DrawClone();
+  txt_->SetText(energy,20000,"W^{+}"); txt_->DrawClone();
+  txt_->SetText(energy,13000,"W^{-}");  txt_->DrawClone();
+  txt_->SetText(energy,3000,"Z");    txt_->DrawClone();
 
   //
   //  abLabel( "(a)", 0.60, 0.18, 0.05 );
@@ -153,39 +158,45 @@ plotMichael()
   double syst = 0.;
   double lum  = 0.;
   double theo = 0.;
-  double lum_unc = 0.026;
+  //double lum_unc = 0.026;
+  double lum_unc = 0.12;
 
   rts[0] = 13.;
   //
   ex[0] = 0.001;
-  csW[0] = 12230.*1.68;
+  //csW[0] = 12230.*1.68;
+  csW[0] = 19947.;
   stat   =  30.;
   syst   =  220.;
   theo   =  0.; 
   lum    = lum_unc * csW[0];
   errW[0] = 0;//sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
   //
-  csZ[0] = 1150.0*1.68;
+  //csZ[0] = 1150.0*1.68;
+  csZ[0] = 1907.;
   stat =    10.;
   syst =    20.;
   theo =    0.;  
   lum  = lum_unc * csZ[0];
   errZ[0] = 0;//sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
   //
-  RWZ[0] = 10.65;
+  //RWZ[0] = 10.65;
+  RWZ[0] = 10.464;
   stat = 0.11;
   syst = 0.23;
   theo =  0.00;  
   errR[0] = 0;//sqrt( stat*stat + syst*syst + theo*theo);
   //
-  csWP[0] = 7120.*1.68;
+  //csWP[0] = 7120.*1.68;
+  csWP[0] = 11371.0;
   stat =  20.;
   syst =  140.;
   theo =  0.;  
   lum  = lum_unc * csWP[0];
   errWP[0] = 0;//sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
   //
-  csWN[0] = 5100.*1.68;
+  //csWN[0] = 5100.*1.68;
+  csWN[0] = 8582.0;
   stat =  20.;
   syst =  110.;
   theo =  0.;  
@@ -193,14 +204,14 @@ plotMichael()
   errWN[0] = 0;//sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWCMS13 = new TGraphErrors(n,rts,csW,ex,errW);
   grWCMS13->SetTitle("CMS W");
@@ -276,14 +287,14 @@ plotMichael()
   errWN[0] = 0;//sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  // csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWCMS8 = new TGraphErrors(n,rts,csW,ex,errW);
   grWCMS8->SetTitle("CMS W");
@@ -361,14 +372,14 @@ plotMichael()
   errWN[0] = 0.; //sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWCMS = new TGraphErrors(n,rts,csW,ex,errW);
   grWCMS->SetTitle("CMS W");
@@ -440,14 +451,14 @@ plotMichael()
   errWN[0] = sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWATLAS = new TGraphErrors(n,rts,csW,ex,errW);
   grWATLAS->SetTitle("ATLAS W");
@@ -499,10 +510,10 @@ plotMichael()
   errWN[0] = sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWPPHENIX = new TGraphErrors(n,rts,csWP,ex,errWP);
   grWPPHENIX->SetTitle("PHENIX WP");
@@ -540,10 +551,10 @@ plotMichael()
   errR[0] = sqrt( stat*stat + syst*syst);
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
 
   grWCDF = new TGraphErrors(n,rts,csW,ex,errW);
   grWCDF->SetTitle("CDF II W");
@@ -582,10 +593,10 @@ plotMichael()
   errR[0] = sqrt( stat*stat + syst*syst);
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
 
   grWD0 = new TGraphErrors(n,rts,csW,ex,errW);
   grWD0->SetTitle("D0 I W");
@@ -624,10 +635,10 @@ plotMichael()
   errR[0] = sqrt( stat*stat + syst*syst);
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
 
   grWUA2 = new TGraphErrors(n,rts,csW,ex,errW);
   grWUA2->SetTitle("UA2 W");
@@ -667,10 +678,10 @@ plotMichael()
   errR[0] = sqrt( stat*stat + syst*syst);
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
 
   grWUA1 = new TGraphErrors(n,rts,csW,ex,errW);
   grWUA1->SetTitle("UA1 W");
@@ -745,69 +756,69 @@ Energy              Z                                 W-                        
   ecmTHb[3] = 1.4;
   ecmTHb[4] = 3.;
 
-  sigmaZTHb[0] = 45868.10 ; // + 1647.86 - 1138.33       
-  sigmaWPTHb[0] = 235396.01; //  + 8221.80 - 6494.89     
-  sigmaWMTHb[0] = 235547.50; //  + 7810.82 - 7008.10 
+  sigmaZTHb[0] = 1000.*0.049 ; // + 1647.86 - 1138.33       
+  sigmaWTHb[0] = 1000.*0.509; //  + 8221.80 - 6494.89     
+  //sigmaWMTHb[0] = 235547.50; //  + 7810.82 - 7008.10 
 
-  sigmaZTHb[1] = 77325.39 ; // + 2489.40 - 1832.86       
-  sigmaWPTHb[1] = 398429.20; //  + 12360.64 - 9678.81    
-  sigmaWMTHb[1] = 398399.97; //  + 12183.04 - 9649.49
+  sigmaZTHb[1] = 1000.*0.0813 ; // + 2489.40 - 1832.86       
+  sigmaWTHb[1] = 1000.*0.839; //  + 12360.64 - 9678.81    
+  //sigmaWMTHb[1] = 398399.97; //  + 12183.04 - 9649.49
 
-  sigmaZTHb[2] = 119953.55; //  + 3351.49 - 2753.88      
-  sigmaWPTHb[2] = 626677.43; //  + 16986.85 - 12963.71   
-  sigmaWMTHb[2] = 627224.15; //  + 15250.08 - 14680.24
+  sigmaZTHb[2] = 1000.*0.123; //  + 3351.49 - 2753.88      
+  sigmaWTHb[2] = 1000.*1.29; //  + 16986.85 - 12963.71   
+  //sigmaWMTHb[2] = 627224.15; //  + 15250.08 - 14680.24
 
-  sigmaZTHb[3] = 173615.31; //  + 4141.43 - 3621.40      
-  sigmaWPTHb[3] = 919368.68; //  + 20593.77 - 17527.57   
-  sigmaWMTHb[3] = 919645.06; //  + 19653.62 - 18071.74
+  sigmaZTHb[3] = 1000.*0.176; //  + 4141.43 - 3621.40      
+  sigmaWTHb[3] = 1000.*1.87; //  + 20593.77 - 17527.57   
+  //sigmaWMTHb[3] = 919645.06; //  + 19653.62 - 18071.74
 
-  sigmaZTHb[4] = 392940.24; //  + 8029.79 - 5916.10      
-  sigmaWPTHb[4] = 2104471.95; // + 40384.46 - 33948.49  
-  sigmaWMTHb[4] = 2103337.73; // + 44050.51 - 29759.76
-
-
-  sigmaZTHb_U[0]  =   sigmaZTHb[0]  + 1647.86 ; 
-  sigmaWPTHb_U[0] =   sigmaWPTHb[0] + 8221.80 ;
-  sigmaWMTHb_U[0] =   sigmaWMTHb[0] + 7810.82 ;
-
-  sigmaZTHb_U[1]  =   sigmaZTHb[1] + 2489.40 ;
-  sigmaWPTHb_U[1] =   sigmaWPTHb[1] + 12360.64 ;
-  sigmaWMTHb_U[1] =   sigmaWMTHb[1] + 12183.04 ;
-
-  sigmaZTHb_U[2]  =   sigmaZTHb[2] + 3351.49 ;
-  sigmaWPTHb_U[2] =   sigmaWPTHb[2] + 16986.85 ;
-  sigmaWMTHb_U[2] =   sigmaWMTHb[2] + 15250.08 ;
-
-  sigmaZTHb_U[3]  =   sigmaZTHb[3] + 4141.43 ;
-  sigmaWPTHb_U[3] =   sigmaWPTHb[3] + 20593.77 ;
-  sigmaWMTHb_U[3] =   sigmaWMTHb[3] + 19653.62 ;
-
-  sigmaZTHb_U[4]  =   sigmaZTHb[4] + 8029.79 ;
-  sigmaWPTHb_U[4] =   sigmaWPTHb[4] + 40384.46 ;
-  sigmaWMTHb_U[4] =   sigmaWMTHb[4] + 44050.51 ;
+  sigmaZTHb[4] = 1000.*0.393; //  + 8029.79 - 5916.10      
+  sigmaWTHb[4] = 1000.*4.27; // + 40384.46 - 33948.49  
+  //sigmaWMTHb[4] = 2103337.73; // + 44050.51 - 29759.76
 
 
+  sigmaZTHb_U[0]  =   sigmaZTHb[0]  + (0.0013/2.) ; 
+  sigmaWTHb_U[0] =   sigmaWTHb[0] +  (0.015/2.);
+  //sigmaWMTHb_U[0] =   sigmaWMTHb[0] + 7810.82 ;
 
-  sigmaZTHb_L[0]  =   sigmaZTHb[0]  - 1138.33       ;
-  sigmaWPTHb_L[0] =   sigmaWPTHb[0] - 6494.89     ;
-  sigmaWMTHb_L[0] =   sigmaWMTHb[0] - 7008.10 ;
+  sigmaZTHb_U[1]  =   sigmaZTHb[1] + (0.0020/2.) ;
+  sigmaWTHb_U[1] =   sigmaWTHb[1] + (0.023/2.) ;
+  //sigmaWMTHb_U[1] =   sigmaWMTHb[1] + 12183.04 ;
 
-  sigmaZTHb_L[1]  =   sigmaZTHb[1]  - 1832.86       ;
-  sigmaWPTHb_L[1] =   sigmaWPTHb[1] - 9678.81    ;
-  sigmaWMTHb_L[1] =   sigmaWMTHb[1] - 9649.49;
+  sigmaZTHb_U[2]  =   sigmaZTHb[2] + (0.003/2.) ;
+  sigmaWTHb_U[2] =   sigmaWTHb[2] + (0.03/2.) ;
+  //sigmaWMTHb_U[2] =   sigmaWMTHb[2] + 15250.08 ;
 
-  sigmaZTHb_L[2]  =   sigmaZTHb[2]  - 2753.88      ;
-  sigmaWPTHb_L[2] =   sigmaWPTHb[2] - 12963.71   ;
-  sigmaWMTHb_L[2] =   sigmaWMTHb[2] - 14680.24;
+  sigmaZTHb_U[3]  =   sigmaZTHb[3] + (0.004/2.) ;
+  sigmaWTHb_U[3] =   sigmaWTHb[3] + (0.04/2.) ;
+  //sigmaWMTHb_U[3] =   sigmaWMTHb[3] + 19653.62 ;
 
-  sigmaZTHb_L[3]  =   sigmaZTHb[3]  - 3621.40      ;
-  sigmaWPTHb_L[3] =   sigmaWPTHb[3] - 17527.57   ;
-  sigmaWMTHb_L[3] =   sigmaWMTHb[3] - 18071.74;
+  sigmaZTHb_U[4]  =   sigmaZTHb[4] + (0.008/2.) ;
+  sigmaWTHb_U[4] =   sigmaWTHb[4] + (0.09/2.) ;
+  //sigmaWMTHb_U[4] =   sigmaWMTHb[4] + 44050.51 ;
 
-  sigmaZTHb_L[4]  =   sigmaZTHb[4]  - 5916.10      ;
-  sigmaWPTHb_L[4] =   sigmaWPTHb[4] - 33948.49  ;
-  sigmaWMTHb_L[4] =   sigmaWMTHb[4] - 29759.76;
 
+
+  sigmaZTHb_L[0]  =   sigmaZTHb[0]  - (0.0013/2.)       ;
+  sigmaWTHb_L[0] =   sigmaWTHb[0] - (0.015/2.)     ;
+  //sigmaWMTHb_L[0] =   sigmaWMTHb[0] - 7008.10 ;
+
+  sigmaZTHb_L[1]  =   sigmaZTHb[1]  - (0.0020/2.)       ;
+  sigmaWTHb_L[1] =   sigmaWTHb[1] - (0.023/2.)    ;
+  //sigmaWMTHb_L[1] =   sigmaWMTHb[1] - 9649.49;
+
+  sigmaZTHb_L[2]  =   sigmaZTHb[2]  -  (0.003/2.)     ;
+  sigmaWTHb_L[2] =   sigmaWTHb[2] -   (0.03/2.) ;
+  //sigmaWMTHb_L[2] =   sigmaWMTHb[2] - 14680.24;
+
+  sigmaZTHb_L[3]  =   sigmaZTHb[3]  -  (0.004/2.)     ;
+  sigmaWTHb_L[3] =   sigmaWTHb[3] -   (0.04/2.) ;
+  //sigmaWMTHb_L[3] =   sigmaWMTHb[3] - 18071.74;
+
+  sigmaZTHb_L[4]  =   sigmaZTHb[4]  -   (0.008/2.)    ;
+  sigmaWTHb_L[4] =   sigmaWTHb[4] -   (0.09/2.) ;
+  //sigmaWMTHb_L[4] =   sigmaWMTHb[4] - 29759.76;
+  /*
   for (int i=0; i<5; i++) {
     sigmaZTHb[i]  /= 1000000.;
     sigmaWPTHb[i] /= 1000000.;
@@ -818,49 +829,62 @@ Energy              Z                                 W-                        
     sigmaZTHb_U[i] /= 1000000.;
     sigmaWTHb_U[i] = (sigmaWPTHb_U[i]+sigmaWMTHb_U[i]) / 1000.;
   }
-
-  Double_t ecmTH[6];
-  Double_t sigmaZTH[6];
-  Double_t sigmaWTH[6];
-  Double_t sigmaWPTH[6];
-  Double_t sigmaWMTH[6];
+  */
+  Double_t ecmTH[8];
+  Double_t sigmaZTH[8];
+  Double_t sigmaWTH[8];
+  Double_t sigmaWPTH[8];
+  Double_t sigmaWMTH[8];
 
   ecmTH[0] = 3.;
   ecmTH[1] = 5.;
   ecmTH[2] = 7.;
-  //ecmTH[3] = 8.;
-  ecmTH[3] = 10.;
-  ecmTH[4] = 14.;
+  ecmTH[3] = 8.;
+  ecmTH[4] = 10.;
+  ecmTH[5] = 13.;
+  ecmTH[6] = 14.;
+  ecmTH[7] = 20.;
 
-  sigmaZTH[0] = 338131.34 ;
-  sigmaZTH[1] = 640346.62 ;
-  sigmaZTH[2] = 949277.02 ;
-  //sigmaZTH[3] = 1300000.00 ;
-  sigmaZTH[3] = 1416441.13 ;
-  sigmaZTH[4] = 2037515.51 ;
+  sigmaZTH[0] = 1000.*0.338 ;
+  sigmaZTH[1] = 1000.*0.639 ;
+  sigmaZTH[2] = 1000.*0.946 ;
+  sigmaZTH[3] = 1000.*1.10 ;
+  sigmaZTH[4] = 1000.*1.41 ;
+  sigmaZTH[5] = 1000.*1.87 ;
+  sigmaZTH[6] = 1000.*2.02;
+  sigmaZTH[7] = 1000.*2.92 ;
 
-  sigmaWMTH[0] = 1443365.36 ; // + 32699.45 - 28515.93   
-  sigmaWPTH[0] = 2322984.02 ; // + 52428.03 - 37592.27
+  sigmaWMTH[0] = 1000.*1.45 ; // + 32699.45 - 28515.93   
+  sigmaWPTH[0] = 1000.*2.39 ; // + 52428.03 - 37592.27
 
-  sigmaWMTH[1] = 2791283.06 ; // + 62491.67 - 49378.95   
-  sigmaWPTH[1] = 4138688.76 ; // + 89912.67 - 66157.58
+  sigmaWMTH[1] = 1000.*2.81 ; // + 62491.67 - 49378.95   
+  sigmaWPTH[1] = 1000.*4.25 ; // + 89912.67 - 66157.58
 
-  sigmaWMTH[2] = 4180328.21 ; // + 84106.48 - 70776.93   
-  sigmaWPTH[2] = 5935443.82 ; // + 125116.95 - 97107.21
+  sigmaWMTH[2] = 1000.*4.19 ; // + 84106.48 - 70776.93   
+  sigmaWPTH[2] = 1000.*6.07 ; // + 125116.95 - 97107.21
 
   //sigmaWMTH[3] = 5180000.00 ; // + 84106.48 - 70776.93   
   //sigmaWPTH[3] = 7320000.00 ; // + 125116.95 - 97107.21
 
-  sigmaWMTH[3] = 6280739.78 ; // + 115056.96 - 111296.06 
-  sigmaWPTH[3] = 8579164.86 ; // + 165284.75 - 149423.39
+  sigmaWMTH[3] = 1000.*4.89 ; // + 115056.96 - 111296.06 
+  sigmaWPTH[3] = 1000.*6.96 ; // + 165284.75 - 149423.39
 
-  sigmaWMTH[4] = 9062406.16 ; // + 183981.50 - 152528.91 
-  sigmaWPTH[4] = 11986835.4 ; // + 254025.44 - 194849
+  sigmaWMTH[4] = 1000.*6.29 ; // + 183981.50 - 152528.91 
+  sigmaWPTH[4] = 1000.*8.73 ; // + 254025.44 - 194849
 
-  for (int i=0; i<5; i++) {
-    sigmaZTH[i]  /= 1000000.;
-    sigmaWPTH[i] /= 1000000.;
-    sigmaWMTH[i] /= 1000000.;
+  sigmaWMTH[5] =  1000.*8.37; // + 183981.50 - 152528.91 
+  sigmaWPTH[5] = 1000.*11.33 ; // + 254025.44 - 194849
+
+  sigmaWMTH[6] = 1000.*9.06 ; // + 183981.50 - 152528.91 
+  sigmaWPTH[6] = 1000.*12.17 ; // + 254025.44 - 194849
+
+  sigmaWMTH[7] = 1000.*13.15 ; // + 183981.50 - 152528.91 
+  sigmaWPTH[7] = 1000.*17.18 ; // + 254025.44 - 194849
+
+  for (int i=0; i<8; i++) {
+    //sigmaZTH[i]  /= 1000000.;
+    //sigmaWPTH[i] /= 1000000.;
+    //sigmaWMTH[i] /= 1000000.;
     sigmaWTH[i] = (sigmaWPTH[i]+sigmaWMTH[i]) ;
   }
 
@@ -873,11 +897,11 @@ Energy              Z                                 W-                        
   crvWTHb->SetLineColor(4);
   crvWTHb->SetLineWidth(4);
 
-  crvWPTH = new TGraph(5,ecmTH,sigmaWPTH);
+  crvWPTH = new TGraph(8,ecmTH,sigmaWPTH);
   crvWPTH->SetLineColor(4);
   crvWPTH->SetLineWidth(4);
 
-  crvWMTH = new TGraph(5,ecmTH,sigmaWMTH);
+  crvWMTH = new TGraph(8,ecmTH,sigmaWMTH);
   crvWMTH->SetLineColor(4);
   crvWMTH->SetLineWidth(4);
 
@@ -889,11 +913,11 @@ Energy              Z                                 W-                        
   crvWTHb_U->SetLineColor(3);
   crvWTHb_U->SetLineWidth(4);
 
-  crvZTH = new TGraph(5,ecmTH,sigmaZTH);
+  crvZTH = new TGraph(8,ecmTH,sigmaZTH);
   crvZTH->SetLineColor(4);
   crvZTH->SetLineWidth(4);
 
-  crvWTH = new TGraph(5,ecmTH,sigmaWTH);
+  crvWTH = new TGraph(8,ecmTH,sigmaWTH);
   crvWTH->SetLineColor(4);
   crvWTH->SetLineWidth(4);
 
@@ -931,9 +955,9 @@ Energy              Z                                 W-                        
 
 //   TLegend *legend = new TLegend(0.15,0.6,0.48,0.88);
    TLegend *legend = new TLegend(0.17,0.6,0.50,0.92);
-   legend->AddEntry(grWCMS13, "CMS, 100 pb^{-1}, 13 TeV","p");
-   legend->AddEntry(grWCMS8,  "CMS, 18 pb^{-1}, 8 TeV","p");
-   legend->AddEntry(grWCMS,   "CMS, 36 pb^{-1}, 7 TeV","p");
+   legend->AddEntry(grWCMS13, "CMS Preliminary, 43 pb^{-1} (13 TeV)","p");
+   legend->AddEntry(grWCMS8,  "CMS, 18 pb^{-1} (8 TeV)","p");
+   legend->AddEntry(grWCMS,   "CMS, 36 pb^{-1} (7 TeV)","p");
    if (plotATLAS) {
    legend->AddEntry(grWATLAS,"ATLAS, 0.34 pb^{-1}","p");
    }
@@ -1025,7 +1049,7 @@ Energy              Z                                 W-                        
   Zll->SetBorderSize(0);
   //  Zll->DrawClone();
 
-  TPaveText *Theory = new TPaveText(2.,0.040,24.,0.080);
+  TPaveText *Theory = new TPaveText(2.,40,24.,80);
   //  TPaveText *Theory = new TPaveText(2.,0.10,24.,0.20);
   //  Theory->AddText("Theory: FEWZ and MSTW08 NNLO PDFs");
   Theory->AddText("Theory: NNLO, FEWZ and NNPDF 3.0 PDFs");
@@ -1035,7 +1059,7 @@ Energy              Z                                 W-                        
   Theory->SetBorderSize(0);
   Theory->DrawClone();
 
-  TPaveText *ppbar = new TPaveText(1.,0.280,1.4,0.500);
+  TPaveText *ppbar = new TPaveText(1.,280,1.4,500);
   ppbar->AddText("p#bar{p}");
   ppbar->SetTextAlign(12);
   ppbar->SetFillColor(4000);
@@ -1043,7 +1067,7 @@ Energy              Z                                 W-                        
   ppbar->SetBorderSize(0);
   ppbar->DrawClone();
 
-  TPaveText *pp = new TPaveText(4.,0.900,6.,1.700);
+  TPaveText *pp = new TPaveText(4.,900,6.,1700);
   pp->AddText("pp");
   pp->SetTextAlign(12);
   pp->SetFillColor(4000);
@@ -1135,14 +1159,14 @@ plotGautier()
   errWN[0] = 0.; //sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWCMS = new TGraphErrors(n,rts,csW,ex,errW);
   grWCMS->SetTitle("CMS W");
@@ -1210,14 +1234,14 @@ plotGautier()
   errWN[0] = sqrt( stat*stat + syst*syst + theo*theo + lum*lum );
 
   // convert to nb
-  csZ[0]   /= 1000.;
-  csW[0]   /= 1000.;
-  csWP[0]  /= 1000.;
-  csWN[0]  /= 1000.;
-  errZ[0]  /= 1000.;
-  errW[0]  /= 1000.;
-  errWP[0] /= 1000.;
-  errWN[0] /= 1000.;
+  //csZ[0]   /= 1000.;
+  //csW[0]   /= 1000.;
+  //csWP[0]  /= 1000.;
+  //csWN[0]  /= 1000.;
+  //errZ[0]  /= 1000.;
+  //errW[0]  /= 1000.;
+  //errWP[0] /= 1000.;
+  //errWN[0] /= 1000.;
 
   grWATLAS = new TGraphErrors(n,rts,csW,ex,errW);
   grWATLAS->SetTitle("ATLAS W");
