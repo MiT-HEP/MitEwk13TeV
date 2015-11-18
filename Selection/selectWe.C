@@ -80,8 +80,10 @@ void selectWe(const TString conf="we.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_Golden.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
+  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -112,7 +114,7 @@ void selectWe(const TString conf="we.conf", // input file
   TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
-  Float_t scale1fb, puWeight;
+  Float_t scale1fb, puWeight, puWeightUp, puWeightDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
@@ -189,6 +191,8 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("puWeight",   &puWeight,   "puWeight/F");    // scale factor for pileup reweighting (MC)
+    outTree->Branch("puWeightUp",    &puWeightUp,   "puWeightUp/F");    // scale factor for pileup reweighting (MC)            
+    outTree->Branch("puWeightDown",    &puWeightDown,   "puWeightDown/F");    // scale factor for pileup reweighting (MC)            
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
@@ -467,7 +471,9 @@ void selectWe(const TString conf="we.conf", // input file
 	    gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-	  puWeight = h_rw->GetBinContent(npv+1);
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(npu));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(npu));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(npu));
 	  met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
@@ -530,6 +536,8 @@ void selectWe(const TString conf="we.conf", // input file
     outFile->Close();
   }
   delete h_rw;
+  delete h_rw_up;
+  delete h_rw_down;
   delete f_rw;
   delete info;
   delete gen;
