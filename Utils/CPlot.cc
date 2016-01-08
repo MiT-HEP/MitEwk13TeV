@@ -338,6 +338,21 @@ void CPlot::AddTextBox(TString text, double x1, double y1, double x2, double y2,
   fTextBoxes.push_back(tb);
 }
 
+void CPlot::AddTextBox(TString text, double x1, double y1, double x2, double y2,
+                       int bordersize, int textcolor, double textsize, int fillcolor)
+{
+  TPaveText *tb = new TPaveText(x1,y1,x2,y2,"NDC");
+  tb->SetTextColor(textcolor);
+  if(fillcolor==-1)
+    tb->SetFillStyle(0);
+  else
+    tb->SetFillColor(fillcolor);
+  tb->SetTextSize(textsize);
+  tb->SetBorderSize(bordersize);
+  tb->AddText(text);
+  fTextBoxes.push_back(tb);
+}
+
 void CPlot::AddTextBox(double x1, double y1, double x2, double y2, 
                        int bordersize, int textcolor, int fillcolor, int nlines,...)
 {
