@@ -391,7 +391,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
             vTagSta.SetPtEtaPhiM(tag->staPt,tag->staEta,tag->staPhi,MUON_MASS);
           }
 
-	  sta1        = &vTagSta;
 	  trkIso1     = tag->trkIso;
 	  emIso1      = tag->ecalIso;	    
 	  hadIso1     = tag->hcalIso;
@@ -452,7 +451,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      vProbeSta.SetPtEtaPhiM(probe->staPt,probe->staEta,probe->staPhi,MUON_MASS);
 	  }
 
-	  sta2        = &vProbeSta;
 	  trkIso2     = probe->trkIso;
 	  emIso2      = probe->ecalIso;
 	  hadIso2     = probe->hcalIso;
@@ -609,6 +607,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	lep1     = &vTag;
 	lep2     = &vProbe;
 	dilep    = &vDilep;
+	sta1        = &vTagSta;
+	sta2        = &vProbeSta;
 	
 	TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
 	TVector2 vU = -1.0*(vMet+vZPt);
