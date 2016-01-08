@@ -121,8 +121,7 @@ void plotZmmGen(const TString  conf,            // input file
   
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-  //CPlot::sOutDir = outputDir + TString("/plots");
-
+  
   // setup efficiency shape systematics
   TFile *StaSigSysFile = new TFile(StaEffSignalShapeSys);
   TH2D *hStaSigSys = (TH2D*)StaSigSysFile->Get("h");
