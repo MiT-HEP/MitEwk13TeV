@@ -61,7 +61,7 @@ TGraphAsymmErrors *gUnfold;
 Int_t Train ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1= new TFile("../MitEwk13TeV/Selection/Zmumu/Zmm_UnfoldInputs_ResScale.root");
+  TFile *file1= new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs_ResScale.root");
 
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth = (TH1D*)file1->Get("hPhiStarTruth");
@@ -94,7 +94,7 @@ Int_t Train ()
 Int_t Test ()
 {
   cout <<"==================== TEST ===================="<<endl;
-  TFile *f=new TFile("../MitEwk13TeV/SignalExtraction/Zmumu/Zmm_DataBkg_ResScale.root");
+  TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg_ResScale.root");
   
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData = (TH1D*)f->Get("hDataPhiStar");
