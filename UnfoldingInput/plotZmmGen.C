@@ -41,7 +41,7 @@
 #endif
 
 
-TStopwatch sw_; //PROFILE 
+TStopwatch sw_[10]; //PROFILE 
 
 
 //=== MAIN MACRO ================================================================================================= 
@@ -512,16 +512,16 @@ void plotZmmGen(const TString  conf,            // input file
   // loop over events
   //
   cout<<"Beginning of Loop: nentries"<<intree->GetEntries() << endl;
-  sw_.Start();
+  sw_[0].Start();
 
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
     if ( ientry %10000 == 0 )
       {
-	sw_.Stop();
-	cout<< "Took " <<  sw_ .RealTime() << "s CPU " << sw_ . CpuTime()<< endl;
-	sw_.Reset();
-	sw_.Start();
+	sw_[0].Stop();
+	cout<< "Took " <<  sw_[0] .RealTime() << "s CPU " << sw_[0] . CpuTime()<< endl;
+	sw_[0].Reset();
+	sw_[0].Start();
       }
     TLorentzVector mu1;
     TLorentzVector mu2;
@@ -552,7 +552,6 @@ void plotZmmGen(const TString  conf,            // input file
 	lq2=q1;
       }
 
-     
     Double_t effdata, effmc;
     Double_t corr=1;
     Double_t eff2Bindata, eff2Binmc;
@@ -875,27 +874,26 @@ void plotZmmGen(const TString  conf,            // input file
     dilep->operator+=(l1);
     dilep->operator+=(l2);
 
-    double phiacop=0;
-    double costhetastar=0;
-    double phistar=0;
-
+    float phiacop=0;
+    float costhetastar=0;
+    float phistar=0;
     phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-    if(lq1<0) costhetastar=TMath::TanH((l1.Rapidity()-l2.Rapidity())/2);
-    else costhetastar=TMath::TanH((l2.Rapidity()-l1.Rapidity())/2);
-    phistar=TMath::Tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
-
+    if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+    else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+    phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+    
     TLorentzVector *gendilep=new TLorentzVector(0,0,0,0);
     gendilep->operator+=(*genlep1);
     gendilep->operator+=(*genlep2);
 
-    double genphiacop=0;
-    double gencosthetastar=0;
-    double genphistar=0;
+    float genphiacop=0;
+    float gencosthetastar=0;
+    float genphistar=0;
 
     genphiacop=TMath::Pi()-fabs(genlep1->DeltaPhi(*genlep2));
-    if(genq1<0) gencosthetastar=TMath::TanH((genlep1->Rapidity()-genlep2->Rapidity())/2);
-    else gencosthetastar=TMath::TanH((genlep2->Rapidity()-genlep1->Rapidity())/2);
-    genphistar=TMath::Tan(genphiacop/2)*sqrt(1-pow(gencosthetastar,2));
+    if(genq1<0) gencosthetastar=tanh(float((genlep1->Rapidity()-genlep2->Rapidity())/2));
+    else gencosthetastar=tanh(float((genlep2->Rapidity()-genlep1->Rapidity())/2));
+    genphistar=tan(genphiacop/2)*sqrt(1-pow(gencosthetastar,2));
     
     bool isReco=false;
     bool isGen=false;
@@ -913,6 +911,8 @@ void plotZmmGen(const TString  conf,            // input file
     genweight *= scale1fbGen*lumi;
     Double_t weight = 1;
     weight *=scale1fb*lumi;
+
+    sw_[1].Stop();
 
     if(isReco)
       {

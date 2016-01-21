@@ -33,7 +33,11 @@
 #include <rochcor2015.h>
 #include <muresolution_run2.h>
 
+#include "TStopwatch.h" //PROFILE
+
 #endif
+
+TStopwatch sw_[10]; //PROFILE 
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -307,70 +311,109 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
     cout << "Processing " << fnamev[ifile] << "..." << endl;
     infile = new TFile(fnamev[ifile]);	    assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
+    intree -> SetBranchStatus("*",0);
+    intree -> SetBranchStatus("runNum",1);
+    intree -> SetBranchStatus("lumiSec",1);
+    intree -> SetBranchStatus("evtNum",1);
+    intree -> SetBranchStatus("category",1);
+    intree -> SetBranchStatus("scale1fb",1);
+    intree -> SetBranchStatus("q1",1);
+    intree -> SetBranchStatus("q2",1);
+    intree -> SetBranchStatus("lep1",1);
+    intree -> SetBranchStatus("lep2",1);
 
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
     intree->SetBranchAddress("evtNum",     &evtNum);      // event number
-    intree->SetBranchAddress("matchGen",   &matchGen);    // event has both leptons matched to MC Z->ll
+    //intree->SetBranchAddress("matchGen",   &matchGen);    // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category",   &category);    // dilepton category
-    intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
-    intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
-    intree->SetBranchAddress("genVPt",     &genVPt);      // GEN Z boson pT (signal MC)
-    intree->SetBranchAddress("genVPhi",    &genVPhi);     // GEN Z boson phi (signal MC)
-    intree->SetBranchAddress("genVy",      &genVy);       // GEN Z boson rapidity (signal MC)
-    intree->SetBranchAddress("genVMass",   &genVMass);    // GEN Z boson mass (signal MC)
+    //intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
+    //intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
+    //intree->SetBranchAddress("genVPt",     &genVPt);      // GEN Z boson pT (signal MC)
+    //intree->SetBranchAddress("genVPhi",    &genVPhi);     // GEN Z boson phi (signal MC)
+    //intree->SetBranchAddress("genVy",      &genVy);       // GEN Z boson rapidity (signal MC)
+    //intree->SetBranchAddress("genVMass",   &genVMass);    // GEN Z boson mass (signal MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",        &met);	  // MET
-    intree->SetBranchAddress("metPhi",     &metPhi);      // phi(MET)
-    intree->SetBranchAddress("sumEt",      &sumEt);       // Sum ET
-    intree->SetBranchAddress("u1",         &u1);	  // parallel component of recoil
-    intree->SetBranchAddress("u2",         &u2);	  // perpendicular component of recoil
+    //intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
+    //intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    //intree->SetBranchAddress("met",        &met);	  // MET
+    //intree->SetBranchAddress("metPhi",     &metPhi);      // phi(MET)
+    //intree->SetBranchAddress("sumEt",      &sumEt);       // Sum ET
+    //intree->SetBranchAddress("u1",         &u1);	  // parallel component of recoil
+    //intree->SetBranchAddress("u2",         &u2);	  // perpendicular component of recoil
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
-    intree->SetBranchAddress("dilep",      &dilep);       // dilepton 4-vector
+    //intree->SetBranchAddress("dilep",      &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
-    intree->SetBranchAddress("pfCombIso1", &pfCombIso1);  // combined PF isolation of tag lepton
-    intree->SetBranchAddress("pfCombIso2", &pfCombIso2);  // combined PF isolation of probe lepton
+    //intree->SetBranchAddress("pfCombIso1", &pfCombIso1);  // combined PF isolation of tag lepton
+    //intree->SetBranchAddress("pfCombIso2", &pfCombIso2);  // combined PF isolation of probe lepton
    
     //
     // loop over events
     //
+    cout<<"Beginning of Loop: nentries"<<intree->GetEntries() << endl;
+    sw_[0].Start();
+
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+      sw_[6].Start(0);
       intree->GetEntry(ientry);
-   
+      sw_[6].Stop();
+      if ( (ientry & 16383) == 0 )
+	{
+	  sw_[0].Stop();
+	  cout<< "Took " <<  sw_[0] .RealTime() << "s CPU " << sw_[0] . CpuTime()<< endl;
+	  sw_[0].Reset();
+	  sw_[0].Start();
+	  cout<< "Took 1 " <<  sw_[1] .RealTime() << "s CPU " << sw_[1] . CpuTime()<< endl;
+	  sw_[1].Reset();
+	  cout<< "Took 2 " <<  sw_[2] .RealTime() << "s CPU " << sw_[2] . CpuTime()<< endl;
+	  sw_[2].Reset();
+	  cout<< "Took 3 " <<  sw_[3] .RealTime() << "s CPU " << sw_[3] . CpuTime()<< endl;
+	  sw_[3].Reset();
+	  cout<< "Took 4 " <<  sw_[4] .RealTime() << "s CPU " << sw_[4] . CpuTime()<< endl;
+	  sw_[4].Reset();
+	  cout<< "Took 5 " <<  sw_[5] .RealTime() << "s CPU " << sw_[5] . CpuTime()<< endl;
+	  sw_[5].Reset();
+	  cout<< "Took 6 " <<  sw_[6] .RealTime() << "s CPU " << sw_[6] . CpuTime()<< endl;
+	  sw_[6].Reset();
+	  cout<<endl;
+	}
+
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
       
-      double mass = 0;
-      double pt = 0;
-      double rapidity = 0;
-      double phiacop=0;
-      double costhetastar=0;
-      double phistar=0;
+      float mass = 0;
+      float pt = 0;
+      float rapidity = 0;
+      float phiacop=0;
+      float costhetastar=0;
+      float phistar=0;
 
 
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
       }
-      
+ 	     
       // fill Z events passing selection (MuMu2HLT + MuMu1HLT)
       if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
         if(typev[ifile]==eData) { 
-
+          sw_[5].Start(0); 
 	  TLorentzVector mu1;
 	  TLorentzVector mu2;
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
 	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
 	  float qter1=1.0;
 	  float qter2=1.0;
+          sw_[5].Stop(); 
 
+	  sw_[1].Start(0);
 	  rmcor->momcor_data(mu1,q1,0,qter1);
 	  rmcor->momcor_data(mu2,q2,0,qter2);
+	  sw_[1].Stop();
+	  sw_[2].Start(0);
 
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
@@ -396,14 +439,17 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 	  rapidity = (l1+l2).Rapidity();
 
 	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-	  if(lq1<0) costhetastar=TMath::TanH((l1.Rapidity()-l2.Rapidity())/2);
-	  else costhetastar=TMath::TanH((l2.Rapidity()-l1.Rapidity())/2);
-	  phistar=TMath::Tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 	  
 	  if(mass        < MASS_LOW)  continue;
 	  if(mass        > MASS_HIGH) continue;
 	  if(l1.Pt()        < PT_CUT)    continue;
 	  if(l2.Pt()        < PT_CUT)    continue;
+
+	  sw_[2].Stop();
+	  sw_[3].Start(0);
 
 	  hData->Fill(mass); 
 	  hDataZPt->Fill(pt); 
@@ -423,8 +469,9 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 	  hDataLep1Eta->Fill(fabs(l1.Eta())); 
 	  hDataLep2Eta->Fill(fabs(l2.Eta())); 
 	  hDataZRap->Fill(fabs(rapidity));
+	  sw_[3].Stop();
 	} else {
-
+	  sw_[4].Start(0);
 	  TLorentzVector mu1;
 	  TLorentzVector mu2;
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
@@ -538,9 +585,9 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 	  rapidity = (l1+l2).Rapidity();
 
 	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-	  if(lq1<0) costhetastar=TMath::TanH((l1.Rapidity()-l2.Rapidity())/2);
-	  else costhetastar=TMath::TanH((l2.Rapidity()-l1.Rapidity())/2);
-	  phistar=TMath::Tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 
 	  if(typev[ifile]==eZmm) 
 	    {
@@ -661,13 +708,14 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 	      hTopLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
 	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
 	    }
-	}
-      }
-    }
+	  sw_[4].Stop();
+	}//end MC
+      } //end category
+    }//end loop ientry
     
     delete infile;
     infile=0, intree=0;
-  } 
+  } // end loop ifile
 
   
 

@@ -565,17 +565,17 @@ void plotZmm(const TString  inputDir,    // input directory
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
       
-      double mass = 0;
-      double pt = 0;
-      double rapidity = 0;
-      double phiacop=0;
-      double costhetastar=0;
-      double phistar=0;
-      double pplus1=0;
-      double pplus2=0;
-      double pminus1=0;
-      double pminus2=0;
-      double costhetastarcs=0;
+      float mass = 0;
+      float pt = 0;
+      float rapidity = 0;
+      float phiacop=0;
+      float costhetastar=0;
+      float phistar=0;
+      float pplus1=0;
+      float pplus2=0;
+      float pminus1=0;
+      float pminus2=0;
+      float costhetastarcs=0;
 
       Double_t weight=1;
       if(typev[ifile]!=eData) {
@@ -620,9 +620,9 @@ void plotZmm(const TString  inputDir,    // input directory
 	  rapidity = (l1+l2).Rapidity();
 
 	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-	  if(lq1<0) costhetastar=TMath::TanH((l1.Rapidity()-l2.Rapidity())/2);
-	  else costhetastar=TMath::TanH((l2.Rapidity()-l1.Rapidity())/2);
-	  phistar=TMath::Tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 	  
 	  pplus1=1/sqrt(2)*(l1.E()+l1.Pz());
 	  pminus1=1/sqrt(2)*(l1.E()-l1.Pz());
@@ -1020,9 +1020,9 @@ void plotZmm(const TString  inputDir,    // input directory
 	  rapidity = (l1+l2).Rapidity();
 
 	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-	  if(lq1<0) costhetastar=TMath::TanH((l1.Rapidity()-l2.Rapidity())/2);
-	  else costhetastar=TMath::TanH((l2.Rapidity()-l1.Rapidity())/2);
-	  phistar=TMath::Tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 
 	  pplus1=1/sqrt(2)*(l1.E()+l1.Pz());
 	  pminus1=1/sqrt(2)*(l1.E()-l1.Pz());
