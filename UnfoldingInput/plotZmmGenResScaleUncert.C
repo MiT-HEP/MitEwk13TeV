@@ -520,7 +520,8 @@ const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG
 	hLep1EtaMatrix ->Fill(fabs(genlep1->Eta()),fabs(l1.Eta()),weight*corr);
 	hLep2EtaMatrix ->Fill(fabs(genlep2->Eta()),fabs(l2.Eta()),weight*corr);
       }
-    
+    delete gendilep;
+    delete dilep;
   }
   delete infile;
   infile=0, intree=0; 

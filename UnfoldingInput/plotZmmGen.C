@@ -36,7 +36,13 @@
 #include <rochcor2015.h>
 #include <muresolution_run2.h>
 
+#include "TStopwatch.h" //PROFILE
+
 #endif
+
+
+TStopwatch sw_; //PROFILE 
+
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -505,9 +511,18 @@ void plotZmmGen(const TString  conf,            // input file
   //
   // loop over events
   //
+  cout<<"Beginning of Loop: nentries"<<intree->GetEntries() << endl;
+  sw_.Start();
+
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
-
+    if ( ientry %10000 == 0 )
+      {
+	sw_.Stop();
+	cout<< "Took " <<  sw_ .RealTime() << "s CPU " << sw_ . CpuTime()<< endl;
+	sw_.Reset();
+	sw_.Start();
+      }
     TLorentzVector mu1;
     TLorentzVector mu2;
     mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
@@ -1104,6 +1119,8 @@ void plotZmmGen(const TString  conf,            // input file
 	    hLepPosPtMatrix_EffBkgShape ->Fill(genlep1->Pt(),l1.Pt(),weight*corrBkgShape);
 	  }
       }
+    delete gendilep;
+    delete dilep;
   }
   delete infile;
   infile=0, intree=0; 

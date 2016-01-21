@@ -331,12 +331,12 @@ void plotZmmTheoryUnc(const TString  conf,            // input file
   //                             Z Pt
   //---------------------------------------------------------------------------
 
-  double pdfUncZPtUp[22];
-  double pdfUncZPtDown[22];
-  double alphasUncZPtUp[22];
-  double alphasUncZPtDown[22];
-  double scaleUncZPtUp[22];
-  double scaleUncZPtDown[22];
+  double pdfUncZPtUp[34];
+  double pdfUncZPtDown[34];
+  double alphasUncZPtUp[34];
+  double alphasUncZPtDown[34];
+  double scaleUncZPtUp[34];
+  double scaleUncZPtDown[34];
 
   int npdfZPtP=0;
   int npdfZPtM=0;
