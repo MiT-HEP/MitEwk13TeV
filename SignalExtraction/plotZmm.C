@@ -162,12 +162,9 @@ void plotZmm(const TString  inputDir,    // input directory
   
   // histograms for full selection
   double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-
   double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-
   double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
   double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-
   double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
   double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
 
@@ -217,13 +214,7 @@ void plotZmm(const TString  inputDir,    // input directory
   TH1D *hEWKPhiStar_EffBkgShape  = new TH1D("hEWKPhiStar_EffBkgShape", "",27,PhiStarBins); hEWKPhiStar_EffBkgShape->Sumw2();
   TH1D *hTopPhiStar_EffBkgShape  = new TH1D("hTopPhiStar_EffBkgShape", "",27,PhiStarBins); hTopPhiStar_EffBkgShape->Sumw2();
 
-  TH1D *hDataThetaStarCS = new TH1D("hDataThetaStarCS","",20,-1,1); hDataThetaStarCS->Sumw2();
-  TH1D *hZmmThetaStarCS  = new TH1D("hZmmThetaStarCS", "",20,-1,1); hZmmThetaStarCS->Sumw2();
-  TH1D *hEWKThetaStarCS  = new TH1D("hEWKThetaStarCS", "",20,-1,1); hEWKThetaStarCS->Sumw2();
-  TH1D *hTopThetaStarCS  = new TH1D("hTopThetaStarCS", "",20,-1,1); hTopThetaStarCS->Sumw2();
-  TH1D *hMCThetaStarCS   = new TH1D("hMCThetaStarCS",  "",20,-1,1); hMCThetaStarCS->Sumw2();
-
-
+  
   TH1D *hDataZRap = new TH1D("hDataZRap","",24,0,2.4); hDataZRap->Sumw2();
   TH1D *hZmmZRap  = new TH1D("hZmmZRap", "",24,0,2.4); hZmmZRap->Sumw2();
   TH1D *hEWKZRap  = new TH1D("hEWKZRap", "",24,0,2.4); hEWKZRap->Sumw2();
@@ -357,12 +348,9 @@ void plotZmm(const TString  inputDir,    // input directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb, scale1fbUp, scale1fbDown;
-  Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
-  Float_t pfCombIso1, pfCombIso2;
+  TLorentzVector *lep1=0, *lep2=0;
 
   //
   // HLT efficiency
@@ -528,32 +516,34 @@ void plotZmm(const TString  inputDir,    // input directory
     infile = new TFile(fnamev[ifile]);	    assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
 
+    intree -> SetBranchStatus("*",0);
+    intree -> SetBranchStatus("runNum",1);
+    intree -> SetBranchStatus("lumiSec",1);
+    intree -> SetBranchStatus("evtNum",1);
+    intree -> SetBranchStatus("category",1);
+    intree -> SetBranchStatus("npv",1);
+    intree -> SetBranchStatus("npu",1);
+    intree -> SetBranchStatus("scale1fb",1);
+    intree -> SetBranchStatus("scale1fbUp",1);
+    intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("q1",1);
+    intree -> SetBranchStatus("q2",1);
+    intree -> SetBranchStatus("lep1",1);
+    intree -> SetBranchStatus("lep2",1);
+
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
     intree->SetBranchAddress("evtNum",     &evtNum);      // event number
-    intree->SetBranchAddress("matchGen",   &matchGen);    // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
-    intree->SetBranchAddress("genVPt",     &genVPt);      // GEN Z boson pT (signal MC)
-    intree->SetBranchAddress("genVPhi",    &genVPhi);     // GEN Z boson phi (signal MC)
-    intree->SetBranchAddress("genVy",      &genVy);       // GEN Z boson rapidity (signal MC)
-    intree->SetBranchAddress("genVMass",   &genVMass);    // GEN Z boson mass (signal MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",        &met);	  // MET
-    intree->SetBranchAddress("metPhi",     &metPhi);      // phi(MET)
-    intree->SetBranchAddress("sumEt",      &sumEt);       // Sum ET
-    intree->SetBranchAddress("u1",         &u1);	  // parallel component of recoil
-    intree->SetBranchAddress("u2",         &u2);	  // perpendicular component of recoil
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
-    intree->SetBranchAddress("dilep",      &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
-    intree->SetBranchAddress("pfCombIso1", &pfCombIso1);  // combined PF isolation of tag lepton
-    intree->SetBranchAddress("pfCombIso2", &pfCombIso2);  // combined PF isolation of probe lepton
     
     //
     // loop over events
@@ -571,12 +561,7 @@ void plotZmm(const TString  inputDir,    // input directory
       float phiacop=0;
       float costhetastar=0;
       float phistar=0;
-      float pplus1=0;
-      float pplus2=0;
-      float pminus1=0;
-      float pminus2=0;
-      float costhetastarcs=0;
-
+     
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
@@ -624,12 +609,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
 	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 	  
-	  pplus1=1/sqrt(2)*(l1.E()+l1.Pz());
-	  pminus1=1/sqrt(2)*(l1.E()-l1.Pz());
-	  pplus2=1/sqrt(2)*(l2.E()+l2.Pz());
-	  pminus2=1/sqrt(2)*(l2.E()-l2.Pz());
-	  costhetastarcs=(l1+l2).Pz()/fabs((l1+l2).Pz())*2*(pplus1*pminus2-pminus1*pplus2)/(mass*sqrt(pow(mass,2)+pow(pt,2)));
-
 	  if(mass        < MASS_LOW)  continue;
 	  if(mass        > MASS_HIGH) continue;
 	  if(l1.Pt()        < PT_CUT)    continue;
@@ -639,7 +618,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	  hDataNPV->Fill(npv);
 	  hDataZPt->Fill(pt); 
 	  hDataPhiStar->Fill(phistar); 
-	  hDataThetaStarCS->Fill(costhetastarcs);
 	  hDataLep1Pt->Fill(l1.Pt()); 
 	  hDataLep2Pt->Fill(l2.Pt()); 
 	  if(lq1<0)
@@ -1024,12 +1002,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
 	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 
-	  pplus1=1/sqrt(2)*(l1.E()+l1.Pz());
-	  pminus1=1/sqrt(2)*(l1.E()-l1.Pz());
-	  pplus2=1/sqrt(2)*(l2.E()+l2.Pz());
-	  pminus2=1/sqrt(2)*(l2.E()-l2.Pz());
-	  costhetastarcs=(l1+l2).Pz()/fabs((l1+l2).Pz())*2*(pplus1*pminus2-pminus1*pplus2)/(mass*sqrt(pow(mass,2)+pow(pt,2)));
-
 	  if(typev[ifile]==eZmm) 
 	    {
 	      yield_zmm += weight*corr;
@@ -1042,8 +1014,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	      hMCZPt->Fill(pt,weight*corr);
 	      hZmmPhiStar->Fill(phistar,weight*corr); 
 	      hMCPhiStar->Fill(phistar,weight*corr);
-	      hZmmThetaStarCS->Fill(costhetastarcs,weight*corr); 
-	      hMCThetaStarCS->Fill(costhetastarcs,weight*corr);
 	      hZmmZRap->Fill(fabs(rapidity),weight*corr); 
 	      hMCZRap->Fill(fabs(rapidity),weight*corr);
 	      hZmmLep1Pt->Fill(l1.Pt(),weight*corr); 
@@ -1094,9 +1064,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	      hEWKPhiStar_EffSigShape->Fill(pt,weight*corrSigShape);
 	      hEWKPhiStar_EffBkgShape->Fill(pt,weight*corrBkgShape);
 	      hMCPhiStar->Fill(phistar,weight*corr);
-
-	      hEWKThetaStarCS->Fill(costhetastarcs,weight*corr); 
-	      hMCThetaStarCS->Fill(costhetastarcs,weight*corr);
 
 	      hEWKZRap->Fill(fabs(rapidity),weight*corr); 
 	      hEWKZRap_EffBin->Fill(fabs(rapidity),weight*corr2Bin);
@@ -1200,9 +1167,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	      hTopPhiStar_EffSigShape->Fill(pt,weight*corrSigShape); 
 	      hTopPhiStar_EffBkgShape->Fill(pt,weight*corrBkgShape); 
 	      hMCPhiStar->Fill(phistar,weight*corr);
-
-	      hTopThetaStarCS->Fill(costhetastarcs,weight*corr); 
-	      hMCThetaStarCS->Fill(costhetastarcs,weight*corr);
 
 	      hTopZRap->Fill(fabs(rapidity),weight*corr); 
 	      hTopZRap_EffBin->Fill(fabs(rapidity),weight*corr2Bin);
@@ -1319,11 +1283,7 @@ void plotZmm(const TString  inputDir,    // input directory
   hTopPhiStar_EffSigShape->Write();
   hTopPhiStar_EffBkgShape->Write();
 
-  hDataThetaStarCS->Write();
-  hEWKThetaStarCS->Write();
-
-  hTopThetaStarCS->Write();
-
+ 
   hDataZRap->Write();
   hEWKZRap->Write();
   hEWKZRap_EffBin->Write();
@@ -1448,10 +1408,6 @@ void plotZmm(const TString  inputDir,    // input directory
       hMCPhiStar->Scale(MCscale);
       hEWKPhiStar->Scale(MCscale);
       hTopPhiStar->Scale(MCscale);
-      hZmmThetaStarCS->Scale(MCscale);
-      hMCThetaStarCS->Scale(MCscale);
-      hEWKThetaStarCS->Scale(MCscale);
-      hTopThetaStarCS->Scale(MCscale);
       hZmmZRap->Scale(MCscale);
       hMCZRap->Scale(MCscale);
       hEWKZRap->Scale(MCscale);
@@ -1587,10 +1543,6 @@ void plotZmm(const TString  inputDir,    // input directory
   TH1D *hZmumuPhiStarDiff = makeDiffHist(hDataPhiStar,hMCPhiStar,"hZmumuPhiStarDiff");
   hZmumuPhiStarDiff->SetMarkerStyle(kFullCircle); 
   hZmumuPhiStarDiff->SetMarkerSize(0.9);
-
-  TH1D *hZmumuThetaStarCSDiff = makeDiffHist(hDataThetaStarCS,hMCThetaStarCS,"hZmumuThetaStarCSDiff");
-  hZmumuThetaStarCSDiff->SetMarkerStyle(kFullCircle); 
-  hZmumuThetaStarCSDiff->SetMarkerSize(0.9);
 
   TH1D *hZmumuZRapDiff = makeDiffHist(hDataZRap,hMCZRap,"hZmumuZRapDiff");
   hZmumuZRapDiff->SetMarkerStyle(kFullCircle); 
@@ -1809,42 +1761,6 @@ void plotZmm(const TString  inputDir,    // input directory
   plotZmumuPhiStar2.SetYRange(1e-5*(hDataPhiStar->GetMaximum()),10*(hDataPhiStar->GetMaximum()));
   plotZmumuPhiStar2.TransLegend(0.1,-0.05);
   plotZmumuPhiStar2.Draw(c,kTRUE,format,1);
-
-  //
-  // CosTheta* in Colin Soper Frame
-  //   
-  sprintf(ylabel,"Events / %.1f ",hDataThetaStarCS->GetBinWidth(1));
-  CPlot plotZmumuThetaStarCS("zmmThetaStarCS"+norm,"","",ylabel);
-  plotZmumuThetaStarCS.AddHist1D(hDataThetaStarCS,"data","E");
-  plotZmumuThetaStarCS.AddToStack(hZmmThetaStarCS,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumuThetaStarCS.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuThetaStarCS.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotZmumuThetaStarCS.AddTextBox(normtext,0.21,0.75,0.45,0.80,0,13,0.03,-1);
-  plotZmumuThetaStarCS.SetLogy(0);
-  plotZmumuThetaStarCS.SetYRange(0.01,1.25*(hDataThetaStarCS->GetMaximum() + sqrt(hDataThetaStarCS->GetMaximum())));
-  plotZmumuThetaStarCS.TransLegend(0.1,-0.05);
-  plotZmumuThetaStarCS.Draw(c,kFALSE,format,1);
-
-  CPlot plotZmumuThetaStarCSDiff("zmmThetaStarCS"+norm,"","cos#theta*_{CS}","#frac{Data-Pred}{Data}");
-  plotZmumuThetaStarCSDiff.AddHist1D(hZmumuThetaStarCSDiff,"EX0",ratioColor);
-  plotZmumuThetaStarCSDiff.SetYRange(-0.2,0.2);
-  plotZmumuThetaStarCSDiff.AddLine(-1, 0,1, 0,kBlack,1);
-  plotZmumuThetaStarCSDiff.AddLine(-1, 0.1,1, 0.1,kBlack,3);
-  plotZmumuThetaStarCSDiff.AddLine(-1,-0.1,1,-0.1,kBlack,3);
-  plotZmumuThetaStarCSDiff.Draw(c,kTRUE,format,2);
-  
-  CPlot plotZmumuThetaStarCS2("zmmThetaStarCSlog"+norm,"","",ylabel);
-  plotZmumuThetaStarCS2.AddHist1D(hDataThetaStarCS,"data","E");
-  plotZmumuThetaStarCS2.AddToStack(hEWKThetaStarCS,"EWK",fillcolorEWK,linecolorEWK);
-  plotZmumuThetaStarCS2.AddToStack(hTopThetaStarCS,"t#bar{t}",fillcolorTop,linecolorTop);
-  plotZmumuThetaStarCS2.AddToStack(hZmmThetaStarCS,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumuThetaStarCS2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuThetaStarCS2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotZmumuThetaStarCS2.AddTextBox(normtext,0.21,0.75,0.45,0.80,0,13,0.03,-1);
-  plotZmumuThetaStarCS2.SetLogy();
-  plotZmumuThetaStarCS2.SetYRange(1e-4*(hDataThetaStarCS->GetMaximum()),500*(hDataThetaStarCS->GetMaximum()));
-  plotZmumuThetaStarCS2.TransLegend(0.1,-0.05);
-  plotZmumuThetaStarCS2.Draw(c,kTRUE,format,1);
 
   //
   // Z Rapidity

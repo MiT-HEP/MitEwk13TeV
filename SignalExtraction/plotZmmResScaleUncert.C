@@ -33,16 +33,14 @@
 #include <rochcor2015.h>
 #include <muresolution_run2.h>
 
-#include "TStopwatch.h" //PROFILE
-
 #endif
-
-TStopwatch sw_[10]; //PROFILE 
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
+void create( vector<TH1D> &v , const string name, int nbins, double xlow, double xhigh , const int ntoys) {for(int itoys=0;itoys!=ntoys;++itoys) {v.push_back(TH1D((name+Form("_%d",itoys)).c_str(),"",nbins,xlow,xhigh)); v[itoys].Sumw2();}}
+void create( vector<TH1D> &v , const string name, int nbins, double* x , const int ntoys) {for(int itoys=0;itoys!=ntoys;++itoys) {v.push_back(TH1D((name+Form("_%d",itoys)).c_str(),"",nbins,x)); v[itoys].Sumw2();}}
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -77,6 +75,9 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
+
+  //----- 
+  const int NTOYS = 100;
 
   // efficiency files
   const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
@@ -123,92 +124,83 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   
   // histograms for full selection
   double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-
   double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-
   double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
   double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-
   double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
   double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
 
+  vector<TH1D> hData; create(hData,"hData",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
+  vector<TH1D> hZmm; create(hZmm,"hZmm",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
+  vector<TH1D> hEWK; create(hEWK,"hEWK",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
+  vector<TH1D> hTop; create(hTop,"hTop",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
+  vector<TH1D> hMC; create(hMC,"hMC",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
 
-  TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
-  TH1D *hZmm  = new TH1D("hZmm", "",NBINS,MASS_LOW,MASS_HIGH); hZmm->Sumw2();
-  TH1D *hEWK  = new TH1D("hEWK", "",NBINS,MASS_LOW,MASS_HIGH); hEWK->Sumw2();
-  TH1D *hTop  = new TH1D("hTop", "",NBINS,MASS_LOW,MASS_HIGH); hEWK->Sumw2();
-  TH1D *hMC   = new TH1D("hMC",  "",NBINS,MASS_LOW,MASS_HIGH); hMC->Sumw2();
+  vector<TH1D> hDataZPt ; create(hDataZPt,"hDataZPt",34,ZPtBins,NTOYS);
+  vector<TH1D> hZmmZPt ; create(hZmmZPt,"hZmmZPt",34,ZPtBins,NTOYS);
+  vector<TH1D> hEWKZPt ; create(hEWKZPt,"hEWKZPt",34,ZPtBins,NTOYS);
+  vector<TH1D> hTopZPt ; create(hTopZPt,"hTopZPt",34,ZPtBins,NTOYS);
+  vector<TH1D> hMCZPt ; create(hMCZPt,"hMCZPt",34,ZPtBins,NTOYS);
 
-  TH1D *hDataZPt = new TH1D("hDataZPt","",34,ZPtBins); hDataZPt->Sumw2();
-  TH1D *hZmmZPt  = new TH1D("hZmmZPt", "",34,ZPtBins); hZmmZPt->Sumw2();
-  TH1D *hEWKZPt  = new TH1D("hEWKZPt", "",34,ZPtBins); hEWKZPt->Sumw2();
-  TH1D *hTopZPt  = new TH1D("hTopZPt", "",34,ZPtBins); hTopZPt->Sumw2();
-  TH1D *hMCZPt   = new TH1D("hMCZPt",  "",34,ZPtBins); hMCZPt->Sumw2();
+  vector<TH1D> hDataPhiStar ; create(hDataPhiStar,"hDataPhiStar",27,PhiStarBins,NTOYS);
+  vector<TH1D> hZmmPhiStar ; create(hZmmPhiStar,"hZmmPhiStar",27,PhiStarBins,NTOYS);
+  vector<TH1D> hEWKPhiStar ; create(hEWKPhiStar,"hEWKPhiStar",27,PhiStarBins,NTOYS);
+  vector<TH1D> hTopPhiStar ; create(hTopPhiStar,"hTopPhiStar",27,PhiStarBins,NTOYS);
+  vector<TH1D> hMCPhiStar ; create(hMCPhiStar,"hMCPhiStar",27,PhiStarBins,NTOYS);
 
-  TH1D *hDataPhiStar = new TH1D("hDataPhiStar","",27,PhiStarBins); hDataPhiStar->Sumw2();
-  TH1D *hZmmPhiStar  = new TH1D("hZmmPhiStar", "",27,PhiStarBins); hZmmPhiStar->Sumw2();
-  TH1D *hEWKPhiStar  = new TH1D("hEWKPhiStar", "",27,PhiStarBins); hEWKPhiStar->Sumw2();
-  TH1D *hTopPhiStar  = new TH1D("hTopPhiStar", "",27,PhiStarBins); hTopPhiStar->Sumw2();
-  TH1D *hMCPhiStar   = new TH1D("hMCPhiStar",  "",27,PhiStarBins); hMCPhiStar->Sumw2();
+  vector<TH1D> hDataZRap ; create(hDataZRap,"hDataZRap",24,0,2.4,NTOYS);
+  vector<TH1D> hZmmZRap ; create(hZmmZRap,"hZmmZRap",24,0,2.4,NTOYS);
+  vector<TH1D> hEWKZRap ; create(hEWKZRap,"hEWKZRap",24,0,2.4,NTOYS);
+  vector<TH1D> hTopZRap ; create(hTopZRap,"hTopZRap",24,0,2.4,NTOYS);
+  vector<TH1D> hMCZRap ; create(hMCZRap,"hMCZRap",24,0,2.4,NTOYS);
 
-  TH1D *hDataZRap = new TH1D("hDataZRap","",24,0,2.4); hDataZRap->Sumw2();
-  TH1D *hZmmZRap  = new TH1D("hZmmZRap", "",24,0,2.4); hZmmZRap->Sumw2();
-  TH1D *hEWKZRap  = new TH1D("hEWKZRap", "",24,0,2.4); hEWKZRap->Sumw2();
-  TH1D *hTopZRap  = new TH1D("hTopZRap", "",24,0,2.4); hTopZRap->Sumw2();
-  TH1D *hMCZRap   = new TH1D("hMCZRap",  "",24,0,2.4); hMCZRap->Sumw2();
+  vector<TH1D> hDataLep1Pt ; create(hDataLep1Pt,"hDataLep1Pt",25,Lep1PtBins,NTOYS);
+  vector<TH1D> hZmmLep1Pt ; create(hZmmLep1Pt,"hZmmLep1Pt",25,Lep1PtBins,NTOYS);
+  vector<TH1D> hEWKLep1Pt ; create(hEWKLep1Pt,"hEWKLep1Pt",25,Lep1PtBins,NTOYS);
+  vector<TH1D> hTopLep1Pt ; create(hTopLep1Pt,"hTopLep1Pt",25,Lep1PtBins,NTOYS);
+  vector<TH1D> hMCLep1Pt ; create(hMCLep1Pt,"hMCLep1Pt",25,Lep1PtBins,NTOYS);
 
-  TH1D *hDataLep1Pt = new TH1D("hDataLep1Pt","",25,Lep1PtBins); hDataLep1Pt->Sumw2();
-  TH1D *hZmmLep1Pt  = new TH1D("hZmmLep1Pt", "",25,Lep1PtBins); hZmmLep1Pt->Sumw2();
-  TH1D *hEWKLep1Pt  = new TH1D("hEWKLep1Pt", "",25,Lep1PtBins); hEWKLep1Pt->Sumw2();
-  TH1D *hTopLep1Pt  = new TH1D("hTopLep1Pt", "",25,Lep1PtBins); hTopLep1Pt->Sumw2();
-  TH1D *hMCLep1Pt   = new TH1D("hMCLep1Pt",  "",25,Lep1PtBins); hMCLep1Pt->Sumw2();
+  vector<TH1D> hDataLep2Pt ; create(hDataLep2Pt,"hDataLep2Pt",20,Lep2PtBins,NTOYS);
+  vector<TH1D> hZmmLep2Pt ; create(hZmmLep2Pt,"hZmmLep2Pt",20,Lep2PtBins,NTOYS);
+  vector<TH1D> hEWKLep2Pt ; create(hEWKLep2Pt,"hEWKLep2Pt",20,Lep2PtBins,NTOYS);
+  vector<TH1D> hTopLep2Pt ; create(hTopLep2Pt,"hTopLep2Pt",20,Lep2PtBins,NTOYS);
+  vector<TH1D> hMCLep2Pt ; create(hMCLep2Pt,"hMCLep2Pt",20,Lep2PtBins,NTOYS);
 
-  TH1D *hDataLep2Pt = new TH1D("hDataLep2Pt","",20,Lep2PtBins); hDataLep2Pt->Sumw2();
-  TH1D *hZmmLep2Pt  = new TH1D("hZmmLep2Pt", "",20,Lep2PtBins); hZmmLep2Pt->Sumw2();
-  TH1D *hEWKLep2Pt  = new TH1D("hEWKLep2Pt", "",20,Lep2PtBins); hEWKLep2Pt->Sumw2();
-  TH1D *hTopLep2Pt  = new TH1D("hTopLep2Pt", "",20,Lep2PtBins); hTopLep2Pt->Sumw2();
-  TH1D *hMCLep2Pt   = new TH1D("hMCLep2Pt",  "",20,Lep2PtBins); hMCLep2Pt->Sumw2();
+  vector<TH1D> hDataLepNegPt ; create(hDataLepNegPt,"hDataLepNegPt",25,LepNegPtBins,NTOYS);
+  vector<TH1D> hZmmLepNegPt ; create(hZmmLepNegPt,"hZmmLepNegPt",25,LepNegPtBins,NTOYS);
+  vector<TH1D> hEWKLepNegPt ; create(hEWKLepNegPt,"hEWKLepNegPt",25,LepNegPtBins,NTOYS);
+  vector<TH1D> hTopLepNegPt ; create(hTopLepNegPt,"hTopLepNegPt",25,LepNegPtBins,NTOYS);
+  vector<TH1D> hMCLepNegPt ; create(hMCLepNegPt,"hMCLepNegPt",25,LepNegPtBins,NTOYS);
 
-  TH1D *hDataLepNegPt = new TH1D("hDataLepNegPt","",25,LepNegPtBins); hDataLepNegPt->Sumw2();
-  TH1D *hZmmLepNegPt  = new TH1D("hZmmLepNegPt", "",25,LepNegPtBins); hZmmLepNegPt->Sumw2();
-  TH1D *hEWKLepNegPt  = new TH1D("hEWKLepNegPt", "",25,LepNegPtBins); hEWKLepNegPt->Sumw2();
-  TH1D *hTopLepNegPt  = new TH1D("hTopLepNegPt", "",25,LepNegPtBins); hTopLepNegPt->Sumw2();
-  TH1D *hMCLepNegPt   = new TH1D("hMCLepNegPt",  "",25,LepNegPtBins); hMCLepNegPt->Sumw2();
+  vector<TH1D> hDataLepPosPt ; create(hDataLepPosPt,"hDataLepPosPt",25,LepPosPtBins,NTOYS);
+  vector<TH1D> hZmmLepPosPt ; create(hZmmLepPosPt,"hZmmLepPosPt",25,LepPosPtBins,NTOYS);
+  vector<TH1D> hEWKLepPosPt ; create(hEWKLepPosPt,"hEWKLepPosPt",25,LepPosPtBins,NTOYS);
+  vector<TH1D> hTopLepPosPt ; create(hTopLepPosPt,"hTopLepPosPt",25,LepPosPtBins,NTOYS);
+  vector<TH1D> hMCLepPosPt ; create(hMCLepPosPt,"hMCLepPosPt",25,LepPosPtBins,NTOYS);
 
-  TH1D *hDataLepPosPt = new TH1D("hDataLepPosPt","",25,LepPosPtBins); hDataLepPosPt->Sumw2();
-  TH1D *hZmmLepPosPt  = new TH1D("hZmmLepPosPt", "",25,LepPosPtBins); hZmmLepPosPt->Sumw2();
-  TH1D *hEWKLepPosPt  = new TH1D("hEWKLepPosPt", "",25,LepPosPtBins); hEWKLepPosPt->Sumw2();
-  TH1D *hTopLepPosPt  = new TH1D("hTopLepPosPt", "",25,LepPosPtBins); hTopLepPosPt->Sumw2();
-  TH1D *hMCLepPosPt   = new TH1D("hMCLepPosPt",  "",25,LepPosPtBins); hMCLepPosPt->Sumw2();
-
-  TH1D *hDataLep1Eta = new TH1D("hDataLep1Eta","",24,0,2.4); hDataLep1Eta->Sumw2();
-  TH1D *hZmmLep1Eta  = new TH1D("hZmmLep1Eta", "",24,0,2.4); hZmmLep1Eta->Sumw2();
-  TH1D *hEWKLep1Eta  = new TH1D("hEWKLep1Eta", "",24,0,2.4); hEWKLep1Eta->Sumw2();
-  TH1D *hTopLep1Eta  = new TH1D("hTopLep1Eta", "",24,0,2.4); hTopLep1Eta->Sumw2();
-  TH1D *hMCLep1Eta   = new TH1D("hMCLep1Eta",  "",24,0,2.4); hMCLep1Eta->Sumw2();
+  vector<TH1D> hDataLep1Eta ; create(hDataLep1Eta,"hDataLep1Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hZmmLep1Eta ; create(hZmmLep1Eta,"hZmmLep1Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hEWKLep1Eta ; create(hEWKLep1Eta,"hEWKLep1Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hTopLep1Eta ; create(hTopLep1Eta,"hTopLep1Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hMCLep1Eta ; create(hMCLep1Eta,"hMCLep1Eta",24,0,2.4,NTOYS);
 
   
-  TH1D *hDataLep2Eta = new TH1D("hDataLep2Eta","",24,0,2.4); hDataLep2Eta->Sumw2();
-  TH1D *hZmmLep2Eta  = new TH1D("hZmmLep2Eta", "",24,0,2.4); hZmmLep2Eta->Sumw2();
-  TH1D *hEWKLep2Eta  = new TH1D("hEWKLep2Eta", "",24,0,2.4); hEWKLep2Eta->Sumw2();
-  TH1D *hTopLep2Eta  = new TH1D("hTopLep2Eta", "",24,0,2.4); hTopLep2Eta->Sumw2();
-  TH1D *hMCLep2Eta   = new TH1D("hMCLep2Eta",  "",24,0,2.4); hMCLep2Eta->Sumw2();
+  vector<TH1D> hDataLep2Eta ; create(hDataLep2Eta,"hDataLep2Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hZmmLep2Eta ; create(hZmmLep2Eta,"hZmmLep2Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hEWKLep2Eta ; create(hEWKLep2Eta,"hEWKLep2Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hTopLep2Eta ; create(hTopLep2Eta,"hTopLep2Eta",24,0,2.4,NTOYS);
+  vector<TH1D> hMCLep2Eta ; create(hMCLep2Eta,"hMCLep2Eta",24,0,2.4,NTOYS);
 
   
   //
   // Declare variables to read in ntuple
   //
   UInt_t  runNum, lumiSec, evtNum;
-  UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t scale1fb, scale1fbUp, scale1fbDown;
-  Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
-  Float_t pfCombIso1, pfCombIso2;
-
+  TLorentzVector *lep1=0, *lep2=0;
   
   TH2D *h=0;
 
@@ -302,6 +294,10 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   //Setting up rochester corrections
   rochcor2015 *rmcor = new rochcor2015(1234);
 
+  vector<rochcor2015> vRocToys;
+  for (int i=0 ; i<NTOYS; ++i) vRocToys.push_back(rochcor2015(1234+i*1000));
+   
+
   TFile *infile=0;
   TTree *intree=0;
 
@@ -311,6 +307,7 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
     cout << "Processing " << fnamev[ifile] << "..." << endl;
     infile = new TFile(fnamev[ifile]);	    assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
+
     intree -> SetBranchStatus("*",0);
     intree -> SetBranchStatus("runNum",1);
     intree -> SetBranchStatus("lumiSec",1);
@@ -325,61 +322,19 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
     intree->SetBranchAddress("evtNum",     &evtNum);      // event number
-    //intree->SetBranchAddress("matchGen",   &matchGen);    // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category",   &category);    // dilepton category
-    //intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
-    //intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
-    //intree->SetBranchAddress("genVPt",     &genVPt);      // GEN Z boson pT (signal MC)
-    //intree->SetBranchAddress("genVPhi",    &genVPhi);     // GEN Z boson phi (signal MC)
-    //intree->SetBranchAddress("genVy",      &genVy);       // GEN Z boson rapidity (signal MC)
-    //intree->SetBranchAddress("genVMass",   &genVMass);    // GEN Z boson mass (signal MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
-    //intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
-    //intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
-    //intree->SetBranchAddress("met",        &met);	  // MET
-    //intree->SetBranchAddress("metPhi",     &metPhi);      // phi(MET)
-    //intree->SetBranchAddress("sumEt",      &sumEt);       // Sum ET
-    //intree->SetBranchAddress("u1",         &u1);	  // parallel component of recoil
-    //intree->SetBranchAddress("u2",         &u2);	  // perpendicular component of recoil
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
-    //intree->SetBranchAddress("dilep",      &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
-    //intree->SetBranchAddress("pfCombIso1", &pfCombIso1);  // combined PF isolation of tag lepton
-    //intree->SetBranchAddress("pfCombIso2", &pfCombIso2);  // combined PF isolation of probe lepton
-   
+
     //
     // loop over events
     //
-    cout<<"Beginning of Loop: nentries"<<intree->GetEntries() << endl;
-    sw_[0].Start();
-
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-      sw_[6].Start(0);
       intree->GetEntry(ientry);
-      sw_[6].Stop();
-      if ( (ientry & 16383) == 0 )
-	{
-	  sw_[0].Stop();
-	  cout<< "Took " <<  sw_[0] .RealTime() << "s CPU " << sw_[0] . CpuTime()<< endl;
-	  sw_[0].Reset();
-	  sw_[0].Start();
-	  cout<< "Took 1 " <<  sw_[1] .RealTime() << "s CPU " << sw_[1] . CpuTime()<< endl;
-	  sw_[1].Reset();
-	  cout<< "Took 2 " <<  sw_[2] .RealTime() << "s CPU " << sw_[2] . CpuTime()<< endl;
-	  sw_[2].Reset();
-	  cout<< "Took 3 " <<  sw_[3] .RealTime() << "s CPU " << sw_[3] . CpuTime()<< endl;
-	  sw_[3].Reset();
-	  cout<< "Took 4 " <<  sw_[4] .RealTime() << "s CPU " << sw_[4] . CpuTime()<< endl;
-	  sw_[4].Reset();
-	  cout<< "Took 5 " <<  sw_[5] .RealTime() << "s CPU " << sw_[5] . CpuTime()<< endl;
-	  sw_[5].Reset();
-	  cout<< "Took 6 " <<  sw_[6] .RealTime() << "s CPU " << sw_[6] . CpuTime()<< endl;
-	  sw_[6].Reset();
-	  cout<<endl;
-	}
-
+      
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
@@ -391,30 +346,26 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
       float costhetastar=0;
       float phistar=0;
 
-
       Double_t weight=1;
       if(typev[ifile]!=eData) {
 	weight *= scale1fb*lumi;
       }
  	     
+      for(int itoys=0;itoys!=NTOYS;++itoys)
+	{
       // fill Z events passing selection (MuMu2HLT + MuMu1HLT)
       if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
         if(typev[ifile]==eData) { 
-          sw_[5].Start(0); 
 	  TLorentzVector mu1;
 	  TLorentzVector mu2;
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
 	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
 	  float qter1=1.0;
 	  float qter2=1.0;
-          sw_[5].Stop(); 
-
-	  sw_[1].Start(0);
-	  rmcor->momcor_data(mu1,q1,0,qter1);
-	  rmcor->momcor_data(mu2,q2,0,qter2);
-	  sw_[1].Stop();
-	  sw_[2].Start(0);
-
+          
+	  vRocToys[itoys].momcor_data(mu1,q1,0,qter1);
+	  vRocToys[itoys].momcor_data(mu2,q2,0,qter2);
+	  
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
 	  Double_t lq1 = q1;
@@ -448,30 +399,25 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 	  if(l1.Pt()        < PT_CUT)    continue;
 	  if(l2.Pt()        < PT_CUT)    continue;
 
-	  sw_[2].Stop();
-	  sw_[3].Start(0);
-
-	  hData->Fill(mass); 
-	  hDataZPt->Fill(pt); 
-	  hDataPhiStar->Fill(phistar); 
-	  hDataLep1Pt->Fill(l1.Pt()); 
-	  hDataLep2Pt->Fill(l2.Pt()); 
+	  hData[itoys].Fill(mass); 
+	  hDataZPt[itoys].Fill(pt); 
+	  hDataPhiStar[itoys].Fill(phistar); 
+	  hDataLep1Pt[itoys].Fill(l1.Pt()); 
+	  hDataLep2Pt[itoys].Fill(l2.Pt()); 
 	  if(lq1<0)
 	    {
-	      hDataLepNegPt->Fill(l1.Pt()); 
-	      hDataLepPosPt->Fill(l2.Pt());
+	      hDataLepNegPt[itoys].Fill(l1.Pt()); 
+	      hDataLepPosPt[itoys].Fill(l2.Pt());
 	    }
 	  else 
 	    {
-	      hDataLepNegPt->Fill(l2.Pt()); 
-	      hDataLepPosPt->Fill(l1.Pt());
+	      hDataLepNegPt[itoys].Fill(l2.Pt()); 
+	      hDataLepPosPt[itoys].Fill(l1.Pt());
 	    }
-	  hDataLep1Eta->Fill(fabs(l1.Eta())); 
-	  hDataLep2Eta->Fill(fabs(l2.Eta())); 
-	  hDataZRap->Fill(fabs(rapidity));
-	  sw_[3].Stop();
+	  hDataLep1Eta[itoys].Fill(fabs(l1.Eta())); 
+	  hDataLep2Eta[itoys].Fill(fabs(l2.Eta())); 
+	  hDataZRap[itoys].Fill(fabs(rapidity));
 	} else {
-	  sw_[4].Start(0);
 	  TLorentzVector mu1;
 	  TLorentzVector mu2;
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
@@ -479,8 +425,8 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 	  float qter1=1.0;
 	  float qter2=1.0;
 
-	  rmcor->momcor_mc(mu1,q1,0,qter1);
-	  rmcor->momcor_mc(mu2,q2,0,qter2);
+	  vRocToys[itoys].momcor_mc(mu1,q1,0,qter1);
+	  vRocToys[itoys].momcor_mc(mu2,q2,0,qter2);
 
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
@@ -591,126 +537,126 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 
 	  if(typev[ifile]==eZmm) 
 	    {
-	      hZmm->Fill(mass,weight*corr); 
-	      hMC->Fill(mass,weight*corr);
-	      hZmmZPt->Fill(pt,weight*corr); 
-	      hMCZPt->Fill(pt,weight*corr);
-	      hZmmPhiStar->Fill(phistar,weight*corr); 
-	      hMCPhiStar->Fill(phistar,weight*corr);
-	      hZmmZRap->Fill(fabs(rapidity),weight*corr); 
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
-	      hZmmLep1Pt->Fill(l1.Pt(),weight*corr); 
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+	      hZmm[itoys].Fill(mass,weight*corr); 
+	      hMC[itoys].Fill(mass,weight*corr);
+	      hZmmZPt[itoys].Fill(pt,weight*corr); 
+	      hMCZPt[itoys].Fill(pt,weight*corr);
+	      hZmmPhiStar[itoys].Fill(phistar,weight*corr); 
+	      hMCPhiStar[itoys].Fill(phistar,weight*corr);
+	      hZmmZRap[itoys].Fill(fabs(rapidity),weight*corr); 
+	      hMCZRap[itoys].Fill(fabs(rapidity),weight*corr);
+	      hZmmLep1Pt[itoys].Fill(l1.Pt(),weight*corr); 
+	      hMCLep1Pt[itoys].Fill(l1.Pt(),weight*corr);
 	      if(lq1<0)
 		{
-		  hZmmLepNegPt->Fill(l1.Pt(),weight*corr); 
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hZmmLepPosPt->Fill(l2.Pt(),weight*corr); 
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+		  hZmmLepNegPt[itoys].Fill(l1.Pt(),weight*corr); 
+		  hMCLepNegPt[itoys].Fill(l1.Pt(),weight*corr);
+		  hZmmLepPosPt[itoys].Fill(l2.Pt(),weight*corr); 
+		  hMCLepPosPt[itoys].Fill(l2.Pt(),weight*corr);
 		}
 	      else 
 		{
-		  hZmmLepNegPt->Fill(l2.Pt(),weight*corr); 
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hZmmLepPosPt->Fill(l1.Pt(),weight*corr); 
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+		  hZmmLepNegPt[itoys].Fill(l2.Pt(),weight*corr); 
+		  hMCLepNegPt[itoys].Fill(l2.Pt(),weight*corr);
+		  hZmmLepPosPt[itoys].Fill(l1.Pt(),weight*corr); 
+		  hMCLepPosPt[itoys].Fill(l1.Pt(),weight*corr);
 		}
-	      hZmmLep2Pt->Fill(l2.Pt(),weight*corr); 
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
-	      hZmmLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-	      hZmmLep2Eta->Fill(fabs(l2.Eta()),weight*corr); 
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+	      hZmmLep2Pt[itoys].Fill(l2.Pt(),weight*corr); 
+	      hMCLep2Pt[itoys].Fill(l2.Pt(),weight*corr);
+	      hZmmLep1Eta[itoys].Fill(fabs(l1.Eta()),weight*corr); 
+	      hMCLep1Eta[itoys].Fill(fabs(l1.Eta()),weight*corr);
+	      hZmmLep2Eta[itoys].Fill(fabs(l2.Eta()),weight*corr); 
+	      hMCLep2Eta[itoys].Fill(fabs(l2.Eta()),weight*corr);
 	    }
 	  if(typev[ifile]==eEWK) 
 	    {
-	      hEWK->Fill(mass,weight*corr); 
-	      hMC->Fill(mass,weight*corr);
+	      hEWK[itoys].Fill(mass,weight*corr); 
+	      hMC[itoys].Fill(mass,weight*corr);
 
-	      hEWKZPt->Fill(pt,weight*corr); 
-	      hMCZPt->Fill(pt,weight*corr);
+	      hEWKZPt[itoys].Fill(pt,weight*corr); 
+	      hMCZPt[itoys].Fill(pt,weight*corr);
 
-	      hEWKPhiStar->Fill(phistar,weight*corr);
-	      hMCPhiStar->Fill(phistar,weight*corr);
+	      hEWKPhiStar[itoys].Fill(phistar,weight*corr);
+	      hMCPhiStar[itoys].Fill(phistar,weight*corr);
 
-	      hEWKZRap->Fill(fabs(rapidity),weight*corr); 
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
+	      hEWKZRap[itoys].Fill(fabs(rapidity),weight*corr); 
+	      hMCZRap[itoys].Fill(fabs(rapidity),weight*corr);
 
-	      hEWKLep1Pt->Fill(l1.Pt(),weight*corr);
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+	      hEWKLep1Pt[itoys].Fill(l1.Pt(),weight*corr);
+	      hMCLep1Pt[itoys].Fill(l1.Pt(),weight*corr);
 
-	      hEWKLep2Pt->Fill(l2.Pt(),weight*corr);
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
+	      hEWKLep2Pt[itoys].Fill(l2.Pt(),weight*corr);
+	      hMCLep2Pt[itoys].Fill(l2.Pt(),weight*corr);
 
 	      if(lq1<0)
 		{
-		  hEWKLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+		  hEWKLepNegPt[itoys].Fill(l1.Pt(),weight*corr);
+		  hMCLepNegPt[itoys].Fill(l1.Pt(),weight*corr);
 		  
-		  hEWKLepPosPt->Fill(l2.Pt(),weight*corr);
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+		  hEWKLepPosPt[itoys].Fill(l2.Pt(),weight*corr);
+		  hMCLepPosPt[itoys].Fill(l2.Pt(),weight*corr);
 		}
 	      else
 		{
-		  hEWKLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+		  hEWKLepNegPt[itoys].Fill(l2.Pt(),weight*corr);
+		  hMCLepNegPt[itoys].Fill(l2.Pt(),weight*corr);
 		  
-		  hEWKLepPosPt->Fill(l1.Pt(),weight*corr);
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+		  hEWKLepPosPt[itoys].Fill(l1.Pt(),weight*corr);
+		  hMCLepPosPt[itoys].Fill(l1.Pt(),weight*corr);
 		}
 
-	      hEWKLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+	      hEWKLep1Eta[itoys].Fill(fabs(l1.Eta()),weight*corr); 
+	      hMCLep1Eta[itoys].Fill(fabs(l1.Eta()),weight*corr);
 
-	      hEWKLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+	      hEWKLep2Eta[itoys].Fill(fabs(l2.Eta()),weight*corr);
+	      hMCLep2Eta[itoys].Fill(fabs(l2.Eta()),weight*corr);
 	    }
 	  if(typev[ifile]==eTop) 
 	    {
-	      hTop->Fill(mass,weight*corr); 
-	      hMC->Fill(mass,weight*corr);
+	      hTop[itoys].Fill(mass,weight*corr); 
+	      hMC[itoys].Fill(mass,weight*corr);
 
-	      hTopZPt->Fill(pt,weight*corr); 
-	      hMCZPt->Fill(pt,weight*corr);
+	      hTopZPt[itoys].Fill(pt,weight*corr); 
+	      hMCZPt[itoys].Fill(pt,weight*corr);
 
-	      hTopPhiStar->Fill(phistar,weight*corr);
-	      hMCPhiStar->Fill(phistar,weight*corr);
+	      hTopPhiStar[itoys].Fill(phistar,weight*corr);
+	      hMCPhiStar[itoys].Fill(phistar,weight*corr);
 
-	      hTopZRap->Fill(fabs(rapidity),weight*corr); 
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
+	      hTopZRap[itoys].Fill(fabs(rapidity),weight*corr); 
+	      hMCZRap[itoys].Fill(fabs(rapidity),weight*corr);
 
-	      hTopLep1Pt->Fill(l1.Pt(),weight*corr);
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+	      hTopLep1Pt[itoys].Fill(l1.Pt(),weight*corr);
+	      hMCLep1Pt[itoys].Fill(l1.Pt(),weight*corr);
 
-	      hTopLep2Pt->Fill(l2.Pt(),weight*corr);
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
+	      hTopLep2Pt[itoys].Fill(l2.Pt(),weight*corr);
+	      hMCLep2Pt[itoys].Fill(l2.Pt(),weight*corr);
 
 	      if(lq1<0)
 		{
-		  hTopLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+		  hTopLepNegPt[itoys].Fill(l1.Pt(),weight*corr);
+		  hMCLepNegPt[itoys].Fill(l1.Pt(),weight*corr);
 		  
-		  hTopLepPosPt->Fill(l2.Pt(),weight*corr);
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+		  hTopLepPosPt[itoys].Fill(l2.Pt(),weight*corr);
+		  hMCLepPosPt[itoys].Fill(l2.Pt(),weight*corr);
 		}
 	      else
 		{
-		  hTopLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+		  hTopLepNegPt[itoys].Fill(l2.Pt(),weight*corr);
+		  hMCLepNegPt[itoys].Fill(l2.Pt(),weight*corr);
 		  
-		  hTopLepPosPt->Fill(l1.Pt(),weight*corr);
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+		  hTopLepPosPt[itoys].Fill(l1.Pt(),weight*corr);
+		  hMCLepPosPt[itoys].Fill(l1.Pt(),weight*corr);
 		}
 
-	      hTopLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+	      hTopLep1Eta[itoys].Fill(fabs(l1.Eta()),weight*corr);
+	      hMCLep1Eta[itoys].Fill(fabs(l1.Eta()),weight*corr);
 
-	      hTopLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+	      hTopLep2Eta[itoys].Fill(fabs(l2.Eta()),weight*corr);
+	      hMCLep2Eta[itoys].Fill(fabs(l2.Eta()),weight*corr);
 	    }
-	  sw_[4].Stop();
 	}//end MC
       } //end category
+	}//end toys
     }//end loop ientry
     
     delete infile;
@@ -721,41 +667,44 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
 
   outFile->cd();
 
-  hDataZPt->Write();
-  hEWKZPt->Write();
-  hTopZPt->Write();
+  for(int itoys=0;itoys!=NTOYS;++itoys)
+    {
+  hDataZPt[itoys].Write();
+  hEWKZPt[itoys].Write();
+  hTopZPt[itoys].Write();
 
-  hDataPhiStar->Write();
-  hEWKPhiStar->Write();
-  hTopPhiStar->Write();
+  hDataPhiStar[itoys].Write();
+  hEWKPhiStar[itoys].Write();
+  hTopPhiStar[itoys].Write();
  
-  hDataZRap->Write();
-  hEWKZRap->Write();
-  hTopZRap->Write();
+  hDataZRap[itoys].Write();
+  hEWKZRap[itoys].Write();
+  hTopZRap[itoys].Write();
  
-  hDataLep1Pt->Write();
-  hEWKLep1Pt->Write();
-  hTopLep1Pt->Write();
+  hDataLep1Pt[itoys].Write();
+  hEWKLep1Pt[itoys].Write();
+  hTopLep1Pt[itoys].Write();
   
-  hDataLep2Pt->Write();
-  hEWKLep2Pt->Write();
-  hTopLep2Pt->Write();
+  hDataLep2Pt[itoys].Write();
+  hEWKLep2Pt[itoys].Write();
+  hTopLep2Pt[itoys].Write();
 
-  hDataLepNegPt->Write();
-  hEWKLepNegPt->Write();
-  hTopLepNegPt->Write();
+  hDataLepNegPt[itoys].Write();
+  hEWKLepNegPt[itoys].Write();
+  hTopLepNegPt[itoys].Write();
 
-  hDataLepPosPt->Write();
-  hEWKLepPosPt->Write();
-  hTopLepPosPt->Write();
+  hDataLepPosPt[itoys].Write();
+  hEWKLepPosPt[itoys].Write();
+  hTopLepPosPt[itoys].Write();
  
-  hDataLep1Eta->Write();
-  hEWKLep1Eta->Write();
-  hTopLep1Eta->Write();
+  hDataLep1Eta[itoys].Write();
+  hEWKLep1Eta[itoys].Write();
+  hTopLep1Eta[itoys].Write();
   
-  hDataLep2Eta->Write();
-  hEWKLep2Eta->Write();
-  hTopLep2Eta->Write();
+  hDataLep2Eta[itoys].Write();
+  hEWKLep2Eta[itoys].Write();
+  hTopLep2Eta[itoys].Write();
+    }
   
   outFile->Write();
   outFile->Close(); 

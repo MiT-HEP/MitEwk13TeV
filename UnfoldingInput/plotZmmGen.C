@@ -36,13 +36,7 @@
 #include <rochcor2015.h>
 #include <muresolution_run2.h>
 
-#include "TStopwatch.h" //PROFILE
-
 #endif
-
-
-TStopwatch sw_[10]; //PROFILE 
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -144,8 +138,6 @@ void plotZmmGen(const TString  conf,            // input file
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
-  UInt_t  matchGen;
-  UInt_t  npv, npu;
   UInt_t  triggerDec;
   UInt_t  goodPV;
   UInt_t  matchTrigger;
@@ -329,13 +321,32 @@ void plotZmmGen(const TString  conf,            // input file
     cout << "Processing " << infilename << "..." << endl;
     infile = TFile::Open(infilename);assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
+
+    intree -> SetBranchStatus("*",0);
+    intree -> SetBranchStatus("runNum",1);
+    intree -> SetBranchStatus("lumiSec",1);
+    intree -> SetBranchStatus("evtNum",1);
+    intree -> SetBranchStatus("triggerDec",1);
+    intree -> SetBranchStatus("goodPV",1);
+    intree -> SetBranchStatus("matchTrigger",1);
+    intree -> SetBranchStatus("ngenlep",1);
+    intree -> SetBranchStatus("genlep1",1);
+    intree -> SetBranchStatus("genlep2",1);
+    intree -> SetBranchStatus("genq1",1);
+    intree -> SetBranchStatus("genq2",1);
+    intree -> SetBranchStatus("nlep",1);
+    intree -> SetBranchStatus("lep1",1);
+    intree -> SetBranchStatus("lep2",1);
+    intree -> SetBranchStatus("q1",1);
+    intree -> SetBranchStatus("q2",1);
+    intree -> SetBranchStatus("scale1fbGen",1);
+    intree -> SetBranchStatus("scale1fb",1);
+    intree -> SetBranchStatus("scale1fbUp",1);
+    intree -> SetBranchStatus("scale1fbDown",1);
     
     intree->SetBranchAddress("runNum",   &runNum);     // event run number
     intree->SetBranchAddress("lumiSec",  &lumiSec);    // event lumi section
     intree->SetBranchAddress("evtNum",   &evtNum);     // event number
-    intree->SetBranchAddress("matchGen", &matchGen);   // event has both leptons matched to MC Z->ll
-    intree->SetBranchAddress("npv",      &npv);        // number of primary vertices
-    intree->SetBranchAddress("npu",      &npu);        // number of in-time PU events (MC)
     intree->SetBranchAddress("triggerDec",   &triggerDec);    // event pass the trigger
     intree->SetBranchAddress("goodPV",   &goodPV);    // event has a good PV
     intree->SetBranchAddress("matchTrigger",   &matchTrigger);    // event has at least one lepton matched to the trigger
@@ -368,12 +379,9 @@ void plotZmmGen(const TString  conf,            // input file
     // Create histograms
     //
     double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-    
     double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-    
     double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
     double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-    
     double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
     double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
      
@@ -511,18 +519,9 @@ void plotZmmGen(const TString  conf,            // input file
   //
   // loop over events
   //
-  cout<<"Beginning of Loop: nentries"<<intree->GetEntries() << endl;
-  sw_[0].Start();
-
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
-    if ( ientry %10000 == 0 )
-      {
-	sw_[0].Stop();
-	cout<< "Took " <<  sw_[0] .RealTime() << "s CPU " << sw_[0] . CpuTime()<< endl;
-	sw_[0].Reset();
-	sw_[0].Start();
-      }
+    
     TLorentzVector mu1;
     TLorentzVector mu2;
     mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
@@ -911,8 +910,6 @@ void plotZmmGen(const TString  conf,            // input file
     genweight *= scale1fbGen*lumi;
     Double_t weight = 1;
     weight *=scale1fb*lumi;
-
-    sw_[1].Stop();
 
     if(isReco)
       {
