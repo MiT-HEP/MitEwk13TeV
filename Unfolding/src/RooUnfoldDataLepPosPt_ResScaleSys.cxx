@@ -41,6 +41,21 @@ string int2string(int i) {
   ss >> ret;
   return ret;
 }
+float mean(vector<float> &a )
+{
+  float S=0;
+  for(int i=0;i<int(a.size());i++) S+=a[i];
+  S/=a.size();
+  return S;
+}
+float rms(vector<float> &a)
+{
+  float S=0;
+  float m=mean(a);
+  for(int i=0;i<int(a.size());i++) S+=(a[i]-m)*(a[i]-m);
+  S/=(a.size()-1);
+  return sqrt(S);
+}
 
 //==============================================================================
 // Global definitions
@@ -49,14 +64,44 @@ string int2string(int i) {
 const Double_t cutdummy= -99999.0;
 
 
-TH1D *hReco, *hTruth, *hData, *hTop, *hEWK, *hMeas, *hUnfold;
-TH2D *hMatrix, *hMatrix_hilf;
+TH1D *hReco[100], *hTruth[100], *hData[100], *hTop[100], *hEWK[100], *hMeas[100], *hUnfold[100];
+TH2D *hMatrix[100], *hMatrix_hilf[100];
+TH1D *hReco_Nominal, *hTruth_Nominal, *hData_Nominal, *hTop_Nominal, *hEWK_Nominal, *hMeas_Nominal, *hUnfold_Nominal;
+TH2D *hMatrix_Nominal, *hMatrix_hilf_Nominal;
 
-TGraphAsymmErrors *gUnfold;
+vector<float> vrms;
 
 //==============================================================================
 // Train unfolding algorithm
 //==============================================================================
+
+Int_t TrainNominal ()
+{
+  cout <<"================ TRAIN ======================="<<endl;
+  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs.root");
+  if (file1 == NULL) cout <<"File does not exists"<<endl;
+  hTruth_Nominal = (TH1D*)file1->Get("hLepPosPtTruth");
+  hReco_Nominal = (TH1D*)file1->Get("hLepPosPtReco");
+  hMatrix_hilf_Nominal = (TH2D*)file1->Get("hLepPosPtMatrix");
+ 
+  if (hTruth_Nominal==NULL) cout<< "hTruth does not exist"<<endl;
+  if (hReco_Nominal==NULL) cout<< "hReco does not exist"<<endl;
+  if (hMatrix_hilf_Nominal==NULL) cout<< "hMatrix does not exist"<<endl;
+
+  hMatrix_Nominal= (TH2D*)hMatrix_hilf_Nominal->Clone("hMatrix");
+  for(int j=0;j!=hMatrix_hilf_Nominal->GetNbinsX();++j)
+    {
+      for(int k=0;k!=hMatrix_hilf_Nominal->GetNbinsY();++k)
+	{
+	  hMatrix_Nominal->SetBinContent(j+1,k+1,hMatrix_hilf_Nominal->GetBinContent(k+1,j+1));
+	  hMatrix_Nominal->SetBinError(j+1,k+1,hMatrix_hilf_Nominal->GetBinError(k+1,j+1));
+	}
+    }
+
+
+  cout<<"Training finished"<<endl;
+  return 1;
+}
 
 Int_t Train ()
 {
@@ -64,21 +109,25 @@ Int_t Train ()
   TFile *file1= new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs_ResScale.root");
 
   if (file1 == NULL) cout <<"File does not exists"<<endl;
-  hTruth = (TH1D*)file1->Get("hLepPosPtTruth");
-  hReco = (TH1D*)file1->Get("hLepPosPtReco");
-  hMatrix_hilf = (TH2D*)file1->Get("hLepPosPtMatrix");
-
-  if (hTruth==NULL) cout<< "hTruth does not exist"<<endl;
-  if (hReco==NULL) cout<< "hReco does not exist"<<endl;
-  if (hMatrix_hilf==NULL) cout<< "hMatrix does not exist"<<endl;
-
-  hMatrix= (TH2D*)hMatrix_hilf->Clone("hMatrix");
-  for(int j=0;j!=hMatrix_hilf->GetNbinsX();++j)
+  for(int i=0;i!=100;++i)
     {
-      for(int k=0;k!=hMatrix_hilf->GetNbinsY();++k)
+      string si=int2string(i);
+      hTruth[i] = (TH1D*)file1->Get((string("hLepPosPtTruth_")+si).c_str());
+      hReco[i] = (TH1D*)file1->Get((string("hLepPosPtReco_")+si).c_str());
+      hMatrix_hilf[i] = (TH2D*)file1->Get((string("hLepPosPtMatrix_")+si).c_str());
+      
+      if (hTruth[i]==NULL) cout<< "hTruth does not exist"<<endl;
+      if (hReco[i]==NULL) cout<< "hReco does not exist"<<endl;
+      if (hMatrix_hilf[i]==NULL) cout<< "hMatrix does not exist"<<endl;
+      
+      hMatrix[i]= (TH2D*)hMatrix_hilf[i]->Clone((string("hMatrix_")+si).c_str());
+      for(int j=0;j!=hMatrix_hilf[i]->GetNbinsX();++j)
 	{
-	  hMatrix->SetBinContent(j+1,k+1,hMatrix_hilf->GetBinContent(k+1,j+1));
-	  hMatrix->SetBinError(j+1,k+1,hMatrix_hilf->GetBinError(k+1,j+1));
+	  for(int k=0;k!=hMatrix_hilf[i]->GetNbinsY();++k)
+	    {
+	      hMatrix[i]->SetBinContent(j+1,k+1,hMatrix_hilf[i]->GetBinContent(k+1,j+1));
+	      hMatrix[i]->SetBinError(j+1,k+1,hMatrix_hilf[i]->GetBinError(k+1,j+1));
+	    }
 	}
     }
 
@@ -91,22 +140,45 @@ Int_t Train ()
 // Test distribution
 //==============================================================================
 
+Int_t TestNominal ()
+{
+ cout <<"==================== TEST ===================="<<endl;
+ TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ 
+  if (f == NULL) cout<<"file does not exists"<<endl;
+  hData_Nominal = (TH1D*)f->Get("hDataLepPosPt");
+  hTop_Nominal = (TH1D*)f->Get("hTopLepPosPt");
+  hEWK_Nominal = (TH1D*)f->Get("hEWKLepPosPt");
+
+  hMeas_Nominal = (TH1D*)f->Get("hDataLepPosPt");
+  hMeas_Nominal->Sumw2();
+  hMeas_Nominal->Add(hTop_Nominal,-1);
+  hMeas_Nominal->Add(hEWK_Nominal,-1);
+
+
+  cout<<"Test finished"<<endl;
+  return 1;
+}
+
 Int_t Test ()
 {
   cout <<"==================== TEST ===================="<<endl;
   TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg_ResScale.root");
   
   if (f == NULL) cout<<"file does not exists"<<endl;
-  hData = (TH1D*)f->Get("hDataLepPosPt");
-  hTop = (TH1D*)f->Get("hTopLepPosPt");
-  hEWK = (TH1D*)f->Get("hEWKLepPosPt");
-  
-  hMeas = (TH1D*)f->Get("hDataLepPosPt");
-  hMeas->Sumw2();
-  hMeas->Add(hTop,-1);
-  hMeas->Add(hEWK,-1);
-
-
+  for(int i=0;i!=100;++i)
+    {
+      string si=int2string(i);
+      hData[i] = (TH1D*)f->Get((string("hDataLepPosPt_")+si).c_str());
+      hTop[i] = (TH1D*)f->Get((string("hTopLepPosPt_")+si).c_str());
+      hEWK[i] = (TH1D*)f->Get((string("hEWKLepPosPt_")+si).c_str());
+      
+      hMeas[i] = (TH1D*)f->Get((string("hDataLepPosPt_")+si).c_str());
+      hMeas[i]->Sumw2();
+      hMeas[i]->Add(hTop[i],-1);
+      hMeas[i]->Add(hEWK[i],-1);
+    }
+      
   cout<<"Test finished"<<endl;
   return 1;
 }
@@ -130,6 +202,9 @@ void RooUnfoldExample(const TString  outputDir,    // output directory
     cout<<"Created output directory"<<endl;
 
   double LUMI=lumi;
+
+  TrainNominal();
+  TestNominal();
  
   Train();
   Test();
@@ -138,50 +213,66 @@ void RooUnfoldExample(const TString  outputDir,    // output directory
 
   TFile* his=new TFile(outputDir+(string("/UnfoldingOutputLepPosPtResScale.root")).c_str(), "recreate");
 
-  gRandom->SetSeed(1234);
+  RooUnfoldResponse responseNominal(hReco_Nominal,hTruth_Nominal,hMatrix_Nominal);
 
-  RooUnfoldResponse response(hReco,hTruth,hMatrix);
+  responseNominal.UseOverflow();
 
-  response.UseOverflow();
+  RooUnfoldBayes   unfoldNominal (&responseNominal, hMeas_Nominal, iterations);
 
-
-  RooUnfoldBayes   unfold (&response, hMeas, iterations);
-
-  BootStrap b;
-  b.SetUnfoldType(BootStrap::kBayes);
-  b.SetRegParam(iterations);
+  hUnfold_Nominal=(TH1D*) unfoldNominal.Hreco(RooUnfold::kNoError);
   
-  b.SetUMatrix(hReco,hTruth,hMatrix);
-  b.SetData( (TH1D*)hMeas->Clone("bootstrap_data") );
-  b.SetToyType(BootStrap::kBootstrap);
-  b.run();
-
-  TGraphAsymmErrors *g = b.result(BootStrap::kMin,.68);
-  g->SetName("gBootStrap");
-
-  unfold.SetNToys(1000);
-  
-  hUnfold=(TH1D*) unfold.Hreco(RooUnfold::kCovToy);
-  
-  for(int j=0;j!=hUnfold->GetNbinsX();++j)
+  for(int j=0;j!=hUnfold_Nominal->GetNbinsX();++j)
     {
-      hUnfold->SetBinContent(j+1,hUnfold->GetBinContent(j+1)/hUnfold->GetBinWidth(j+1));
-      hUnfold->SetBinError(j+1,hUnfold->GetBinError(j+1)/hUnfold->GetBinWidth(j+1));
+      hUnfold_Nominal->SetBinContent(j+1,hUnfold_Nominal->GetBinContent(j+1)/hUnfold_Nominal->GetBinWidth(j+1));
     }
 
-  for(int j=0;j!=hTruth->GetNbinsX();++j)
+  for(int j=0;j!=hTruth_Nominal->GetNbinsX();++j)
     {
-      hTruth->SetBinContent(j+1,hTruth->GetBinContent(j+1)/hTruth->GetBinWidth(j+1));
-      hTruth->SetBinError(j+1,hTruth->GetBinError(j+1)/hTruth->GetBinWidth(j+1));
+      hTruth_Nominal->SetBinContent(j+1,hTruth_Nominal->GetBinContent(j+1)/hTruth_Nominal->GetBinWidth(j+1));
     }
 
-  hUnfold->Scale(1./LUMI);
-  hTruth->Scale(1./LUMI);
+  hUnfold_Nominal->Scale(1./LUMI);
+  hTruth_Nominal->Scale(1./LUMI);
+
+  for(int i=0;i!=100;++i)
+    {
+      RooUnfoldResponse response(hReco[i],hTruth[i],hMatrix[i]);
+
+      response.UseOverflow();
+      
+
+      RooUnfoldBayes   unfold (&response, hMeas[i], iterations);
+      
+      hUnfold[i]=(TH1D*) unfold.Hreco(RooUnfold::kNoError);
+      
+      for(int j=0;j!=hUnfold[i]->GetNbinsX();++j)
+	{
+	  hUnfold[i]->SetBinContent(j+1,hUnfold[i]->GetBinContent(j+1)/hUnfold[i]->GetBinWidth(j+1));
+	}
+      hUnfold[i]->Scale(1./LUMI);
+    }
+
+  int Nbins=hUnfold[0]->GetNbinsX();
+  vector<float> vtoyval;
+  for(int i=0;i!=Nbins;++i)
+    {
+      vtoyval.clear();
+      for(int j=0;j!=100;++j)
+	{
+	  vtoyval.push_back(hUnfold[j]->GetBinContent(i+1));
+	}
+      vrms.push_back(rms(vtoyval));
+      cout<<"RMS: "<<vrms[i]<<endl;
+    }
+
+  for(int j=0;j!=hUnfold_Nominal->GetNbinsX();++j)
+    {
+      hUnfold_Nominal->SetBinError(j+1,vrms[j]);
+    }
 
   his->cd();
-  hTruth->Write("hTruth");
-  hUnfold->Write("hUnfold");
-  g->Write();
+  hTruth_Nominal->Write("hTruth");
+  hUnfold_Nominal->Write("hUnfold");
   his->Close();
 }
 
