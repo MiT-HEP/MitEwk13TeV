@@ -60,26 +60,25 @@ void plotZmmGen(const TString  conf,            // input file
   const Double_t ETA_CUT   = 2.4;
 
   // efficiency files
-  
-  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/CT/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
 
   // efficiency files 2Bins
 
@@ -378,41 +377,44 @@ void plotZmmGen(const TString  conf,            // input file
     //
     // Create histograms
     //
-    double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-    double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-    double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-    double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-    double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-    double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
+    double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+    double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
+    double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+    double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
+    double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+    double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
      
     TH1D *hMassMC  = new TH1D("hMassMC","",30,60,120); hMassMC->Sumw2();
-    TH1D *hZPtReco  = new TH1D("hZPtReco","",34,ZPtBins); hZPtReco->Sumw2();
-    TH1D *hZPtTruth  = new TH1D("hZPtTruth","",34,ZPtBins); hZPtTruth->Sumw2();
-    TH2D *hZPtMatrix  = new TH2D("hZPtMatrix","",34,ZPtBins,34,ZPtBins); hZPtMatrix->Sumw2();
-    TH1D *hZPtReco_EffBin  = new TH1D("hZPtReco_EffBin","",34,ZPtBins); hZPtReco_EffBin->Sumw2();
-    TH2D *hZPtMatrix_EffBin  = new TH2D("hZPtMatrix_EffBin","",34,ZPtBins,34,ZPtBins); hZPtMatrix_EffBin->Sumw2();
-    TH1D *hZPtReco_EffStatUp  = new TH1D("hZPtReco_EffStatUp","",34,ZPtBins); hZPtReco_EffStatUp->Sumw2();
-    TH2D *hZPtMatrix_EffStatUp  = new TH2D("hZPtMatrix_EffStatUp","",34,ZPtBins,34,ZPtBins); hZPtMatrix_EffStatUp->Sumw2();
-    TH1D *hZPtReco_EffStatDown  = new TH1D("hZPtReco_EffStatDown","",34,ZPtBins); hZPtReco_EffStatDown->Sumw2();
-    TH2D *hZPtMatrix_EffStatDown  = new TH2D("hZPtMatrix_EffStatDown","",34,ZPtBins,34,ZPtBins); hZPtMatrix_EffStatDown->Sumw2();
-    TH1D *hZPtReco_EffSigShape  = new TH1D("hZPtReco_EffSigShape","",34,ZPtBins); hZPtReco_EffSigShape->Sumw2();
-    TH2D *hZPtMatrix_EffSigShape  = new TH2D("hZPtMatrix_EffSigShape","",34,ZPtBins,34,ZPtBins); hZPtMatrix_EffSigShape->Sumw2();
-    TH1D *hZPtReco_EffBkgShape  = new TH1D("hZPtReco_EffBkgShape","",34,ZPtBins); hZPtReco_EffBkgShape->Sumw2();
-    TH2D *hZPtMatrix_EffBkgShape  = new TH2D("hZPtMatrix_EffBkgShape","",34,ZPtBins,34,ZPtBins); hZPtMatrix_EffBkgShape->Sumw2();
+
+    const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+    TH1D *hZPtReco  = new TH1D("hZPtReco","",nBinsZPt,ZPtBins); hZPtReco->Sumw2();
+    TH1D *hZPtTruth  = new TH1D("hZPtTruth","",nBinsZPt,ZPtBins); hZPtTruth->Sumw2();
+    TH2D *hZPtMatrix  = new TH2D("hZPtMatrix","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrix->Sumw2();
+    TH1D *hZPtReco_EffBin  = new TH1D("hZPtReco_EffBin","",nBinsZPt,ZPtBins); hZPtReco_EffBin->Sumw2();
+    TH2D *hZPtMatrix_EffBin  = new TH2D("hZPtMatrix_EffBin","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrix_EffBin->Sumw2();
+    TH1D *hZPtReco_EffStatUp  = new TH1D("hZPtReco_EffStatUp","",nBinsZPt,ZPtBins); hZPtReco_EffStatUp->Sumw2();
+    TH2D *hZPtMatrix_EffStatUp  = new TH2D("hZPtMatrix_EffStatUp","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrix_EffStatUp->Sumw2();
+    TH1D *hZPtReco_EffStatDown  = new TH1D("hZPtReco_EffStatDown","",nBinsZPt,ZPtBins); hZPtReco_EffStatDown->Sumw2();
+    TH2D *hZPtMatrix_EffStatDown  = new TH2D("hZPtMatrix_EffStatDown","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrix_EffStatDown->Sumw2();
+    TH1D *hZPtReco_EffSigShape  = new TH1D("hZPtReco_EffSigShape","",nBinsZPt,ZPtBins); hZPtReco_EffSigShape->Sumw2();
+    TH2D *hZPtMatrix_EffSigShape  = new TH2D("hZPtMatrix_EffSigShape","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrix_EffSigShape->Sumw2();
+    TH1D *hZPtReco_EffBkgShape  = new TH1D("hZPtReco_EffBkgShape","",nBinsZPt,ZPtBins); hZPtReco_EffBkgShape->Sumw2();
+    TH2D *hZPtMatrix_EffBkgShape  = new TH2D("hZPtMatrix_EffBkgShape","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrix_EffBkgShape->Sumw2();
     
-    TH1D *hPhiStarReco  = new TH1D("hPhiStarReco","",27,PhiStarBins); hPhiStarReco->Sumw2();
-    TH1D *hPhiStarTruth  = new TH1D("hPhiStarTruth","",27,PhiStarBins); hPhiStarTruth->Sumw2();
-    TH2D *hPhiStarMatrix  = new TH2D("hPhiStarMatrix","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix->Sumw2();
-    TH1D *hPhiStarReco_EffBin  = new TH1D("hPhiStarReco_EffBin","",27,PhiStarBins); hPhiStarReco_EffBin->Sumw2();
-    TH2D *hPhiStarMatrix_EffBin  = new TH2D("hPhiStarMatrix_EffBin","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix_EffBin->Sumw2();
-    TH1D *hPhiStarReco_EffStatUp  = new TH1D("hPhiStarReco_EffStatUp","",27,PhiStarBins); hPhiStarReco_EffStatUp->Sumw2();
-    TH2D *hPhiStarMatrix_EffStatUp  = new TH2D("hPhiStarMatrix_EffStatUp","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix_EffStatUp->Sumw2();
-    TH1D *hPhiStarReco_EffStatDown  = new TH1D("hPhiStarReco_EffStatDown","",27,PhiStarBins); hPhiStarReco_EffStatDown->Sumw2();
-    TH2D *hPhiStarMatrix_EffStatDown  = new TH2D("hPhiStarMatrix_EffStatDown","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix_EffStatDown->Sumw2();
-    TH1D *hPhiStarReco_EffSigShape  = new TH1D("hPhiStarReco_EffSigShape","",27,PhiStarBins); hPhiStarReco_EffSigShape->Sumw2();
-    TH2D *hPhiStarMatrix_EffSigShape  = new TH2D("hPhiStarMatrix_EffSigShape","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix_EffSigShape->Sumw2();
-    TH1D *hPhiStarReco_EffBkgShape  = new TH1D("hPhiStarReco_EffBkgShape","",27,PhiStarBins); hPhiStarReco_EffBkgShape->Sumw2();
-    TH2D *hPhiStarMatrix_EffBkgShape  = new TH2D("hPhiStarMatrix_EffBkgShape","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix_EffBkgShape->Sumw2();
+    const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
+    TH1D *hPhiStarReco  = new TH1D("hPhiStarReco","",nBinsPhiStar,PhiStarBins); hPhiStarReco->Sumw2();
+    TH1D *hPhiStarTruth  = new TH1D("hPhiStarTruth","",nBinsPhiStar,PhiStarBins); hPhiStarTruth->Sumw2();
+    TH2D *hPhiStarMatrix  = new TH2D("hPhiStarMatrix","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrix->Sumw2();
+    TH1D *hPhiStarReco_EffBin  = new TH1D("hPhiStarReco_EffBin","",nBinsPhiStar,PhiStarBins); hPhiStarReco_EffBin->Sumw2();
+    TH2D *hPhiStarMatrix_EffBin  = new TH2D("hPhiStarMatrix_EffBin","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrix_EffBin->Sumw2();
+    TH1D *hPhiStarReco_EffStatUp  = new TH1D("hPhiStarReco_EffStatUp","",nBinsPhiStar,PhiStarBins); hPhiStarReco_EffStatUp->Sumw2();
+    TH2D *hPhiStarMatrix_EffStatUp  = new TH2D("hPhiStarMatrix_EffStatUp","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrix_EffStatUp->Sumw2();
+    TH1D *hPhiStarReco_EffStatDown  = new TH1D("hPhiStarReco_EffStatDown","",nBinsPhiStar,PhiStarBins); hPhiStarReco_EffStatDown->Sumw2();
+    TH2D *hPhiStarMatrix_EffStatDown  = new TH2D("hPhiStarMatrix_EffStatDown","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrix_EffStatDown->Sumw2();
+    TH1D *hPhiStarReco_EffSigShape  = new TH1D("hPhiStarReco_EffSigShape","",nBinsPhiStar,PhiStarBins); hPhiStarReco_EffSigShape->Sumw2();
+    TH2D *hPhiStarMatrix_EffSigShape  = new TH2D("hPhiStarMatrix_EffSigShape","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrix_EffSigShape->Sumw2();
+    TH1D *hPhiStarReco_EffBkgShape  = new TH1D("hPhiStarReco_EffBkgShape","",nBinsPhiStar,PhiStarBins); hPhiStarReco_EffBkgShape->Sumw2();
+    TH2D *hPhiStarMatrix_EffBkgShape  = new TH2D("hPhiStarMatrix_EffBkgShape","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrix_EffBkgShape->Sumw2();
     
     
     TH1D *hZRapReco  = new TH1D("hZRapReco","",24,0,2.4); hZRapReco->Sumw2();
@@ -429,62 +431,68 @@ void plotZmmGen(const TString  conf,            // input file
     TH1D *hZRapReco_EffBkgShape  = new TH1D("hZRapReco_EffBkgShape","",24,0,2.4); hZRapReco_EffBkgShape->Sumw2();
     TH2D *hZRapMatrix_EffBkgShape  = new TH2D("hZRapMatrix_EffBkgShape","",24,0,2.4,24,0,2.4); hZRapMatrix_EffBkgShape->Sumw2();
     
+    const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+    TH1D *hLep1PtReco  = new TH1D("hLep1PtReco","",nBinsLep1Pt,Lep1PtBins); hLep1PtReco->Sumw2();
+    TH1D *hLep1PtTruth  = new TH1D("hLep1PtTruth","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruth->Sumw2();
+    TH2D *hLep1PtMatrix  = new TH2D("hLep1PtMatrix","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrix->Sumw2();
+    TH1D *hLep1PtReco_EffBin  = new TH1D("hLep1PtReco_EffBin","",nBinsLep1Pt,Lep1PtBins); hLep1PtReco_EffBin->Sumw2();
+    TH2D *hLep1PtMatrix_EffBin  = new TH2D("hLep1PtMatrix_EffBin","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrix_EffBin->Sumw2();
+    TH1D *hLep1PtReco_EffStatUp  = new TH1D("hLep1PtReco_EffStatUp","",nBinsLep1Pt,Lep1PtBins); hLep1PtReco_EffStatUp->Sumw2();
+    TH2D *hLep1PtMatrix_EffStatUp  = new TH2D("hLep1PtMatrix_EffStatUp","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrix_EffStatUp->Sumw2();
+    TH1D *hLep1PtReco_EffStatDown  = new TH1D("hLep1PtReco_EffStatDown","",nBinsLep1Pt,Lep1PtBins); hLep1PtReco_EffStatDown->Sumw2();
+    TH2D *hLep1PtMatrix_EffStatDown  = new TH2D("hLep1PtMatrix_EffStatDown","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrix_EffStatDown->Sumw2();
+    TH1D *hLep1PtReco_EffSigShape  = new TH1D("hLep1PtReco_EffSigShape","",nBinsLep1Pt,Lep1PtBins); hLep1PtReco_EffSigShape->Sumw2();
+    TH2D *hLep1PtMatrix_EffSigShape  = new TH2D("hLep1PtMatrix_EffSigShape","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrix_EffSigShape->Sumw2();
+    TH1D *hLep1PtReco_EffBkgShape  = new TH1D("hLep1PtReco_EffBkgShape","",nBinsLep1Pt,Lep1PtBins); hLep1PtReco_EffBkgShape->Sumw2();
+    TH2D *hLep1PtMatrix_EffBkgShape  = new TH2D("hLep1PtMatrix_EffBkgShape","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrix_EffBkgShape->Sumw2();
     
-    TH1D *hLep1PtReco  = new TH1D("hLep1PtReco","",25,Lep1PtBins); hLep1PtReco->Sumw2();
-    TH1D *hLep1PtTruth  = new TH1D("hLep1PtTruth","",25,Lep1PtBins); hLep1PtTruth->Sumw2();
-    TH2D *hLep1PtMatrix  = new TH2D("hLep1PtMatrix","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix->Sumw2();
-    TH1D *hLep1PtReco_EffBin  = new TH1D("hLep1PtReco_EffBin","",25,Lep1PtBins); hLep1PtReco_EffBin->Sumw2();
-    TH2D *hLep1PtMatrix_EffBin  = new TH2D("hLep1PtMatrix_EffBin","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix_EffBin->Sumw2();
-    TH1D *hLep1PtReco_EffStatUp  = new TH1D("hLep1PtReco_EffStatUp","",25,Lep1PtBins); hLep1PtReco_EffStatUp->Sumw2();
-    TH2D *hLep1PtMatrix_EffStatUp  = new TH2D("hLep1PtMatrix_EffStatUp","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix_EffStatUp->Sumw2();
-    TH1D *hLep1PtReco_EffStatDown  = new TH1D("hLep1PtReco_EffStatDown","",25,Lep1PtBins); hLep1PtReco_EffStatDown->Sumw2();
-    TH2D *hLep1PtMatrix_EffStatDown  = new TH2D("hLep1PtMatrix_EffStatDown","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix_EffStatDown->Sumw2();
-    TH1D *hLep1PtReco_EffSigShape  = new TH1D("hLep1PtReco_EffSigShape","",25,Lep1PtBins); hLep1PtReco_EffSigShape->Sumw2();
-    TH2D *hLep1PtMatrix_EffSigShape  = new TH2D("hLep1PtMatrix_EffSigShape","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix_EffSigShape->Sumw2();
-    TH1D *hLep1PtReco_EffBkgShape  = new TH1D("hLep1PtReco_EffBkgShape","",25,Lep1PtBins); hLep1PtReco_EffBkgShape->Sumw2();
-    TH2D *hLep1PtMatrix_EffBkgShape  = new TH2D("hLep1PtMatrix_EffBkgShape","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix_EffBkgShape->Sumw2();
-    
-    TH1D *hLep2PtReco  = new TH1D("hLep2PtReco","",20,Lep2PtBins); hLep2PtReco->Sumw2();
-    TH1D *hLep2PtTruth  = new TH1D("hLep2PtTruth","",20,Lep2PtBins); hLep2PtTruth->Sumw2();
-    TH2D *hLep2PtMatrix  = new TH2D("hLep2PtMatrix","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix->Sumw2();
-    TH1D *hLep2PtReco_EffBin  = new TH1D("hLep2PtReco_EffBin","",20,Lep2PtBins); hLep2PtReco_EffBin->Sumw2();
-    TH2D *hLep2PtMatrix_EffBin  = new TH2D("hLep2PtMatrix_EffBin","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix_EffBin->Sumw2();
-    TH1D *hLep2PtReco_EffStatUp  = new TH1D("hLep2PtReco_EffStatUp","",20,Lep2PtBins); hLep2PtReco_EffStatUp->Sumw2();
-  TH2D *hLep2PtMatrix_EffStatUp  = new TH2D("hLep2PtMatrix_EffStatUp","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix_EffStatUp->Sumw2();
-  TH1D *hLep2PtReco_EffStatDown  = new TH1D("hLep2PtReco_EffStatDown","",20,Lep2PtBins); hLep2PtReco_EffStatDown->Sumw2();
-  TH2D *hLep2PtMatrix_EffStatDown  = new TH2D("hLep2PtMatrix_EffStatDown","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix_EffStatDown->Sumw2();
-  TH1D *hLep2PtReco_EffSigShape  = new TH1D("hLep2PtReco_EffSigShape","",20,Lep2PtBins); hLep2PtReco_EffSigShape->Sumw2();
-  TH2D *hLep2PtMatrix_EffSigShape  = new TH2D("hLep2PtMatrix_EffSigShape","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix_EffSigShape->Sumw2();
-  TH1D *hLep2PtReco_EffBkgShape  = new TH1D("hLep2PtReco_EffBkgShape","",20,Lep2PtBins); hLep2PtReco_EffBkgShape->Sumw2();
-  TH2D *hLep2PtMatrix_EffBkgShape  = new TH2D("hLep2PtMatrix_EffBkgShape","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix_EffBkgShape->Sumw2();
 
-  TH1D *hLepNegPtReco  = new TH1D("hLepNegPtReco","",25,LepNegPtBins); hLepNegPtReco->Sumw2();
-  TH1D *hLepNegPtTruth  = new TH1D("hLepNegPtTruth","",25,LepNegPtBins); hLepNegPtTruth->Sumw2();
-  TH2D *hLepNegPtMatrix  = new TH2D("hLepNegPtMatrix","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix->Sumw2();
-  TH1D *hLepNegPtReco_EffBin  = new TH1D("hLepNegPtReco_EffBin","",25,LepNegPtBins); hLepNegPtReco_EffBin->Sumw2();
-  TH2D *hLepNegPtMatrix_EffBin  = new TH2D("hLepNegPtMatrix_EffBin","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix_EffBin->Sumw2();
-  TH1D *hLepNegPtReco_EffStatUp  = new TH1D("hLepNegPtReco_EffStatUp","",25,LepNegPtBins); hLepNegPtReco_EffStatUp->Sumw2();
-  TH2D *hLepNegPtMatrix_EffStatUp  = new TH2D("hLepNegPtMatrix_EffStatUp","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix_EffStatUp->Sumw2();
-  TH1D *hLepNegPtReco_EffStatDown  = new TH1D("hLepNegPtReco_EffStatDown","",25,LepNegPtBins); hLepNegPtReco_EffStatDown->Sumw2();
-  TH2D *hLepNegPtMatrix_EffStatDown  = new TH2D("hLepNegPtMatrix_EffStatDown","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix_EffStatDown->Sumw2();
-  TH1D *hLepNegPtReco_EffSigShape  = new TH1D("hLepNegPtReco_EffSigShape","",25,LepNegPtBins); hLepNegPtReco_EffSigShape->Sumw2();
-  TH2D *hLepNegPtMatrix_EffSigShape  = new TH2D("hLepNegPtMatrix_EffSigShape","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix_EffSigShape->Sumw2();
-  TH1D *hLepNegPtReco_EffBkgShape  = new TH1D("hLepNegPtReco_EffBkgShape","",25,LepNegPtBins); hLepNegPtReco_EffBkgShape->Sumw2();
-  TH2D *hLepNegPtMatrix_EffBkgShape  = new TH2D("hLepNegPtMatrix_EffBkgShape","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix_EffBkgShape->Sumw2();
+    const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+    TH1D *hLep2PtReco  = new TH1D("hLep2PtReco","",nBinsLep2Pt,Lep2PtBins); hLep2PtReco->Sumw2();
+    TH1D *hLep2PtTruth  = new TH1D("hLep2PtTruth","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruth->Sumw2();
+    TH2D *hLep2PtMatrix  = new TH2D("hLep2PtMatrix","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrix->Sumw2();
+    TH1D *hLep2PtReco_EffBin  = new TH1D("hLep2PtReco_EffBin","",nBinsLep2Pt,Lep2PtBins); hLep2PtReco_EffBin->Sumw2();
+    TH2D *hLep2PtMatrix_EffBin  = new TH2D("hLep2PtMatrix_EffBin","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrix_EffBin->Sumw2();
+    TH1D *hLep2PtReco_EffStatUp  = new TH1D("hLep2PtReco_EffStatUp","",nBinsLep2Pt,Lep2PtBins); hLep2PtReco_EffStatUp->Sumw2();
+  TH2D *hLep2PtMatrix_EffStatUp  = new TH2D("hLep2PtMatrix_EffStatUp","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrix_EffStatUp->Sumw2();
+  TH1D *hLep2PtReco_EffStatDown  = new TH1D("hLep2PtReco_EffStatDown","",nBinsLep2Pt,Lep2PtBins); hLep2PtReco_EffStatDown->Sumw2();
+  TH2D *hLep2PtMatrix_EffStatDown  = new TH2D("hLep2PtMatrix_EffStatDown","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrix_EffStatDown->Sumw2();
+  TH1D *hLep2PtReco_EffSigShape  = new TH1D("hLep2PtReco_EffSigShape","",nBinsLep2Pt,Lep2PtBins); hLep2PtReco_EffSigShape->Sumw2();
+  TH2D *hLep2PtMatrix_EffSigShape  = new TH2D("hLep2PtMatrix_EffSigShape","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrix_EffSigShape->Sumw2();
+  TH1D *hLep2PtReco_EffBkgShape  = new TH1D("hLep2PtReco_EffBkgShape","",nBinsLep2Pt,Lep2PtBins); hLep2PtReco_EffBkgShape->Sumw2();
+  TH2D *hLep2PtMatrix_EffBkgShape  = new TH2D("hLep2PtMatrix_EffBkgShape","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrix_EffBkgShape->Sumw2();
 
-  TH1D *hLepPosPtReco  = new TH1D("hLepPosPtReco","",25,LepPosPtBins); hLepPosPtReco->Sumw2();
-  TH1D *hLepPosPtTruth  = new TH1D("hLepPosPtTruth","",25,LepPosPtBins); hLepPosPtTruth->Sumw2();
-  TH2D *hLepPosPtMatrix  = new TH2D("hLepPosPtMatrix","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix->Sumw2();
-  TH1D *hLepPosPtReco_EffBin  = new TH1D("hLepPosPtReco_EffBin","",25,LepPosPtBins); hLepPosPtReco_EffBin->Sumw2();
-  TH2D *hLepPosPtMatrix_EffBin  = new TH2D("hLepPosPtMatrix_EffBin","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix_EffBin->Sumw2();
-  TH1D *hLepPosPtReco_EffStatUp  = new TH1D("hLepPosPtReco_EffStatUp","",25,LepPosPtBins); hLepPosPtReco_EffStatUp->Sumw2();
-  TH2D *hLepPosPtMatrix_EffStatUp  = new TH2D("hLepPosPtMatrix_EffStatUp","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix_EffStatUp->Sumw2();
-  TH1D *hLepPosPtReco_EffStatDown  = new TH1D("hLepPosPtReco_EffStatDown","",25,LepPosPtBins); hLepPosPtReco_EffStatDown->Sumw2();
-  TH2D *hLepPosPtMatrix_EffStatDown  = new TH2D("hLepPosPtMatrix_EffStatDown","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix_EffStatDown->Sumw2();
-  TH1D *hLepPosPtReco_EffSigShape  = new TH1D("hLepPosPtReco_EffSigShape","",25,LepPosPtBins); hLepPosPtReco_EffSigShape->Sumw2();
-  TH2D *hLepPosPtMatrix_EffSigShape  = new TH2D("hLepPosPtMatrix_EffSigShape","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix_EffSigShape->Sumw2();
-  TH1D *hLepPosPtReco_EffBkgShape  = new TH1D("hLepPosPtReco_EffBkgShape","",25,LepPosPtBins); hLepPosPtReco_EffBkgShape->Sumw2();
-  TH2D *hLepPosPtMatrix_EffBkgShape  = new TH2D("hLepPosPtMatrix_EffBkgShape","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix_EffBkgShape->Sumw2();
+
+  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
+  TH1D *hLepNegPtReco  = new TH1D("hLepNegPtReco","",nBinsLepNegPt,LepNegPtBins); hLepNegPtReco->Sumw2();
+  TH1D *hLepNegPtTruth  = new TH1D("hLepNegPtTruth","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruth->Sumw2();
+  TH2D *hLepNegPtMatrix  = new TH2D("hLepNegPtMatrix","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrix->Sumw2();
+  TH1D *hLepNegPtReco_EffBin  = new TH1D("hLepNegPtReco_EffBin","",nBinsLepNegPt,LepNegPtBins); hLepNegPtReco_EffBin->Sumw2();
+  TH2D *hLepNegPtMatrix_EffBin  = new TH2D("hLepNegPtMatrix_EffBin","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrix_EffBin->Sumw2();
+  TH1D *hLepNegPtReco_EffStatUp  = new TH1D("hLepNegPtReco_EffStatUp","",nBinsLepNegPt,LepNegPtBins); hLepNegPtReco_EffStatUp->Sumw2();
+  TH2D *hLepNegPtMatrix_EffStatUp  = new TH2D("hLepNegPtMatrix_EffStatUp","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrix_EffStatUp->Sumw2();
+  TH1D *hLepNegPtReco_EffStatDown  = new TH1D("hLepNegPtReco_EffStatDown","",nBinsLepNegPt,LepNegPtBins); hLepNegPtReco_EffStatDown->Sumw2();
+  TH2D *hLepNegPtMatrix_EffStatDown  = new TH2D("hLepNegPtMatrix_EffStatDown","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrix_EffStatDown->Sumw2();
+  TH1D *hLepNegPtReco_EffSigShape  = new TH1D("hLepNegPtReco_EffSigShape","",nBinsLepNegPt,LepNegPtBins); hLepNegPtReco_EffSigShape->Sumw2();
+  TH2D *hLepNegPtMatrix_EffSigShape  = new TH2D("hLepNegPtMatrix_EffSigShape","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrix_EffSigShape->Sumw2();
+  TH1D *hLepNegPtReco_EffBkgShape  = new TH1D("hLepNegPtReco_EffBkgShape","",nBinsLepNegPt,LepNegPtBins); hLepNegPtReco_EffBkgShape->Sumw2();
+  TH2D *hLepNegPtMatrix_EffBkgShape  = new TH2D("hLepNegPtMatrix_EffBkgShape","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrix_EffBkgShape->Sumw2();
+
+
+  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
+  TH1D *hLepPosPtReco  = new TH1D("hLepPosPtReco","",nBinsLepPosPt,LepPosPtBins); hLepPosPtReco->Sumw2();
+  TH1D *hLepPosPtTruth  = new TH1D("hLepPosPtTruth","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruth->Sumw2();
+  TH2D *hLepPosPtMatrix  = new TH2D("hLepPosPtMatrix","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrix->Sumw2();
+  TH1D *hLepPosPtReco_EffBin  = new TH1D("hLepPosPtReco_EffBin","",nBinsLepPosPt,LepPosPtBins); hLepPosPtReco_EffBin->Sumw2();
+  TH2D *hLepPosPtMatrix_EffBin  = new TH2D("hLepPosPtMatrix_EffBin","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrix_EffBin->Sumw2();
+  TH1D *hLepPosPtReco_EffStatUp  = new TH1D("hLepPosPtReco_EffStatUp","",nBinsLepPosPt,LepPosPtBins); hLepPosPtReco_EffStatUp->Sumw2();
+  TH2D *hLepPosPtMatrix_EffStatUp  = new TH2D("hLepPosPtMatrix_EffStatUp","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrix_EffStatUp->Sumw2();
+  TH1D *hLepPosPtReco_EffStatDown  = new TH1D("hLepPosPtReco_EffStatDown","",nBinsLepPosPt,LepPosPtBins); hLepPosPtReco_EffStatDown->Sumw2();
+  TH2D *hLepPosPtMatrix_EffStatDown  = new TH2D("hLepPosPtMatrix_EffStatDown","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrix_EffStatDown->Sumw2();
+  TH1D *hLepPosPtReco_EffSigShape  = new TH1D("hLepPosPtReco_EffSigShape","",nBinsLepPosPt,LepPosPtBins); hLepPosPtReco_EffSigShape->Sumw2();
+  TH2D *hLepPosPtMatrix_EffSigShape  = new TH2D("hLepPosPtMatrix_EffSigShape","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrix_EffSigShape->Sumw2();
+  TH1D *hLepPosPtReco_EffBkgShape  = new TH1D("hLepPosPtReco_EffBkgShape","",nBinsLepPosPt,LepPosPtBins); hLepPosPtReco_EffBkgShape->Sumw2();
+  TH2D *hLepPosPtMatrix_EffBkgShape  = new TH2D("hLepPosPtMatrix_EffBkgShape","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrix_EffBkgShape->Sumw2();
 
   TH1D *hLep1EtaReco  = new TH1D("hLep1EtaReco","",24,0,2.4); hLep1EtaReco->Sumw2();
   TH1D *hLep1EtaTruth  = new TH1D("hLep1EtaTruth","",24,0,2.4); hLep1EtaTruth->Sumw2();
@@ -1161,9 +1169,9 @@ void plotZmmGen(const TString  conf,            // input file
   // Z Pt
   //
 
-  TH2D *hZPtMatrixNorm  = new TH2D("hZPtMatrixNorm","",34,ZPtBins,34,ZPtBins); hZPtMatrixNorm->Sumw2();
-  TH1D *hZPtBinEfficiency  = new TH1D("hZPtBinEfficiency","",34,ZPtBins); hZPtBinEfficiency->Sumw2();
-  TH1D *hZPtBinPurity  = new TH1D("hZPtBinPurity","",34,ZPtBins); hZPtBinPurity->Sumw2();
+  TH2D *hZPtMatrixNorm  = new TH2D("hZPtMatrixNorm","",nBinsZPt,ZPtBins,nBinsZPt,ZPtBins); hZPtMatrixNorm->Sumw2();
+  TH1D *hZPtBinEfficiency  = new TH1D("hZPtBinEfficiency","",nBinsZPt,ZPtBins); hZPtBinEfficiency->Sumw2();
+  TH1D *hZPtBinPurity  = new TH1D("hZPtBinPurity","",nBinsZPt,ZPtBins); hZPtBinPurity->Sumw2();
   double sumtot=0;
   for(int i=0;i<hZPtMatrix->GetNbinsX();++i)
     {
@@ -1227,9 +1235,9 @@ void plotZmmGen(const TString  conf,            // input file
   // PhiStar
   //
 
-  TH2D *hPhiStarMatrixNorm  = new TH2D("hPhiStarMatrixNorm","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrixNorm->Sumw2();
-  TH1D *hPhiStarBinEfficiency  = new TH1D("hPhiStarBinEfficiency","",27,PhiStarBins); hPhiStarBinEfficiency->Sumw2();
-  TH1D *hPhiStarBinPurity  = new TH1D("hPhiStarBinPurity","",27,PhiStarBins); hPhiStarBinPurity->Sumw2();
+  TH2D *hPhiStarMatrixNorm  = new TH2D("hPhiStarMatrixNorm","",nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins); hPhiStarMatrixNorm->Sumw2();
+  TH1D *hPhiStarBinEfficiency  = new TH1D("hPhiStarBinEfficiency","",nBinsPhiStar,PhiStarBins); hPhiStarBinEfficiency->Sumw2();
+  TH1D *hPhiStarBinPurity  = new TH1D("hPhiStarBinPurity","",nBinsPhiStar,PhiStarBins); hPhiStarBinPurity->Sumw2();
   sumtot=0;
   for(int i=0;i<hPhiStarMatrix->GetNbinsX();++i)
     {
@@ -1353,9 +1361,9 @@ void plotZmmGen(const TString  conf,            // input file
   // Lep1 Pt
   //
   
-  TH2D *hLep1PtMatrixNorm  = new TH2D("hLep1PtMatrixNorm","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrixNorm->Sumw2();
-  TH1D *hLep1PtBinEfficiency  = new TH1D("hLep1PtBinEfficiency","",25,Lep1PtBins); hLep1PtBinEfficiency->Sumw2();
-  TH1D *hLep1PtBinPurity  = new TH1D("hLep1PtBinPurity","",25,Lep1PtBins); hLep1PtBinPurity->Sumw2();
+  TH2D *hLep1PtMatrixNorm  = new TH2D("hLep1PtMatrixNorm","",nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins); hLep1PtMatrixNorm->Sumw2();
+  TH1D *hLep1PtBinEfficiency  = new TH1D("hLep1PtBinEfficiency","",nBinsLep1Pt,Lep1PtBins); hLep1PtBinEfficiency->Sumw2();
+  TH1D *hLep1PtBinPurity  = new TH1D("hLep1PtBinPurity","",nBinsLep1Pt,Lep1PtBins); hLep1PtBinPurity->Sumw2();
  
   for(int i=0;i!=hLep1PtMatrix->GetNbinsX();++i)
     {
@@ -1417,9 +1425,9 @@ void plotZmmGen(const TString  conf,            // input file
   // Lep2 Pt
   //
   
-  TH2D *hLep2PtMatrixNorm  = new TH2D("hLep2PtMatrixNorm","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrixNorm->Sumw2();
-  TH1D *hLep2PtBinEfficiency  = new TH1D("hLep2PtBinEfficiency","",20,Lep2PtBins); hLep2PtBinEfficiency->Sumw2();
-  TH1D *hLep2PtBinPurity  = new TH1D("hLep2PtBinPurity","",20,Lep2PtBins); hLep2PtBinPurity->Sumw2();
+  TH2D *hLep2PtMatrixNorm  = new TH2D("hLep2PtMatrixNorm","",nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins); hLep2PtMatrixNorm->Sumw2();
+  TH1D *hLep2PtBinEfficiency  = new TH1D("hLep2PtBinEfficiency","",nBinsLep2Pt,Lep2PtBins); hLep2PtBinEfficiency->Sumw2();
+  TH1D *hLep2PtBinPurity  = new TH1D("hLep2PtBinPurity","",nBinsLep2Pt,Lep2PtBins); hLep2PtBinPurity->Sumw2();
   for(int i=0;i!=hLep2PtMatrix->GetNbinsX();++i)
     {
       double sum=0;
@@ -1479,9 +1487,9 @@ void plotZmmGen(const TString  conf,            // input file
   // LepNeg Pt
   //
   
-  TH2D *hLepNegPtMatrixNorm  = new TH2D("hLepNegPtMatrixNorm","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrixNorm->Sumw2();
-  TH1D *hLepNegPtBinEfficiency  = new TH1D("hLepNegPtBinEfficiency","",25,LepNegPtBins); hLepNegPtBinEfficiency->Sumw2();
-  TH1D *hLepNegPtBinPurity  = new TH1D("hLepNegPtBinPurity","",25,LepNegPtBins); hLepNegPtBinPurity->Sumw2();
+  TH2D *hLepNegPtMatrixNorm  = new TH2D("hLepNegPtMatrixNorm","",nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins); hLepNegPtMatrixNorm->Sumw2();
+  TH1D *hLepNegPtBinEfficiency  = new TH1D("hLepNegPtBinEfficiency","",nBinsLepNegPt,LepNegPtBins); hLepNegPtBinEfficiency->Sumw2();
+  TH1D *hLepNegPtBinPurity  = new TH1D("hLepNegPtBinPurity","",nBinsLepNegPt,LepNegPtBins); hLepNegPtBinPurity->Sumw2();
  
   for(int i=0;i!=hLepNegPtMatrix->GetNbinsX();++i)
     {
@@ -1542,9 +1550,9 @@ void plotZmmGen(const TString  conf,            // input file
   // LepPos Pt
   //
   
-  TH2D *hLepPosPtMatrixNorm  = new TH2D("hLepPosPtMatrixNorm","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrixNorm->Sumw2();
-  TH1D *hLepPosPtBinEfficiency  = new TH1D("hLepPosPtBinEfficiency","",25,LepPosPtBins); hLepPosPtBinEfficiency->Sumw2();
-  TH1D *hLepPosPtBinPurity  = new TH1D("hLepPosPtBinPurity","",25,LepPosPtBins); hLepPosPtBinPurity->Sumw2();
+  TH2D *hLepPosPtMatrixNorm  = new TH2D("hLepPosPtMatrixNorm","",nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins); hLepPosPtMatrixNorm->Sumw2();
+  TH1D *hLepPosPtBinEfficiency  = new TH1D("hLepPosPtBinEfficiency","",nBinsLepPosPt,LepPosPtBins); hLepPosPtBinEfficiency->Sumw2();
+  TH1D *hLepPosPtBinPurity  = new TH1D("hLepPosPtBinPurity","",nBinsLepPosPt,LepPosPtBins); hLepPosPtBinPurity->Sumw2();
  
   for(int i=0;i!=hLepPosPtMatrix->GetNbinsX();++i)
     {

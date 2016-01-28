@@ -154,34 +154,30 @@ void plotZmmTheoryUnc(const TString  conf,            // input file
     //
     // Create histograms
     //
-    double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-
-    double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
+    double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+    double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
+    double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+    double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
+    double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+    double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
     
+    const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+    TH1D *hZPtTruthNominal  = new TH1D("hZPtTruthNominal","",nBinsZPt,ZPtBins); hZPtTruthNominal->Sumw2();
+    TH1D *hZPtTruthScaleUp  = new TH1D("hZPtTruthScaleUp","",nBinsZPt,ZPtBins); hZPtTruthScaleUp->Sumw2();
+    TH1D *hZPtTruthScaleDown  = new TH1D("hZPtTruthScaleDown","",nBinsZPt,ZPtBins); hZPtTruthScaleDown->Sumw2();
+    TH1D *hZPtTruthPDFUp  = new TH1D("hZPtTruthPDFUp","",nBinsZPt,ZPtBins); hZPtTruthPDFUp->Sumw2();
+    TH1D *hZPtTruthPDFDown  = new TH1D("hZPtTruthPDFDown","",nBinsZPt,ZPtBins); hZPtTruthPDFDown->Sumw2();
+    TH1D *hZPtTruthAlphasUp  = new TH1D("hZPtTruthAlphasUp","",nBinsZPt,ZPtBins); hZPtTruthAlphasUp->Sumw2();
+    TH1D *hZPtTruthAlphasDown  = new TH1D("hZPtTruthAlphasDown","",nBinsZPt,ZPtBins); hZPtTruthAlphasDown->Sumw2();
     
-    double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-    double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-    
-    double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-    double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-    
-    
-    TH1D *hZPtTruthNominal  = new TH1D("hZPtTruthNominal","",34,ZPtBins); hZPtTruthNominal->Sumw2();
-    TH1D *hZPtTruthScaleUp  = new TH1D("hZPtTruthScaleUp","",34,ZPtBins); hZPtTruthScaleUp->Sumw2();
-    TH1D *hZPtTruthScaleDown  = new TH1D("hZPtTruthScaleDown","",34,ZPtBins); hZPtTruthScaleDown->Sumw2();
-    TH1D *hZPtTruthPDFUp  = new TH1D("hZPtTruthPDFUp","",34,ZPtBins); hZPtTruthPDFUp->Sumw2();
-    TH1D *hZPtTruthPDFDown  = new TH1D("hZPtTruthPDFDown","",34,ZPtBins); hZPtTruthPDFDown->Sumw2();
-    TH1D *hZPtTruthAlphasUp  = new TH1D("hZPtTruthAlphasUp","",34,ZPtBins); hZPtTruthAlphasUp->Sumw2();
-    TH1D *hZPtTruthAlphasDown  = new TH1D("hZPtTruthAlphasDown","",34,ZPtBins); hZPtTruthAlphasDown->Sumw2();
-    
-    
-    TH1D *hPhiStarTruthNominal  = new TH1D("hPhiStarTruthNominal","",27,PhiStarBins); hPhiStarTruthNominal->Sumw2();
-    TH1D *hPhiStarTruthScaleUp  = new TH1D("hPhiStarTruthScaleUp","",27,PhiStarBins); hPhiStarTruthScaleUp->Sumw2();
-    TH1D *hPhiStarTruthScaleDown  = new TH1D("hPhiStarTruthScaleDown","",27,PhiStarBins); hPhiStarTruthScaleDown->Sumw2();
-    TH1D *hPhiStarTruthPDFUp  = new TH1D("hPhiStarTruthPDFUp","",27,PhiStarBins); hPhiStarTruthPDFUp->Sumw2();
-    TH1D *hPhiStarTruthPDFDown  = new TH1D("hPhiStarTruthPDFDown","",27,PhiStarBins); hPhiStarTruthPDFDown->Sumw2();
-    TH1D *hPhiStarTruthAlphasUp  = new TH1D("hPhiStarTruthAlphasUp","",27,PhiStarBins); hPhiStarTruthAlphasUp->Sumw2();
-    TH1D *hPhiStarTruthAlphasDown  = new TH1D("hPhiStarTruthAlphasDown","",27,PhiStarBins); hPhiStarTruthAlphasDown->Sumw2();
+    const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
+    TH1D *hPhiStarTruthNominal  = new TH1D("hPhiStarTruthNominal","",nBinsPhiStar,PhiStarBins); hPhiStarTruthNominal->Sumw2();
+    TH1D *hPhiStarTruthScaleUp  = new TH1D("hPhiStarTruthScaleUp","",nBinsPhiStar,PhiStarBins); hPhiStarTruthScaleUp->Sumw2();
+    TH1D *hPhiStarTruthScaleDown  = new TH1D("hPhiStarTruthScaleDown","",nBinsPhiStar,PhiStarBins); hPhiStarTruthScaleDown->Sumw2();
+    TH1D *hPhiStarTruthPDFUp  = new TH1D("hPhiStarTruthPDFUp","",nBinsPhiStar,PhiStarBins); hPhiStarTruthPDFUp->Sumw2();
+    TH1D *hPhiStarTruthPDFDown  = new TH1D("hPhiStarTruthPDFDown","",nBinsPhiStar,PhiStarBins); hPhiStarTruthPDFDown->Sumw2();
+    TH1D *hPhiStarTruthAlphasUp  = new TH1D("hPhiStarTruthAlphasUp","",nBinsPhiStar,PhiStarBins); hPhiStarTruthAlphasUp->Sumw2();
+    TH1D *hPhiStarTruthAlphasDown  = new TH1D("hPhiStarTruthAlphasDown","",nBinsPhiStar,PhiStarBins); hPhiStarTruthAlphasDown->Sumw2();
     
     
     TH1D *hZRapTruthNominal  = new TH1D("hZRapTruthNominal","",24,0,2.4); hZRapTruthNominal->Sumw2();
@@ -192,37 +188,45 @@ void plotZmmTheoryUnc(const TString  conf,            // input file
     TH1D *hZRapTruthAlphasUp  = new TH1D("hZRapTruthAlphasUp","",24,0,2.4); hZRapTruthAlphasUp->Sumw2();
     TH1D *hZRapTruthAlphasDown  = new TH1D("hZRapTruthAlphasDown","",24,0,2.4); hZRapTruthAlphasDown->Sumw2();
     
-    TH1D *hLep1PtTruthNominal  = new TH1D("hLep1PtTruthNominal","",25,Lep1PtBins); hLep1PtTruthNominal->Sumw2();
-    TH1D *hLep1PtTruthScaleUp  = new TH1D("hLep1PtTruthScaleUp","",25,Lep1PtBins); hLep1PtTruthScaleUp->Sumw2();
-    TH1D *hLep1PtTruthScaleDown  = new TH1D("hLep1PtTruthScaleDown","",25,Lep1PtBins); hLep1PtTruthScaleDown->Sumw2();
-  TH1D *hLep1PtTruthPDFUp  = new TH1D("hLep1PtTruthPDFUp","",25,Lep1PtBins); hLep1PtTruthPDFUp->Sumw2();
-  TH1D *hLep1PtTruthPDFDown  = new TH1D("hLep1PtTruthPDFDown","",25,Lep1PtBins); hLep1PtTruthPDFDown->Sumw2();
-  TH1D *hLep1PtTruthAlphasUp  = new TH1D("hLep1PtTruthAlphasUp","",25,Lep1PtBins); hLep1PtTruthAlphasUp->Sumw2();
-  TH1D *hLep1PtTruthAlphasDown  = new TH1D("hLep1PtTruthAlphasDown","",25,Lep1PtBins); hLep1PtTruthAlphasDown->Sumw2();
 
-  TH1D *hLep2PtTruthNominal  = new TH1D("hLep2PtTruthNominal","",20,Lep2PtBins); hLep2PtTruthNominal->Sumw2();
-  TH1D *hLep2PtTruthScaleUp  = new TH1D("hLep2PtTruthScaleUp","",20,Lep2PtBins); hLep2PtTruthScaleUp->Sumw2();
-  TH1D *hLep2PtTruthScaleDown  = new TH1D("hLep2PtTruthScaleDown","",20,Lep2PtBins); hLep2PtTruthScaleDown->Sumw2();
-  TH1D *hLep2PtTruthPDFUp  = new TH1D("hLep2PtTruthPDFUp","",20,Lep2PtBins); hLep2PtTruthPDFUp->Sumw2();
-  TH1D *hLep2PtTruthPDFDown  = new TH1D("hLep2PtTruthPDFDown","",20,Lep2PtBins); hLep2PtTruthPDFDown->Sumw2();
-  TH1D *hLep2PtTruthAlphasUp  = new TH1D("hLep2PtTruthAlphasUp","",20,Lep2PtBins); hLep2PtTruthAlphasUp->Sumw2();
-  TH1D *hLep2PtTruthAlphasDown  = new TH1D("hLep2PtTruthAlphasDown","",20,Lep2PtBins); hLep2PtTruthAlphasDown->Sumw2();
+    const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+    TH1D *hLep1PtTruthNominal  = new TH1D("hLep1PtTruthNominal","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthNominal->Sumw2();
+    TH1D *hLep1PtTruthScaleUp  = new TH1D("hLep1PtTruthScaleUp","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthScaleUp->Sumw2();
+    TH1D *hLep1PtTruthScaleDown  = new TH1D("hLep1PtTruthScaleDown","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthScaleDown->Sumw2();
+  TH1D *hLep1PtTruthPDFUp  = new TH1D("hLep1PtTruthPDFUp","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthPDFUp->Sumw2();
+  TH1D *hLep1PtTruthPDFDown  = new TH1D("hLep1PtTruthPDFDown","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthPDFDown->Sumw2();
+  TH1D *hLep1PtTruthAlphasUp  = new TH1D("hLep1PtTruthAlphasUp","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthAlphasUp->Sumw2();
+  TH1D *hLep1PtTruthAlphasDown  = new TH1D("hLep1PtTruthAlphasDown","",nBinsLep1Pt,Lep1PtBins); hLep1PtTruthAlphasDown->Sumw2();
 
-  TH1D *hLepNegPtTruthNominal  = new TH1D("hLepNegPtTruthNominal","",25,LepNegPtBins); hLepNegPtTruthNominal->Sumw2();
-  TH1D *hLepNegPtTruthScaleUp  = new TH1D("hLepNegPtTruthScaleUp","",25,LepNegPtBins); hLepNegPtTruthScaleUp->Sumw2();
-  TH1D *hLepNegPtTruthScaleDown  = new TH1D("hLepNegPtTruthScaleDown","",25,LepNegPtBins); hLepNegPtTruthScaleDown->Sumw2();
-  TH1D *hLepNegPtTruthPDFUp  = new TH1D("hLepNegPtTruthPDFUp","",25,LepNegPtBins); hLepNegPtTruthPDFUp->Sumw2();
-  TH1D *hLepNegPtTruthPDFDown  = new TH1D("hLepNegPtTruthPDFDown","",25,LepNegPtBins); hLepNegPtTruthPDFDown->Sumw2();
-  TH1D *hLepNegPtTruthAlphasUp  = new TH1D("hLepNegPtTruthAlphasUp","",25,LepNegPtBins); hLepNegPtTruthAlphasUp->Sumw2();
-  TH1D *hLepNegPtTruthAlphasDown  = new TH1D("hLepNegPtTruthAlphasDown","",25,LepNegPtBins); hLepNegPtTruthAlphasDown->Sumw2();
 
-  TH1D *hLepPosPtTruthNominal  = new TH1D("hLepPosPtTruthNominal","",25,LepPosPtBins); hLepPosPtTruthNominal->Sumw2();
-  TH1D *hLepPosPtTruthScaleUp  = new TH1D("hLepPosPtTruthScaleUp","",25,LepPosPtBins); hLepPosPtTruthScaleUp->Sumw2();
-  TH1D *hLepPosPtTruthScaleDown  = new TH1D("hLepPosPtTruthScaleDown","",25,LepPosPtBins); hLepPosPtTruthScaleDown->Sumw2();
-  TH1D *hLepPosPtTruthPDFUp  = new TH1D("hLepPosPtTruthPDFUp","",25,LepPosPtBins); hLepPosPtTruthPDFUp->Sumw2();
-  TH1D *hLepPosPtTruthPDFDown  = new TH1D("hLepPosPtTruthPDFDown","",25,LepPosPtBins); hLepPosPtTruthPDFDown->Sumw2();
-  TH1D *hLepPosPtTruthAlphasUp  = new TH1D("hLepPosPtTruthAlphasUp","",25,LepPosPtBins); hLepPosPtTruthAlphasUp->Sumw2();
-  TH1D *hLepPosPtTruthAlphasDown  = new TH1D("hLepPosPtTruthAlphasDown","",25,LepPosPtBins); hLepPosPtTruthAlphasDown->Sumw2();
+  const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+  TH1D *hLep2PtTruthNominal  = new TH1D("hLep2PtTruthNominal","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthNominal->Sumw2();
+  TH1D *hLep2PtTruthScaleUp  = new TH1D("hLep2PtTruthScaleUp","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthScaleUp->Sumw2();
+  TH1D *hLep2PtTruthScaleDown  = new TH1D("hLep2PtTruthScaleDown","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthScaleDown->Sumw2();
+  TH1D *hLep2PtTruthPDFUp  = new TH1D("hLep2PtTruthPDFUp","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthPDFUp->Sumw2();
+  TH1D *hLep2PtTruthPDFDown  = new TH1D("hLep2PtTruthPDFDown","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthPDFDown->Sumw2();
+  TH1D *hLep2PtTruthAlphasUp  = new TH1D("hLep2PtTruthAlphasUp","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthAlphasUp->Sumw2();
+  TH1D *hLep2PtTruthAlphasDown  = new TH1D("hLep2PtTruthAlphasDown","",nBinsLep2Pt,Lep2PtBins); hLep2PtTruthAlphasDown->Sumw2();
+
+
+  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
+  TH1D *hLepNegPtTruthNominal  = new TH1D("hLepNegPtTruthNominal","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthNominal->Sumw2();
+  TH1D *hLepNegPtTruthScaleUp  = new TH1D("hLepNegPtTruthScaleUp","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthScaleUp->Sumw2();
+  TH1D *hLepNegPtTruthScaleDown  = new TH1D("hLepNegPtTruthScaleDown","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthScaleDown->Sumw2();
+  TH1D *hLepNegPtTruthPDFUp  = new TH1D("hLepNegPtTruthPDFUp","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthPDFUp->Sumw2();
+  TH1D *hLepNegPtTruthPDFDown  = new TH1D("hLepNegPtTruthPDFDown","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthPDFDown->Sumw2();
+  TH1D *hLepNegPtTruthAlphasUp  = new TH1D("hLepNegPtTruthAlphasUp","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthAlphasUp->Sumw2();
+  TH1D *hLepNegPtTruthAlphasDown  = new TH1D("hLepNegPtTruthAlphasDown","",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruthAlphasDown->Sumw2();
+
+
+  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
+  TH1D *hLepPosPtTruthNominal  = new TH1D("hLepPosPtTruthNominal","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthNominal->Sumw2();
+  TH1D *hLepPosPtTruthScaleUp  = new TH1D("hLepPosPtTruthScaleUp","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthScaleUp->Sumw2();
+  TH1D *hLepPosPtTruthScaleDown  = new TH1D("hLepPosPtTruthScaleDown","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthScaleDown->Sumw2();
+  TH1D *hLepPosPtTruthPDFUp  = new TH1D("hLepPosPtTruthPDFUp","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthPDFUp->Sumw2();
+  TH1D *hLepPosPtTruthPDFDown  = new TH1D("hLepPosPtTruthPDFDown","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthPDFDown->Sumw2();
+  TH1D *hLepPosPtTruthAlphasUp  = new TH1D("hLepPosPtTruthAlphasUp","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthAlphasUp->Sumw2();
+  TH1D *hLepPosPtTruthAlphasDown  = new TH1D("hLepPosPtTruthAlphasDown","",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruthAlphasDown->Sumw2();
 
   TH1D *hLep1EtaTruthNominal  = new TH1D("hLep1EtaTruthNominal","",24,0,2.4); hLep1EtaTruthNominal->Sumw2();
   TH1D *hLep1EtaTruthScaleUp  = new TH1D("hLep1EtaTruthScaleUp","",24,0,2.4); hLep1EtaTruthScaleUp->Sumw2();
@@ -252,13 +256,13 @@ void plotZmmTheoryUnc(const TString  conf,            // input file
   for(int i=0;i!=111;i++)
     {
       string si=int2string(i);
-      hZPtTruth[i]  = new TH1D((string("hZPtTruth")+si).c_str(),"",34,ZPtBins); hZPtTruth[i]->Sumw2();
-      hPhiStarTruth[i]  = new TH1D((string("hPhiStarTruth")+si).c_str(),"",27,PhiStarBins); hPhiStarTruth[i]->Sumw2();
+      hZPtTruth[i]  = new TH1D((string("hZPtTruth")+si).c_str(),"",nBinsZPt,ZPtBins); hZPtTruth[i]->Sumw2();
+      hPhiStarTruth[i]  = new TH1D((string("hPhiStarTruth")+si).c_str(),"",nBinsPhiStar,PhiStarBins); hPhiStarTruth[i]->Sumw2();
       hZRapTruth[i]  = new TH1D((string("hZRapTruth")+si).c_str(),"",24,0,2.4); hZRapTruth[i]->Sumw2();
-      hLep1PtTruth[i]  = new TH1D((string("hLep1PtTruth")+si).c_str(),"",25,Lep1PtBins); hLep1PtTruth[i]->Sumw2();
-      hLep2PtTruth[i]  = new TH1D((string("hLep2PtTruth")+si).c_str(),"",20,Lep2PtBins); hLep2PtTruth[i]->Sumw2();
-      hLepNegPtTruth[i]  = new TH1D((string("hLepNegPtTruth")+si).c_str(),"",25,LepNegPtBins); hLepNegPtTruth[i]->Sumw2();
-      hLepPosPtTruth[i]  = new TH1D((string("hLepPosPtTruth")+si).c_str(),"",25,LepPosPtBins); hLepPosPtTruth[i]->Sumw2();
+      hLep1PtTruth[i]  = new TH1D((string("hLep1PtTruth")+si).c_str(),"",nBinsLep1Pt,Lep1PtBins); hLep1PtTruth[i]->Sumw2();
+      hLep2PtTruth[i]  = new TH1D((string("hLep2PtTruth")+si).c_str(),"",nBinsLep2Pt,Lep2PtBins); hLep2PtTruth[i]->Sumw2();
+      hLepNegPtTruth[i]  = new TH1D((string("hLepNegPtTruth")+si).c_str(),"",nBinsLepNegPt,LepNegPtBins); hLepNegPtTruth[i]->Sumw2();
+      hLepPosPtTruth[i]  = new TH1D((string("hLepPosPtTruth")+si).c_str(),"",nBinsLepPosPt,LepPosPtBins); hLepPosPtTruth[i]->Sumw2();
       hLep1EtaTruth[i]  = new TH1D((string("hLep1EtaTruth")+si).c_str(),"",24,0,2.4); hLep1EtaTruth[i]->Sumw2();
       hLep2EtaTruth[i]  = new TH1D((string("hLep2EtaTruth")+si).c_str(),"",24,0,2.4); hLep2EtaTruth[i]->Sumw2();
     }

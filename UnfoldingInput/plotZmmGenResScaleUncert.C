@@ -38,6 +38,13 @@
 
 #endif
 
+//=== FUNCTION DECLARATIONS ======================================================================================
+
+void create( vector<TH1D> &v , const string name, int nbins, double xlow, double xhigh , const int ntoys) {for(int itoys=0;itoys!=ntoys;++itoys) {v.push_back(TH1D((name+Form("_%d",itoys)).c_str(),"",nbins,xlow,xhigh)); v[itoys].Sumw2();}}
+void create( vector<TH1D> &v , const string name, int nbins, double* x , const int ntoys) {for(int itoys=0;itoys!=ntoys;++itoys) {v.push_back(TH1D((name+Form("_%d",itoys)).c_str(),"",nbins,x)); v[itoys].Sumw2();}}
+void create( vector<TH2D> &v , const string name, int nbins, double xlow, double xhigh , const int ntoys) {for(int itoys=0;itoys!=ntoys;++itoys) {v.push_back(TH2D((name+Form("_%d",itoys)).c_str(),"",nbins,xlow,xhigh,nbins,xlow,xhigh)); v[itoys].Sumw2();}}
+void create( vector<TH2D> &v , const string name, int nbins, double* x , const int ntoys) {for(int itoys=0;itoys!=ntoys;++itoys) {v.push_back(TH2D((name+Form("_%d",itoys)).c_str(),"",nbins,x,nbins,x)); v[itoys].Sumw2();}}
+
 //=== MAIN MACRO ================================================================================================= 
 
 void plotZmmGenResScaleUncert(const TString  inputDir,        // input directory
@@ -58,27 +65,30 @@ void plotZmmGenResScaleUncert(const TString  inputDir,        // input directory
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
 
+  //----- 
+  const int NTOYS = 100;
+
   // efficiency files
 
-const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/CT/eff.root";
+const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
    
    //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -194,9 +204,9 @@ const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG
   zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
 
   //Setting up rochester corrections
-  rochcor2015 *rmcor = new rochcor2015(1234);
-
-  
+  vector<rochcor2015> vRocToys;
+  for (int i=0 ; i<NTOYS; ++i) vRocToys.push_back(rochcor2015(1234+i*1000));
+   
   TFile *infile=0;
   TTree *intree=0;
 
@@ -256,53 +266,56 @@ const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG
   //
   // Create histograms
   //
-  
-  double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-  double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-  double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-  double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-  double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-  double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
+  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+    double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
+    double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+    double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
+    double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+    double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
 
-  TH1D *hMassMC  = new TH1D("hMassMC","",30,60,120); hMassMC->Sumw2();
-  TH1D *hZPtReco  = new TH1D("hZPtReco","",34,ZPtBins); hZPtReco->Sumw2();
-  TH1D *hZPtTruth  = new TH1D("hZPtTruth","",34,ZPtBins); hZPtTruth->Sumw2();
-  TH2D *hZPtMatrix  = new TH2D("hZPtMatrix","",34,ZPtBins,34,ZPtBins); hZPtMatrix->Sumw2();
+    const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+  vector<TH1D> hZPtReco; create(hZPtReco,"hZPtReco",nBinsZPt,ZPtBins,NTOYS);
+  vector<TH1D> hZPtTruth; create(hZPtTruth,"hZPtTruth",nBinsZPt,ZPtBins,NTOYS);
+  vector<TH2D> hZPtMatrix; create(hZPtMatrix,"hZPtMatrix",nBinsZPt,ZPtBins,NTOYS);
 
-  TH1D *hPhiStarReco  = new TH1D("hPhiStarReco","",27,PhiStarBins); hPhiStarReco->Sumw2();
-  TH1D *hPhiStarTruth  = new TH1D("hPhiStarTruth","",27,PhiStarBins); hPhiStarTruth->Sumw2();
-  TH2D *hPhiStarMatrix  = new TH2D("hPhiStarMatrix","",27,PhiStarBins,27,PhiStarBins); hPhiStarMatrix->Sumw2();
+  const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
+  vector<TH1D> hPhiStarReco; create(hPhiStarReco,"hPhiStarReco",nBinsPhiStar,PhiStarBins,NTOYS);
+  vector<TH1D> hPhiStarTruth; create(hPhiStarTruth,"hPhiStarTruth",nBinsPhiStar,PhiStarBins,NTOYS);
+  vector<TH2D> hPhiStarMatrix; create(hPhiStarMatrix,"hPhiStarMatrix",nBinsPhiStar,PhiStarBins,NTOYS);
   
+  vector<TH1D> hZRapReco; create(hZRapReco,"hZRapReco",24,0,2.4,NTOYS);
+  vector<TH1D> hZRapTruth; create(hZRapTruth,"hZRapTruth",24,0,2.4,NTOYS); 
+  vector<TH2D> hZRapMatrix; create(hZRapMatrix,"hZRapMatrix",24,0,2.4,NTOYS);
+  
+  const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+  vector<TH1D> hLep1PtReco; create(hLep1PtReco,"hLep1PtReco",nBinsLep1Pt,Lep1PtBins,NTOYS);
+  vector<TH1D> hLep1PtTruth; create(hLep1PtTruth,"hLep1PtTruth",nBinsLep1Pt,Lep1PtBins,NTOYS); 
+  vector<TH2D> hLep1PtMatrix; create(hLep1PtMatrix,"hLep1PtMatrix",nBinsLep1Pt,Lep1PtBins,NTOYS);
+  
+  const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+  vector<TH1D> hLep2PtReco; create(hLep2PtReco,"hLep2PtReco",nBinsLep2Pt,Lep2PtBins,NTOYS);
+  vector<TH1D> hLep2PtTruth; create(hLep2PtTruth,"hLep2PtTruth",nBinsLep2Pt,Lep2PtBins,NTOYS);
+  vector<TH2D> hLep2PtMatrix; create(hLep2PtMatrix,"hLep2PtMatrix",nBinsLep2Pt,Lep2PtBins,NTOYS);
 
-  TH1D *hZRapReco  = new TH1D("hZRapReco","",24,0,2.4); hZRapReco->Sumw2();
-  TH1D *hZRapTruth  = new TH1D("hZRapTruth","",24,0,2.4); hZRapTruth->Sumw2();
-  TH2D *hZRapMatrix  = new TH2D("hZRapMatrix","",24,0,2.4,24,0,2.4); hZRapMatrix->Sumw2();
-  
-  
-  TH1D *hLep1PtReco  = new TH1D("hLep1PtReco","",25,Lep1PtBins); hLep1PtReco->Sumw2();
-  TH1D *hLep1PtTruth  = new TH1D("hLep1PtTruth","",25,Lep1PtBins); hLep1PtTruth->Sumw2();
-  TH2D *hLep1PtMatrix  = new TH2D("hLep1PtMatrix","",25,Lep1PtBins,25,Lep1PtBins); hLep1PtMatrix->Sumw2();
-  
-  TH1D *hLep2PtReco  = new TH1D("hLep2PtReco","",20,Lep2PtBins); hLep2PtReco->Sumw2();
-  TH1D *hLep2PtTruth  = new TH1D("hLep2PtTruth","",20,Lep2PtBins); hLep2PtTruth->Sumw2();
-  TH2D *hLep2PtMatrix  = new TH2D("hLep2PtMatrix","",20,Lep2PtBins,20,Lep2PtBins); hLep2PtMatrix->Sumw2();
+  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
+  vector<TH1D> hLepNegPtReco; create(hLepNegPtReco,"hLepNegPtReco",nBinsLepNegPt,LepNegPtBins,NTOYS);
+  vector<TH1D> hLepNegPtTruth; create(hLepNegPtTruth,"hLepNegPtTruth",nBinsLepNegPt,LepNegPtBins,NTOYS);
+  vector<TH2D> hLepNegPtMatrix; create(hLepNegPtMatrix,"hLepNegPtMatrix",nBinsLepNegPt,LepNegPtBins,NTOYS);
 
-  TH1D *hLepNegPtReco  = new TH1D("hLepNegPtReco","",25,LepNegPtBins); hLepNegPtReco->Sumw2();
-  TH1D *hLepNegPtTruth  = new TH1D("hLepNegPtTruth","",25,LepNegPtBins); hLepNegPtTruth->Sumw2();
-  TH2D *hLepNegPtMatrix  = new TH2D("hLepNegPtMatrix","",25,LepNegPtBins,25,LepNegPtBins); hLepNegPtMatrix->Sumw2();
-
-  TH1D *hLepPosPtReco  = new TH1D("hLepPosPtReco","",25,LepPosPtBins); hLepPosPtReco->Sumw2();
-  TH1D *hLepPosPtTruth  = new TH1D("hLepPosPtTruth","",25,LepPosPtBins); hLepPosPtTruth->Sumw2();
-  TH2D *hLepPosPtMatrix  = new TH2D("hLepPosPtMatrix","",25,LepPosPtBins,25,LepPosPtBins); hLepPosPtMatrix->Sumw2();
+  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
+  vector<TH1D> hLepPosPtReco; create(hLepPosPtReco,"hLepPosPtReco",nBinsLepPosPt,LepPosPtBins,NTOYS);
+  vector<TH1D> hLepPosPtTruth; create(hLepPosPtTruth,"hLepPosPtTruth",nBinsLepPosPt,LepPosPtBins,NTOYS);
+  vector<TH2D> hLepPosPtMatrix; create(hLepPosPtMatrix,"hLepPosPtMatrix",nBinsLepPosPt,LepPosPtBins,NTOYS);
  
-  TH1D *hLep1EtaReco  = new TH1D("hLep1EtaReco","",24,0,2.4); hLep1EtaReco->Sumw2();
-  TH1D *hLep1EtaTruth  = new TH1D("hLep1EtaTruth","",24,0,2.4); hLep1EtaTruth->Sumw2();
-  TH2D *hLep1EtaMatrix  = new TH2D("hLep1EtaMatrix","",24,0,2.4,24,0,2.4); hLep1EtaMatrix->Sumw2();
+
+  vector<TH1D> hLep1EtaReco; create(hLep1EtaReco,"hLep1EtaReco",24,0,2.4,NTOYS);
+  vector<TH1D> hLep1EtaTruth; create(hLep1EtaTruth,"hLep1EtaTruth",24,0,2.4,NTOYS);
+  vector<TH2D> hLep1EtaMatrix; create(hLep1EtaMatrix,"hLep1EtaMatrix",24,0,2.4,NTOYS);
   
 
-  TH1D *hLep2EtaReco  = new TH1D("hLep2EtaReco","",24,0,2.4); hLep2EtaReco->Sumw2();
-  TH1D *hLep2EtaTruth  = new TH1D("hLep2EtaTruth","",24,0,2.4); hLep2EtaTruth->Sumw2();
-  TH2D *hLep2EtaMatrix  = new TH2D("hLep2EtaMatrix","",24,0,2.4,24,0,2.4); hLep2EtaMatrix->Sumw2();
+  vector<TH1D> hLep2EtaReco; create(hLep2EtaReco,"hLep2EtaReco",24,0,2.4,NTOYS);
+  vector<TH1D> hLep2EtaTruth; create(hLep2EtaTruth,"hLep2EtaTruth",24,0,2.4,NTOYS);
+  vector<TH2D> hLep2EtaMatrix; create(hLep2EtaMatrix,"hLep2EtaMatrix",24,0,2.4,NTOYS);
   
   
   //
@@ -311,227 +324,229 @@ const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
 
-    TLorentzVector mu1;
-    TLorentzVector mu2;
-    mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
-    mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-    float qter1=1.0;
-    float qter2=1.0;
-
-    rmcor->momcor_mc(mu1,q1,0,qter1);
-    rmcor->momcor_mc(mu2,q2,0,qter2);
-
-    Double_t lp1 = mu1.Pt();
-    Double_t lp2 = mu2.Pt();
-    Double_t lq1 = q1;
-    Double_t lq2 = q2;
-
-    TLorentzVector l1, l2;
-    if(lp1>lp2)
-      {
-	l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
-	l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
-      }
-    else
-      {
-	l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
-	l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
-	lq1=q2;
-	lq2=q1;
-      }
-
-     
-    Double_t effdata, effmc;
-    Double_t corr=1;
-      
-    effdata=1; effmc=1;    
-    if(lq1>0) { 
-      effdata *= (1.-dataHLTEff_pos.getEff((l1.Eta()), l1.Pt())); 
-      effmc   *= (1.-zmmHLTEff_pos.getEff((l1.Eta()), l1.Pt())); 
-    } else {
-      effdata *= (1.-dataHLTEff_neg.getEff((l1.Eta()), l1.Pt())); 
-      effmc   *= (1.-zmmHLTEff_neg.getEff((l1.Eta()), l1.Pt())); 
-    }
-    if(lq2>0) {
-      effdata *= (1.-dataHLTEff_pos.getEff((l2.Eta()), l2.Pt())); 
-      effmc   *= (1.-zmmHLTEff_pos.getEff((l2.Eta()), l2.Pt()));
-    } else {
-      effdata *= (1.-dataHLTEff_neg.getEff((l2.Eta()), l2.Pt())); 
-      effmc   *= (1.-zmmHLTEff_neg.getEff((l2.Eta()), l2.Pt()));
-    }
-    effdata = 1.-effdata;
-    effmc   = 1.-effmc;
-    corr *= effdata/effmc;
-  
-    effdata=1; effmc=1;
-    if(lq1>0) { 
-      effdata *= dataSelEff_pos.getEff((l1.Eta()), l1.Pt()); 
-      effmc   *= zmmSelEff_pos.getEff((l1.Eta()), l1.Pt()); 
-    } else {
-      effdata *= dataSelEff_neg.getEff((l1.Eta()), l1.Pt()); 
-      effmc   *= zmmSelEff_neg.getEff((l1.Eta()), l1.Pt()); 
-    }
-    if(lq2>0) {
-      effdata *= dataSelEff_pos.getEff((l2.Eta()), l2.Pt()); 
-      effmc   *= zmmSelEff_pos.getEff((l2.Eta()), l2.Pt());
-    } else {
-      effdata *= dataSelEff_neg.getEff((l2.Eta()), l2.Pt()); 
-      effmc   *= zmmSelEff_neg.getEff((l2.Eta()), l2.Pt());
-    }
-    corr *= effdata/effmc;
-    
-    effdata=1; effmc=1;
-    if(lq1>0) { 
-      effdata *= dataStaEff_pos.getEff((l1.Eta()), l1.Pt()); 
-      effmc   *= zmmStaEff_pos.getEff((l1.Eta()), l1.Pt()); 
-    } else {
-      effdata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt()); 
-      effmc   *= zmmStaEff_neg.getEff((l1.Eta()), l1.Pt()); 
-    }
-    if(lq2>0) {
-      effdata *= dataStaEff_pos.getEff((l2.Eta()), l2.Pt()); 
-      effmc   *= zmmStaEff_pos.getEff((l2.Eta()), l2.Pt());
-    } else {
-      effdata *= dataStaEff_neg.getEff((l2.Eta()), l2.Pt()); 
-      effmc   *= zmmStaEff_neg.getEff((l2.Eta()), l2.Pt());
-    }
-    corr *= effdata/effmc; 
-   
-    effdata=1; effmc=1;
-    if(lq1>0) { 
-      effdata *= dataTrkEff_pos.getEff((l1.Eta()), l1.Pt()); 
-      effmc   *= zmmTrkEff_pos.getEff((l1.Eta()), l1.Pt()); 
-    } else {
-      effdata *= dataTrkEff_neg.getEff((l1.Eta()), l1.Pt()); 
-      effmc   *= zmmTrkEff_neg.getEff((l1.Eta()), l1.Pt()); 
-    }
-    if(lq2>0) {
-      effdata *= dataTrkEff_pos.getEff((l2.Eta()), l2.Pt()); 
-      effmc   *= zmmTrkEff_pos.getEff((l2.Eta()), l2.Pt());
-    } else {
-      effdata *= dataTrkEff_neg.getEff((l2.Eta()), l2.Pt()); 
-      effmc   *= zmmTrkEff_neg.getEff((l2.Eta()), l2.Pt());
-    }
-    //corr *= effdata/effmc;
-    //corr=1;
-
-    
-    TLorentzVector *dilep=new TLorentzVector(0,0,0,0);
-    dilep->operator+=(l1);
-    dilep->operator+=(l2);
-
-    float phiacop=0;
-    float costhetastar=0;
-    float phistar=0;
-    phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-    if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
-    else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
-    phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
-
-    TLorentzVector *gendilep=new TLorentzVector(0,0,0,0);
-    gendilep->operator+=(*genlep1);
-    gendilep->operator+=(*genlep2);
-
-    float genphiacop=0;
-    float gencosthetastar=0;
-    float genphistar=0;
-
-    genphiacop=TMath::Pi()-fabs(genlep1->DeltaPhi(*genlep2));
-    if(genq1<0) gencosthetastar=tanh(float((genlep1->Rapidity()-genlep2->Rapidity())/2));
-    else gencosthetastar=tanh(float((genlep2->Rapidity()-genlep1->Rapidity())/2));
-    genphistar=tan(genphiacop/2)*sqrt(1-pow(gencosthetastar,2));
-
-    bool isReco=false;
-    bool isGen=false;
-
-   
-    if(triggerDec&&goodPV&&matchTrigger&&nlep>=2&&q1!=q2&&dilep->M()>MASS_LOW&&dilep->M()<MASS_HIGH&&l1.Pt()>=PT_CUT&&l2.Pt()>=PT_CUT&&fabs(l1.Eta())<=ETA_CUT&&fabs(l2.Eta())<=ETA_CUT)
-      {
-	isReco=true;
-      }
-    if(ngenlep>=2&&gendilep->M()>MASS_LOW&&gendilep->M()<MASS_HIGH&&genlep1->Pt()>=PT_CUT&&genlep2->Pt()>=PT_CUT&&fabs(genlep1->Eta())<=ETA_CUT&&fabs(genlep2->Eta())<=ETA_CUT)
-      {
-	isGen=true;
-      }
-
     Double_t genweight = 1;
     genweight *= scale1fbGen*lumi;
     Double_t weight = 1;
-    weight *=scale1fb*lumi;
+    weight *=scale1fb*lumi;	
 
-    if(isReco)
+    for(int itoys=0;itoys!=NTOYS;++itoys)
       {
-	hMassMC ->Fill(dilep->M(),weight*corr);
-	hZPtReco ->Fill(dilep->Pt(),weight*corr);
-	hPhiStarReco ->Fill(phistar,weight*corr);
-	hZRapReco ->Fill(fabs(dilep->Rapidity()),weight*corr);
-	hLep1PtReco ->Fill(l1.Pt(),weight*corr);
-	hLep2PtReco ->Fill(l2.Pt(),weight*corr);
-	if(lq1<0)
+	TLorentzVector mu1;
+	TLorentzVector mu2;
+	mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+	mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+	float qter1=1.0;
+	float qter2=1.0;
+	
+	vRocToys[itoys].momcor_mc(mu1,q1,0,qter1);
+	vRocToys[itoys].momcor_mc(mu2,q2,0,qter2);
+	
+	Double_t lp1 = mu1.Pt();
+	Double_t lp2 = mu2.Pt();
+	Double_t lq1 = q1;
+	Double_t lq2 = q2;
+	
+	TLorentzVector l1, l2;
+	if(lp1>lp2)
 	  {
-	    hLepNegPtReco ->Fill(l1.Pt(),weight*corr);
-	    hLepPosPtReco ->Fill(l2.Pt(),weight*corr);
+	    l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
+	    l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
 	  }
 	else
 	  {
-	    hLepNegPtReco ->Fill(l2.Pt(),weight*corr);
-	    hLepPosPtReco ->Fill(l1.Pt(),weight*corr);
+	    l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
+	    l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
+	    lq1=q2;
+	    lq2=q1;
 	  }
-	hLep1EtaReco ->Fill(fabs(l1.Eta()),weight*corr);
-	hLep2EtaReco ->Fill(fabs(l2.Eta()),weight*corr);
+	
+	
+	Double_t effdata, effmc;
+	Double_t corr=1;
+	
+	effdata=1; effmc=1;    
+	if(lq1>0) { 
+	  effdata *= (1.-dataHLTEff_pos.getEff((l1.Eta()), l1.Pt())); 
+	  effmc   *= (1.-zmmHLTEff_pos.getEff((l1.Eta()), l1.Pt())); 
+	} else {
+	  effdata *= (1.-dataHLTEff_neg.getEff((l1.Eta()), l1.Pt())); 
+	  effmc   *= (1.-zmmHLTEff_neg.getEff((l1.Eta()), l1.Pt())); 
+	}
+	if(lq2>0) {
+	  effdata *= (1.-dataHLTEff_pos.getEff((l2.Eta()), l2.Pt())); 
+	  effmc   *= (1.-zmmHLTEff_pos.getEff((l2.Eta()), l2.Pt()));
+	} else {
+	  effdata *= (1.-dataHLTEff_neg.getEff((l2.Eta()), l2.Pt())); 
+	  effmc   *= (1.-zmmHLTEff_neg.getEff((l2.Eta()), l2.Pt()));
+	}
+	effdata = 1.-effdata;
+	effmc   = 1.-effmc;
+	corr *= effdata/effmc;
+	
+	effdata=1; effmc=1;
+	if(lq1>0) { 
+	  effdata *= dataSelEff_pos.getEff((l1.Eta()), l1.Pt()); 
+	  effmc   *= zmmSelEff_pos.getEff((l1.Eta()), l1.Pt()); 
+	} else {
+	  effdata *= dataSelEff_neg.getEff((l1.Eta()), l1.Pt()); 
+	  effmc   *= zmmSelEff_neg.getEff((l1.Eta()), l1.Pt()); 
+	}
+	if(lq2>0) {
+	  effdata *= dataSelEff_pos.getEff((l2.Eta()), l2.Pt()); 
+	  effmc   *= zmmSelEff_pos.getEff((l2.Eta()), l2.Pt());
+	} else {
+	  effdata *= dataSelEff_neg.getEff((l2.Eta()), l2.Pt()); 
+	  effmc   *= zmmSelEff_neg.getEff((l2.Eta()), l2.Pt());
+	}
+	corr *= effdata/effmc;
+	
+	effdata=1; effmc=1;
+	if(lq1>0) { 
+	  effdata *= dataStaEff_pos.getEff((l1.Eta()), l1.Pt()); 
+	  effmc   *= zmmStaEff_pos.getEff((l1.Eta()), l1.Pt()); 
+	} else {
+	  effdata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt()); 
+	  effmc   *= zmmStaEff_neg.getEff((l1.Eta()), l1.Pt()); 
+	}
+	if(lq2>0) {
+	  effdata *= dataStaEff_pos.getEff((l2.Eta()), l2.Pt()); 
+	  effmc   *= zmmStaEff_pos.getEff((l2.Eta()), l2.Pt());
+	} else {
+	  effdata *= dataStaEff_neg.getEff((l2.Eta()), l2.Pt()); 
+	  effmc   *= zmmStaEff_neg.getEff((l2.Eta()), l2.Pt());
+	}
+	corr *= effdata/effmc; 
+	
+	effdata=1; effmc=1;
+	if(lq1>0) { 
+	  effdata *= dataTrkEff_pos.getEff((l1.Eta()), l1.Pt()); 
+	  effmc   *= zmmTrkEff_pos.getEff((l1.Eta()), l1.Pt()); 
+	} else {
+	  effdata *= dataTrkEff_neg.getEff((l1.Eta()), l1.Pt()); 
+	  effmc   *= zmmTrkEff_neg.getEff((l1.Eta()), l1.Pt()); 
+	}
+	if(lq2>0) {
+	  effdata *= dataTrkEff_pos.getEff((l2.Eta()), l2.Pt()); 
+	  effmc   *= zmmTrkEff_pos.getEff((l2.Eta()), l2.Pt());
+	} else {
+	  effdata *= dataTrkEff_neg.getEff((l2.Eta()), l2.Pt()); 
+	  effmc   *= zmmTrkEff_neg.getEff((l2.Eta()), l2.Pt());
+	}
+	//corr *= effdata/effmc;
+	//corr=1;
+	
+	
+	TLorentzVector *dilep=new TLorentzVector(0,0,0,0);
+	dilep->operator+=(l1);
+	dilep->operator+=(l2);
+	
+	float phiacop=0;
+	float costhetastar=0;
+	float phistar=0;
+	phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
+	if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+	else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+	phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+	
+	TLorentzVector *gendilep=new TLorentzVector(0,0,0,0);
+	gendilep->operator+=(*genlep1);
+	gendilep->operator+=(*genlep2);
+	
+	float genphiacop=0;
+	float gencosthetastar=0;
+	float genphistar=0;
+	
+	genphiacop=TMath::Pi()-fabs(genlep1->DeltaPhi(*genlep2));
+	if(genq1<0) gencosthetastar=tanh(float((genlep1->Rapidity()-genlep2->Rapidity())/2));
+	else gencosthetastar=tanh(float((genlep2->Rapidity()-genlep1->Rapidity())/2));
+	genphistar=tan(genphiacop/2)*sqrt(1-pow(gencosthetastar,2));
+	
+	bool isReco=false;
+	bool isGen=false;
+	
+	
+	if(triggerDec&&goodPV&&matchTrigger&&nlep>=2&&q1!=q2&&dilep->M()>MASS_LOW&&dilep->M()<MASS_HIGH&&l1.Pt()>=PT_CUT&&l2.Pt()>=PT_CUT&&fabs(l1.Eta())<=ETA_CUT&&fabs(l2.Eta())<=ETA_CUT)
+	  {
+	    isReco=true;
+	  }
+	if(ngenlep>=2&&gendilep->M()>MASS_LOW&&gendilep->M()<MASS_HIGH&&genlep1->Pt()>=PT_CUT&&genlep2->Pt()>=PT_CUT&&fabs(genlep1->Eta())<=ETA_CUT&&fabs(genlep2->Eta())<=ETA_CUT)
+	  {
+	    isGen=true;
+	  }
+	
+	if(isReco)
+	  {
+	    hZPtReco[itoys].Fill(dilep->Pt(),weight*corr);
+	    hPhiStarReco[itoys].Fill(phistar,weight*corr);
+	    hZRapReco[itoys].Fill(fabs(dilep->Rapidity()),weight*corr);
+	    hLep1PtReco[itoys].Fill(l1.Pt(),weight*corr);
+	    hLep2PtReco[itoys].Fill(l2.Pt(),weight*corr);
+	    if(lq1<0)
+	      {
+		hLepNegPtReco[itoys].Fill(l1.Pt(),weight*corr);
+		hLepPosPtReco[itoys].Fill(l2.Pt(),weight*corr);
+	      }
+	    else
+	      {
+		hLepNegPtReco[itoys].Fill(l2.Pt(),weight*corr);
+		hLepPosPtReco[itoys].Fill(l1.Pt(),weight*corr);
+	      }
+	    hLep1EtaReco[itoys].Fill(fabs(l1.Eta()),weight*corr);
+	    hLep2EtaReco[itoys].Fill(fabs(l2.Eta()),weight*corr);
+	  }
+	if(isGen)
+	  {
+	    hZPtTruth[itoys].Fill(gendilep->Pt(),genweight);
+	    hPhiStarTruth[itoys].Fill(genphistar,genweight);
+	    hZRapTruth[itoys].Fill(fabs(gendilep->Rapidity()),genweight);
+	    hLep1PtTruth[itoys].Fill(genlep1->Pt(),genweight);
+	    hLep2PtTruth[itoys].Fill(genlep2->Pt(),genweight);
+	    if(genq1<0)
+	      {
+		hLepNegPtTruth[itoys].Fill(genlep1->Pt(),genweight);
+		hLepPosPtTruth[itoys].Fill(genlep2->Pt(),genweight);
+	      }
+	    else
+	      {
+		hLepNegPtTruth[itoys].Fill(genlep2->Pt(),genweight);
+		hLepPosPtTruth[itoys].Fill(genlep1->Pt(),genweight);
+	      }
+	    hLep1EtaTruth[itoys].Fill(fabs(genlep1->Eta()),genweight);
+	    hLep2EtaTruth[itoys].Fill(fabs(genlep2->Eta()),genweight);
+	  }
+	if(isReco&&isGen)
+	  {
+	    hZPtMatrix[itoys].Fill(gendilep->Pt(),dilep->Pt(),weight*corr);
+	    hPhiStarMatrix[itoys].Fill(genphistar,phistar,weight*corr);
+	    hZRapMatrix[itoys].Fill(fabs(gendilep->Rapidity()),fabs(dilep->Rapidity()),weight*corr);
+	    hLep1PtMatrix[itoys].Fill(genlep1->Pt(),l1.Pt(),weight*corr);
+	    hLep2PtMatrix[itoys].Fill(genlep2->Pt(),l2.Pt(),weight*corr);
+	    if(lq1<0&&genq1<0)
+	      {
+		hLepNegPtMatrix[itoys].Fill(genlep1->Pt(),l1.Pt(),weight*corr);
+		hLepPosPtMatrix[itoys].Fill(genlep2->Pt(),l2.Pt(),weight*corr);
+	      }
+	    else if(lq1<0&&genq1>0)
+	      {
+		hLepNegPtMatrix[itoys].Fill(genlep2->Pt(),l1.Pt(),weight*corr);
+		hLepPosPtMatrix[itoys].Fill(genlep1->Pt(),l2.Pt(),weight*corr);
+	      }
+	    else if(lq1>0&&genq1<0)
+	      {
+		hLepNegPtMatrix[itoys].Fill(genlep1->Pt(),l2.Pt(),weight*corr);
+		hLepPosPtMatrix[itoys].Fill(genlep2->Pt(),l1.Pt(),weight*corr);
+	      }
+	    else if(lq1>0&&genq1>0)
+	      {
+		hLepNegPtMatrix[itoys].Fill(genlep2->Pt(),l2.Pt(),weight*corr);
+		hLepPosPtMatrix[itoys].Fill(genlep1->Pt(),l1.Pt(),weight*corr);
+	      }
+	    hLep1EtaMatrix[itoys].Fill(fabs(genlep1->Eta()),fabs(l1.Eta()),weight*corr);
+	    hLep2EtaMatrix[itoys].Fill(fabs(genlep2->Eta()),fabs(l2.Eta()),weight*corr);
+	  }
+	delete gendilep;
+	delete dilep;
       }
-    if(isGen)
-      {
-	hZPtTruth ->Fill(gendilep->Pt(),genweight);
-	hPhiStarTruth ->Fill(genphistar,genweight);
-	hZRapTruth ->Fill(fabs(gendilep->Rapidity()),genweight);
-	hLep1PtTruth ->Fill(genlep1->Pt(),genweight);
-	hLep2PtTruth ->Fill(genlep2->Pt(),genweight);
-	if(genq1<0)
-	  {
-	    hLepNegPtTruth ->Fill(genlep1->Pt(),genweight);
-	    hLepPosPtTruth ->Fill(genlep2->Pt(),genweight);
-	  }
-	else
-	  {
-	    hLepNegPtTruth ->Fill(genlep2->Pt(),genweight);
-	    hLepPosPtTruth ->Fill(genlep1->Pt(),genweight);
-	  }
-	hLep1EtaTruth ->Fill(fabs(genlep1->Eta()),genweight);
-	hLep2EtaTruth ->Fill(fabs(genlep2->Eta()),genweight);
-      }
-    if(isReco&&isGen)
-      {
-	hZPtMatrix ->Fill(gendilep->Pt(),dilep->Pt(),weight*corr);
-	hPhiStarMatrix ->Fill(genphistar,phistar,weight*corr);
-	hZRapMatrix ->Fill(fabs(gendilep->Rapidity()),fabs(dilep->Rapidity()),weight*corr);
-	hLep1PtMatrix ->Fill(genlep1->Pt(),l1.Pt(),weight*corr);
-	hLep2PtMatrix ->Fill(genlep2->Pt(),l2.Pt(),weight*corr);
-	if(lq1<0&&genq1<0)
-	  {
-	    hLepNegPtMatrix ->Fill(genlep1->Pt(),l1.Pt(),weight*corr);
-	    hLepPosPtMatrix ->Fill(genlep2->Pt(),l2.Pt(),weight*corr);
-	  }
-	else if(lq1<0&&genq1>0)
-	  {
-	    hLepNegPtMatrix ->Fill(genlep2->Pt(),l1.Pt(),weight*corr);
-	    hLepPosPtMatrix ->Fill(genlep1->Pt(),l2.Pt(),weight*corr);
-	  }
-	else if(lq1>0&&genq1<0)
-	  {
-	    hLepNegPtMatrix ->Fill(genlep1->Pt(),l2.Pt(),weight*corr);
-	    hLepPosPtMatrix ->Fill(genlep2->Pt(),l1.Pt(),weight*corr);
-	  }
-	else if(lq1>0&&genq1>0)
-	  {
-	    hLepNegPtMatrix ->Fill(genlep2->Pt(),l2.Pt(),weight*corr);
-	    hLepPosPtMatrix ->Fill(genlep1->Pt(),l1.Pt(),weight*corr);
-	  }
-	hLep1EtaMatrix ->Fill(fabs(genlep1->Eta()),fabs(l1.Eta()),weight*corr);
-	hLep2EtaMatrix ->Fill(fabs(genlep2->Eta()),fabs(l2.Eta()),weight*corr);
-      }
-    delete gendilep;
-    delete dilep;
   }
   delete infile;
   infile=0, intree=0; 

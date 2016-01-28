@@ -80,25 +80,25 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   const int NTOYS = 100;
 
   // efficiency files
-  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/CT/eff.root";
+  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
+  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
+  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
+  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
+  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
+  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
+  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
+  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
 
    
   //
@@ -123,30 +123,32 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   CPlot::sOutDir = outputDir;  
   
   // histograms for full selection
-  double ZPtBins[35]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,375,500,1000};
-  double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-  double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-  double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-  double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-  double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-
+  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+  double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
+  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
+  double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  
   vector<TH1D> hData; create(hData,"hData",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
   vector<TH1D> hZmm; create(hZmm,"hZmm",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
   vector<TH1D> hEWK; create(hEWK,"hEWK",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
   vector<TH1D> hTop; create(hTop,"hTop",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
   vector<TH1D> hMC; create(hMC,"hMC",NBINS,MASS_LOW,MASS_HIGH,NTOYS);
 
-  vector<TH1D> hDataZPt ; create(hDataZPt,"hDataZPt",34,ZPtBins,NTOYS);
-  vector<TH1D> hZmmZPt ; create(hZmmZPt,"hZmmZPt",34,ZPtBins,NTOYS);
-  vector<TH1D> hEWKZPt ; create(hEWKZPt,"hEWKZPt",34,ZPtBins,NTOYS);
-  vector<TH1D> hTopZPt ; create(hTopZPt,"hTopZPt",34,ZPtBins,NTOYS);
-  vector<TH1D> hMCZPt ; create(hMCZPt,"hMCZPt",34,ZPtBins,NTOYS);
+  const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+  vector<TH1D> hDataZPt ; create(hDataZPt,"hDataZPt",nBinsZPt,ZPtBins,NTOYS);
+  vector<TH1D> hZmmZPt ; create(hZmmZPt,"hZmmZPt",nBinsZPt,ZPtBins,NTOYS);
+  vector<TH1D> hEWKZPt ; create(hEWKZPt,"hEWKZPt",nBinsZPt,ZPtBins,NTOYS);
+  vector<TH1D> hTopZPt ; create(hTopZPt,"hTopZPt",nBinsZPt,ZPtBins,NTOYS);
+  vector<TH1D> hMCZPt ; create(hMCZPt,"hMCZPt",nBinsZPt,ZPtBins,NTOYS);
 
-  vector<TH1D> hDataPhiStar ; create(hDataPhiStar,"hDataPhiStar",27,PhiStarBins,NTOYS);
-  vector<TH1D> hZmmPhiStar ; create(hZmmPhiStar,"hZmmPhiStar",27,PhiStarBins,NTOYS);
-  vector<TH1D> hEWKPhiStar ; create(hEWKPhiStar,"hEWKPhiStar",27,PhiStarBins,NTOYS);
-  vector<TH1D> hTopPhiStar ; create(hTopPhiStar,"hTopPhiStar",27,PhiStarBins,NTOYS);
-  vector<TH1D> hMCPhiStar ; create(hMCPhiStar,"hMCPhiStar",27,PhiStarBins,NTOYS);
+  const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
+  vector<TH1D> hDataPhiStar ; create(hDataPhiStar,"hDataPhiStar",nBinsPhiStar,PhiStarBins,NTOYS);
+  vector<TH1D> hZmmPhiStar ; create(hZmmPhiStar,"hZmmPhiStar",nBinsPhiStar,PhiStarBins,NTOYS);
+  vector<TH1D> hEWKPhiStar ; create(hEWKPhiStar,"hEWKPhiStar",nBinsPhiStar,PhiStarBins,NTOYS);
+  vector<TH1D> hTopPhiStar ; create(hTopPhiStar,"hTopPhiStar",nBinsPhiStar,PhiStarBins,NTOYS);
+  vector<TH1D> hMCPhiStar ; create(hMCPhiStar,"hMCPhiStar",nBinsPhiStar,PhiStarBins,NTOYS);
 
   vector<TH1D> hDataZRap ; create(hDataZRap,"hDataZRap",24,0,2.4,NTOYS);
   vector<TH1D> hZmmZRap ; create(hZmmZRap,"hZmmZRap",24,0,2.4,NTOYS);
@@ -154,29 +156,33 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   vector<TH1D> hTopZRap ; create(hTopZRap,"hTopZRap",24,0,2.4,NTOYS);
   vector<TH1D> hMCZRap ; create(hMCZRap,"hMCZRap",24,0,2.4,NTOYS);
 
-  vector<TH1D> hDataLep1Pt ; create(hDataLep1Pt,"hDataLep1Pt",25,Lep1PtBins,NTOYS);
-  vector<TH1D> hZmmLep1Pt ; create(hZmmLep1Pt,"hZmmLep1Pt",25,Lep1PtBins,NTOYS);
-  vector<TH1D> hEWKLep1Pt ; create(hEWKLep1Pt,"hEWKLep1Pt",25,Lep1PtBins,NTOYS);
-  vector<TH1D> hTopLep1Pt ; create(hTopLep1Pt,"hTopLep1Pt",25,Lep1PtBins,NTOYS);
-  vector<TH1D> hMCLep1Pt ; create(hMCLep1Pt,"hMCLep1Pt",25,Lep1PtBins,NTOYS);
+  const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+  vector<TH1D> hDataLep1Pt ; create(hDataLep1Pt,"hDataLep1Pt",nBinsLep1Pt,Lep1PtBins,NTOYS);
+  vector<TH1D> hZmmLep1Pt ; create(hZmmLep1Pt,"hZmmLep1Pt",nBinsLep1Pt,Lep1PtBins,NTOYS);
+  vector<TH1D> hEWKLep1Pt ; create(hEWKLep1Pt,"hEWKLep1Pt",nBinsLep1Pt,Lep1PtBins,NTOYS);
+  vector<TH1D> hTopLep1Pt ; create(hTopLep1Pt,"hTopLep1Pt",nBinsLep1Pt,Lep1PtBins,NTOYS);
+  vector<TH1D> hMCLep1Pt ; create(hMCLep1Pt,"hMCLep1Pt",nBinsLep1Pt,Lep1PtBins,NTOYS);
 
-  vector<TH1D> hDataLep2Pt ; create(hDataLep2Pt,"hDataLep2Pt",20,Lep2PtBins,NTOYS);
-  vector<TH1D> hZmmLep2Pt ; create(hZmmLep2Pt,"hZmmLep2Pt",20,Lep2PtBins,NTOYS);
-  vector<TH1D> hEWKLep2Pt ; create(hEWKLep2Pt,"hEWKLep2Pt",20,Lep2PtBins,NTOYS);
-  vector<TH1D> hTopLep2Pt ; create(hTopLep2Pt,"hTopLep2Pt",20,Lep2PtBins,NTOYS);
-  vector<TH1D> hMCLep2Pt ; create(hMCLep2Pt,"hMCLep2Pt",20,Lep2PtBins,NTOYS);
+  const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+  vector<TH1D> hDataLep2Pt ; create(hDataLep2Pt,"hDataLep2Pt",nBinsLep2Pt,Lep2PtBins,NTOYS);
+  vector<TH1D> hZmmLep2Pt ; create(hZmmLep2Pt,"hZmmLep2Pt",nBinsLep2Pt,Lep2PtBins,NTOYS);
+  vector<TH1D> hEWKLep2Pt ; create(hEWKLep2Pt,"hEWKLep2Pt",nBinsLep2Pt,Lep2PtBins,NTOYS);
+  vector<TH1D> hTopLep2Pt ; create(hTopLep2Pt,"hTopLep2Pt",nBinsLep2Pt,Lep2PtBins,NTOYS);
+  vector<TH1D> hMCLep2Pt ; create(hMCLep2Pt,"hMCLep2Pt",nBinsLep2Pt,Lep2PtBins,NTOYS);
 
-  vector<TH1D> hDataLepNegPt ; create(hDataLepNegPt,"hDataLepNegPt",25,LepNegPtBins,NTOYS);
-  vector<TH1D> hZmmLepNegPt ; create(hZmmLepNegPt,"hZmmLepNegPt",25,LepNegPtBins,NTOYS);
-  vector<TH1D> hEWKLepNegPt ; create(hEWKLepNegPt,"hEWKLepNegPt",25,LepNegPtBins,NTOYS);
-  vector<TH1D> hTopLepNegPt ; create(hTopLepNegPt,"hTopLepNegPt",25,LepNegPtBins,NTOYS);
-  vector<TH1D> hMCLepNegPt ; create(hMCLepNegPt,"hMCLepNegPt",25,LepNegPtBins,NTOYS);
+  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
+  vector<TH1D> hDataLepNegPt ; create(hDataLepNegPt,"hDataLepNegPt",nBinsLepNegPt,LepNegPtBins,NTOYS);
+  vector<TH1D> hZmmLepNegPt ; create(hZmmLepNegPt,"hZmmLepNegPt",nBinsLepNegPt,LepNegPtBins,NTOYS);
+  vector<TH1D> hEWKLepNegPt ; create(hEWKLepNegPt,"hEWKLepNegPt",nBinsLepNegPt,LepNegPtBins,NTOYS);
+  vector<TH1D> hTopLepNegPt ; create(hTopLepNegPt,"hTopLepNegPt",nBinsLepNegPt,LepNegPtBins,NTOYS);
+  vector<TH1D> hMCLepNegPt ; create(hMCLepNegPt,"hMCLepNegPt",nBinsLepNegPt,LepNegPtBins,NTOYS);
 
-  vector<TH1D> hDataLepPosPt ; create(hDataLepPosPt,"hDataLepPosPt",25,LepPosPtBins,NTOYS);
-  vector<TH1D> hZmmLepPosPt ; create(hZmmLepPosPt,"hZmmLepPosPt",25,LepPosPtBins,NTOYS);
-  vector<TH1D> hEWKLepPosPt ; create(hEWKLepPosPt,"hEWKLepPosPt",25,LepPosPtBins,NTOYS);
-  vector<TH1D> hTopLepPosPt ; create(hTopLepPosPt,"hTopLepPosPt",25,LepPosPtBins,NTOYS);
-  vector<TH1D> hMCLepPosPt ; create(hMCLepPosPt,"hMCLepPosPt",25,LepPosPtBins,NTOYS);
+  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
+  vector<TH1D> hDataLepPosPt ; create(hDataLepPosPt,"hDataLepPosPt",nBinsLepPosPt,LepPosPtBins,NTOYS);
+  vector<TH1D> hZmmLepPosPt ; create(hZmmLepPosPt,"hZmmLepPosPt",nBinsLepPosPt,LepPosPtBins,NTOYS);
+  vector<TH1D> hEWKLepPosPt ; create(hEWKLepPosPt,"hEWKLepPosPt",nBinsLepPosPt,LepPosPtBins,NTOYS);
+  vector<TH1D> hTopLepPosPt ; create(hTopLepPosPt,"hTopLepPosPt",nBinsLepPosPt,LepPosPtBins,NTOYS);
+  vector<TH1D> hMCLepPosPt ; create(hMCLepPosPt,"hMCLepPosPt",nBinsLepPosPt,LepPosPtBins,NTOYS);
 
   vector<TH1D> hDataLep1Eta ; create(hDataLep1Eta,"hDataLep1Eta",24,0,2.4,NTOYS);
   vector<TH1D> hZmmLep1Eta ; create(hZmmLep1Eta,"hZmmLep1Eta",24,0,2.4,NTOYS);
@@ -292,8 +298,6 @@ void plotZmmResScaleUncert(const TString  inputDir,    // input directory
   
 
   //Setting up rochester corrections
-  rochcor2015 *rmcor = new rochcor2015(1234);
-
   vector<rochcor2015> vRocToys;
   for (int i=0 ; i<NTOYS; ++i) vRocToys.push_back(rochcor2015(1234+i*1000));
    
