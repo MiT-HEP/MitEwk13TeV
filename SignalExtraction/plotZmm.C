@@ -1750,9 +1750,9 @@ void plotZmm(const TString  inputDir,    // input directory
   plotZmumuPhiStarDiff.AddHist1D(hZmumuPhiStarDiff,"EX0",ratioColor);
   plotZmumuPhiStarDiff.SetLogx();
   plotZmumuPhiStarDiff.SetYRange(-0.2,0.2);
-  plotZmumuPhiStarDiff.AddLine(0, 0,1.1, 0,kBlack,1);
-  plotZmumuPhiStarDiff.AddLine(0, 0.1,1.1, 0.1,kBlack,3);
-  plotZmumuPhiStarDiff.AddLine(0,-0.1,1.1,-0.1,kBlack,3);
+  plotZmumuPhiStarDiff.AddLine(0, 0,3, 0,kBlack,1);
+  plotZmumuPhiStarDiff.AddLine(0, 0.1,3, 0.1,kBlack,3);
+  plotZmumuPhiStarDiff.AddLine(0,-0.1,3,-0.1,kBlack,3);
   plotZmumuPhiStarDiff.Draw(c,kTRUE,format,2);
   
   CPlot plotZmumuPhiStar2("zmmPhiStarlog"+norm,"","",ylabel);
