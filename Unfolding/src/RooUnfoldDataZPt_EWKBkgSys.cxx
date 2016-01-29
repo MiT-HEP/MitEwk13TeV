@@ -106,11 +106,12 @@ Int_t Test (const Int_t uncert)
   if(uncert==1)
     {
       hMeas->Add(hTop,-1);
-      hMeas->Add(hEWK,-2);
+      hMeas->Add(hEWK,-1.3);
     }
   else if(uncert==-1)
     {
       hMeas->Add(hTop,-1);
+      hMeas->Add(hEWK,-0.7);
     }
 
 
