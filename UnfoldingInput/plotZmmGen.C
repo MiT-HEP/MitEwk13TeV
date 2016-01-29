@@ -1158,6 +1158,10 @@ void plotZmmGen(const TString  conf,            // input file
     {
       sprintf(plabel,"Migration matrix (MADGRAPH)");
     }
+  else if(snamev[isam].CompareTo("zmmph",TString::kIgnoreCase)==0)
+    {
+      sprintf(plabel,"Migration matrix (POWHEG)");
+    }
   else sprintf(plabel,"Migration matrix");
 
   

@@ -91,7 +91,7 @@ Int_t TrainNominal ()
 Int_t Train ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmmmg_UnfoldInputs.root");
+  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmmph_UnfoldInputs.root");
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth = (TH1D*)file1->Get("hLep2PtTruth");
   hReco = (TH1D*)file1->Get("hLep2PtReco");
