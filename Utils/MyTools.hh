@@ -15,7 +15,7 @@ namespace toolbox
   
   Int_t flavor(TClonesArray *genPartArr, Int_t vid);
   
-  void fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t absM);
+  void fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t* lep1q, Int_t* lep2q, Int_t absM);
 
 }
 
@@ -66,7 +66,7 @@ Int_t toolbox::flavor(TClonesArray *genPartArr, Int_t vid) {
 }
 
 //------------------------------------------------------------------------------------------------------------------------
-void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t absM) 
+void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t* lep1q, Int_t* lep2q, Int_t absM) 
 {
   Int_t iv=-1, iv1=-1, iv2=-1;
   TLorentzVector *lepPos=0, *lepNeg=0;
@@ -135,14 +135,26 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
     if (lepPos->Pt()>lepNeg->Pt()) {
       lep1->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
       lep2->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
+      *lep1q=1;
+      *lep2q=-1;
     }
     else {
       lep1->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
       lep2->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
+      *lep1q=-1;
+      *lep2q=1;
     }
   }
-  else if (lepPos) lep1->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
-  else if (lepNeg) lep1->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
+  else if (lepPos) 
+    {
+      lep1->SetPtEtaPhiM(lepPos->Pt(), lepPos->Eta(), lepPos->Phi(), lepPos->M());
+      *lep1q=1;
+    }
+  else if (lepNeg)
+    {
+      lep1->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
+      *lep1q=-1;
+    }
 
   delete preLepNeg;
   delete preLepPos;
@@ -152,5 +164,5 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
   preLepNeg=0; preLepPos=0;
   lepNeg=0; lepPos=0;
 
-}
+  }
 #endif

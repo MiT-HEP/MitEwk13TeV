@@ -94,6 +94,8 @@ public:
   // Adding a text box to the plot
   void AddTextBox(TString text, double x1, double y1, double x2, double y2,
                   int bordersize=1, int textcolor=kBlack, int fillcolor=kWhite);
+  void AddTextBox(TString text, double x1, double y1, double x2, double y2,
+                  int bordersize, int textcolor, double textsize, int fillcolor);
   void AddTextBox(double x1, double y1, double x2, double y2, 
                   int bordersize, int textcolor, int fillcolor, int nlines, ...);		  
   

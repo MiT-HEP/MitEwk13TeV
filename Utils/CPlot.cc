@@ -71,7 +71,6 @@ void CPlot::AddHist1D(TH1D *h, TString drawopt, int color, int linesty, int fill
   h->SetLineStyle(linesty);
   h->SetFillColor(color);
   h->SetFillStyle(fillsty);
-  h->GetXaxis()->CenterTitle(kFALSE);
   
   if(drawopt.CompareTo("E",TString::kIgnoreCase)==0)
     h->SetMarkerSize(0.9);
@@ -82,6 +81,8 @@ void CPlot::AddHist1D(TH1D *h, TString drawopt, int color, int linesty, int fill
   fItems.push_back(item);
 }
 
+
+
 void CPlot::AddHist1D(TH1D *h, TString label, TString drawopt, int color, int linesty, int fillsty)
 {
   if(!h)
@@ -90,7 +91,7 @@ void CPlot::AddHist1D(TH1D *h, TString label, TString drawopt, int color, int li
   if(!fLeg)
     fLeg = new TLegend(0.6,0.84,0.93,0.9);
   else
-    fLeg->SetY1(fLeg->GetY1()-0.06);
+    fLeg->SetY1(fLeg->GetY1()-0.04);
  
   if(drawopt.CompareTo("E",TString::kIgnoreCase)==0) {
     //fLeg->AddEntry(h,label,"P");
@@ -146,7 +147,7 @@ void CPlot::AddToStack(TH1D *h, TString label, int color, int linecol)
     fStack = new THStack(fName+TString("_stack"),"");
   
   if(!fLeg)
-    fLeg = new TLegend(0.4,0.84,0.7,0.9);
+    fLeg = new TLegend(0.6,0.84,0.93,0.9);
   else
     fLeg->SetY1(fLeg->GetY1()-0.06);  
     
@@ -218,7 +219,7 @@ void CPlot::AddGraph(TGraph *gr, TString drawopt, int color, int marksty, int li
   
   gr->SetMarkerColor(color);
   gr->SetLineColor(color);
-  gr->SetFillColor(color);
+  //gr->SetFillColor(color);
   gr->SetLineStyle(linesty);
   gr->SetLineWidth(2);
   gr->SetMarkerStyle(marksty);
@@ -245,7 +246,12 @@ void CPlot::AddGraph(TGraph *gr, TString label, TString drawopt, int color, int 
       drawopt.Contains("C",TString::kIgnoreCase))
       && !(drawopt.Contains("P",TString::kIgnoreCase)) ) {    
     fLeg->AddEntry(gr,label,"L");
-  } else {  
+  }
+  else if(drawopt.Contains("PE2",TString::kIgnoreCase))
+    {
+      fLeg->AddEntry(gr,label,"LPF");
+    }
+  else {  
     fLeg->AddEntry(gr,label,"LP"); 
   }
   
@@ -338,6 +344,21 @@ void CPlot::AddTextBox(TString text, double x1, double y1, double x2, double y2,
   fTextBoxes.push_back(tb);
 }
 
+void CPlot::AddTextBox(TString text, double x1, double y1, double x2, double y2,
+                       int bordersize, int textcolor, double textsize, int fillcolor)
+{
+  TPaveText *tb = new TPaveText(x1,y1,x2,y2,"NDC");
+  tb->SetTextColor(textcolor);
+  if(fillcolor==-1)
+    tb->SetFillStyle(0);
+  else
+    tb->SetFillColor(fillcolor);
+  tb->SetTextSize(textsize);
+  tb->SetBorderSize(bordersize);
+  tb->AddText(text);
+  fTextBoxes.push_back(tb);
+}
+
 void CPlot::AddTextBox(double x1, double y1, double x2, double y2, 
                        int bordersize, int textcolor, int fillcolor, int nlines,...)
 {
@@ -359,7 +380,7 @@ void CPlot::AddTextBox(double x1, double y1, double x2, double y2,
   va_end(ap);
   
   fTextBoxes.push_back(tb);  
-}
+  }
 
 //--------------------------------------------------------------------------------------------------
 void CPlot::AddLine(double x1, double y1, double x2, double y2, int color, int style)
@@ -509,7 +530,7 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
       
       for(uint j=0; j<fTextBoxes.size(); j++)
         fTextBoxes[j]->Draw();
-            
+
       if(doSave) {
         gSystem->mkdir(sOutDir,true);
         TString outname = sOutDir+TString("/")+fName+TString(".");
@@ -525,9 +546,7 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
       
       return;
     }
-  } 
-  
-  
+  }    
   
   // 
   // Draw 1D histograms
@@ -562,9 +581,9 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
         h->GetYaxis()->SetRangeUser(fYmin,fYmax);
       } else {
         if(ymax < h->GetMaximum()) {
-        ymax = h->GetMaximum();
-        ifirst = vHists.size();
-        }
+	  ymax = h->GetMaximum();
+	  ifirst = vHists.size();
+	}
       }
       
       vHists.push_back(h);
@@ -575,10 +594,17 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
       vHists[ifirst]->SetTitle(fTitle);
       vHists[ifirst]->GetXaxis()->SetTitle(fXTitle);
       vHists[ifirst]->GetYaxis()->SetTitle(fYTitle);
+      vHists[ifirst]->GetXaxis()->CenterTitle(kFALSE);
       vHists[ifirst]->SetLineWidth(2);
       vHists[ifirst]->Draw(vHistOpts[ifirst].Data());
     }
-   
+
+    //
+    // Draw lines
+    //
+    for(uint i=0; i<fLines.size(); i++)
+      fLines[i]->Draw();
+    
     //
     // Draw histogram stack
     //
@@ -589,6 +615,7 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
 	} else {
 	  if(fStack->GetMaximum() > vHists[ifirst]->GetMaximum()) {
 	    fStack->SetTitle(fTitle);
+	    fStack->GetXaxis()->CenterTitle(kFALSE);
 	    fStack->Draw();
 	    fStack->GetXaxis()->SetTitle(fXTitle);
 	    fStack->GetYaxis()->SetTitle(fYTitle);
@@ -664,6 +691,13 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
       (i==0 && nHist1D==0) ? sprintf(opt,"AP%s",vGraphOpts[i].Data()) : sprintf(opt,"P%s",vGraphOpts[i].Data());
       gr->Draw(opt);
     }
+
+    //
+    // Draw lines
+    //
+    for(uint i=0; i<fLines.size(); i++)
+      fLines[i]->Draw();
+
   }
 
   //
@@ -778,11 +812,6 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
   for(uint i=0; i<fFcns.size(); i++)
     (i==0 && vHists.size()==0 && vGraphs.size()==0) ? fFcns[i]->Draw() : fFcns[i]->Draw("sameC");
   
-  //
-  // Draw lines
-  //
-  for(uint i=0; i<fLines.size(); i++)
-    fLines[i]->Draw();
   
   //
   // Draw Boxes
@@ -801,28 +830,14 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
   // 
   c->cd(subpad)->SetLogx(fLogx);
   c->cd(subpad)->SetLogy(fLogy);
+
+  c->cd(subpad)->RedrawAxis();
   
   //
   // Set grid lines if necessary
   //
   c->SetGridx(fGridx);
   c->SetGridy(fGridy);
-  if(nHist1D>0) {   
-    
-    double ymax=0;
-    uint ifirst=0;
-    for(uint i=0; i<fItems.size(); i++) {
-    if(fItems[i].hist1D==0) continue;
-    if(fStack && fStack->GetHists()->Contains(fItems[i].hist1D)) continue;
-    if(vHists.size()>0) {
-      vHists[ifirst]->SetTitle(fTitle);
-      vHists[ifirst]->GetXaxis()->SetTitle(fXTitle);
-      vHists[ifirst]->GetYaxis()->SetTitle(fYTitle);
-      vHists[ifirst]->SetLineWidth(2);
-      vHists[ifirst]->Draw("same");
-      }
-    }
-  }
   
   //
   // Save plot if necessary

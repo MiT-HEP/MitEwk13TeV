@@ -42,7 +42,7 @@ Bool_t passMuonID(const baconhep::TMuon *muon, const Double_t rho)
   if(!(muon->typeBits & baconhep::EMuType::kPFMuon)) return kFALSE;
   
   Double_t iso = muon->chHadIso + TMath::Max(muon->neuHadIso + muon->gammaIso - 0.5*(muon->puIso),Double_t(0));
-  if(iso > 0.12*(muon->pt)) return kFALSE;
+  if(iso > 0.15*(muon->pt)) return kFALSE;
 
   return kTRUE;
 }
