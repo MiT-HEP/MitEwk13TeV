@@ -56,6 +56,17 @@ float rms(vector<float> &a)
   S/=(a.size()-1);
   return sqrt(S);
 }
+float cov(vector<float> &a, vector<float> &b)
+{
+  if(a.size() != b.size()) { printf("SIZE=%d %d\n",int(a.size()),int(b.size()));return -2.0;}
+  float ma=mean(a);
+  float mb=mean(b);
+  float S=0;
+  for(int i=0;i<int(a.size());i++) S+= (a[i]-ma)*(b[i]-mb);
+  S/=(a.size()-1);
+  return S;
+}
+
 
 //==============================================================================
 // Global definitions
@@ -70,6 +81,8 @@ TH1D *hReco_Nominal, *hTruth_Nominal, *hData_Nominal, *hTop_Nominal, *hEWK_Nomin
 TH2D *hMatrix_Nominal, *hMatrix_hilf_Nominal;
 
 vector<float> vrms;
+
+TH2D* hCov_ResScale;
 
 //==============================================================================
 // Train unfolding algorithm
@@ -253,6 +266,8 @@ void RooUnfoldExample(const TString  outputDir,    // output directory
     }
 
   int Nbins=hUnfold[0]->GetNbinsX();
+  hCov_ResScale=(TH2D*)hMatrix[0]->Clone("hCov_ResScale");
+
   vector<float> vtoyval;
   for(int i=0;i!=Nbins;++i)
     {
@@ -262,17 +277,37 @@ void RooUnfoldExample(const TString  outputDir,    // output directory
 	  vtoyval.push_back(hUnfold[j]->GetBinContent(i+1));
 	}
       vrms.push_back(rms(vtoyval));
-      cout<<"RMS: "<<vrms[i]<<endl;
     }
 
   for(int j=0;j!=hUnfold_Nominal->GetNbinsX();++j)
     {
       hUnfold_Nominal->SetBinError(j+1,vrms[j]);
     }
+  
+
+  vector<float> vtoyval1;
+  vector<float> vtoyval2;
+  for(int i=0;i!=Nbins;++i)
+    {
+      for(int j=0;j!=Nbins;++j)
+	{
+	  vtoyval1.clear();
+	  vtoyval2.clear();
+	  for(int k=0;k!=100;++k)
+	    {
+	      vtoyval1.push_back(hUnfold[k]->GetBinContent(i+1));
+	      vtoyval2.push_back(hUnfold[k]->GetBinContent(j+1));
+	    }
+	  hCov_ResScale->SetBinContent(i+1,j+1,cov(vtoyval1,vtoyval2));
+	}
+    }
+
+  
 
   his->cd();
   hTruth_Nominal->Write("hTruth");
   hUnfold_Nominal->Write("hUnfold");
+  hCov_ResScale->Write("hCov_ResScale");
   his->Close();
 }
 

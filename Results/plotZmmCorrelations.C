@@ -206,6 +206,17 @@ vector<TFile*> file;
   fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtUnfoldModel_Smoothed.root", "OPEN"));
   fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtUnfoldModel_Smoothed.root", "OPEN"));
 
+  vector<TFile*> fileUnfoldMatrixSys;
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtUnfoldMatrix.root", "OPEN"));
+
   
   // plot output file format
   const TString format("png");
@@ -227,24 +238,60 @@ vector<TFile*> file;
   TString outfilename = outputDir + TString("/") + TString("Zmm_Systematics.root");
   TFile *outFile = new TFile(outfilename,"RECREATE");
 
-  double ZPtBins[23]={0,2.5,5,7.5,10,12.5,15.6,19.5,24.4,30.5,38.1,47.7,59.6,74.5,93.1,116,146,182,227,284,355,500,1000};
-  double PhiStarBins[28]={0,0.01,0.012,0.014,0.017,0.021,0.025,0.030,0.036,0.043,0.052,0.062,0.074,0.089,0.11,0.13,0.15,0.18,0.22,0.27,0.32,0.38,0.46,0.55,0.66,0.79,0.95,1.1};
-  double Lep1PtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-  double Lep2PtBins[21]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,157,200};
-  double LepNegPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
-  double LepPosPtBins[26]={25,27.5,30.3,33.3,36.6,40.3,44.3,48.7,53.6,58.9,64.8,71.3,78.5,86.3,94.9,104,115,126,139,154,171,190,211,234,265,300};
+  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+  double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
+  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
+  double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+
+  const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+  const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
+  const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+  const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
+  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
   
   // histograms
+  TH2D *ZPT_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[0]->Get("hCov_ResScale"));
+  TH2D *PHISTAR_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[1]->Get("hCov_ResScale"));
+  TH2D *ZRAP_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[2]->Get("hCov_ResScale"));
+  TH2D *LEP1PT_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[3]->Get("hCov_ResScale"));
+  TH2D *LEP2PT_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[4]->Get("hCov_ResScale"));
+  TH2D *LEP1ETA_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[5]->Get("hCov_ResScale"));
+  TH2D *LEP2ETA_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[6]->Get("hCov_ResScale"));
+  TH2D *LEPNEGPT_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[7]->Get("hCov_ResScale"));
+  TH2D *LEPPOSPT_COV_MATRIX_RESSCALE=(TH2D*)(fileResScaleSys[8]->Get("hCov_ResScale"));
 
-  TH2D *ZPT_CORR_MATRIX=new TH2D((string("ZPT_CORR_MATRIX")).c_str(),(string("ZPT_CORR_MATRIX")).c_str(),22,ZPtBins,22,ZPtBins);
-  TH2D *PHISTAR_CORR_MATRIX=new TH2D((string("PHISTAR_CORR_MATRIX")).c_str(),(string("PHISTAR_CORR_MATRIX")).c_str(),27,PhiStarBins,27,PhiStarBins);
+  TH2D *ZPT_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[0]->Get("hCov_MatrixStat"));
+  TH2D *PHISTAR_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[1]->Get("hCov_MatrixStat"));
+  TH2D *ZRAP_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[2]->Get("hCov_MatrixStat"));
+  TH2D *LEP1PT_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[3]->Get("hCov_MatrixStat"));
+  TH2D *LEP2PT_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[4]->Get("hCov_MatrixStat"));
+  TH2D *LEP1ETA_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[5]->Get("hCov_MatrixStat"));
+  TH2D *LEP2ETA_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[6]->Get("hCov_MatrixStat"));
+  TH2D *LEPNEGPT_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[7]->Get("hCov_MatrixStat"));
+  TH2D *LEPPOSPT_COV_MATRIX_MATRIXSTAT=(TH2D*)(fileUnfoldMatrixSys[8]->Get("hCov_MatrixStat"));
+
+  TH2D *ZPT_COV_MATRIX=new TH2D((string("ZPT_COV_MATRIX")).c_str(),(string("ZPT_COV_MATRIX")).c_str(),nBinsZPt,ZPtBins,nBinsZPt,ZPtBins);
+  TH2D *PHISTAR_COV_MATRIX=new TH2D((string("PHISTAR_COV_MATRIX")).c_str(),(string("PHISTAR_COV_MATRIX")).c_str(),nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins);
+  TH2D *ZRAP_COV_MATRIX=new TH2D((string("ZRAP_COV_MATRIX")).c_str(),(string("ZRAP_COV_MATRIX")).c_str(),24,0,2.4,24,0,2.4);
+  TH2D *LEP1PT_COV_MATRIX=new TH2D((string("LEP1PT_COV_MATRIX")).c_str(),(string("LEP1PT_COV_MATRIX")).c_str(),nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins);
+  TH2D *LEP2PT_COV_MATRIX=new TH2D((string("LEP2PT_COV_MATRIX")).c_str(),(string("LEP2PT_COV_MATRIX")).c_str(),nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins);
+  TH2D *LEP1ETA_COV_MATRIX=new TH2D((string("LEP1ETA_COV_MATRIX")).c_str(),(string("LEP1ETA_COV_MATRIX")).c_str(),24,0,2.4,24,0,2.4);
+  TH2D *LEP2ETA_COV_MATRIX=new TH2D((string("LEP2ETA_COV_MATRIX")).c_str(),(string("LEP2ETA_COV_MATRIX")).c_str(),24,0,2.4,24,0,2.4);
+  TH2D *LEPNEGPT_COV_MATRIX=new TH2D((string("LEPNEGPT_COV_MATRIX")).c_str(),(string("LEPNEGPT_COV_MATRIX")).c_str(),nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins);
+  TH2D *LEPPOSPT_COV_MATRIX=new TH2D((string("LEPPOSPT_COV_MATRIX")).c_str(),(string("LEPPOSPT_COV_MATRIX")).c_str(),nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins);
+
+  TH2D *ZPT_CORR_MATRIX=new TH2D((string("ZPT_CORR_MATRIX")).c_str(),(string("ZPT_CORR_MATRIX")).c_str(),nBinsZPt,ZPtBins,nBinsZPt,ZPtBins);
+  TH2D *PHISTAR_CORR_MATRIX=new TH2D((string("PHISTAR_CORR_MATRIX")).c_str(),(string("PHISTAR_CORR_MATRIX")).c_str(),nBinsPhiStar,PhiStarBins,nBinsPhiStar,PhiStarBins);
   TH2D *ZRAP_CORR_MATRIX=new TH2D((string("ZRAP_CORR_MATRIX")).c_str(),(string("ZRAP_CORR_MATRIX")).c_str(),24,0,2.4,24,0,2.4);
-  TH2D *LEP1PT_CORR_MATRIX=new TH2D((string("LEP1PT_CORR_MATRIX")).c_str(),(string("LEP1PT_CORR_MATRIX")).c_str(),25,Lep1PtBins,25,Lep1PtBins);
-  TH2D *LEP2PT_CORR_MATRIX=new TH2D((string("LEP2PT_CORR_MATRIX")).c_str(),(string("LEP2PT_CORR_MATRIX")).c_str(),20,Lep2PtBins,20,Lep2PtBins);
+  TH2D *LEP1PT_CORR_MATRIX=new TH2D((string("LEP1PT_CORR_MATRIX")).c_str(),(string("LEP1PT_CORR_MATRIX")).c_str(),nBinsLep1Pt,Lep1PtBins,nBinsLep1Pt,Lep1PtBins);
+  TH2D *LEP2PT_CORR_MATRIX=new TH2D((string("LEP2PT_CORR_MATRIX")).c_str(),(string("LEP2PT_CORR_MATRIX")).c_str(),nBinsLep2Pt,Lep2PtBins,nBinsLep2Pt,Lep2PtBins);
   TH2D *LEP1ETA_CORR_MATRIX=new TH2D((string("LEP1ETA_CORR_MATRIX")).c_str(),(string("LEP1ETA_CORR_MATRIX")).c_str(),24,0,2.4,24,0,2.4);
   TH2D *LEP2ETA_CORR_MATRIX=new TH2D((string("LEP2ETA_CORR_MATRIX")).c_str(),(string("LEP2ETA_CORR_MATRIX")).c_str(),24,0,2.4,24,0,2.4);
-  TH2D *LEPNEGPT_CORR_MATRIX=new TH2D((string("LEPNEGPT_CORR_MATRIX")).c_str(),(string("LEPNEGPT_CORR_MATRIX")).c_str(),25,LepNegPtBins,25,LepNegPtBins);
-  TH2D *LEPPOSPT_CORR_MATRIX=new TH2D((string("LEPPOSPT_CORR_MATRIX")).c_str(),(string("LEPPOSPT_CORR_MATRIX")).c_str(),25,LepPosPtBins,25,LepPosPtBins);
+  TH2D *LEPNEGPT_CORR_MATRIX=new TH2D((string("LEPNEGPT_CORR_MATRIX")).c_str(),(string("LEPNEGPT_CORR_MATRIX")).c_str(),nBinsLepNegPt,LepNegPtBins,nBinsLepNegPt,LepNegPtBins);
+  TH2D *LEPPOSPT_CORR_MATRIX=new TH2D((string("LEPPOSPT_CORR_MATRIX")).c_str(),(string("LEPPOSPT_CORR_MATRIX")).c_str(),nBinsLepPosPt,LepPosPtBins,nBinsLepPosPt,LepPosPtBins);
 
 
   //--------------------------------------------------------------------------
@@ -253,17 +300,8 @@ vector<TFile*> file;
 
 
 
-  TH1D * hUnfoldZPt;
-  TH1D * hTruthZPt;
+  TH1D * hUnfoldZPt=(TH1D*)(file[0]->Get("hUnfold"));
   
-  hUnfoldZPt=(TH1D*)(file[0]->Get("hUnfold"));
-  hTruthZPt=(TH1D*)(file[0]->Get("hTruth"));
-
-  TH1D * hUnfoldZPtLumiUp;
-  TH1D * hUnfoldZPtLumiDown;
-  hUnfoldZPtLumiUp=(TH1D*)(fileLumiUp[0]->Get("hUnfold"));
-  hUnfoldZPtLumiDown=(TH1D*)(fileLumiDown[0]->Get("hUnfold"));
-
   TH1D * hUnfoldZPtEWKBkgUp;
   TH1D * hUnfoldZPtEWKBkgDown;
   hUnfoldZPtEWKBkgUp=(TH1D*)(fileEWKBkgUp[0]->Get("hUnfold"));
@@ -306,15 +344,6 @@ vector<TFile*> file;
   hUnfoldZPtEffBkgShapeSysDown->Scale(-1.);
   hUnfoldZPtEffBkgShapeSysDown->Add(hUnfoldZPt,1.);
 
-  TH1D * hUnfoldZPtResScaleSysUp;
-  TH1D * hUnfoldZPtResScaleSysDown;
-  hUnfoldZPtResScaleSysUp=(TH1D*)(fileResScaleSys[0]->Get("hUnfold"));
-  hUnfoldZPtResScaleSysDown=(TH1D*)(fileResScaleSys[0]->Get("hUnfold"));
-
-  hUnfoldZPtResScaleSysDown->Add(hUnfoldZPt,-1.);
-  hUnfoldZPtResScaleSysDown->Scale(-1.);
-  hUnfoldZPtResScaleSysDown->Add(hUnfoldZPt,1.);
-
   TH1D * hUnfoldZPtUnfoldModelSysUp;
   TH1D * hUnfoldZPtUnfoldModelSysDown;
   hUnfoldZPtUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[0]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -326,12 +355,9 @@ vector<TFile*> file;
 
   
   TGraphAsymmErrors* gUnfoldZPt=TH1TOTGraphAsymmErrors(hUnfoldZPt);
-  TGraphAsymmErrors* gTruthZPt=TH1TOTGraphAsymmErrors(hTruthZPt);
 
   TGraphAsymmErrors* ZPT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldZPt);
-  TGraphAsymmErrors* ZPT_LUMI_UNCERT_BAND_DATA;
-  ZPT_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtLumiUp),TH1TOTGraphAsymmErrors(hUnfoldZPtLumiDown));
-
+  
   TGraphAsymmErrors* ZPT_EWKBKG_UNCERT_BAND_DATA;
   ZPT_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldZPtEWKBkgDown));
 
@@ -350,165 +376,117 @@ vector<TFile*> file;
   TGraphAsymmErrors* ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA;
   ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldZPtEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* ZPT_RESSCALE_UNCERT_BAND_DATA;
-  ZPT_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldZPtResScaleSysDown));
-
   TGraphAsymmErrors* ZPT_UNFOLDMODEL_UNCERT_BAND_DATA;
   ZPT_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldZPtUnfoldModelSysDown));
-
-  TGraphAsymmErrors* ZPT_TOT_UNCERT_BAND_DATA;
-  ZPT_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldZPtEWKBkgDown));
- 
-  myAddtoBand(ZPT_TOPBKG_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_EFFSTAT_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_EFFSIGSHAPE_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(ZPT_RESSCALE_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_UNFOLDMODEL_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* ZPT_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_TOT_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_ZPT=ZPT_TOT_SYS_BAND->GetEYhigh();
   
+  double* EWKBKG_SYSTEMATIC_UNCERT_ZPT=ZPT_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* TOPBKG_SYSTEMATIC_UNCERT_ZPT=ZPT_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSTAT_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBIN_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_ZPT=ZPT_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
+
+  double uncert_ZPt[7][nBinsZPt];
+  double cov_ZPt[nBinsZPt][nBinsZPt];
   
-  TGraphAsymmErrors* ZPT_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_EWKBKG_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* EWKBKG_SYSTEMATIC_UNCERT_ZPT=ZPT_EWKBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_TOPBKG_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* TOPBKG_SYSTEMATIC_UNCERT_ZPT=ZPT_TOPBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_EFFSTAT_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSTAT_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFSTAT_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBIN_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_EFFSIGSHAPE_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZPT=ZPT_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_RESSCALE_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_ZPT=ZPT_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZPT_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_UNFOLDMODEL_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_ZPT=ZPT_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_ZPt[8][22];
-  double cov_ZPt[22][22];
-  double corr_ZPt[22][22];
-
-  for(int i=0;i!=22;++i)
+  for(int i=0;i!=nBinsZPt;++i)
     {
       if(hUnfoldZPtEWKBkgUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       if(hUnfoldZPtTopBkgUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       if(hUnfoldZPtEffStatUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       if(hUnfoldZPtEffBinSysUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       if(hUnfoldZPtEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       if(hUnfoldZPtEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
-	}
-      if(hUnfoldZPtResScaleSysUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_ZPt[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_ZPT[i];
-	}
-      else
-	{
-	  rel_uncert_ZPt[6][i]=RESSCALE_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       if(hUnfoldZPtUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldZPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZPt[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_ZPT[i];
 	}
       else
 	{
-	  rel_uncert_ZPt[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_ZPT[i];
+	  uncert_ZPt[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_ZPT[i];
 	}
     }
 
-  for(int i=0;i!=22;++i)
+  for(int i=0;i!=nBinsZPt;++i)
     {
-      for(int j=0;j!=22;++j)
+      for(int j=0;j!=nBinsZPt;++j)
 	{
 	  cov_ZPt[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_ZPt[i][j]+=rel_uncert_ZPt[k][i]*rel_uncert_ZPt[k][j];
+	      cov_ZPt[i][j]+=uncert_ZPt[k][i]*uncert_ZPt[k][j];
 	    }
-	  
-	  corr_ZPt[i][j]=cov_ZPt[i][j]/(TOT_SYSTEMATIC_UNCERT_ZPT[i]*TOT_SYSTEMATIC_UNCERT_ZPT[j]);
+	  ZPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_ZPt[i][j]);
+	  ZPT_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  ZPT_COV_MATRIX->Add(ZPT_COV_MATRIX_RESSCALE,1);
+  ZPT_COV_MATRIX->Add(ZPT_COV_MATRIX_MATRIXSTAT,1);
+  double corr_ZPt[nBinsZPt][nBinsZPt];
+  for(int i=0;i!=nBinsZPt;++i)
+    {
+      for(int j=0;j!=nBinsZPt;++j)
+	{
+	  corr_ZPt[i][j]=ZPT_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(ZPT_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(ZPT_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  ZPT_CORR_MATRIX->SetBinContent(i+1,j+1,corr_ZPt[i][j]);
 	  ZPT_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
-
   //--------------------------------------------------------------------------
   //                           PhiStar
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldPhiStar;
-  TH1D * hTruthPhiStar;
+  TH1D * hUnfoldPhiStar=(TH1D*)(file[1]->Get("hUnfold"));
   
-  hUnfoldPhiStar=(TH1D*)(file[1]->Get("hUnfold"));
-  hTruthPhiStar=(TH1D*)(file[1]->Get("hTruth"));
-
-  TH1D * hUnfoldPhiStarLumiUp;
-  TH1D * hUnfoldPhiStarLumiDown;
-  hUnfoldPhiStarLumiUp=(TH1D*)(fileLumiUp[1]->Get("hUnfold"));
-  hUnfoldPhiStarLumiDown=(TH1D*)(fileLumiDown[1]->Get("hUnfold"));
-
   TH1D * hUnfoldPhiStarEWKBkgUp;
   TH1D * hUnfoldPhiStarEWKBkgDown;
   hUnfoldPhiStarEWKBkgUp=(TH1D*)(fileEWKBkgUp[1]->Get("hUnfold"));
@@ -551,15 +529,6 @@ vector<TFile*> file;
   hUnfoldPhiStarEffBkgShapeSysDown->Scale(-1.);
   hUnfoldPhiStarEffBkgShapeSysDown->Add(hUnfoldPhiStar,1.);
 
-  TH1D * hUnfoldPhiStarResScaleSysUp;
-  TH1D * hUnfoldPhiStarResScaleSysDown;
-  hUnfoldPhiStarResScaleSysUp=(TH1D*)(fileResScaleSys[1]->Get("hUnfold"));
-  hUnfoldPhiStarResScaleSysDown=(TH1D*)(fileResScaleSys[1]->Get("hUnfold"));
-
-  hUnfoldPhiStarResScaleSysDown->Add(hUnfoldPhiStar,-1.);
-  hUnfoldPhiStarResScaleSysDown->Scale(-1.);
-  hUnfoldPhiStarResScaleSysDown->Add(hUnfoldPhiStar,1.);
-
   TH1D * hUnfoldPhiStarUnfoldModelSysUp;
   TH1D * hUnfoldPhiStarUnfoldModelSysDown;
   hUnfoldPhiStarUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[1]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -569,14 +538,11 @@ vector<TFile*> file;
   hUnfoldPhiStarUnfoldModelSysDown->Scale(-1.);
   hUnfoldPhiStarUnfoldModelSysDown->Add(hUnfoldPhiStar,1.);
 
-   
+  
   TGraphAsymmErrors* gUnfoldPhiStar=TH1TOTGraphAsymmErrors(hUnfoldPhiStar);
-  TGraphAsymmErrors* gTruthPhiStar=TH1TOTGraphAsymmErrors(hTruthPhiStar);
 
   TGraphAsymmErrors* PHISTAR_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldPhiStar);
-  TGraphAsymmErrors* PHISTAR_LUMI_UNCERT_BAND_DATA;
-  PHISTAR_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarLumiUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarLumiDown));
-
+  
   TGraphAsymmErrors* PHISTAR_EWKBKG_UNCERT_BAND_DATA;
   PHISTAR_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarEWKBkgDown));
 
@@ -595,198 +561,154 @@ vector<TFile*> file;
   TGraphAsymmErrors* PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA;
   PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* PHISTAR_RESSCALE_UNCERT_BAND_DATA;
-  PHISTAR_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarResScaleSysDown));
-
   TGraphAsymmErrors* PHISTAR_UNFOLDMODEL_UNCERT_BAND_DATA;
   PHISTAR_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarUnfoldModelSysDown));
-
-  TGraphAsymmErrors* PHISTAR_TOT_UNCERT_BAND_DATA;
-  PHISTAR_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarEWKBkgDown));
- 
-  myAddtoBand(PHISTAR_TOPBKG_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_EFFSTAT_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_EFFSIGSHAPE_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(PHISTAR_RESSCALE_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_UNFOLDMODEL_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* PHISTAR_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_TOT_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_TOT_SYS_BAND->GetEYhigh();
   
+  double* EWKBKG_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* TOPBKG_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSTAT_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBIN_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
+
+  double uncert_PhiStar[7][nBinsPhiStar];
+  double cov_PhiStar[nBinsPhiStar][nBinsPhiStar];
   
-  TGraphAsymmErrors* PHISTAR_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_EWKBKG_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* EWKBKG_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EWKBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_TOPBKG_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* TOPBKG_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_TOPBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_EFFSTAT_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSTAT_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFSTAT_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBIN_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_EFFSIGSHAPE_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_RESSCALE_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* PHISTAR_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_UNFOLDMODEL_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_PhiStar[8][27];
-  double cov_PhiStar[27][27];
-  double corr_PhiStar[27][27];
-
-  for(int i=0;i!=27;++i)
+  for(int i=0;i!=nBinsPhiStar;++i)
     {
       if(hUnfoldPhiStarEWKBkgUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[0][i]=EWKBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[0][i]=EWKBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       if(hUnfoldPhiStarTopBkgUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[1][i]=TOPBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[1][i]=TOPBKG_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       if(hUnfoldPhiStarEffStatUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       if(hUnfoldPhiStarEffBinSysUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[3][i]=EFFBIN_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[3][i]=EFFBIN_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       if(hUnfoldPhiStarEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       if(hUnfoldPhiStarEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
-	}
-      if(hUnfoldPhiStarResScaleSysUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_PhiStar[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_PHISTAR[i];
-	}
-      else
-	{
-	  rel_uncert_PhiStar[6][i]=RESSCALE_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       if(hUnfoldPhiStarUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldPhiStar->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_PhiStar[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
       else
 	{
-	  rel_uncert_PhiStar[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_PHISTAR[i];
+	  uncert_PhiStar[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_PHISTAR[i];
 	}
     }
 
-  for(int i=0;i!=27;++i)
+  for(int i=0;i!=nBinsPhiStar;++i)
     {
-      for(int j=0;j!=27;++j)
+      for(int j=0;j!=nBinsPhiStar;++j)
 	{
 	  cov_PhiStar[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_PhiStar[i][j]+=rel_uncert_PhiStar[k][i]*rel_uncert_PhiStar[k][j];
+	      cov_PhiStar[i][j]+=uncert_PhiStar[k][i]*uncert_PhiStar[k][j];
 	    }
-	  
-	  corr_PhiStar[i][j]=cov_PhiStar[i][j]/(TOT_SYSTEMATIC_UNCERT_PHISTAR[i]*TOT_SYSTEMATIC_UNCERT_PHISTAR[j]);
+	  PHISTAR_COV_MATRIX->SetBinContent(i+1,j+1,cov_PhiStar[i][j]);
+	  PHISTAR_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  PHISTAR_COV_MATRIX->Add(PHISTAR_COV_MATRIX_RESSCALE,1);
+  PHISTAR_COV_MATRIX->Add(PHISTAR_COV_MATRIX_MATRIXSTAT,1);
+  double corr_PhiStar[nBinsPhiStar][nBinsPhiStar];
+  for(int i=0;i!=nBinsPhiStar;++i)
+    {
+      for(int j=0;j!=nBinsPhiStar;++j)
+	{
+	  corr_PhiStar[i][j]=PHISTAR_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(PHISTAR_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(PHISTAR_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  PHISTAR_CORR_MATRIX->SetBinContent(i+1,j+1,corr_PhiStar[i][j]);
 	  PHISTAR_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
+
+  
 
 
   //--------------------------------------------------------------------------
   //                           Z Rapidity
   //--------------------------------------------------------------------------
 
-
-  TH1D * hUnfoldZRap;
-  TH1D * hTruthZRap;
+  TH1D * hUnfoldZRap=(TH1D*)(file[2]->Get("hUnfold"));
   
-  hUnfoldZRap=(TH1D*)(file[2]->Get("hUnfold"));
-  hTruthZRap=(TH1D*)(file[2]->Get("hTruth"));
-
-  TH1D * hUnfoldZRapLumiUp;
-  TH1D * hUnfoldZRapLumiDown;
-  hUnfoldZRapLumiUp=(TH1D*)(fileLumiUp[2]->Get("hUnfold"));
-  hUnfoldZRapLumiDown=(TH1D*)(fileLumiDown[2]->Get("hUnfold"));
-
   TH1D * hUnfoldZRapEWKBkgUp;
   TH1D * hUnfoldZRapEWKBkgDown;
   hUnfoldZRapEWKBkgUp=(TH1D*)(fileEWKBkgUp[2]->Get("hUnfold"));
   hUnfoldZRapEWKBkgDown=(TH1D*)(fileEWKBkgDown[2]->Get("hUnfold"));
-  
+
   TH1D * hUnfoldZRapTopBkgUp;
   TH1D * hUnfoldZRapTopBkgDown;
   hUnfoldZRapTopBkgUp=(TH1D*)(fileTopBkgUp[2]->Get("hUnfold"));
   hUnfoldZRapTopBkgDown=(TH1D*)(fileTopBkgDown[2]->Get("hUnfold"));
-  
+
   TH1D * hUnfoldZRapEffStatUp;
   TH1D * hUnfoldZRapEffStatDown;
   hUnfoldZRapEffStatUp=(TH1D*)(fileEffStatUp[2]->Get("hUnfold"));
   hUnfoldZRapEffStatDown=(TH1D*)(fileEffStatDown[2]->Get("hUnfold"));
-  
+
   TH1D * hUnfoldZRapEffBinSysUp;
   TH1D * hUnfoldZRapEffBinSysDown;
   hUnfoldZRapEffBinSysUp=(TH1D*)(fileEffBinSys[2]->Get("hUnfold"));
   hUnfoldZRapEffBinSysDown=(TH1D*)(fileEffBinSys[2]->Get("hUnfold"));
-  
+
   hUnfoldZRapEffBinSysDown->Add(hUnfoldZRap,-1.);
   hUnfoldZRapEffBinSysDown->Scale(-1.);
   hUnfoldZRapEffBinSysDown->Add(hUnfoldZRap,1.);
-  
+
   TH1D * hUnfoldZRapEffSigShapeSysUp;
   TH1D * hUnfoldZRapEffSigShapeSysDown;
   hUnfoldZRapEffSigShapeSysUp=(TH1D*)(fileEffSigShapeSys[2]->Get("hUnfold"));
   hUnfoldZRapEffSigShapeSysDown=(TH1D*)(fileEffSigShapeSys[2]->Get("hUnfold"));
-  
+
   hUnfoldZRapEffSigShapeSysDown->Add(hUnfoldZRap,-1.);
   hUnfoldZRapEffSigShapeSysDown->Scale(-1.);
   hUnfoldZRapEffSigShapeSysDown->Add(hUnfoldZRap,1.);
-  
+
   TH1D * hUnfoldZRapEffBkgShapeSysUp;
   TH1D * hUnfoldZRapEffBkgShapeSysDown;
   hUnfoldZRapEffBkgShapeSysUp=(TH1D*)(fileEffBkgShapeSys[2]->Get("hUnfold"));
@@ -795,15 +717,6 @@ vector<TFile*> file;
   hUnfoldZRapEffBkgShapeSysDown->Add(hUnfoldZRap,-1.);
   hUnfoldZRapEffBkgShapeSysDown->Scale(-1.);
   hUnfoldZRapEffBkgShapeSysDown->Add(hUnfoldZRap,1.);
-
-  TH1D * hUnfoldZRapResScaleSysUp;
-  TH1D * hUnfoldZRapResScaleSysDown;
-  hUnfoldZRapResScaleSysUp=(TH1D*)(fileResScaleSys[2]->Get("hUnfold"));
-  hUnfoldZRapResScaleSysDown=(TH1D*)(fileResScaleSys[2]->Get("hUnfold"));
-
-  hUnfoldZRapResScaleSysDown->Add(hUnfoldZRap,-1.);
-  hUnfoldZRapResScaleSysDown->Scale(-1.);
-  hUnfoldZRapResScaleSysDown->Add(hUnfoldZRap,1.);
 
   TH1D * hUnfoldZRapUnfoldModelSysUp;
   TH1D * hUnfoldZRapUnfoldModelSysDown;
@@ -814,13 +727,11 @@ vector<TFile*> file;
   hUnfoldZRapUnfoldModelSysDown->Scale(-1.);
   hUnfoldZRapUnfoldModelSysDown->Add(hUnfoldZRap,1.);
 
+  
   TGraphAsymmErrors* gUnfoldZRap=TH1TOTGraphAsymmErrors(hUnfoldZRap);
-  TGraphAsymmErrors* gTruthZRap=TH1TOTGraphAsymmErrors(hTruthZRap);
 
   TGraphAsymmErrors* ZRAP_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldZRap);
-  TGraphAsymmErrors* ZRAP_LUMI_UNCERT_BAND_DATA;
-  ZRAP_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapLumiUp),TH1TOTGraphAsymmErrors(hUnfoldZRapLumiDown));
-
+  
   TGraphAsymmErrors* ZRAP_EWKBKG_UNCERT_BAND_DATA;
   ZRAP_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldZRapEWKBkgDown));
 
@@ -839,129 +750,83 @@ vector<TFile*> file;
   TGraphAsymmErrors* ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA;
   ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldZRapEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* ZRAP_RESSCALE_UNCERT_BAND_DATA;
-  ZRAP_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldZRapResScaleSysDown));
-
   TGraphAsymmErrors* ZRAP_UNFOLDMODEL_UNCERT_BAND_DATA;
   ZRAP_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldZRapUnfoldModelSysDown));
-
-  TGraphAsymmErrors* ZRAP_TOT_UNCERT_BAND_DATA;
-  ZRAP_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldZRapEWKBkgDown));
- 
-  myAddtoBand(ZRAP_TOPBKG_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_EFFSTAT_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_EFFSIGSHAPE_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(ZRAP_RESSCALE_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_UNFOLDMODEL_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* ZRAP_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_TOT_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_ZRAP=ZRAP_TOT_SYS_BAND->GetEYhigh();
   
-  
-  TGraphAsymmErrors* ZRAP_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_EWKBKG_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
+  double* EWKBKG_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EWKBKG_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EWKBKG_SYS_BAND->GetEYhigh();
+  double* TOPBKG_SYSTEMATIC_UNCERT_ZRAP=ZRAP_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* ZRAP_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_TOPBKG_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
+  double* EFFSTAT_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* TOPBKG_SYSTEMATIC_UNCERT_ZRAP=ZRAP_TOPBKG_SYS_BAND->GetEYhigh();
+  double* EFFBIN_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* ZRAP_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_EFFSTAT_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EFFSTAT_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFSTAT_SYS_BAND->GetEYhigh();
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* ZRAP_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_ZRAP=ZRAP_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EFFBIN_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZRAP_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_EFFSIGSHAPE_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZRAP_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZRAP=ZRAP_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZRAP_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_RESSCALE_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_ZRAP=ZRAP_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* ZRAP_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZRAP_UNFOLDMODEL_UNCERT_BAND_DATA,ZRAP_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_ZRAP=ZRAP_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_ZRap[8][24];
+  double uncert_ZRap[7][24];
   double cov_ZRap[24][24];
-  double corr_ZRap[24][24];
-
+  
   for(int i=0;i!=24;++i)
     {
       if(hUnfoldZRapEWKBkgUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[0][i]=EWKBKG_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[0][i]=EWKBKG_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       if(hUnfoldZRapTopBkgUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[1][i]=TOPBKG_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[1][i]=TOPBKG_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       if(hUnfoldZRapEffStatUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       if(hUnfoldZRapEffBinSysUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[3][i]=EFFBIN_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[3][i]=EFFBIN_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       if(hUnfoldZRapEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       if(hUnfoldZRapEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
-	}
-      if(hUnfoldZRapResScaleSysUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_ZRap[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_ZRAP[i];
-	}
-      else
-	{
-	  rel_uncert_ZRap[6][i]=RESSCALE_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       if(hUnfoldZRapUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldZRap->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_ZRap[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
       else
 	{
-	  rel_uncert_ZRap[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_ZRAP[i];
+	  uncert_ZRap[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_ZRAP[i];
 	}
     }
 
@@ -970,35 +835,34 @@ vector<TFile*> file;
       for(int j=0;j!=24;++j)
 	{
 	  cov_ZRap[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_ZRap[i][j]+=rel_uncert_ZRap[k][i]*rel_uncert_ZRap[k][j];
+	      cov_ZRap[i][j]+=uncert_ZRap[k][i]*uncert_ZRap[k][j];
 	    }
-	  
-	  corr_ZRap[i][j]=cov_ZRap[i][j]/(TOT_SYSTEMATIC_UNCERT_ZRAP[i]*TOT_SYSTEMATIC_UNCERT_ZRAP[j]);
+	  ZRAP_COV_MATRIX->SetBinContent(i+1,j+1,cov_ZRap[i][j]);
+	  ZRAP_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  ZRAP_COV_MATRIX->Add(ZRAP_COV_MATRIX_RESSCALE,1);
+  ZRAP_COV_MATRIX->Add(ZRAP_COV_MATRIX_MATRIXSTAT,1);
+  double corr_ZRap[24][24];
+  for(int i=0;i!=24;++i)
+    {
+      for(int j=0;j!=24;++j)
+	{
+	  corr_ZRap[i][j]=ZRAP_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(ZRAP_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(ZRAP_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  ZRAP_CORR_MATRIX->SetBinContent(i+1,j+1,corr_ZRap[i][j]);
 	  ZRAP_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
-
+ 
   
   //--------------------------------------------------------------------------
   //                           Lep1 Pt
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldLep1Pt;
-  TH1D * hTruthLep1Pt;
+  TH1D * hUnfoldLep1Pt=(TH1D*)(file[3]->Get("hUnfold"));
   
-  hUnfoldLep1Pt=(TH1D*)(file[3]->Get("hUnfold"));
-  hTruthLep1Pt=(TH1D*)(file[3]->Get("hTruth"));
-
-  TH1D * hUnfoldLep1PtLumiUp;
-  TH1D * hUnfoldLep1PtLumiDown;
-  hUnfoldLep1PtLumiUp=(TH1D*)(fileLumiUp[3]->Get("hUnfold"));
-  hUnfoldLep1PtLumiDown=(TH1D*)(fileLumiDown[3]->Get("hUnfold"));
-
   TH1D * hUnfoldLep1PtEWKBkgUp;
   TH1D * hUnfoldLep1PtEWKBkgDown;
   hUnfoldLep1PtEWKBkgUp=(TH1D*)(fileEWKBkgUp[3]->Get("hUnfold"));
@@ -1041,15 +905,6 @@ vector<TFile*> file;
   hUnfoldLep1PtEffBkgShapeSysDown->Scale(-1.);
   hUnfoldLep1PtEffBkgShapeSysDown->Add(hUnfoldLep1Pt,1.);
 
-  TH1D * hUnfoldLep1PtResScaleSysUp;
-  TH1D * hUnfoldLep1PtResScaleSysDown;
-  hUnfoldLep1PtResScaleSysUp=(TH1D*)(fileResScaleSys[3]->Get("hUnfold"));
-  hUnfoldLep1PtResScaleSysDown=(TH1D*)(fileResScaleSys[3]->Get("hUnfold"));
-
-  hUnfoldLep1PtResScaleSysDown->Add(hUnfoldLep1Pt,-1.);
-  hUnfoldLep1PtResScaleSysDown->Scale(-1.);
-  hUnfoldLep1PtResScaleSysDown->Add(hUnfoldLep1Pt,1.);
-
   TH1D * hUnfoldLep1PtUnfoldModelSysUp;
   TH1D * hUnfoldLep1PtUnfoldModelSysDown;
   hUnfoldLep1PtUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[3]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -1058,15 +913,12 @@ vector<TFile*> file;
   hUnfoldLep1PtUnfoldModelSysDown->Add(hUnfoldLep1Pt,-1.);
   hUnfoldLep1PtUnfoldModelSysDown->Scale(-1.);
   hUnfoldLep1PtUnfoldModelSysDown->Add(hUnfoldLep1Pt,1.);
-  
 
+  
   TGraphAsymmErrors* gUnfoldLep1Pt=TH1TOTGraphAsymmErrors(hUnfoldLep1Pt);
-  TGraphAsymmErrors* gTruthLep1Pt=TH1TOTGraphAsymmErrors(hTruthLep1Pt);
 
   TGraphAsymmErrors* LEP1PT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep1Pt);
-  TGraphAsymmErrors* LEP1PT_LUMI_UNCERT_BAND_DATA;
-  LEP1PT_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtLumiUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtLumiDown));
-
+  
   TGraphAsymmErrors* LEP1PT_EWKBKG_UNCERT_BAND_DATA;
   LEP1PT_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtEWKBkgDown));
 
@@ -1085,166 +937,118 @@ vector<TFile*> file;
   TGraphAsymmErrors* LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA;
   LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* LEP1PT_RESSCALE_UNCERT_BAND_DATA;
-  LEP1PT_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtResScaleSysDown));
-
   TGraphAsymmErrors* LEP1PT_UNFOLDMODEL_UNCERT_BAND_DATA;
   LEP1PT_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtUnfoldModelSysDown));
-
-  TGraphAsymmErrors* LEP1PT_TOT_UNCERT_BAND_DATA;
-  LEP1PT_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtEWKBkgDown));
- 
-  myAddtoBand(LEP1PT_TOPBKG_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_EFFSTAT_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(LEP1PT_RESSCALE_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_UNFOLDMODEL_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* LEP1PT_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_TOT_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_TOT_SYS_BAND->GetEYhigh();
   
+  double* EWKBKG_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* TOPBKG_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBIN_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
+
+  double uncert_Lep1Pt[7][nBinsLep1Pt];
+  double cov_Lep1Pt[nBinsLep1Pt][nBinsLep1Pt];
   
-  TGraphAsymmErrors* LEP1PT_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_EWKBKG_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* EWKBKG_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EWKBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_TOPBKG_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* TOPBKG_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_TOPBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_EFFSTAT_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFSTAT_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBIN_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_RESSCALE_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1PT_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_UNFOLDMODEL_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_Lep1Pt[8][25];
-  double cov_Lep1Pt[25][25];
-  double corr_Lep1Pt[25][25];
-
-  for(int i=0;i!=25;++i)
+  for(int i=0;i!=nBinsLep1Pt;++i)
     {
       if(hUnfoldLep1PtEWKBkgUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       if(hUnfoldLep1PtTopBkgUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       if(hUnfoldLep1PtEffStatUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       if(hUnfoldLep1PtEffBinSysUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       if(hUnfoldLep1PtEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       if(hUnfoldLep1PtEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
-	}
-      if(hUnfoldLep1PtResScaleSysUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_Lep1Pt[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_LEP1PT[i];
-	}
-      else
-	{
-	  rel_uncert_Lep1Pt[6][i]=RESSCALE_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       if(hUnfoldLep1PtUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldLep1Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Pt[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Pt[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1PT[i];
+	  uncert_Lep1Pt[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1PT[i];
 	}
     }
 
-  for(int i=0;i!=25;++i)
+  for(int i=0;i!=nBinsLep1Pt;++i)
     {
-      for(int j=0;j!=25;++j)
+      for(int j=0;j!=nBinsLep1Pt;++j)
 	{
 	  cov_Lep1Pt[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_Lep1Pt[i][j]+=rel_uncert_Lep1Pt[k][i]*rel_uncert_Lep1Pt[k][j];
+	      cov_Lep1Pt[i][j]+=uncert_Lep1Pt[k][i]*uncert_Lep1Pt[k][j];
 	    }
-	  
-	  corr_Lep1Pt[i][j]=cov_Lep1Pt[i][j]/(TOT_SYSTEMATIC_UNCERT_LEP1PT[i]*TOT_SYSTEMATIC_UNCERT_LEP1PT[j]);
+	  LEP1PT_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep1Pt[i][j]);
+	  LEP1PT_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  LEP1PT_COV_MATRIX->Add(LEP1PT_COV_MATRIX_RESSCALE,1);
+  LEP1PT_COV_MATRIX->Add(LEP1PT_COV_MATRIX_MATRIXSTAT,1);
+  double corr_Lep1Pt[nBinsLep1Pt][nBinsLep1Pt];
+  for(int i=0;i!=nBinsLep1Pt;++i)
+    {
+      for(int j=0;j!=nBinsLep1Pt;++j)
+	{
+	  corr_Lep1Pt[i][j]=LEP1PT_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(LEP1PT_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(LEP1PT_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  LEP1PT_CORR_MATRIX->SetBinContent(i+1,j+1,corr_Lep1Pt[i][j]);
 	  LEP1PT_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
-
-  
+ 
   //--------------------------------------------------------------------------
   //                           Lep2 Pt
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldLep2Pt;
-  TH1D * hTruthLep2Pt;
+  TH1D * hUnfoldLep2Pt=(TH1D*)(file[4]->Get("hUnfold"));
   
-  hUnfoldLep2Pt=(TH1D*)(file[4]->Get("hUnfold"));
-  hTruthLep2Pt=(TH1D*)(file[4]->Get("hTruth"));
-
-  TH1D * hUnfoldLep2PtLumiUp;
-  TH1D * hUnfoldLep2PtLumiDown;
-  hUnfoldLep2PtLumiUp=(TH1D*)(fileLumiUp[4]->Get("hUnfold"));
-  hUnfoldLep2PtLumiDown=(TH1D*)(fileLumiDown[4]->Get("hUnfold"));
-
   TH1D * hUnfoldLep2PtEWKBkgUp;
   TH1D * hUnfoldLep2PtEWKBkgDown;
   hUnfoldLep2PtEWKBkgUp=(TH1D*)(fileEWKBkgUp[4]->Get("hUnfold"));
@@ -1287,15 +1091,6 @@ vector<TFile*> file;
   hUnfoldLep2PtEffBkgShapeSysDown->Scale(-1.);
   hUnfoldLep2PtEffBkgShapeSysDown->Add(hUnfoldLep2Pt,1.);
 
-  TH1D * hUnfoldLep2PtResScaleSysUp;
-  TH1D * hUnfoldLep2PtResScaleSysDown;
-  hUnfoldLep2PtResScaleSysUp=(TH1D*)(fileResScaleSys[4]->Get("hUnfold"));
-  hUnfoldLep2PtResScaleSysDown=(TH1D*)(fileResScaleSys[4]->Get("hUnfold"));
-
-  hUnfoldLep2PtResScaleSysDown->Add(hUnfoldLep2Pt,-1.);
-  hUnfoldLep2PtResScaleSysDown->Scale(-1.);
-  hUnfoldLep2PtResScaleSysDown->Add(hUnfoldLep2Pt,1.);
-
   TH1D * hUnfoldLep2PtUnfoldModelSysUp;
   TH1D * hUnfoldLep2PtUnfoldModelSysDown;
   hUnfoldLep2PtUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[4]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -1304,15 +1099,12 @@ vector<TFile*> file;
   hUnfoldLep2PtUnfoldModelSysDown->Add(hUnfoldLep2Pt,-1.);
   hUnfoldLep2PtUnfoldModelSysDown->Scale(-1.);
   hUnfoldLep2PtUnfoldModelSysDown->Add(hUnfoldLep2Pt,1.);
-  
 
+  
   TGraphAsymmErrors* gUnfoldLep2Pt=TH1TOTGraphAsymmErrors(hUnfoldLep2Pt);
-  TGraphAsymmErrors* gTruthLep2Pt=TH1TOTGraphAsymmErrors(hTruthLep2Pt);
 
   TGraphAsymmErrors* LEP2PT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep2Pt);
-  TGraphAsymmErrors* LEP2PT_LUMI_UNCERT_BAND_DATA;
-  LEP2PT_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtLumiUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtLumiDown));
-
+  
   TGraphAsymmErrors* LEP2PT_EWKBKG_UNCERT_BAND_DATA;
   LEP2PT_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtEWKBkgDown));
 
@@ -1331,166 +1123,118 @@ vector<TFile*> file;
   TGraphAsymmErrors* LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA;
   LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* LEP2PT_RESSCALE_UNCERT_BAND_DATA;
-  LEP2PT_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtResScaleSysDown));
-
   TGraphAsymmErrors* LEP2PT_UNFOLDMODEL_UNCERT_BAND_DATA;
   LEP2PT_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtUnfoldModelSysDown));
-
-  TGraphAsymmErrors* LEP2PT_TOT_UNCERT_BAND_DATA;
-  LEP2PT_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtEWKBkgDown));
- 
-  myAddtoBand(LEP2PT_TOPBKG_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_EFFSTAT_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(LEP2PT_RESSCALE_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_UNFOLDMODEL_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* LEP2PT_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_TOT_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_TOT_SYS_BAND->GetEYhigh();
   
+  double* EWKBKG_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* TOPBKG_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBIN_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
+
+  double uncert_Lep2Pt[7][nBinsLep2Pt];
+  double cov_Lep2Pt[nBinsLep2Pt][nBinsLep2Pt];
   
-  TGraphAsymmErrors* LEP2PT_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_EWKBKG_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* EWKBKG_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EWKBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_TOPBKG_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* TOPBKG_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_TOPBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_EFFSTAT_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFSTAT_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBIN_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_RESSCALE_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2PT_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_UNFOLDMODEL_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_Lep2Pt[8][20];
-  double cov_Lep2Pt[20][20];
-  double corr_Lep2Pt[20][20];
-
-  for(int i=0;i!=20;++i)
+  for(int i=0;i!=nBinsLep2Pt;++i)
     {
       if(hUnfoldLep2PtEWKBkgUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       if(hUnfoldLep2PtTopBkgUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       if(hUnfoldLep2PtEffStatUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       if(hUnfoldLep2PtEffBinSysUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       if(hUnfoldLep2PtEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       if(hUnfoldLep2PtEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
-	}
-      if(hUnfoldLep2PtResScaleSysUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_Lep2Pt[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_LEP2PT[i];
-	}
-      else
-	{
-	  rel_uncert_Lep2Pt[6][i]=RESSCALE_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       if(hUnfoldLep2PtUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldLep2Pt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Pt[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Pt[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2PT[i];
+	  uncert_Lep2Pt[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2PT[i];
 	}
     }
 
-  for(int i=0;i!=20;++i)
+  for(int i=0;i!=nBinsLep2Pt;++i)
     {
-      for(int j=0;j!=20;++j)
+      for(int j=0;j!=nBinsLep2Pt;++j)
 	{
 	  cov_Lep2Pt[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_Lep2Pt[i][j]+=rel_uncert_Lep2Pt[k][i]*rel_uncert_Lep2Pt[k][j];
+	      cov_Lep2Pt[i][j]+=uncert_Lep2Pt[k][i]*uncert_Lep2Pt[k][j];
 	    }
-	  
-	  corr_Lep2Pt[i][j]=cov_Lep2Pt[i][j]/(TOT_SYSTEMATIC_UNCERT_LEP2PT[i]*TOT_SYSTEMATIC_UNCERT_LEP2PT[j]);
+	  LEP2PT_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep2Pt[i][j]);
+	  LEP2PT_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  LEP2PT_COV_MATRIX->Add(LEP2PT_COV_MATRIX_RESSCALE,1);
+  LEP2PT_COV_MATRIX->Add(LEP2PT_COV_MATRIX_MATRIXSTAT,1);
+  double corr_Lep2Pt[nBinsLep2Pt][nBinsLep2Pt];
+  for(int i=0;i!=nBinsLep2Pt;++i)
+    {
+      for(int j=0;j!=nBinsLep2Pt;++j)
+	{
+	  corr_Lep2Pt[i][j]=LEP2PT_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(LEP2PT_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(LEP2PT_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  LEP2PT_CORR_MATRIX->SetBinContent(i+1,j+1,corr_Lep2Pt[i][j]);
 	  LEP2PT_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
-  
 
   //--------------------------------------------------------------------------
   //                           Lep1 Eta
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldLep1Eta;
-  TH1D * hTruthLep1Eta;
+  TH1D * hUnfoldLep1Eta=(TH1D*)(file[5]->Get("hUnfold"));
   
-  hUnfoldLep1Eta=(TH1D*)(file[5]->Get("hUnfold"));
-  hTruthLep1Eta=(TH1D*)(file[5]->Get("hTruth"));
-
-  TH1D * hUnfoldLep1EtaLumiUp;
-  TH1D * hUnfoldLep1EtaLumiDown;
-  hUnfoldLep1EtaLumiUp=(TH1D*)(fileLumiUp[5]->Get("hUnfold"));
-  hUnfoldLep1EtaLumiDown=(TH1D*)(fileLumiDown[5]->Get("hUnfold"));
-
   TH1D * hUnfoldLep1EtaEWKBkgUp;
   TH1D * hUnfoldLep1EtaEWKBkgDown;
   hUnfoldLep1EtaEWKBkgUp=(TH1D*)(fileEWKBkgUp[5]->Get("hUnfold"));
@@ -1533,15 +1277,6 @@ vector<TFile*> file;
   hUnfoldLep1EtaEffBkgShapeSysDown->Scale(-1.);
   hUnfoldLep1EtaEffBkgShapeSysDown->Add(hUnfoldLep1Eta,1.);
 
-  TH1D * hUnfoldLep1EtaResScaleSysUp;
-  TH1D * hUnfoldLep1EtaResScaleSysDown;
-  hUnfoldLep1EtaResScaleSysUp=(TH1D*)(fileResScaleSys[5]->Get("hUnfold"));
-  hUnfoldLep1EtaResScaleSysDown=(TH1D*)(fileResScaleSys[5]->Get("hUnfold"));
-
-  hUnfoldLep1EtaResScaleSysDown->Add(hUnfoldLep1Eta,-1.);
-  hUnfoldLep1EtaResScaleSysDown->Scale(-1.);
-  hUnfoldLep1EtaResScaleSysDown->Add(hUnfoldLep1Eta,1.);
-
   TH1D * hUnfoldLep1EtaUnfoldModelSysUp;
   TH1D * hUnfoldLep1EtaUnfoldModelSysDown;
   hUnfoldLep1EtaUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[5]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -1550,15 +1285,12 @@ vector<TFile*> file;
   hUnfoldLep1EtaUnfoldModelSysDown->Add(hUnfoldLep1Eta,-1.);
   hUnfoldLep1EtaUnfoldModelSysDown->Scale(-1.);
   hUnfoldLep1EtaUnfoldModelSysDown->Add(hUnfoldLep1Eta,1.);
-  
 
+  
   TGraphAsymmErrors* gUnfoldLep1Eta=TH1TOTGraphAsymmErrors(hUnfoldLep1Eta);
-  TGraphAsymmErrors* gTruthLep1Eta=TH1TOTGraphAsymmErrors(hTruthLep1Eta);
 
   TGraphAsymmErrors* LEP1ETA_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep1Eta);
-  TGraphAsymmErrors* LEP1ETA_LUMI_UNCERT_BAND_DATA;
-  LEP1ETA_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaLumiUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaLumiDown));
-
+  
   TGraphAsymmErrors* LEP1ETA_EWKBKG_UNCERT_BAND_DATA;
   LEP1ETA_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEWKBkgDown));
 
@@ -1577,129 +1309,83 @@ vector<TFile*> file;
   TGraphAsymmErrors* LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA;
   LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* LEP1ETA_RESSCALE_UNCERT_BAND_DATA;
-  LEP1ETA_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaResScaleSysDown));
-
   TGraphAsymmErrors* LEP1ETA_UNFOLDMODEL_UNCERT_BAND_DATA;
   LEP1ETA_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaUnfoldModelSysDown));
-
-  TGraphAsymmErrors* LEP1ETA_TOT_UNCERT_BAND_DATA;
-  LEP1ETA_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEWKBkgDown));
- 
-  myAddtoBand(LEP1ETA_TOPBKG_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_EFFSTAT_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(LEP1ETA_RESSCALE_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_UNFOLDMODEL_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* LEP1ETA_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_TOT_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_TOT_SYS_BAND->GetEYhigh();
   
-  
-  TGraphAsymmErrors* LEP1ETA_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_EWKBKG_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
+  double* EWKBKG_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EWKBKG_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EWKBKG_SYS_BAND->GetEYhigh();
+  double* TOPBKG_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* LEP1ETA_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_TOPBKG_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
+  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* TOPBKG_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_TOPBKG_SYS_BAND->GetEYhigh();
+  double* EFFBIN_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* LEP1ETA_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_EFFSTAT_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFSTAT_SYS_BAND->GetEYhigh();
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* LEP1ETA_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EFFBIN_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1ETA_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1ETA_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1ETA_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_RESSCALE_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP1ETA_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1ETA_UNFOLDMODEL_UNCERT_BAND_DATA,LEP1ETA_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1ETA=LEP1ETA_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_Lep1Eta[8][24];
+  double uncert_Lep1Eta[7][24];
   double cov_Lep1Eta[24][24];
-  double corr_Lep1Eta[24][24];
-
+  
   for(int i=0;i!=24;++i)
     {
       if(hUnfoldLep1EtaEWKBkgUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       if(hUnfoldLep1EtaTopBkgUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       if(hUnfoldLep1EtaEffStatUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       if(hUnfoldLep1EtaEffBinSysUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       if(hUnfoldLep1EtaEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       if(hUnfoldLep1EtaEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
-	}
-      if(hUnfoldLep1EtaResScaleSysUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_Lep1Eta[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_LEP1ETA[i];
-	}
-      else
-	{
-	  rel_uncert_Lep1Eta[6][i]=RESSCALE_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       if(hUnfoldLep1EtaUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldLep1Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep1Eta[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep1Eta[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1ETA[i];
+	  uncert_Lep1Eta[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP1ETA[i];
 	}
     }
 
@@ -1708,35 +1394,33 @@ vector<TFile*> file;
       for(int j=0;j!=24;++j)
 	{
 	  cov_Lep1Eta[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_Lep1Eta[i][j]+=rel_uncert_Lep1Eta[k][i]*rel_uncert_Lep1Eta[k][j];
+	      cov_Lep1Eta[i][j]+=uncert_Lep1Eta[k][i]*uncert_Lep1Eta[k][j];
 	    }
-	  
-	  corr_Lep1Eta[i][j]=cov_Lep1Eta[i][j]/(TOT_SYSTEMATIC_UNCERT_LEP1ETA[i]*TOT_SYSTEMATIC_UNCERT_LEP1ETA[j]);
+	  LEP1ETA_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep1Eta[i][j]);
+	  LEP1ETA_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  LEP1ETA_COV_MATRIX->Add(LEP1ETA_COV_MATRIX_RESSCALE,1);
+  LEP1ETA_COV_MATRIX->Add(LEP1ETA_COV_MATRIX_MATRIXSTAT,1);
+  double corr_Lep1Eta[24][24];
+  for(int i=0;i!=24;++i)
+    {
+      for(int j=0;j!=24;++j)
+	{
+	  corr_Lep1Eta[i][j]=LEP1ETA_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(LEP1ETA_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(LEP1ETA_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  LEP1ETA_CORR_MATRIX->SetBinContent(i+1,j+1,corr_Lep1Eta[i][j]);
 	  LEP1ETA_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
-
-  
+   
   //--------------------------------------------------------------------------
   //                           Lep2 Eta
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldLep2Eta;
-  TH1D * hTruthLep2Eta;
+  TH1D * hUnfoldLep2Eta=(TH1D*)(file[6]->Get("hUnfold"));
   
-  hUnfoldLep2Eta=(TH1D*)(file[6]->Get("hUnfold"));
-  hTruthLep2Eta=(TH1D*)(file[6]->Get("hTruth"));
-
-  TH1D * hUnfoldLep2EtaLumiUp;
-  TH1D * hUnfoldLep2EtaLumiDown;
-  hUnfoldLep2EtaLumiUp=(TH1D*)(fileLumiUp[6]->Get("hUnfold"));
-  hUnfoldLep2EtaLumiDown=(TH1D*)(fileLumiDown[6]->Get("hUnfold"));
-
   TH1D * hUnfoldLep2EtaEWKBkgUp;
   TH1D * hUnfoldLep2EtaEWKBkgDown;
   hUnfoldLep2EtaEWKBkgUp=(TH1D*)(fileEWKBkgUp[6]->Get("hUnfold"));
@@ -1779,15 +1463,6 @@ vector<TFile*> file;
   hUnfoldLep2EtaEffBkgShapeSysDown->Scale(-1.);
   hUnfoldLep2EtaEffBkgShapeSysDown->Add(hUnfoldLep2Eta,1.);
 
-  TH1D * hUnfoldLep2EtaResScaleSysUp;
-  TH1D * hUnfoldLep2EtaResScaleSysDown;
-  hUnfoldLep2EtaResScaleSysUp=(TH1D*)(fileResScaleSys[6]->Get("hUnfold"));
-  hUnfoldLep2EtaResScaleSysDown=(TH1D*)(fileResScaleSys[6]->Get("hUnfold"));
-
-  hUnfoldLep2EtaResScaleSysDown->Add(hUnfoldLep2Eta,-1.);
-  hUnfoldLep2EtaResScaleSysDown->Scale(-1.);
-  hUnfoldLep2EtaResScaleSysDown->Add(hUnfoldLep2Eta,1.);
-
   TH1D * hUnfoldLep2EtaUnfoldModelSysUp;
   TH1D * hUnfoldLep2EtaUnfoldModelSysDown;
   hUnfoldLep2EtaUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[6]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -1796,15 +1471,12 @@ vector<TFile*> file;
   hUnfoldLep2EtaUnfoldModelSysDown->Add(hUnfoldLep2Eta,-1.);
   hUnfoldLep2EtaUnfoldModelSysDown->Scale(-1.);
   hUnfoldLep2EtaUnfoldModelSysDown->Add(hUnfoldLep2Eta,1.);
-  
 
+  
   TGraphAsymmErrors* gUnfoldLep2Eta=TH1TOTGraphAsymmErrors(hUnfoldLep2Eta);
-  TGraphAsymmErrors* gTruthLep2Eta=TH1TOTGraphAsymmErrors(hTruthLep2Eta);
 
   TGraphAsymmErrors* LEP2ETA_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep2Eta);
-  TGraphAsymmErrors* LEP2ETA_LUMI_UNCERT_BAND_DATA;
-  LEP2ETA_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaLumiUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaLumiDown));
-
+  
   TGraphAsymmErrors* LEP2ETA_EWKBKG_UNCERT_BAND_DATA;
   LEP2ETA_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEWKBkgDown));
 
@@ -1823,129 +1495,83 @@ vector<TFile*> file;
   TGraphAsymmErrors* LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA;
   LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* LEP2ETA_RESSCALE_UNCERT_BAND_DATA;
-  LEP2ETA_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaResScaleSysDown));
-
   TGraphAsymmErrors* LEP2ETA_UNFOLDMODEL_UNCERT_BAND_DATA;
   LEP2ETA_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaUnfoldModelSysDown));
-
-  TGraphAsymmErrors* LEP2ETA_TOT_UNCERT_BAND_DATA;
-  LEP2ETA_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEWKBkgDown));
- 
-  myAddtoBand(LEP2ETA_TOPBKG_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_EFFSTAT_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(LEP2ETA_RESSCALE_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_UNFOLDMODEL_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* LEP2ETA_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_TOT_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_TOT_SYS_BAND->GetEYhigh();
   
-  
-  TGraphAsymmErrors* LEP2ETA_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_EWKBKG_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
+  double* EWKBKG_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EWKBKG_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EWKBKG_SYS_BAND->GetEYhigh();
+  double* TOPBKG_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* LEP2ETA_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_TOPBKG_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
+  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* TOPBKG_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_TOPBKG_SYS_BAND->GetEYhigh();
+  double* EFFBIN_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* LEP2ETA_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_EFFSTAT_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EFFSTAT_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFSTAT_SYS_BAND->GetEYhigh();
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
 
-  TGraphAsymmErrors* LEP2ETA_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
 
-  double* EFFBIN_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2ETA_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2ETA_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2ETA_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_RESSCALE_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEP2ETA_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2ETA_UNFOLDMODEL_UNCERT_BAND_DATA,LEP2ETA_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2ETA=LEP2ETA_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_Lep2Eta[8][24];
+  double uncert_Lep2Eta[7][24];
   double cov_Lep2Eta[24][24];
-  double corr_Lep2Eta[24][24];
-
+  
   for(int i=0;i!=24;++i)
     {
       if(hUnfoldLep2EtaEWKBkgUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       if(hUnfoldLep2EtaTopBkgUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       if(hUnfoldLep2EtaEffStatUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       if(hUnfoldLep2EtaEffBinSysUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       if(hUnfoldLep2EtaEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       if(hUnfoldLep2EtaEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
-	}
-      if(hUnfoldLep2EtaResScaleSysUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_Lep2Eta[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_LEP2ETA[i];
-	}
-      else
-	{
-	  rel_uncert_Lep2Eta[6][i]=RESSCALE_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       if(hUnfoldLep2EtaUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldLep2Eta->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_Lep2Eta[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
       else
 	{
-	  rel_uncert_Lep2Eta[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2ETA[i];
+	  uncert_Lep2Eta[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEP2ETA[i];
 	}
     }
 
@@ -1954,34 +1580,35 @@ vector<TFile*> file;
       for(int j=0;j!=24;++j)
 	{
 	  cov_Lep2Eta[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_Lep2Eta[i][j]+=rel_uncert_Lep2Eta[k][i]*rel_uncert_Lep2Eta[k][j];
+	      cov_Lep2Eta[i][j]+=uncert_Lep2Eta[k][i]*uncert_Lep2Eta[k][j];
 	    }
-	  
-	  corr_Lep2Eta[i][j]=cov_Lep2Eta[i][j]/(TOT_SYSTEMATIC_UNCERT_LEP2ETA[i]*TOT_SYSTEMATIC_UNCERT_LEP2ETA[j]);
+	  LEP2ETA_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep2Eta[i][j]);
+	  LEP2ETA_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  LEP2ETA_COV_MATRIX->Add(LEP2ETA_COV_MATRIX_RESSCALE,1);
+  LEP2ETA_COV_MATRIX->Add(LEP2ETA_COV_MATRIX_MATRIXSTAT,1);
+  double corr_Lep2Eta[24][24];
+  for(int i=0;i!=24;++i)
+    {
+      for(int j=0;j!=24;++j)
+	{
+	  corr_Lep2Eta[i][j]=LEP2ETA_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(LEP2ETA_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(LEP2ETA_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  LEP2ETA_CORR_MATRIX->SetBinContent(i+1,j+1,corr_Lep2Eta[i][j]);
 	  LEP2ETA_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
 
+  
+
   //--------------------------------------------------------------------------
   //                           LepNeg Pt
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldLepNegPt;
-  TH1D * hTruthLepNegPt;
+  TH1D * hUnfoldLepNegPt=(TH1D*)(file[7]->Get("hUnfold"));
   
-  hUnfoldLepNegPt=(TH1D*)(file[7]->Get("hUnfold"));
-  hTruthLepNegPt=(TH1D*)(file[7]->Get("hTruth"));
-
-  TH1D * hUnfoldLepNegPtLumiUp;
-  TH1D * hUnfoldLepNegPtLumiDown;
-  hUnfoldLepNegPtLumiUp=(TH1D*)(fileLumiUp[7]->Get("hUnfold"));
-  hUnfoldLepNegPtLumiDown=(TH1D*)(fileLumiDown[7]->Get("hUnfold"));
-
   TH1D * hUnfoldLepNegPtEWKBkgUp;
   TH1D * hUnfoldLepNegPtEWKBkgDown;
   hUnfoldLepNegPtEWKBkgUp=(TH1D*)(fileEWKBkgUp[7]->Get("hUnfold"));
@@ -2024,15 +1651,6 @@ vector<TFile*> file;
   hUnfoldLepNegPtEffBkgShapeSysDown->Scale(-1.);
   hUnfoldLepNegPtEffBkgShapeSysDown->Add(hUnfoldLepNegPt,1.);
 
-  TH1D * hUnfoldLepNegPtResScaleSysUp;
-  TH1D * hUnfoldLepNegPtResScaleSysDown;
-  hUnfoldLepNegPtResScaleSysUp=(TH1D*)(fileResScaleSys[7]->Get("hUnfold"));
-  hUnfoldLepNegPtResScaleSysDown=(TH1D*)(fileResScaleSys[7]->Get("hUnfold"));
-
-  hUnfoldLepNegPtResScaleSysDown->Add(hUnfoldLepNegPt,-1.);
-  hUnfoldLepNegPtResScaleSysDown->Scale(-1.);
-  hUnfoldLepNegPtResScaleSysDown->Add(hUnfoldLepNegPt,1.);
-
   TH1D * hUnfoldLepNegPtUnfoldModelSysUp;
   TH1D * hUnfoldLepNegPtUnfoldModelSysDown;
   hUnfoldLepNegPtUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[7]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
@@ -2041,15 +1659,12 @@ vector<TFile*> file;
   hUnfoldLepNegPtUnfoldModelSysDown->Add(hUnfoldLepNegPt,-1.);
   hUnfoldLepNegPtUnfoldModelSysDown->Scale(-1.);
   hUnfoldLepNegPtUnfoldModelSysDown->Add(hUnfoldLepNegPt,1.);
-  
 
+  
   TGraphAsymmErrors* gUnfoldLepNegPt=TH1TOTGraphAsymmErrors(hUnfoldLepNegPt);
-  TGraphAsymmErrors* gTruthLepNegPt=TH1TOTGraphAsymmErrors(hTruthLepNegPt);
 
   TGraphAsymmErrors* LEPNEGPT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLepNegPt);
-  TGraphAsymmErrors* LEPNEGPT_LUMI_UNCERT_BAND_DATA;
-  LEPNEGPT_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtLumiUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtLumiDown));
-
+  
   TGraphAsymmErrors* LEPNEGPT_EWKBKG_UNCERT_BAND_DATA;
   LEPNEGPT_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEWKBkgDown));
 
@@ -2068,143 +1683,107 @@ vector<TFile*> file;
   TGraphAsymmErrors* LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA;
   LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* LEPNEGPT_RESSCALE_UNCERT_BAND_DATA;
-  LEPNEGPT_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtResScaleSysDown));
-
   TGraphAsymmErrors* LEPNEGPT_UNFOLDMODEL_UNCERT_BAND_DATA;
   LEPNEGPT_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtUnfoldModelSysDown));
-
-  TGraphAsymmErrors* LEPNEGPT_TOT_UNCERT_BAND_DATA;
-  LEPNEGPT_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEWKBkgDown));
- 
-  myAddtoBand(LEPNEGPT_TOPBKG_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_EFFSTAT_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(LEPNEGPT_RESSCALE_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_UNFOLDMODEL_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* LEPNEGPT_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_TOT_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_TOT_SYS_BAND->GetEYhigh();
   
+  double* EWKBKG_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* TOPBKG_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSTAT_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBIN_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
+
+  double uncert_LepNegPt[7][nBinsLepNegPt];
+  double cov_LepNegPt[nBinsLepNegPt][nBinsLepNegPt];
   
-  TGraphAsymmErrors* LEPNEGPT_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_EWKBKG_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* EWKBKG_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EWKBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_TOPBKG_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* TOPBKG_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_TOPBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_EFFSTAT_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSTAT_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFSTAT_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBIN_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_RESSCALE_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPNEGPT_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_UNFOLDMODEL_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_LepNegPt[8][25];
-  double cov_LepNegPt[25][25];
-  double corr_LepNegPt[25][25];
-
-  for(int i=0;i!=25;++i)
+  for(int i=0;i!=nBinsLepNegPt;++i)
     {
       if(hUnfoldLepNegPtEWKBkgUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       if(hUnfoldLepNegPtTopBkgUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       if(hUnfoldLepNegPtEffStatUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       if(hUnfoldLepNegPtEffBinSysUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       if(hUnfoldLepNegPtEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       if(hUnfoldLepNegPtEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
-	}
-      if(hUnfoldLepNegPtResScaleSysUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_LepNegPt[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
-	}
-      else
-	{
-	  rel_uncert_LepNegPt[6][i]=RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       if(hUnfoldLepNegPtUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldLepNegPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepNegPt[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
       else
 	{
-	  rel_uncert_LepNegPt[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPNEGPT[i];
+	  uncert_LepNegPt[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPNEGPT[i];
 	}
     }
 
-  for(int i=0;i!=25;++i)
+  for(int i=0;i!=nBinsLepNegPt;++i)
     {
-      for(int j=0;j!=25;++j)
+      for(int j=0;j!=nBinsLepNegPt;++j)
 	{
 	  cov_LepNegPt[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_LepNegPt[i][j]+=rel_uncert_LepNegPt[k][i]*rel_uncert_LepNegPt[k][j];
+	      cov_LepNegPt[i][j]+=uncert_LepNegPt[k][i]*uncert_LepNegPt[k][j];
 	    }
-	  
-	  corr_LepNegPt[i][j]=cov_LepNegPt[i][j]/(TOT_SYSTEMATIC_UNCERT_LEPNEGPT[i]*TOT_SYSTEMATIC_UNCERT_LEPNEGPT[j]);
+	  LEPNEGPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_LepNegPt[i][j]);
+	  LEPNEGPT_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  LEPNEGPT_COV_MATRIX->Add(LEPNEGPT_COV_MATRIX_RESSCALE,1);
+  LEPNEGPT_COV_MATRIX->Add(LEPNEGPT_COV_MATRIX_MATRIXSTAT,1);
+  double corr_LepNegPt[nBinsLepNegPt][nBinsLepNegPt];
+  for(int i=0;i!=nBinsLepNegPt;++i)
+    {
+      for(int j=0;j!=nBinsLepNegPt;++j)
+	{
+	  corr_LepNegPt[i][j]=LEPNEGPT_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(LEPNEGPT_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(LEPNEGPT_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  LEPNEGPT_CORR_MATRIX->SetBinContent(i+1,j+1,corr_LepNegPt[i][j]);
 	  LEPNEGPT_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
@@ -2214,38 +1793,27 @@ vector<TFile*> file;
   //                           LepPos Pt
   //--------------------------------------------------------------------------
 
-
-
-  TH1D * hUnfoldLepPosPt;
-  TH1D * hTruthLepPosPt;
+  TH1D * hUnfoldLepPosPt=(TH1D*)(file[8]->Get("hUnfold"));
   
-  hUnfoldLepPosPt=(TH1D*)(file[7]->Get("hUnfold"));
-  hTruthLepPosPt=(TH1D*)(file[7]->Get("hTruth"));
-
-  TH1D * hUnfoldLepPosPtLumiUp;
-  TH1D * hUnfoldLepPosPtLumiDown;
-  hUnfoldLepPosPtLumiUp=(TH1D*)(fileLumiUp[7]->Get("hUnfold"));
-  hUnfoldLepPosPtLumiDown=(TH1D*)(fileLumiDown[7]->Get("hUnfold"));
-
   TH1D * hUnfoldLepPosPtEWKBkgUp;
   TH1D * hUnfoldLepPosPtEWKBkgDown;
-  hUnfoldLepPosPtEWKBkgUp=(TH1D*)(fileEWKBkgUp[7]->Get("hUnfold"));
-  hUnfoldLepPosPtEWKBkgDown=(TH1D*)(fileEWKBkgDown[7]->Get("hUnfold"));
+  hUnfoldLepPosPtEWKBkgUp=(TH1D*)(fileEWKBkgUp[8]->Get("hUnfold"));
+  hUnfoldLepPosPtEWKBkgDown=(TH1D*)(fileEWKBkgDown[8]->Get("hUnfold"));
 
   TH1D * hUnfoldLepPosPtTopBkgUp;
   TH1D * hUnfoldLepPosPtTopBkgDown;
-  hUnfoldLepPosPtTopBkgUp=(TH1D*)(fileTopBkgUp[7]->Get("hUnfold"));
-  hUnfoldLepPosPtTopBkgDown=(TH1D*)(fileTopBkgDown[7]->Get("hUnfold"));
+  hUnfoldLepPosPtTopBkgUp=(TH1D*)(fileTopBkgUp[8]->Get("hUnfold"));
+  hUnfoldLepPosPtTopBkgDown=(TH1D*)(fileTopBkgDown[8]->Get("hUnfold"));
 
   TH1D * hUnfoldLepPosPtEffStatUp;
   TH1D * hUnfoldLepPosPtEffStatDown;
-  hUnfoldLepPosPtEffStatUp=(TH1D*)(fileEffStatUp[7]->Get("hUnfold"));
-  hUnfoldLepPosPtEffStatDown=(TH1D*)(fileEffStatDown[7]->Get("hUnfold"));
+  hUnfoldLepPosPtEffStatUp=(TH1D*)(fileEffStatUp[8]->Get("hUnfold"));
+  hUnfoldLepPosPtEffStatDown=(TH1D*)(fileEffStatDown[8]->Get("hUnfold"));
 
   TH1D * hUnfoldLepPosPtEffBinSysUp;
   TH1D * hUnfoldLepPosPtEffBinSysDown;
-  hUnfoldLepPosPtEffBinSysUp=(TH1D*)(fileEffBinSys[7]->Get("hUnfold"));
-  hUnfoldLepPosPtEffBinSysDown=(TH1D*)(fileEffBinSys[7]->Get("hUnfold"));
+  hUnfoldLepPosPtEffBinSysUp=(TH1D*)(fileEffBinSys[8]->Get("hUnfold"));
+  hUnfoldLepPosPtEffBinSysDown=(TH1D*)(fileEffBinSys[8]->Get("hUnfold"));
 
   hUnfoldLepPosPtEffBinSysDown->Add(hUnfoldLepPosPt,-1.);
   hUnfoldLepPosPtEffBinSysDown->Scale(-1.);
@@ -2253,8 +1821,8 @@ vector<TFile*> file;
 
   TH1D * hUnfoldLepPosPtEffSigShapeSysUp;
   TH1D * hUnfoldLepPosPtEffSigShapeSysDown;
-  hUnfoldLepPosPtEffSigShapeSysUp=(TH1D*)(fileEffSigShapeSys[7]->Get("hUnfold"));
-  hUnfoldLepPosPtEffSigShapeSysDown=(TH1D*)(fileEffSigShapeSys[7]->Get("hUnfold"));
+  hUnfoldLepPosPtEffSigShapeSysUp=(TH1D*)(fileEffSigShapeSys[8]->Get("hUnfold"));
+  hUnfoldLepPosPtEffSigShapeSysDown=(TH1D*)(fileEffSigShapeSys[8]->Get("hUnfold"));
 
   hUnfoldLepPosPtEffSigShapeSysDown->Add(hUnfoldLepPosPt,-1.);
   hUnfoldLepPosPtEffSigShapeSysDown->Scale(-1.);
@@ -2262,39 +1830,27 @@ vector<TFile*> file;
 
   TH1D * hUnfoldLepPosPtEffBkgShapeSysUp;
   TH1D * hUnfoldLepPosPtEffBkgShapeSysDown;
-  hUnfoldLepPosPtEffBkgShapeSysUp=(TH1D*)(fileEffBkgShapeSys[7]->Get("hUnfold"));
-  hUnfoldLepPosPtEffBkgShapeSysDown=(TH1D*)(fileEffBkgShapeSys[7]->Get("hUnfold"));
+  hUnfoldLepPosPtEffBkgShapeSysUp=(TH1D*)(fileEffBkgShapeSys[8]->Get("hUnfold"));
+  hUnfoldLepPosPtEffBkgShapeSysDown=(TH1D*)(fileEffBkgShapeSys[8]->Get("hUnfold"));
 
   hUnfoldLepPosPtEffBkgShapeSysDown->Add(hUnfoldLepPosPt,-1.);
   hUnfoldLepPosPtEffBkgShapeSysDown->Scale(-1.);
   hUnfoldLepPosPtEffBkgShapeSysDown->Add(hUnfoldLepPosPt,1.);
 
-  TH1D * hUnfoldLepPosPtResScaleSysUp;
-  TH1D * hUnfoldLepPosPtResScaleSysDown;
-  hUnfoldLepPosPtResScaleSysUp=(TH1D*)(fileResScaleSys[7]->Get("hUnfold"));
-  hUnfoldLepPosPtResScaleSysDown=(TH1D*)(fileResScaleSys[7]->Get("hUnfold"));
-
-  hUnfoldLepPosPtResScaleSysDown->Add(hUnfoldLepPosPt,-1.);
-  hUnfoldLepPosPtResScaleSysDown->Scale(-1.);
-  hUnfoldLepPosPtResScaleSysDown->Add(hUnfoldLepPosPt,1.);
-
   TH1D * hUnfoldLepPosPtUnfoldModelSysUp;
   TH1D * hUnfoldLepPosPtUnfoldModelSysDown;
-  hUnfoldLepPosPtUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[7]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
-  hUnfoldLepPosPtUnfoldModelSysDown=(TH1D*)(fileUnfoldModelSys[7]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
+  hUnfoldLepPosPtUnfoldModelSysUp=(TH1D*)(fileUnfoldModelSys[8]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
+  hUnfoldLepPosPtUnfoldModelSysDown=(TH1D*)(fileUnfoldModelSys[8]->Get("SMOOTH_UNFOLDMODEL/hUnfold"));
 
   hUnfoldLepPosPtUnfoldModelSysDown->Add(hUnfoldLepPosPt,-1.);
   hUnfoldLepPosPtUnfoldModelSysDown->Scale(-1.);
   hUnfoldLepPosPtUnfoldModelSysDown->Add(hUnfoldLepPosPt,1.);
-  
 
+  
   TGraphAsymmErrors* gUnfoldLepPosPt=TH1TOTGraphAsymmErrors(hUnfoldLepPosPt);
-  TGraphAsymmErrors* gTruthLepPosPt=TH1TOTGraphAsymmErrors(hTruthLepPosPt);
 
   TGraphAsymmErrors* LEPPOSPT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLepPosPt);
-  TGraphAsymmErrors* LEPPOSPT_LUMI_UNCERT_BAND_DATA;
-  LEPPOSPT_LUMI_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtLumiUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtLumiDown));
-
+  
   TGraphAsymmErrors* LEPPOSPT_EWKBKG_UNCERT_BAND_DATA;
   LEPPOSPT_EWKBKG_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEWKBkgDown));
 
@@ -2313,148 +1869,111 @@ vector<TFile*> file;
   TGraphAsymmErrors* LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA;
   LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEffBkgShapeSysUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEffBkgShapeSysDown));
 
-  TGraphAsymmErrors* LEPPOSPT_RESSCALE_UNCERT_BAND_DATA;
-  LEPPOSPT_RESSCALE_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtResScaleSysUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtResScaleSysDown));
-
   TGraphAsymmErrors* LEPPOSPT_UNFOLDMODEL_UNCERT_BAND_DATA;
   LEPPOSPT_UNFOLDMODEL_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtUnfoldModelSysUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtUnfoldModelSysDown));
-
-  TGraphAsymmErrors* LEPPOSPT_TOT_UNCERT_BAND_DATA;
-  LEPPOSPT_TOT_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEWKBkgUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEWKBkgDown));
- 
-  myAddtoBand(LEPPOSPT_TOPBKG_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_EFFSTAT_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  //myAddtoBand(LEPPOSPT_RESSCALE_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_UNFOLDMODEL_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-
-  TGraphAsymmErrors* LEPPOSPT_TOT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_TOT_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* TOT_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_TOT_SYS_BAND->GetEYhigh();
   
+  double* EWKBKG_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EWKBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* TOPBKG_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_TOPBKG_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSTAT_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFSTAT_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBIN_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFBIN_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFSIGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA->GetEYhigh();
+
+  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_UNFOLDMODEL_UNCERT_BAND_DATA->GetEYhigh();
+
+  double uncert_LepPosPt[7][nBinsLepPosPt];
+  double cov_LepPosPt[nBinsLepPosPt][nBinsLepPosPt];
   
-  TGraphAsymmErrors* LEPPOSPT_EWKBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_EWKBKG_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* EWKBKG_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EWKBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_TOPBKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_TOPBKG_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* TOPBKG_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_TOPBKG_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_EFFSTAT_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_EFFSTAT_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSTAT_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFSTAT_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_EFFBIN_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBIN_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFBIN_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_EFFSIGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFSIGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_EFFBKGSHAPE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFFBKGSHAPE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_RESSCALE_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_RESSCALE_SYS_BAND->GetEYhigh();
-
-  TGraphAsymmErrors* LEPPOSPT_UNFOLDMODEL_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_UNFOLDMODEL_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
-
-  double* UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_UNFOLDMODEL_SYS_BAND->GetEYhigh();
-
-  double rel_uncert_LepPosPt[8][25];
-  double cov_LepPosPt[25][25];
-  double corr_LepPosPt[25][25];
-
-  for(int i=0;i!=25;++i)
+  for(int i=0;i!=nBinsLepPosPt;++i)
     {
       if(hUnfoldLepPosPtEWKBkgUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[0][i]=-EWKBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[0][i]=EWKBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       if(hUnfoldLepPosPtTopBkgUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[1][i]=-TOPBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[1][i]=TOPBKG_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       if(hUnfoldLepPosPtEffStatUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[2][i]=-EFFSTAT_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[2][i]=EFFSTAT_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       if(hUnfoldLepPosPtEffBinSysUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[3][i]=-EFFBIN_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[3][i]=EFFBIN_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       if(hUnfoldLepPosPtEffSigShapeSysUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[4][i]=-EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[4][i]=EFFSIGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       if(hUnfoldLepPosPtEffBkgShapeSysUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[5][i]=-EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
-	}
-      if(hUnfoldLepPosPtResScaleSysUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
-	{
-	  rel_uncert_LepPosPt[6][i]=-RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
-	}
-      else
-	{
-	  rel_uncert_LepPosPt[6][i]=RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[5][i]=EFFBKGSHAPE_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       if(hUnfoldLepPosPtUnfoldModelSysUp->GetBinContent(i+1)/hUnfoldLepPosPt->GetBinContent(i+1)<1)
 	{
-	  rel_uncert_LepPosPt[7][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[6][i]=-UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
       else
 	{
-	  rel_uncert_LepPosPt[7][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPPOSPT[i];
+	  uncert_LepPosPt[6][i]=UNFOLDMODEL_SYSTEMATIC_UNCERT_LEPPOSPT[i];
 	}
     }
 
-  for(int i=0;i!=25;++i)
+  for(int i=0;i!=nBinsLepPosPt;++i)
     {
-      for(int j=0;j!=25;++j)
+      for(int j=0;j!=nBinsLepPosPt;++j)
 	{
 	  cov_LepPosPt[i][j]=0;
-	  for(int k=0;k!=8;++k)
+	  for(int k=0;k!=7;++k)
 	    {
-	      if(k!=6)cov_LepPosPt[i][j]+=rel_uncert_LepPosPt[k][i]*rel_uncert_LepPosPt[k][j];
+	      cov_LepPosPt[i][j]+=uncert_LepPosPt[k][i]*uncert_LepPosPt[k][j];
 	    }
-	  
-	  corr_LepPosPt[i][j]=cov_LepPosPt[i][j]/(TOT_SYSTEMATIC_UNCERT_LEPPOSPT[i]*TOT_SYSTEMATIC_UNCERT_LEPPOSPT[j]);
+	  LEPPOSPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_LepPosPt[i][j]);
+	  LEPPOSPT_COV_MATRIX->SetBinError(i+1,j+1,0);
+	}
+    }
+  LEPPOSPT_COV_MATRIX->Add(LEPPOSPT_COV_MATRIX_RESSCALE,1);
+  LEPPOSPT_COV_MATRIX->Add(LEPPOSPT_COV_MATRIX_MATRIXSTAT,1);
+  double corr_LepPosPt[nBinsLepPosPt][nBinsLepPosPt];
+  for(int i=0;i!=nBinsLepPosPt;++i)
+    {
+      for(int j=0;j!=nBinsLepPosPt;++j)
+	{
+	  corr_LepPosPt[i][j]=LEPPOSPT_COV_MATRIX->GetBinContent(i+1,j+1)/(sqrt(LEPPOSPT_COV_MATRIX->GetBinContent(i+1,i+1))*sqrt(LEPPOSPT_COV_MATRIX->GetBinContent(j+1,j+1)));
 	  LEPPOSPT_CORR_MATRIX->SetBinContent(i+1,j+1,corr_LepPosPt[i][j]);
 	  LEPPOSPT_CORR_MATRIX->SetBinError(i+1,j+1,0);
 	}
     }
-
 
   //--------------------------------------------------------------------------------------------------------------
   // Make plots 

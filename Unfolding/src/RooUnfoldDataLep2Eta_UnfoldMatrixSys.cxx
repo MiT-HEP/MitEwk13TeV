@@ -53,6 +53,7 @@ const Double_t cutdummy= -99999.0;
 TH1D *hReco, *hTruth, *hData, *hTop, *hEWK, *hMeas, *hUnfold;
 TH2D *hMatrix, *hMatrix_hilf;
 
+TH2D *hCov_MatrixStat;
 
 TGraphAsymmErrors *gUnfold;
 
@@ -165,6 +166,18 @@ void RooUnfoldExample(const TString  outputDir,    // output directory
   unfold.IncludeSystematics(2);
   
   hUnfold=(TH1D*) unfold.Hreco(RooUnfold::kCovToy);
+  TMatrixD cov(unfold.Ereco(RooUnfold::kCovToy));
+
+  hCov_MatrixStat=(TH2D*)hMatrix->Clone("hCov_MatrixStat");
+
+  for(int i=0;i!=hCov_MatrixStat->GetNbinsX();++i)
+    {
+      for(int j=0;j!=hCov_MatrixStat->GetNbinsY();++j)
+	{
+	  hCov_MatrixStat->SetBinContent(i+1,j+1,cov(i+1,j+1)/(hCov_MatrixStat->GetXaxis()->GetBinWidth(i+1)*hCov_MatrixStat->GetYaxis()->GetBinWidth(j+1)));
+	}
+    }
+  hCov_MatrixStat->Scale(1./(LUMI*LUMI));
     
   for(int j=0;j!=hUnfold->GetNbinsX();++j)
     {
@@ -184,6 +197,7 @@ void RooUnfoldExample(const TString  outputDir,    // output directory
   his->cd();
   hTruth->Write("hTruth");
   hUnfold->Write("hUnfold");
+  hCov_MatrixStat->Write("hCov_MatrixStat");
   g->Write();
   his->Close();
 }
