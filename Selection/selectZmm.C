@@ -107,7 +107,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
-  Float_t scale1fb,scale1fbUp,scale1fbDown;//, puWeight, puWeightUp, puWeightDown;
+  Float_t scale1fb,scale1fbUp,scale1fbDown;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
@@ -527,7 +527,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      genVMass = gvec->M();
 	    }
 	    else {
-	      TLorentzVector tvec=*lep1+*lep2;
+	      TLorentzVector tvec=*glep1+*glep2;
 	      genV=new TLorentzVector(0,0,0,0);
 	      genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
 	      genVPt   = tvec.Pt();
