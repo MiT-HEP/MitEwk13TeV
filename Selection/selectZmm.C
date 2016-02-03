@@ -21,6 +21,7 @@
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
 #include "TRandom.h"
+#include "TChain.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -68,7 +69,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file                                                                                       
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_Golden.root", "read"); 
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read"); 
   
   // for systematics we need 3
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
@@ -132,7 +133,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
-  TTree *eventTree=0;
+  //TTree *eventTree=0;
 
     
   //
@@ -247,11 +248,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
     //
     const UInt_t nfiles = samp->fnamev.size();
     for(UInt_t ifile=0; ifile<nfiles; ifile++) {  
-
+      
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
-      infile = TFile::Open(samp->fnamev[ifile]); 
-      assert(infile);
+      //infile = TFile::Open(samp->fnamev[ifile]); 
+      //assert(infile);
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
@@ -260,7 +261,11 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
   
-      eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
+      TChain *eventTree=new TChain("Events");
+      int n=eventTree->Add(samp->fnamev[ifile]); cout <<"Added n="<<n<<" files to the input chain"<<endl;
+      assert(n>0);
+
+      //eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
       eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
@@ -634,7 +639,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	delete genV;
 	genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
       }
-      delete infile;
+      //delete infile;
+      delete eventTree;
       infile=0, eventTree=0;    
       
       cout << nsel  << " +/- " << sqrt(nselvar);
