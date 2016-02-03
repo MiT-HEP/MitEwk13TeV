@@ -257,6 +257,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
       //infile = TFile::Open(samp->fnamev[ifile]); 
       //assert(infile);
+      if (samp->fnamev[ifile] == "/dev/null") 
+	      {
+	     	cout <<"-> Ignoring null input "<<endl; 
+		continue;
+	      }
+
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
@@ -296,7 +302,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t puWeightUp=0;
       Double_t puWeightDown=0;
 
-      if (hasGen) {
+      if (!isData) {
         eventTree->SetBranchStatus("*",0);
 	eventTree->SetBranchStatus("GenEvtInfo",1);
 	eventTree->SetBranchStatus("Info",1);
@@ -307,6 +313,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+
+	  float gw = gen->weight;
+	  if  (!hasGen) gw = 1;
 	  totalWeight+=gen->weight*puWeight;
 	  totalWeightUp+=gen->weight*puWeightUp;
 	  totalWeightDown+=gen->weight*puWeightDown;

@@ -727,6 +727,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0;
       }
       delete infile;
+      delete eventTree;
       infile=0, eventTree=0;    
       
       cout << nsel  << " +/- " << sqrt(nselvar);
