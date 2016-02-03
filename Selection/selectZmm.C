@@ -286,9 +286,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t puWeightDown=0;
 
       if (hasGen) {
+        eventTree->SetBranchStatus("*",0);
+	eventTree->SetBranchStatus("GenEvtInfo",1);
+	eventTree->SetBranchStatus("Info",1);
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	  infoBr->GetEntry(ientry);
-	  genBr->GetEntry(ientry);
+	  eventTree->GetEntry(ientry);
+	  //infoBr->GetEntry(ientry);
+	  //genBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
@@ -301,9 +305,22 @@ void selectZmm(const TString conf="zmm.conf", // input file
       //
       // loop over events
       //
+      eventTree->SetBranchStatus("*",0);
+      eventTree->SetBranchStatus("GenEvtInfo",1);
+      eventTree->SetBranchStatus("Info",1);
+      eventTree->SetBranchStatus("Muon",1);
+      eventTree->SetBranchStatus("PV",1);
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-        infoBr->GetEntry(ientry);
+	// CLEAR
+	if(hasGen) {
+	  genPartArr->Clear();
+	}
+	muonArr->Clear();
+	vertexArr->Clear();
+	// --
+	eventTree->GetEntry(ientry);
+        //infoBr->GetEntry(ientry);
 
 	if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 
@@ -315,8 +332,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {
 	  genPartArr->Clear();
-	  genBr->GetEntry(ientry);
-          genPartBr->GetEntry(ientry);
+	  //genBr->GetEntry(ientry);
+          //genPartBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
@@ -339,8 +356,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
 
-	muonArr->Clear();
-        muonBr->GetEntry(ientry);
+	//muonArr->Clear();
+        //muonBr->GetEntry(ientry);
 
 	TLorentzVector vTag(0,0,0,0);
 	TLorentzVector vTagSta(0,0,0,0);
@@ -587,8 +604,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	
 	category = icat;
 	
-	vertexArr->Clear();
-	vertexBr->GetEntry(ientry);
+	//vertexArr->Clear();
+	//vertexBr->GetEntry(ientry);
 	
 	npv      = vertexArr->GetEntries();
 	npu      = info->nPUmean;
