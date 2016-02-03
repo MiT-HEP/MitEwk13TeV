@@ -76,6 +76,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
   TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
 
+  if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+  if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+  if (h_rw_down==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -265,6 +269,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
       int n=eventTree->Add(samp->fnamev[ifile]); cout <<"Added n="<<n<<" files to the input chain"<<endl;
       assert(n>0);
 
+  	// Data structures to store info from TTrees -- does the tree delete this when deleted
+  	info   = new baconhep::TEventInfo();
+  	gen = new baconhep::TGenEventInfo();
+  	genPartArr = new TClonesArray("baconhep::TGenParticle");
+  	muonArr    = new TClonesArray("baconhep::TMuon");
+  	vertexArr  = new TClonesArray("baconhep::TVertex");
+
       //eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
       eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
@@ -318,7 +329,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	}
 	muonArr->Clear();
 	vertexArr->Clear();
-	// --
 	eventTree->GetEntry(ientry);
         //infoBr->GetEntry(ientry);
 
@@ -331,7 +341,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {
-	  genPartArr->Clear();
+	  //genPartArr->Clear();
 	  //genBr->GetEntry(ientry);
           //genPartBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
