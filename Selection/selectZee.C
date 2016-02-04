@@ -21,6 +21,7 @@
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
 #include "TRandom.h"
+#include "TChain.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -82,6 +83,10 @@ void selectZee(const TString conf="zee.conf", // input file
   TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
 
+  if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+  if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+  if (h_rw_down==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -139,7 +144,7 @@ void selectZee(const TString conf="zee.conf", // input file
   TClonesArray *vertexArr      = new TClonesArray("baconhep::TVertex");
 
   TFile *infile=0;
-  TTree *eventTree=0;
+  //TTree *eventTree=0;
   
   //
   // loop over samples
@@ -264,8 +269,8 @@ void selectZee(const TString conf="zee.conf", // input file
 
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... " << endl; cout.flush();
-      infile = TFile::Open(samp->fnamev[ifile]); 
-      assert(infile);
+      //infile = TFile::Open(samp->fnamev[ifile]); 
+      //assert(infile);
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
@@ -274,8 +279,20 @@ void selectZee(const TString conf="zee.conf", // input file
 	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
   
-      eventTree = (TTree*)infile->Get("Events");
-      assert(eventTree);  
+      //eventTree = (TTree*)infile->Get("Events");
+      //assert(eventTree);  
+      TChain *eventTree=new TChain("Events");
+      int n=eventTree->Add(samp->fnamev[ifile]); cout <<"Added n="<<n<<" files to the input chain"<<endl;
+      assert(n>0);
+      //
+      // Data structures to store info from TTrees
+      info   = new baconhep::TEventInfo();
+      gen = new baconhep::TGenEventInfo();
+      genPartArr     = new TClonesArray("baconhep::TGenParticle");
+      electronArr    = new TClonesArray("baconhep::TElectron");
+      scArr          = new TClonesArray("baconhep::TPhoton");
+      vertexArr      = new TClonesArray("baconhep::TVertex");
+      //
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
@@ -297,9 +314,13 @@ void selectZee(const TString conf="zee.conf", // input file
       Double_t puWeightDown=0;
 
       if (hasGen) {
+	  eventTree->SetBranchStatus("*",0);
+	  eventTree->SetBranchStatus("GenEvtInfo",1);
+	  eventTree->SetBranchStatus("Info",1);
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	  infoBr->GetEntry(ientry);
-	  genBr->GetEntry(ientry);
+	  eventTree->GetEntry(ientry);
+	  //infoBr->GetEntry(ientry);
+	  //genBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
@@ -313,8 +334,20 @@ void selectZee(const TString conf="zee.conf", // input file
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
+      eventTree->SetBranchStatus("*",0);
+      eventTree->SetBranchStatus("GenEvtInfo",1);
+      eventTree->SetBranchStatus("Info",1);
+      eventTree->SetBranchStatus("Electron",1);
+      eventTree->SetBranchStatus("Photon",1);
+      eventTree->SetBranchStatus("PV",1);
+
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-        infoBr->GetEntry(ientry);
+	genPartArr->Clear();
+	electronArr->Clear();
+	scArr->Clear();
+	vertexArr->Clear();
+
+	eventTree->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 
@@ -325,9 +358,6 @@ void selectZee(const TString conf="zee.conf", // input file
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {
-	  genPartArr->Clear();
-	  genBr->GetEntry(ientry);
-          genPartBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
@@ -350,10 +380,6 @@ void selectZee(const TString conf="zee.conf", // input file
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
 
-	electronArr->Clear();
-        electronBr->GetEntry(ientry);
-	scArr->Clear();
-	scBr->GetEntry(ientry);
 
 	TLorentzVector vTag(0,0,0,0);
 	TLorentzVector vTagSC(0,0,0,0);
@@ -650,8 +676,6 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	category = icat;
 
-	vertexArr->Clear();
-	vertexBr->GetEntry(ientry);
 
 	npv      = vertexArr->GetEntries();
 	npu      = info->nPUmean;
@@ -703,6 +727,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0;
       }
       delete infile;
+      delete eventTree;
       infile=0, eventTree=0;    
       
       cout << nsel  << " +/- " << sqrt(nselvar);
