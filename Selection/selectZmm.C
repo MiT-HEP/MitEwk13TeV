@@ -21,7 +21,6 @@
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
 #include "TRandom.h"
-#include "TChain.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -137,7 +136,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   
   TFile *infile=0;
-  //TTree *eventTree=0;
+  TTree *eventTree=0;
 
     
   //
@@ -255,8 +254,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
       
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();
-      //infile = TFile::Open(samp->fnamev[ifile]); 
-      //assert(infile);
+      infile = TFile::Open(samp->fnamev[ifile]); 
+      assert(infile);
       if (samp->fnamev[ifile] == "/dev/null") 
 	      {
 	     	cout <<"-> Ignoring null input "<<endl; 
@@ -271,18 +270,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
   
-      TChain *eventTree=new TChain("Events");
-      int n=eventTree->Add(samp->fnamev[ifile]); cout <<"Added n="<<n<<" files to the input chain"<<endl;
-      assert(n>0);
-
-  	// Data structures to store info from TTrees -- does the tree delete this when deleted
-  	info   = new baconhep::TEventInfo();
-  	gen = new baconhep::TGenEventInfo();
-  	genPartArr = new TClonesArray("baconhep::TGenParticle");
-  	muonArr    = new TClonesArray("baconhep::TMuon");
-  	vertexArr  = new TClonesArray("baconhep::TVertex");
-
-      //eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
+      eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
       eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
@@ -302,44 +290,36 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t puWeightUp=0;
       Double_t puWeightDown=0;
 
-      if (!isData) {
-        eventTree->SetBranchStatus("*",0);
-	eventTree->SetBranchStatus("GenEvtInfo",1);
-	eventTree->SetBranchStatus("Info",1);
+      if (hasGen) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	  eventTree->GetEntry(ientry);
-	  //infoBr->GetEntry(ientry);
-	  //genBr->GetEntry(ientry);
+	  infoBr->GetEntry(ientry);
+	  genBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-
-	  float gw = gen->weight;
-	  if  (!hasGen) gw = 1;
 	  totalWeight+=gen->weight*puWeight;
 	  totalWeightUp+=gen->weight*puWeightUp;
 	  totalWeightDown+=gen->weight*puWeightDown;
 	}
       }
+      else if (not isData){
+	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  totalWeight+= 1.0*puWeight;
+	  totalWeightUp+= 1.0*puWeightUp;
+	  totalWeightDown+= 1.0*puWeightDown;
+	}
+
+      }
    
       //
       // loop over events
       //
-      eventTree->SetBranchStatus("*",0);
-      eventTree->SetBranchStatus("GenEvtInfo",1);
-      eventTree->SetBranchStatus("Info",1);
-      eventTree->SetBranchStatus("Muon",1);
-      eventTree->SetBranchStatus("PV",1);
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	// CLEAR
-	if(hasGen) {
-	  genPartArr->Clear();
-	}
-	muonArr->Clear();
-	vertexArr->Clear();
-	eventTree->GetEntry(ientry);
-        //infoBr->GetEntry(ientry);
+        infoBr->GetEntry(ientry);
 
 	if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 
@@ -350,9 +330,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {
-	  //genPartArr->Clear();
-	  //genBr->GetEntry(ientry);
-          //genPartBr->GetEntry(ientry);
+	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
+          genPartBr->GetEntry(ientry);
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
@@ -375,8 +355,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
 
-	//muonArr->Clear();
-        //muonBr->GetEntry(ientry);
+	muonArr->Clear();
+        muonBr->GetEntry(ientry);
 
 	TLorentzVector vTag(0,0,0,0);
 	TLorentzVector vTagSta(0,0,0,0);
@@ -623,8 +603,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	
 	category = icat;
 	
-	//vertexArr->Clear();
-	//vertexBr->GetEntry(ientry);
+	vertexArr->Clear();
+	vertexBr->GetEntry(ientry);
 	
 	npv      = vertexArr->GetEntries();
 	npu      = info->nPUmean;
@@ -675,8 +655,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	delete genV;
 	genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
       }
-      //delete infile;
-      delete eventTree;
+      delete infile;
       infile=0, eventTree=0;    
       
       cout << nsel  << " +/- " << sqrt(nselvar);
