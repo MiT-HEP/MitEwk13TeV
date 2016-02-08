@@ -16,6 +16,10 @@ parser.add_option("-m","--macro"  ,dest='macro',type='string',help="Macro [Defau
 parser.add_option("-o","--outdir" ,dest='outdir',type='string',help="outdir [Default=%default]",default='Zee')
 (opts,args)=parser.parse_args()
 
+SSH = "ssh -o StrictHostKeyChecking=no "
+#SCP = "rsync -avP "
+SCP = "scp -o StrictHostKeyChecking=no "
+
 def scout():
 	''' scout lxplus servers '''
 	servers={}
@@ -36,7 +40,7 @@ def MergeDict(dict1,dict2):
 		if key not in dict1: dict1[key] = dict2[key]
 def TryConnections(servers):
 	for s in servers:
-		exe="ssh %s mkdir /tmp/%s"%(s,os.environ['USER']) ## the tmp dir may not exists w/o a login
+		exe=SSH + " %s mkdir /tmp/%s"%(s,os.environ['USER']) ## the tmp dir may not exists w/o a login
 		print "trying: ",exe
 		call(exe,shell=True)
 
@@ -49,9 +53,10 @@ raw_input("Is ok?")
 TryConnections(servers)
 
 def call_exe(exe,server):
-	cmd = "ssh " + server + ' "' + exe + '"'
-	print " -> Calling: "+ exe
-	call(exe,shell=True)
+	cmd = SSH + "" + server + " " + exe + ""
+	print " -> Calling: "+ cmd
+	call( cmd.split() ) 
+	#call(exe,shell=True)
 	print " -> Done "+exe
 	servers[server] -= 1  ## not completely thread safe if multicore
 
@@ -96,7 +101,7 @@ def CompileMacros(macro):
 	if True: ##VERBOSE
 		print "--> Compiling ", macro
 	cmd = "cd " + os.environ['PWD'] + " ; "
-	cmd += "eval `scramv1 runtime -sh` ; "  #cmsenv
+	cmd += "eval `/cvmfs/cms.cern.ch/common/scramv1 runtime -sh` ; "  #cmsenv
 	cmd += 'root -l <<EOF \n.L %s++\n.q\nEOF'%(macro)
 	status = call(cmd,shell=True)
 	if status :
@@ -112,16 +117,30 @@ def PrepareExe(sampleIdx,server):
 	    call(["cat",outname])
 	    print "\n----------------------------"
 	## transfer cfg
-	cmd = "rsync -avP %s %s:%s"%(outname,server,outname)
+	cmd = SCP + " %s %s:%s"%(outname,server,outname)
 	status = call(cmd,shell=True)
 	if status :
 		print "Transfer cmd was: '%s'"%cmd
 		raise Exception("TRANSFER FAILED")
 	##prepare exe	
 	exe = "cd " + os.environ['PWD'] + " ; "
-	exe += "eval `scramv1 runtime -sh` ; "  #cmsenv
-	exe += 'root -l -q \'%s+("%s","%s",0)\' '%(opts.macro,outname,opts.outdir)
-	return exe
+	exe += "eval `/cvmfs/cms.cern.ch/common/scramv1 runtime -sh` ; "  #cmsenv
+	exe += 'root -b -l -q \'%s+("%s","%s",0)\' '%(opts.macro,outname,opts.outdir)
+
+	shname = "/tmp/" + os.environ['USER']  + "/exe_%s.%d.sh" % (args[0],sampleIdx)
+	sh = open (shname,"w")
+	sh.write("#!/bin/bash\n")
+	sh.write(exe +"\n")
+	sh.close()
+
+	call("chmod u+x %s"%shname,shell=True)
+	cmd = SCP + " %s %s:%s"%(shname,server,shname)
+	status = call(cmd,shell=True)
+	if status :
+		print "Transfer cmd was: '%s'"%cmd
+		raise Exception("TRANSFER FAILED")
+	call( SSH + " %s chmod u+x %s"%(server,shname),shell=True)
+	return shname
 
 CompileMacros(opts.macro)
 #for exe in args:
