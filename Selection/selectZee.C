@@ -312,6 +312,17 @@ void selectZee(const TString conf="zee.conf", // input file
 	  totalWeightDown+=gen->weight*puWeightDown;
 	}
       }
+      else if (not isData){
+	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  totalWeight+= 1.0*puWeight;
+	  totalWeightUp+= 1.0*puWeightUp;
+	  totalWeightDown+= 1.0*puWeightDown;
+	}
+
+      }
       
       //
       // loop over events
