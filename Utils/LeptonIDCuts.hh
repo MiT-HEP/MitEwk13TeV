@@ -95,26 +95,26 @@ Bool_t passEleID(const baconhep::TElectron *electron, const Double_t rho)
   // barrel/endcap dependent requirements
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
-    if(iso >= 0.107587*(electron->pt))                                return kFALSE;
-    if(electron->nMissingHits > 1)                                    return kFALSE;
-    if(electron->sieie >= 0.009996)                                   return kFALSE;
-    if(fabs(electron->dPhiIn) >= 0.035973)                            return kFALSE;
-    if(fabs(electron->dEtaIn) >= 0.008925)                            return kFALSE;
-    if(electron->hovere >= 0.050537)                                  return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.091942*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0) >= 0.012235)                                return kFALSE;
-    if(fabs(electron->dz) >= 0.042020)                                return kFALSE;
+    if(iso >= 0.0766*(electron->pt))                                  return kFALSE;
+    if(electron->nMissingHits > 2)                                    return kFALSE;
+    if(electron->sieie >= 0.0101)                                     return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
+    if(fabs(electron->dEtaIn) >= 0.0103)                              return kFALSE;
+    if(electron->hovere >= 0.0876)                                    return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.0174*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.0118)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.0373)                                  return kFALSE;
   } else {
     // endcap
-    if(iso >= 0.113254*(electron->pt))                                return kFALSE;
+    if(iso >= 0.0678*(electron->pt))                                  return kFALSE;
     if(electron->nMissingHits > 1)                                    return kFALSE;
-    if(electron->sieie  	  >= 0.030135)                        return kFALSE;
-    if(fabs(electron->dPhiIn)     >= 0.067879)                        return kFALSE;
-    if(fabs(electron->dEtaIn)     >= 0.007429)                        return kFALSE;
-    if(electron->hovere 	  >= 0.086782)                        return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.100683*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0) >= 0.036719)                                return kFALSE;
-    if(fabs(electron->dz) >= 0.138142)                                return kFALSE;
+    if(electron->sieie  	  >= 0.0283)                          return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.114)                           return kFALSE;
+    if(fabs(electron->dEtaIn)     >= 0.00733)                         return kFALSE;
+    if(electron->hovere 	  >= 0.0678)                          return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.0898*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.0739)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.0602)                                  return kFALSE;
   }
 
   return kTRUE;
