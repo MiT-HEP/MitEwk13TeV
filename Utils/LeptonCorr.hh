@@ -10,16 +10,16 @@ Double_t getEleScaleCorr(const Double_t eta, const Int_t sigma)
     else                         { return 1.0/1.00499; }
   }
   else if (sigma==1) {
-    if      (fabs(eta) < 0.4)    { return 1.0/(0.998094+0.000270935; }
-    else if (fabs(eta) < 0.8)    { return 1.0/(0.998722+0.000284622; }
-    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 +4.52316e-05; }
-    else                         { return 1.0/(1.00499 +0.000110672; }
+    if      (fabs(eta) < 0.4)    { return 1.0/(0.998094+0.000270935); }
+    else if (fabs(eta) < 0.8)    { return 1.0/(0.998722+0.000284622); }
+    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 +4.52316e-05); }
+    else                         { return 1.0/(1.00499 +0.000110672); }
   }
   else if (sigma==-1) {
-    if      (fabs(eta) < 0.4)    { return 1.0/(0.998094-0.000270935; }
-    else if (fabs(eta) < 0.8)    { return 1.0/(0.998722-0.000284622; }
-    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 -4.52316e-05; }
-    else                         { return 1.0/(1.00499 -0.000110672; }
+    if      (fabs(eta) < 0.4)    { return 1.0/(0.998094-0.000270935); }
+    else if (fabs(eta) < 0.8)    { return 1.0/(0.998722-0.000284622); }
+    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 -4.52316e-05); }
+    else                         { return 1.0/(1.00499 -0.000110672); }
   }
   else return -1.0;
 }
