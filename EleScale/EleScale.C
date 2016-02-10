@@ -100,6 +100,7 @@ void EleScale() {
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
+  Float_t genWeight, PUWeight;
   Float_t scale1fb;
   UInt_t  matchGen;
   UInt_t  category;
@@ -138,7 +139,7 @@ void EleScale() {
       Double_t weight = 1;
       if(ifile==eMC) {
 	//if(!matchGen) continue;
-	weight= genWeight*PUWeight/std::abs(genWeight) : 1;
+	weight= genWeight*PUWeight/std::abs(genWeight);
       }
       
       if((category!=eEleEle2HLT) && (category!=eEleEle1HLT) && (category!=eEleEle1HLT1L1)) continue;
