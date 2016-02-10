@@ -85,7 +85,8 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   UInt_t  matchGen, matchGenSCEff;
   UInt_t  category;
   //UInt_t  npv, npu;
-  Float_t scale1fb, puWeight;
+  Float_t scale1fb;
+  Float_t genWeight, PUWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
@@ -104,6 +105,8 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("category", &category);   // dilepton category
   intree->SetBranchAddress("npv",      &npv);	     // number of primary vertices
   intree->SetBranchAddress("npu",      &npu);	     // number of in-time PU events (MC)
+  intree->SetBranchAddress("genWeight",  &genWeight);
+  intree->SetBranchAddress("PUWeight",   &PUWeight);
   intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
   intree->SetBranchAddress("met",      &met);	     // MET
   intree->SetBranchAddress("metPhi",   &metPhi);     // phi(MET)
@@ -117,7 +120,6 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
   intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
   intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector 
-  intree->SetBranchAddress("puWeight",&puWeight);
   
   //
   // loop over events
@@ -237,14 +239,14 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else                         { continue; }
     }
     
-    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
+    nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
 
     // Fill tree
     mass    = dilep->M();
     pt	    = (effType==eSCEff) ? lep2->Pt()  : sc2->Pt();
     eta	    = (effType==eSCEff) ? lep2->Eta() : sc2->Eta();
     phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
+    weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -257,13 +259,13 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     if(category==eEleEle2HLT) {
       if(sc2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
+      nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
       
       mass    = dilep->M();
       pt      = sc1->Pt();
       eta     = sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1; // !!!!!!! This cross section (5610.0) may be incorrect !!!!!!!
+      weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
       q	      = q1;
       npv     = npv;
       npu     = npu;
