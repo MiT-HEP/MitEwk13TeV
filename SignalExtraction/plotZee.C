@@ -94,6 +94,12 @@ void plotZee(const TString  outputDir,   // output directory
   const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
   const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
 
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
+  const bool doScaleAndSmear = true;
+
+  //data
+  EnergyScaleCorrection_class eleCorr( scaleFile); eleCorr.doScale= true; eleCorr.doSmear = true;
+ 
 
   Int_t yield = 0;
   Double_t yield_zee = 0, yield_zee_unc=0;
@@ -137,6 +143,7 @@ void plotZee(const TString  outputDir,   // output directory
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
+  Float_t r91,r92;
   
   TH2D *h=0;
    //
@@ -227,6 +234,8 @@ void plotZee(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
     intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
     intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector 
+    intree->SetBranchAddress("r91",       &r91);	       // r9
+    intree->SetBranchAddress("r92",       &r92);	       // r9
     intree->SetBranchAddress("puWeight",      &puWeight);        // pu weight
     //
     // loop over events
@@ -236,6 +245,41 @@ void plotZee(const TString  outputDir,   // output directory
 
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
+
+
+      if ( doScaleAndSmear )
+      {
+
+      	float smear1 = 0.0, scale1 = 1.0;
+      	float aeta1= fabs(lep1->Eta());
+      	float et1 = lep1.E() / cosh(aeta1);
+      	bool eb1 = aeta1 < 1.4442;
+      	float smear2 = 0.0, scale2 = 1.0;
+      	float aeta2= fabs(lep2->Eta());
+      	float et2 = lep2.E() / cosh(aeta2);
+      	bool eb2 = aeta2 < 1.4442;
+
+       	if( typev[ifile]!=eData)
+       	{// DATA
+       		scale1 = eleCorr.ScaleCorrection( runNum, eb1, r91, aeta1, et1);
+       		scale2 = eleCorr.ScaleCorrection( runNum, eb2, r92, aeta2, et2);
+		//newEcalEnergy      = electron.getNewEnergy() * scale;
+		//newEcalEnergyError = std::hypot(electron.getNewEnergyError() * scale, smear * newEcalEnergy);
+		lep1 *= scale;
+		lep2 *= scale;
+       	}
+       	else
+       	{ // MC
+       		smear1 = eleCorr.getSmearingSigma( runNum, lep1->E(), eb1, r91, aeta1); 
+       		smear2 = eleCorr.getSmearingSigma( runNum, lep2->E(), eb2, r92, aeta2); 
+		double corr1 = 1.0 + smear1 * gRandom->Gaus(0,1);
+		double corr2 = 1.0 + smear2 * gRandom->Gaus(0,1);
+		//float newEnergy = lep1->E() * corr1;
+		//float newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
+		lep1 * = corr;
+		lep2 * = corr;
+       	}
+      } // do scale and smear
 
       //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),1), getEleResCorr(lep1->Eta(),-1));
       //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),1), getEleResCorr(lep2->Eta(),-1));
