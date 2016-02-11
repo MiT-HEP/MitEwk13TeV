@@ -111,6 +111,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
+  Float_t genWeight, PUWeight;
   Float_t scale1fb,scale1fbUp,scale1fbDown;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
@@ -184,6 +185,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("genVPhi",     &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
     outTree->Branch("genVy",       &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
     outTree->Branch("genVMass",    &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
+    outTree->Branch("genWeight",   &genWeight,  "genWeight/F");
+    outTree->Branch("PUWeight",    &PUWeight,   "PUWeight/F");
     outTree->Branch("scale1fb",    &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -608,6 +611,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	
 	npv      = vertexArr->GetEntries();
 	npu      = info->nPUmean;
+	genWeight= hasGen ? gen->weight: 1.;
+	PUWeight = puWeight;
 	scale1fb = weight;
 	scale1fbUp = weightUp;
 	scale1fbDown = weightDown;
