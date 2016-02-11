@@ -1,7 +1,7 @@
 {    
 
   if(gSystem->Getenv("CMSSW_VERSION")) {
-    TString rfitpath("/afs/cern.ch/cms/slc6_amd64_gcc491/lcg/roofit/6.02.00-cms/include/");
+    TString rfitpath("/afs/cern.ch/cms/$SCRAM_ARCH/lcg/roofit/6.02.00-cms/include/");
     TString path = gSystem->GetIncludePath();
     path += "-I. -I$ROOTSYS/src -I";
     path += rfitpath;
@@ -13,7 +13,7 @@
       gSystem->SetMakeSharedLib(str);
     }
 
-    gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc491/libBaconAnaDataFormats.so");
+    gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libBaconAnaDataFormats.so");
 
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
 
@@ -30,6 +30,11 @@
   gROOT->Macro("CEffUser2D.cc+");
   gROOT->Macro("muresolution_run2.cc+");
   gROOT->Macro("rochcor2015.cc+");
+  	
+  TString path = gSystem->GetIncludePath();
+  path += " -I ../EleScale/"
+  gSystem->SetIncludePath(path.Data());
+  gROOT->Macro("EnergyScaleCorrection_class.cc+");
 
   }
                
