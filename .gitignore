@@ -13,3 +13,10 @@
 # general junk #
 ################
 *~
+*.dvi
+*.png
+*.root
+*.pdf
+*.log
+*.aux
+*.tex
