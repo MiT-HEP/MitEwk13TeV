@@ -74,6 +74,9 @@ void selectZeeGen(const TString conf="zee.conf", // input file
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
+  // load pileup reweighting file
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
+
   // for systematics we need 3
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
@@ -112,6 +115,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
   UInt_t  matchTrigger;
   UInt_t  ngenlep;
   TLorentzVector *genlep1=0, *genlep2=0;
+  Int_t   genq1, genq2;
   UInt_t nlep;
   TLorentzVector *lep1=0, *lep2=0;
   Int_t   q1, q2;
@@ -162,6 +166,8 @@ void selectZeeGen(const TString conf="zee.conf", // input file
     outTree->Branch("ngenlep",     &ngenlep,     "ngenlep/i");      // number of gen leptons
     outTree->Branch("genlep1",   "TLorentzVector",  &genlep1);     // gen lepton1 4-vector
     outTree->Branch("genlep2",   "TLorentzVector",  &genlep2);     // gen lepton2 4-vector
+    outTree->Branch("genq1",          &genq1,         "genq1/I");          // charge of lepton1
+    outTree->Branch("genq2",          &genq2,         "genq2/I");          // charge of lepton2
     outTree->Branch("nlep",     &nlep,     "nlep/i");      // number of leptons
     outTree->Branch("lep1",       "TLorentzVector",  &lep1);     // lepton1 4-vector
     outTree->Branch("lep2",       "TLorentzVector",  &lep2);     // lepton2 4-vector
@@ -199,6 +205,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
+      Double_t totalWeightGen=0;
       Double_t totalWeight=0;
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
@@ -213,6 +220,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  totalWeightGen+=gen->weight;
 	  totalWeight+=gen->weight*puWeight;
 	  totalWeightUp+=gen->weight*puWeightUp;
 	  totalWeightDown+=gen->weight*puWeightDown;
@@ -229,9 +237,11 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 
+	Double_t weightGen=1;
 	Double_t weight=1;
 	Double_t weightUp=1;
 	Double_t weightDown=1;
+	if(xsec>0 && totalWeightGen>0) weightGen = xsec/totalWeightGen;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
@@ -242,6 +252,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  weightGen*=gen->weight;
 	  weight*=gen->weight*puWeight;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
@@ -253,7 +264,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 
 	// trigger requirement
 	Bool_t passElTrigger = kFALSE;
-	if (isEleTrigger(triggerMenu, info->triggerBits, isData)) passElTrigger=kTRUE;
+	if (isEleTrigger(triggerMenu, info->triggerBits, 0)) passElTrigger=kTRUE;
 	
         // good vertex requirement
 	Bool_t hasGoodPV = kFALSE;
@@ -280,7 +291,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	  if(fabs(el->scEta)>=ECAL_GAP_LOW && fabs(el->scEta)<=ECAL_GAP_HIGH) continue; // check ECAL gap
 	  if(!passEleID(el,info->rhoIso))     continue;  // lepton selection
 
-	  if(isEleTriggerObj(triggerMenu, el->hltMatchBits, kFALSE, isData)) hasTriggerMatch=kTRUE;
+	  if(isEleTriggerObj(triggerMenu, el->hltMatchBits, kFALSE, 0)) hasTriggerMatch=kTRUE;
 
 	  double El_Pt=0;
 	  if(doScaleCorr) {
@@ -405,7 +416,6 @@ void selectZeeGen(const TString conf="zee.conf", // input file
       infile=0, eventTree=0;    
       
       cout << nsel  << " +/- " << sqrt(nselvar);
-      if(!isData) cout << " per 1/fb";
       cout << endl;
     }
     outFile->Write();
