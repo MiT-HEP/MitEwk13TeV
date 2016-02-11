@@ -132,6 +132,7 @@ void selectZee(const TString conf="zee.conf", // input file
   Float_t sigieie1, hovere1, eoverp1, fbrem1, ecalE1, sigieie2, hovere2, eoverp2, fbrem2, ecalE2;
   Float_t dphi1, deta1, dphi2, deta2;
   Float_t d01, dz1, d02, dz2;
+  Float_t r91,r92;
   UInt_t  isConv1, nexphits1, typeBits1, isConv2, nexphits2, typeBits2; 
   TLorentzVector *sc1=0, *sc2=0;
   
@@ -262,6 +263,8 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("typeBits2",  &typeBits2,  "typeBits2/i");   // electron type of probe lepton
     outTree->Branch("sc1",       "TLorentzVector",  &sc1);       // tag supercluster 4-vector
     outTree->Branch("sc2",       "TLorentzVector",  &sc2);       // probe supercluster 4-vector
+    outTree->Branch("r91",        &r91,        "r91/F");	 // transverse impact parameter of tag
+    outTree->Branch("r92",        &r92,        "r92/F");	 // transverse impact parameter of probe	  
 
     //
     // loop through files
@@ -452,6 +455,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  nexphits1  = tag->nMissingHits;
 	  typeBits1  = tag->typeBits;
 	  q1         = tag->q;
+	  r91        = tag->r9;
 
 	}
 
@@ -548,6 +552,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  deta2      = (eleProbe) ? eleProbe->dEtaIn        : -999;
 	  ecalE2     = (eleProbe) ? eleProbe->ecalEnergy    : -999;
 	  d02        = (eleProbe) ? eleProbe->d0            : -999;
+	  r92        = (eleProbe) ? eleProbe->r9            : -999;
 	  dz2        = (eleProbe) ? eleProbe->dz            : -999;
 	  isConv2    = (eleProbe) ? eleProbe->isConv        : 0;
 	  nexphits2  = (eleProbe) ? eleProbe->nMissingHits  : 0;

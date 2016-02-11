@@ -15,6 +15,13 @@
     gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libBaconAnaDataFormats.so");
     
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
+
+    // turn on open mp not CINT only ACLIC
+    //#ifndef __CINT__
+    // TString cmd(gSystem->GetMakeSharedLib());
+    // cmd.ReplaceAll("g++","g++ -fopenmp");
+    // gSystem->SetMakeSharedLib(cmd);
+    //#endif
   
   }
                
