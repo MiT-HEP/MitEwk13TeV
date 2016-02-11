@@ -41,7 +41,7 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   // Main analysis code 
   //==============================================================================================================  
   
-  enum { eHLTEff, eL1Eff, eSelEff, eTrkEff, eStaEff, eStaEff_iso, ePOGIDEff, ePOGIsoEff, eHLTSelStaEff_iso };
+  enum { eHLTEff, eL1Eff, eSelEff, eTrkEff, eStaEff, eStaEff_iso, ePOGIDEff, ePOGIsoEff, eSelIsoTrkEff, eHLTSelStaEff, eHLTSelStaEff_iso };
   if(effType > eHLTSelStaEff_iso) {
     cout << "Invalid effType option! Exiting..." << endl;
     return;
@@ -83,7 +83,8 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   UInt_t  matchGen;
   UInt_t  category;
   //UInt_t  npv, npu;
-  Float_t scale1fb, puWeight;
+  Float_t scale1fb;
+  Float_t genWeight, PUWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
@@ -107,6 +108,8 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("category",   &category);    // dilepton category
   intree->SetBranchAddress("npv",        &npv);	        // number of primary vertices
   intree->SetBranchAddress("npu",        &npu);	        // number of in-time PU events (MC)
+  intree->SetBranchAddress("genWeight",  &genWeight);
+  intree->SetBranchAddress("PUWeight",   &PUWeight);
   intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
   intree->SetBranchAddress("met",        &met);	        // MET
   intree->SetBranchAddress("metPhi",     &metPhi);      // phi(MET)
@@ -138,7 +141,6 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("nValidHits2",&nValidHits2); // number of valid muon hits of probe muon
   intree->SetBranchAddress("typeBits1",  &typeBits1);   // muon type of tag muon
   intree->SetBranchAddress("typeBits2",  &typeBits2);   // muon type of probe muon
-  intree->SetBranchAddress("puWeight",   &puWeight);
 
   //
   // loop over events
@@ -246,12 +248,24 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       if     (category==eMuMu2HLT)    { pass=kTRUE; }
       else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
       else if(category==eMuMu1HLT)    { pass=kTRUE; }
-      else if(category==eMuMuNoSel)   { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { pass=kTRUE; }
       else if(category==eMuSta)       { continue; }
       else                            { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
       
       m = dilep->M();
-    } else if(effType==eHLTSelStaEff_iso) {
+    } else if(effType==eSelIsoTrkEff) {
+
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kTRUE; }
+      else if(category==eMuMu1HLT)    { if(pfCombIso2>0.15*(lep2->Pt())) pass=kFALSE; else pass=kTRUE; }
+      else if(category==eMuMuNoSel)   { pass=kFALSE; }
+      else if(category==eMuSta)       { pass=kFALSE; }
+      else                            { continue; }
+
+      m = dilep->M();
+
+    }
+ else if(effType==eHLTSelStaEff_iso) {
       //
       // probe = isolated tracker track
       // pass  = is also a GLB muon
@@ -266,6 +280,18 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       else                            { if(pfCombIso2>0.12*(lep2->Pt())) continue; else pass=kFALSE; }
       
       m = dilep->M();    
+    } else if(effType==eHLTSelStaEff) {
+      //
+      // probe = tracker track
+      // pass = is also a GLB muon
+      if     (category==eMuMu2HLT)    { pass=kTRUE; }
+      else if(category==eMuMu1HLT1L1) { pass=kFALSE; }
+      else if(category==eMuMu1HLT)    { pass=kFALSE; }
+      else if(category==eMuMuNoSel)   { pass=kTRUE; }
+      else if(category==eMuSta)       { continue; }
+      else                            { pass=kFALSE; }
+      
+      m = dilep->M();
     } else if(effType==ePOGIDEff) {
       //
       // probe = tracker track
@@ -322,14 +348,14 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
       m = dilep->M();    
     }
     
-    nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+    nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
 
     // Fill tree
     mass = m;
     pt	 = (effType==eTrkEff) ? sta2->Pt()  : lep2->Pt();
     eta	 = (effType==eTrkEff) ? sta2->Eta() : lep2->Eta();
     phi	 = (effType==eTrkEff) ? sta2->Phi() : lep2->Phi();
-    weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+    weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
     q	    = q2;
     npv	    = npv;
     npu	    = npu;
@@ -342,13 +368,13 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
     if(category==eMuMu2HLT) {
       if(lep2->Pt() < TAG_PT_CUT) continue;
 
-      nProbes += doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+      nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
 
       mass	   = m;
       pt	   = (effType==eTrkEff) ? sta1->Pt()  : lep1->Pt();
       eta	   = (effType==eTrkEff) ? sta1->Eta() : lep1->Eta();
       phi	   = (effType==eTrkEff) ? sta1->Phi() : lep1->Phi();
-      weight  = doWeighted ? scale1fb*puWeight*1.1*TMath::Power(10,7)/5610.0 : 1;
+      weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
       q	   = q1;
       npv	   = npv;
       npu	   = npu;
