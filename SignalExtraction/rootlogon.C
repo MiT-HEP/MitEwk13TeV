@@ -28,8 +28,9 @@
 
   gROOT->Macro("CEffUser1D.cc+");
   gROOT->Macro("CEffUser2D.cc+");
-  gROOT->Macro("muresolution_run2.cc+");
-  gROOT->Macro("rochcor2015.cc+");
+
+  gROOT->Macro("muresolution_run2r.cc+");
+  gROOT->Macro("rochcor2015r.cc+");
   	
   TString path = gSystem->GetIncludePath();
   path += " -I ../EleScale/"

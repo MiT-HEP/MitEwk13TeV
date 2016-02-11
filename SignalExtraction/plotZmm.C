@@ -30,8 +30,8 @@
 #include "CEffUser2D.hh"
 
 //helper class to handle rochester corrections
-#include <rochcor2015.h>
-#include <muresolution_run2.h>
+#include <rochcor2015r.h>
+#include <muresolution_run2r.h>
 
 #endif
 
@@ -77,58 +77,59 @@ void plotZmm(const TString  inputDir,    // input directory
 
   // efficiency files
   
-  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
+  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
+  const TString zmmHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
+  const TString zmmHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString dataSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString dataSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString zmmSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString zmmSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString dataTrkEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString dataTrkEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString zmmTrkEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString zmmTrkEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
+  const TString dataStaEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
+  const TString dataStaEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
+  const TString zmmStaEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
+  const TString zmmStaEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
 
   // efficiency files 2Bins
 
-  const TString dataHLTEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/MG/eff.root";
-  const TString dataHLTEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/CT/eff.root";
+  const TString dataHLTEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
+  const TString dataHLTEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
+  const TString zmmHLTEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
+  const TString zmmHLTEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
 
-  const TString dataSelEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString dataSelEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString zmmSelEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
-  const TString zmmSelEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
+  const TString dataSelEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString dataSelEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString zmmSelEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString zmmSelEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
 
-  const TString dataTrkEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString dataTrkEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString zmmTrkEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
-  const TString zmmTrkEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
+  const TString dataTrkEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString dataTrkEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
+  const TString zmmTrkEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString zmmTrkEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
 
-  const TString dataStaEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/MG/eff.root";
-  const TString dataStaEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/MG/eff.root";
-  const TString zmmStaEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/CT/eff.root";
-  const TString zmmStaEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/CT/eff.root";
+  const TString dataStaEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
+  const TString dataStaEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
+  const TString zmmStaEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
+  const TString zmmStaEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
 
-  TString StaEffSignalShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuStaSigSys.root";
-  TString StaEffBackgroundShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuStaBkgSys.root";
-  TString SelEffSignalShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuSITSigSys.root";
-  TString SelEffBackgroundShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuSITBkgSys.root";
+  TString StaEffSignalShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuStaSigSys.root";
+  TString StaEffBackgroundShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuStaBkgSys.root";
+  TString SelEffSignalShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuSITSigSys.root";
+  TString SelEffBackgroundShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuSITBkgSys.root";
 
   //
   // Set up output file
   //
   TString outfilename = outputDir + TString("/") + TString("Zmm_DataBkg.root");
   TFile *outFile = new TFile(outfilename,"RECREATE");
+  TH1::AddDirectory(kFALSE);
 
 
   // plot output file format
@@ -147,6 +148,7 @@ void plotZmm(const TString  inputDir,    // input directory
   Int_t yield = 0;
   Double_t yield_zmm = 0, yield_zmm_unc=0;
   Double_t yield_ewk = 0, yield_ewk_unc=0;
+  Double_t yield_top = 0, yield_top_unc=0;
    
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -1151,8 +1153,8 @@ void plotZmm(const TString  inputDir,    // input directory
 	    }
 	  if(typev[ifile]==eTop) 
 	    {
-	      yield_ewk += weight*corr;
-	      yield_ewk_unc += weight*weight*corr*corr;
+	      yield_top += weight*corr;
+	      yield_top_unc += weight*weight*corr*corr;
 	      hTop->Fill(mass,weight*corr); 
 	      hMC->Fill(mass,weight*corr);
 
@@ -2047,6 +2049,7 @@ void plotZmm(const TString  inputDir,    // input directory
   cout << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
   cout << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
   cout << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  cout << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
