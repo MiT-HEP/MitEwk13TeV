@@ -31,11 +31,13 @@
 
   gROOT->Macro("muresolution_run2r.cc+");
   gROOT->Macro("rochcor2015r.cc+");
-  	
-  TString path = gSystem->GetIncludePath();
-  path += " -I ../EleScale/"
-  gSystem->SetIncludePath(path.Data());
-  gROOT->Macro("EnergyScaleCorrection_class.cc+");
+  
+  {  
+    TString path = gSystem->GetIncludePath();
+    path += " -I../EleScale/ ";
+    gSystem->SetIncludePath(path.Data());
+    gROOT->Macro("EnergyScaleCorrection_class.cc+");
+  }
 
   }
                
