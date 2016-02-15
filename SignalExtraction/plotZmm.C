@@ -76,53 +76,55 @@ void plotZmm(const TString  inputDir,    // input directory
   const Double_t ETA_CUT   = 2.4;
 
   // efficiency files
-  
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
+ 
+  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
+  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MG/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CT/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString dataSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString dataSelEffName_pos = baseDir + "MuSITEff/MG/eff.root";
+  const TString dataSelEffName_neg = baseDir + "MuSITEff/MG/eff.root";
+  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
+  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString dataTrkEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MG/eff.root";
+  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MG/eff.root";
+  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
+  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
-  const TString dataStaEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
+  const TString dataStaEffName_pos = baseDir + "MuStaEff/MG/eff.root";
+  const TString dataStaEffName_neg = baseDir + "MuStaEff/MG/eff.root";
+  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CT/eff.root";
+  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CT/eff.root";
 
   // efficiency files 2Bins
 
-  const TString dataHLTEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
-  const TString dataHLTEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuHLTEff/CT/eff.root";
+  const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/MG/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/MG/eff.root";
+  const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/CT/eff.root";
+  const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/CT/eff.root";
 
-  const TString dataSelEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString dataSelEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString zmmSelEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
-  const TString zmmSelEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/MG/eff.root";
+  const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/MG/eff.root";
+  const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/CT/eff.root";
+  const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/CT/eff.root";
 
-  const TString dataTrkEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString dataTrkEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/MG/eff.root";
-  const TString zmmTrkEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
-  const TString zmmTrkEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuSITEff/MStep1Output/CT/eff.root";
+  const TString dataTrkEff2BinName_pos = baseDir + "MuSITEff/MG/eff.root";
+  const TString dataTrkEff2BinName_neg = baseDir + "MuSITEff/MG/eff.root";
+  const TString zmmTrkEff2BinName_pos  = baseDir + "MuSITEff/CT/eff.root";
+  const TString zmmTrkEff2BinName_neg  = baseDir + "MuSITEff/CT/eff.root";
 
-  const TString dataStaEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
-  const TString dataStaEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/MG/eff.root";
-  const TString zmmStaEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
-  const TString zmmStaEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns74X/MuStaEff/MStep1Output/CT/eff.root";
+  const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/MG/eff.root";
+  const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/MG/eff.root";
+  const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/CT/eff.root";
+  const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/CT/eff.root";
 
-  TString StaEffSignalShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuStaSigSys.root";
-  TString StaEffBackgroundShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuStaBkgSys.root";
-  TString SelEffSignalShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuSITSigSys.root";
-  TString SelEffBackgroundShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/MuSITBkgSys.root";
+  // /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLT(Sta,SIT)Eff/1MG(1CT)
+  TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
+  TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
+  TString SelEffSignalShapeSys     = baseDir + "Results/MuSITSigSys.root";
+  TString SelEffBackgroundShapeSys = baseDir + "Results/MuSITBkgSys.root";
 
   //
   // Set up output file
