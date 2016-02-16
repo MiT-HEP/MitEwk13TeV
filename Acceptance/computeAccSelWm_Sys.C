@@ -41,10 +41,12 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWm(const TString conf,       // input file
+void computeAccSelWm_Sys(const TString conf,       // input file
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
-		     const Int_t   doPU
+		     const Int_t   doPU,
+		     const TString sysFile3,
+		     const TString sysFile1
 ) {
   gBenchmark->Start("computeAccSelWm");
 
@@ -96,6 +98,11 @@ void computeAccSelWm(const TString conf,       // input file
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+
+  TFile *f_sys3 = TFile::Open(sysFile3);
+  TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
+  TFile *f_sys1 = TFile::Open(sysFile1);
+  TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h");
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -385,7 +392,7 @@ void computeAccSelWm(const TString conf,       // input file
 	  corr *= effdata/effmc;
 	}
 	if(dataSelEffFile && zmmSelEffFile) {
-	  Double_t effdata = dataSelEff.getEff(goodMuon->eta, goodMuon->pt);
+	  Double_t effdata = dataSelEff.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));;
 	  Double_t effmc   = zmmSelEff.getEff(goodMuon->eta, goodMuon->pt);
 	  corr *= effdata/effmc;
 	}
@@ -395,7 +402,7 @@ void computeAccSelWm(const TString conf,       // input file
 	  //corr *= effdata/effmc;
 	}
 	if(dataStaEffFile && zmmStaEffFile) {
-	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);
+	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
 	  Double_t effmc   = zmmStaEff.getEff(goodMuon->eta, goodMuon->pt);
 	  corr *= effdata/effmc;
 	}

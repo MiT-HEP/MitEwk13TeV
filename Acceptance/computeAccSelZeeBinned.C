@@ -47,7 +47,8 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelZeeBinned(const TString conf,            // input file
-                            const TString outputDir        // output directory
+                            const TString outputDir,        // output directory
+			    const Int_t   doPU
 ) {
   gBenchmark->Start("computeAccSelZeeBinned");
 
@@ -68,25 +69,26 @@ void computeAccSelZeeBinned(const TString conf,            // input file
   const Int_t LEPTON_ID = 11;
   
   // efficiency files
-  const TString dataHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_pos = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
+  const TString dataHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
 
-  const TString zeeHLTEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-  const TString zeeHLTEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
+  const TString zeeHLTEffName      = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
   
-  const TString dataGsfSelEffName     = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
-  const TString dataGsfSelEffName_pos = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
-  const TString dataGsfSelEffName_neg = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
+  const TString dataGsfSelEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
+  const TString dataGsfSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
+  const TString dataGsfSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
 
-  const TString zeeGsfSelEffName      = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+  const TString zeeGsfSelEffName      = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -222,29 +224,29 @@ void computeAccSelZeeBinned(const TString conf,            // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    //for(UInt_t ientry=0; ientry<100; ientry++) {
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
 
-      Double_t weight=gen->weight/23443.4;
-      //Double_t weight=gen->weight;
-      //std::cout << gen->weight << std::endl;
-      //Double_t weight=1.0;
+      Int_t glepq1=-99;
+      Int_t glepq2=-99;
 
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       TLorentzVector *vec=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
-      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);
+      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&glepq1,&glepq2,1);
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;      
       delete vec; delete lep1; delete lep2;
 
       vertexArr->Clear();
       vertexBr->GetEntry(ientry);
       double npv  = vertexArr->GetEntries();
-      weight*=h_rw->GetBinContent(npv+1);
+      Double_t weight=gen->weight;
+      if(doPU>0) weight*=h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+
       nEvtsv[ifile]+=weight;        
+
       // trigger requirement               
       if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE)) continue;
       
@@ -277,7 +279,7 @@ void computeAccSelZeeBinned(const TString conf,            // input file
 	  // check ECAL gap
 	  if(fabs(ele2->scEta)>=ETA_BARREL && fabs(ele2->scEta)<=ETA_ENDCAP) continue;
 	  //double ele2_pt = gRandom->Gaus(ele2->scEt*getEleScaleCorr(ele2->scEta,0), getEleResCorr(ele2->scEta,0));
-        
+	  if(ele1->q == ele2->q)	continue;
           if(ele2->pt        < PT_CUT && ele2->scEt < PT_CUT)    continue;  // lepton pT cut
           if(fabs(ele2->scEta) > ETA_CUT && fabs(ele2->eta) > ETA_CUT)   continue;  // lepton |eta| cut
 	  if(!passEleID(ele2,info->rhoIso)) continue;  // lepton selection

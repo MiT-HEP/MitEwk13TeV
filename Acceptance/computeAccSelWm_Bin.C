@@ -41,7 +41,7 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWm(const TString conf,       // input file
+void computeAccSelWm_Bin(const TString conf,       // input file
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU
@@ -64,33 +64,33 @@ void computeAccSelWm(const TString conf,       // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  TString dataHLTEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root");
-  TString zmmHLTEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root");
-  TString dataSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root");
-  TString zmmSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root");
-  TString dataTrkEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root");
-  TString zmmTrkEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root");
-  TString dataStaEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root");
-  TString zmmStaEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root");
+  TString dataHLTEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1MG/eff.root");
+  TString zmmHLTEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1CT/eff.root");
+  TString dataSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MG/eff.root");
+  TString zmmSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CT/eff.root");
+  TString dataTrkEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MG/eff.root");
+  TString zmmTrkEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CT/eff.root");
+  TString dataStaEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MG/eff.root");
+  TString zmmStaEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CT/eff.root");
   if(charge==1) {
-    dataHLTEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root";
-    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root";
-    dataSelEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
-    dataTrkEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
+    dataHLTEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1MG/eff.root";
+    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1CT/eff.root";
+    dataSelEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MG/eff.root";
+    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CT/eff.root";
+    dataTrkEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MG/eff.root";
+    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CT/eff.root";
+    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MG/eff.root";
+    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CT/eff.root";
   }
   if(charge==-1) {
-    dataHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root";
-    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root";
-    dataSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
-    dataTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
+    dataHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1MG/eff.root";
+    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1CT/eff.root";
+    dataSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MG/eff.root";
+    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CT/eff.root";
+    dataTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MG/eff.root";
+    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CT/eff.root";
+    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MG/eff.root";
+    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CT/eff.root";
   }
 
   // load pileup reweighting file
