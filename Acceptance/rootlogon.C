@@ -13,7 +13,7 @@
       gSystem->SetMakeSharedLib(str);
     }
 
-    gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc491/libBaconAnaDataFormats.so");
+    gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc493/libBaconAnaDataFormats.so");
 
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
     gROOT->Macro("../Utils/CPlot.cc+");
