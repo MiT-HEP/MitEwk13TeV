@@ -59,53 +59,54 @@ void plotZmmGen(const TString  conf,            // input file
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
 
+  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
   // efficiency files
-  const TString dataHLTEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
-  const TString dataHLTEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuHLTEff/NewBin/CT/eff.root";
+  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MG/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CT/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CT/eff.root";
 
-  const TString dataSelEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString dataSelEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString dataSelEffName_pos = baseDir + "MuSITEff/MG/eff.root";
+  const TString dataSelEffName_neg = baseDir + "MuSITEff/MG/eff.root";
+  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
+  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
 
-  const TString dataTrkEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString dataTrkEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuSITEff/NewBin/CT/eff.root";
+  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MG/eff.root";
+  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MG/eff.root";
+  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
+  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
 
-  const TString dataStaEffName_pos = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
-  const TString dataStaEffName_neg = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/data/blue/xniu/WZXSection/NewMu/MuStaEff/NewBin/CT/eff.root";
+  const TString dataStaEffName_pos = baseDir + "MuStaEff/MG/eff.root";
+  const TString dataStaEffName_neg = baseDir + "MuStaEff/MG/eff.root";
+  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CT/eff.root";
+  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CT/eff.root";
 
   // efficiency files 2Bins
+  const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/1MG/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/1MG/eff.root";
+  const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/1CT/eff.root";
+  const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/1CT/eff.root";
 
-  const TString dataHLTEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/MG/eff.root";
-  const TString dataHLTEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuHLTEff/CT/eff.root";
+  const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/1MG/eff.root";
+  const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/1MG/eff.root";
+  const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/1CT/eff.root";
+  const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/1CT/eff.root";
 
-  const TString dataSelEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString dataSelEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString zmmSelEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
-  const TString zmmSelEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
+  const TString dataTrkEff2BinName_pos = baseDir + "MuSITEff/1MG/eff.root";
+  const TString dataTrkEff2BinName_neg = baseDir + "MuSITEff/1MG/eff.root";
+  const TString zmmTrkEff2BinName_pos  = baseDir + "MuSITEff/1CT/eff.root";
+  const TString zmmTrkEff2BinName_neg  = baseDir + "MuSITEff/1CT/eff.root";
 
-  const TString dataTrkEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString dataTrkEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/MG/eff.root";
-  const TString zmmTrkEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
-  const TString zmmTrkEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuSITEff/CT/eff.root";
+  const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/1MG/eff.root";
+  const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/1MG/eff.root";
+  const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/1CT/eff.root";
+  const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/1CT/eff.root";
 
-  const TString dataStaEff2BinName_pos = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/MG/eff.root";
-  const TString dataStaEff2BinName_neg = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/MG/eff.root";
-  const TString zmmStaEff2BinName_pos  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/CT/eff.root";
-  const TString zmmStaEff2BinName_neg  = "/data/blue/xniu/WZXSection/NewMu/Uncertainty/MuStaEff/CT/eff.root";
+  TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
+  TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
+  TString SelEffSignalShapeSys     = baseDir + "Results/MuSITSigSys.root";
+  TString SelEffBackgroundShapeSys = baseDir + "Results/MuSITBkgSys.root";
 
-  TString StaEffSignalShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuStaSigSys.root";
-  TString StaEffBackgroundShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuStaBkgSys.root";
-  TString SelEffSignalShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuSITSigSys.root";
-  TString SelEffBackgroundShapeSys = "/data/blue/xniu/WZXSection/NewMu/MuSITBkgSys.root";
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
