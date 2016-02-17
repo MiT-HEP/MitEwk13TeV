@@ -75,7 +75,7 @@ void selectZee(const TString conf="zee.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
 
   // for systematics we need 3
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
