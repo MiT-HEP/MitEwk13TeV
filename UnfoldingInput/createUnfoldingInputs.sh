@@ -2,7 +2,7 @@
 
 #ntuple directory
 #NTUPDIR=/data/blue/Bacon/Run2/wz_flat_diffxsec
-NTUPDIR=/afs/cern.ch/user/a/amarini/work/Bacon/Run2/wz_flat_76X
+NTUPDIR=/afs/cern.ch/user/a/amarini/work/Bacon/Run2/wz_flat_76X_newpu
 
 # integrated luminosity for data
 LUMI=2263
