@@ -91,7 +91,7 @@ TH2D* hCov_ResScale;
 Int_t TrainNominal ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs.root");
+  TFile *file1 = new TFile("../UnfoldingInput/Zmm/zmm_UnfoldInputs.root");
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth_Nominal = (TH1D*)file1->Get("hZPtTruth");
   hReco_Nominal = (TH1D*)file1->Get("hZPtReco");
@@ -119,7 +119,7 @@ Int_t TrainNominal ()
 Int_t Train ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1= new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs_ResScale.root");
+  TFile *file1= new TFile("../UnfoldingInput/Zmm/zmm_UnfoldInputs_ResScale.root");
 
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   for(int i=0;i!=100;++i)
