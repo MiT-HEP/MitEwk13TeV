@@ -244,6 +244,13 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
   double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
   double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+
+  const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+  const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
+  const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+  const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
+  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
   
   // histograms
 
@@ -362,7 +369,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* ZPT_EFF_UNCERT_BAND_DATA;
   ZPT_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZPt,TH1TOTGraphAsymmErrors(hUnfoldZPtEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldZPtEffStatDown));
 
-  myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFSIGSHAPE_UNCERT_BAND_DATA,ZPT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA,ZPT_EFF_UNCERT_BAND_DATA);
 
@@ -376,7 +383,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
  
   myAddtoBand(ZPT_TOPBKG_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFSTAT_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFSIGSHAPE_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_RESSCALE_UNCERT_BAND_DATA,ZPT_EXP_UNCERT_BAND_DATA);
@@ -389,7 +396,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(ZPT_EWKBKG_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_TOPBKG_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFSTAT_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(ZPT_EFFBIN_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFSIGSHAPE_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_EFFBKGSHAPE_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZPT_RESSCALE_UNCERT_BAND_DATA,ZPT_TOT_UNCERT_BAND_DATA);
@@ -399,7 +406,6 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
 
   TGraphAsymmErrors* ZPT_BKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(ZPT_BKG_UNCERT_BAND_DATA,ZPT_STAT_UNCERT_BAND_DATA);
 
-  const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
   TH1D *ZPT_REL_BKG_SYS = new TH1D("ZPT_REL_BKG_SYS", "ZPT_REL_BKG_SYS",nBinsZPt,ZPtBins);
 
   double* BKG_SYSTEMATIC_UNCERT_ZPT=ZPT_BKG_SYS_BAND->GetEYhigh();
@@ -608,7 +614,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* PHISTAR_EFF_UNCERT_BAND_DATA;
   PHISTAR_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldPhiStar,TH1TOTGraphAsymmErrors(hUnfoldPhiStarEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldPhiStarEffStatDown));
 
-  myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_EFF_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFSIGSHAPE_UNCERT_BAND_DATA,PHISTAR_EFF_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA,PHISTAR_EFF_UNCERT_BAND_DATA);
 
@@ -622,7 +628,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
  
   myAddtoBand(PHISTAR_TOPBKG_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFSTAT_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFSIGSHAPE_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_RESSCALE_UNCERT_BAND_DATA,PHISTAR_EXP_UNCERT_BAND_DATA);
@@ -635,7 +641,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(PHISTAR_EWKBKG_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_TOPBKG_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFSTAT_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(PHISTAR_EFFBIN_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFSIGSHAPE_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_EFFBKGSHAPE_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
   myAddtoBand(PHISTAR_RESSCALE_UNCERT_BAND_DATA,PHISTAR_TOT_UNCERT_BAND_DATA);
@@ -644,7 +650,6 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
 
   TGraphAsymmErrors* PHISTAR_BKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(PHISTAR_BKG_UNCERT_BAND_DATA,PHISTAR_STAT_UNCERT_BAND_DATA);
 
-  const int nBinsPhiStar= sizeof(PhiStarBins)/sizeof(double)-1;
   TH1D *PHISTAR_REL_BKG_SYS = new TH1D("PHISTAR_REL_BKG_SYS", "PHISTAR_REL_BKG_SYS",nBinsPhiStar,PhiStarBins);
 
   double* BKG_SYSTEMATIC_UNCERT_PHISTAR=PHISTAR_BKG_SYS_BAND->GetEYhigh();
@@ -852,7 +857,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* ZRAP_EFF_UNCERT_BAND_DATA;
   ZRAP_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldZRap,TH1TOTGraphAsymmErrors(hUnfoldZRapEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldZRapEffStatDown));
 
-  myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_EFF_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFSIGSHAPE_UNCERT_BAND_DATA,ZRAP_EFF_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA,ZRAP_EFF_UNCERT_BAND_DATA);
 
@@ -866,7 +871,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   myAddtoBand(ZRAP_TOPBKG_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFSTAT_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFSIGSHAPE_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_RESSCALE_UNCERT_BAND_DATA,ZRAP_EXP_UNCERT_BAND_DATA);
@@ -879,7 +884,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(ZRAP_EWKBKG_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_TOPBKG_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFSTAT_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(ZRAP_EFFBIN_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFSIGSHAPE_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_EFFBKGSHAPE_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
   myAddtoBand(ZRAP_RESSCALE_UNCERT_BAND_DATA,ZRAP_TOT_UNCERT_BAND_DATA);
@@ -1098,7 +1103,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEP1PT_EFF_UNCERT_BAND_DATA;
   LEP1PT_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Pt,TH1TOTGraphAsymmErrors(hUnfoldLep1PtEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldLep1PtEffStatDown));
 
-  myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1PT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1PT_EFF_UNCERT_BAND_DATA);
 
@@ -1112,7 +1117,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   myAddtoBand(LEP1PT_TOPBKG_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFSTAT_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_RESSCALE_UNCERT_BAND_DATA,LEP1PT_EXP_UNCERT_BAND_DATA);
@@ -1125,7 +1130,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(LEP1PT_EWKBKG_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_TOPBKG_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFSTAT_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP1PT_EFFBIN_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1PT_RESSCALE_UNCERT_BAND_DATA,LEP1PT_TOT_UNCERT_BAND_DATA);
@@ -1135,7 +1140,6 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEP1PT_BKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP1PT_BKG_UNCERT_BAND_DATA,LEP1PT_STAT_UNCERT_BAND_DATA);
 
 
-  const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
   TH1D *LEP1PT_REL_BKG_SYS = new TH1D("LEP1PT_REL_BKG_SYS", "LEP1PT_REL_BKG_SYS",nBinsLep1Pt,Lep1PtBins);
 
   double* BKG_SYSTEMATIC_UNCERT_LEP1PT=LEP1PT_BKG_SYS_BAND->GetEYhigh();
@@ -1344,7 +1348,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEP2PT_EFF_UNCERT_BAND_DATA;
   LEP2PT_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Pt,TH1TOTGraphAsymmErrors(hUnfoldLep2PtEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldLep2PtEffStatDown));
 
-  myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2PT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2PT_EFF_UNCERT_BAND_DATA);
 
@@ -1358,7 +1362,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   myAddtoBand(LEP2PT_TOPBKG_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFSTAT_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_RESSCALE_UNCERT_BAND_DATA,LEP2PT_EXP_UNCERT_BAND_DATA);
@@ -1371,7 +1375,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(LEP2PT_EWKBKG_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_TOPBKG_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFSTAT_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP2PT_EFFBIN_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2PT_RESSCALE_UNCERT_BAND_DATA,LEP2PT_TOT_UNCERT_BAND_DATA);
@@ -1380,7 +1384,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   TGraphAsymmErrors* LEP2PT_BKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_BKG_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
 
-  TH1D *LEP2PT_REL_BKG_SYS = new TH1D("LEP2PT_REL_BKG_SYS", "LEP2PT_REL_BKG_SYS",20,Lep2PtBins);
+  TH1D *LEP2PT_REL_BKG_SYS = new TH1D("LEP2PT_REL_BKG_SYS", "LEP2PT_REL_BKG_SYS",nBinsLep2Pt,Lep2PtBins);
 
   double* BKG_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_BKG_SYS_BAND->GetEYhigh();
 
@@ -1397,7 +1401,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEP2PT_EFF_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEP2PT_EFF_UNCERT_BAND_DATA,LEP2PT_STAT_UNCERT_BAND_DATA);
 
 
-  const int nBinsLep2Pt= sizeof(Lep2PtBins)/sizeof(double)-1;
+  
   TH1D *LEP2PT_REL_EFF_SYS = new TH1D("LEP2PT_REL_EFF_SYS", "LEP2PT_REL_EFF_SYS",nBinsLep2Pt,Lep2PtBins);
 
   double* EFF_SYSTEMATIC_UNCERT_LEP2PT=LEP2PT_EFF_SYS_BAND->GetEYhigh();
@@ -1590,7 +1594,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEP1ETA_EFF_UNCERT_BAND_DATA;
   LEP1ETA_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep1Eta,TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldLep1EtaEffStatDown));
 
-  myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1ETA_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1ETA_EFF_UNCERT_BAND_DATA);
 
@@ -1604,7 +1608,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   myAddtoBand(LEP1ETA_TOPBKG_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFSTAT_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_RESSCALE_UNCERT_BAND_DATA,LEP1ETA_EXP_UNCERT_BAND_DATA);
@@ -1617,7 +1621,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(LEP1ETA_EWKBKG_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_TOPBKG_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFSTAT_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP1ETA_EFFBIN_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP1ETA_RESSCALE_UNCERT_BAND_DATA,LEP1ETA_TOT_UNCERT_BAND_DATA);
@@ -1835,7 +1839,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEP2ETA_EFF_UNCERT_BAND_DATA;
   LEP2ETA_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLep2Eta,TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldLep2EtaEffStatDown));
 
-  myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2ETA_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2ETA_EFF_UNCERT_BAND_DATA);
 
@@ -1849,7 +1853,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
  
   myAddtoBand(LEP2ETA_TOPBKG_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFSTAT_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_RESSCALE_UNCERT_BAND_DATA,LEP2ETA_EXP_UNCERT_BAND_DATA);
@@ -1862,7 +1866,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(LEP2ETA_EWKBKG_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_TOPBKG_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFSTAT_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(LEP2ETA_EFFBIN_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFSIGSHAPE_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_EFFBKGSHAPE_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEP2ETA_RESSCALE_UNCERT_BAND_DATA,LEP2ETA_TOT_UNCERT_BAND_DATA);
@@ -2079,7 +2083,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEPNEGPT_EFF_UNCERT_BAND_DATA;
   LEPNEGPT_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepNegPt,TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldLepNegPtEffStatDown));
 
-  myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_EFF_UNCERT_BAND_DATA);
 
@@ -2093,7 +2097,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   myAddtoBand(LEPNEGPT_TOPBKG_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFSTAT_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_RESSCALE_UNCERT_BAND_DATA,LEPNEGPT_EXP_UNCERT_BAND_DATA);
@@ -2106,7 +2110,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(LEPNEGPT_EWKBKG_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_TOPBKG_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFSTAT_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(LEPNEGPT_EFFBIN_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPNEGPT_RESSCALE_UNCERT_BAND_DATA,LEPNEGPT_TOT_UNCERT_BAND_DATA);
@@ -2115,7 +2119,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
  
   TGraphAsymmErrors* LEPNEGPT_BKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_BKG_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
 
-  TH1D *LEPNEGPT_REL_BKG_SYS = new TH1D("LEPNEGPT_REL_BKG_SYS", "LEPNEGPT_REL_BKG_SYS",25,LepNegPtBins);
+  TH1D *LEPNEGPT_REL_BKG_SYS = new TH1D("LEPNEGPT_REL_BKG_SYS", "LEPNEGPT_REL_BKG_SYS",nBinsLepNegPt,LepNegPtBins);
 
   double* BKG_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_BKG_SYS_BAND->GetEYhigh();
 
@@ -2131,7 +2135,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
 
   TGraphAsymmErrors* LEPNEGPT_EFF_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_EFF_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
 
-  TH1D *LEPNEGPT_REL_EFF_SYS = new TH1D("LEPNEGPT_REL_EFF_SYS", "LEPNEGPT_REL_EFF_SYS",25,LepNegPtBins);
+  TH1D *LEPNEGPT_REL_EFF_SYS = new TH1D("LEPNEGPT_REL_EFF_SYS", "LEPNEGPT_REL_EFF_SYS",nBinsLepNegPt,LepNegPtBins);
 
   double* EFF_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_EFF_SYS_BAND->GetEYhigh();
 
@@ -2148,7 +2152,6 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEPNEGPT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPNEGPT_RESSCALE_UNCERT_BAND_DATA,LEPNEGPT_STAT_UNCERT_BAND_DATA);
 
 
-  const int nBinsLepNegPt= sizeof(LepNegPtBins)/sizeof(double)-1;
   TH1D *LEPNEGPT_REL_RESSCALE_SYS = new TH1D("LEPNEGPT_REL_RESSCALE_SYS", "LEPNEGPT_REL_RESSCALE_SYS",nBinsLepNegPt,LepNegPtBins);
 
   double* RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT=LEPNEGPT_RESSCALE_SYS_BAND->GetEYhigh();
@@ -2325,7 +2328,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEPPOSPT_EFF_UNCERT_BAND_DATA;
   LEPPOSPT_EFF_UNCERT_BAND_DATA=myMakeBandSymmetric(gUnfoldLepPosPt,TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEffStatUp),TH1TOTGraphAsymmErrors(hUnfoldLepPosPtEffStatDown));
 
-  myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_EFF_UNCERT_BAND_DATA);
+  //myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_EFF_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_EFF_UNCERT_BAND_DATA);
 
@@ -2339,7 +2342,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   
   myAddtoBand(LEPPOSPT_TOPBKG_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFSTAT_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
+  //myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_RESSCALE_UNCERT_BAND_DATA,LEPPOSPT_EXP_UNCERT_BAND_DATA);
@@ -2352,7 +2355,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   myAddtoBand(LEPPOSPT_EWKBKG_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_TOPBKG_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFSTAT_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
-  myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
+  //myAddtoBand(LEPPOSPT_EFFBIN_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFSIGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_EFFBKGSHAPE_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
   myAddtoBand(LEPPOSPT_RESSCALE_UNCERT_BAND_DATA,LEPPOSPT_TOT_UNCERT_BAND_DATA);
@@ -2361,7 +2364,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
  
   TGraphAsymmErrors* LEPPOSPT_BKG_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_BKG_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
 
-  TH1D *LEPPOSPT_REL_BKG_SYS = new TH1D("LEPPOSPT_REL_BKG_SYS", "LEPPOSPT_REL_BKG_SYS",25,LepPosPtBins);
+  TH1D *LEPPOSPT_REL_BKG_SYS = new TH1D("LEPPOSPT_REL_BKG_SYS", "LEPPOSPT_REL_BKG_SYS",nBinsLepPosPt,LepPosPtBins);
 
   double* BKG_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_BKG_SYS_BAND->GetEYhigh();
 
@@ -2377,7 +2380,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
 
   TGraphAsymmErrors* LEPPOSPT_EFF_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_EFF_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
 
-  TH1D *LEPPOSPT_REL_EFF_SYS = new TH1D("LEPPOSPT_REL_EFF_SYS", "LEPPOSPT_REL_EFF_SYS",25,LepPosPtBins);
+  TH1D *LEPPOSPT_REL_EFF_SYS = new TH1D("LEPPOSPT_REL_EFF_SYS", "LEPPOSPT_REL_EFF_SYS",nBinsLepPosPt,LepPosPtBins);
 
   double* EFF_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_EFF_SYS_BAND->GetEYhigh();
 
@@ -2394,7 +2397,6 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   TGraphAsymmErrors* LEPPOSPT_RESSCALE_SYS_BAND=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_RESSCALE_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
 
 
-  const int nBinsLepPosPt= sizeof(LepPosPtBins)/sizeof(double)-1;
   TH1D *LEPPOSPT_REL_RESSCALE_SYS = new TH1D("LEPPOSPT_REL_RESSCALE_SYS", "LEPPOSPT_REL_RESSCALE_SYS",nBinsLepPosPt,LepPosPtBins);
 
   double* RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT=LEPPOSPT_RESSCALE_SYS_BAND->GetEYhigh();
@@ -2503,19 +2505,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   ZPT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuPt("zmmPtSys","",xlabel,ylabel);
-  plotZmumuPt.AddHist1D(ZPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuPt.AddHist1D(ZPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuPt.AddHist1D(ZPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuPt.AddHist1D(ZPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuPt.AddHist1D(ZPT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuPt.AddHist1D(ZPT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuPt.SetLogx();
-  plotZmumuPt.SetLogy(0);
-  plotZmumuPt.SetYRange(0,2*(ZPT_REL_EXP_SYS->GetMaximum()));
-  plotZmumuPt.TransLegend(-0.05,-0.01);
-  plotZmumuPt.Draw(c,kTRUE,format);
+  CPlot plotZmmPt("zmmPtSys","",xlabel,ylabel);
+  plotZmmPt.AddHist1D(ZPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmPt.AddHist1D(ZPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmPt.AddHist1D(ZPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmPt.AddHist1D(ZPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmPt.AddHist1D(ZPT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmPt.AddHist1D(ZPT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmPt.SetLogx();
+  plotZmmPt.SetLogy(0);
+  plotZmmPt.SetYRange(0,1.5*(ZPT_REL_EXP_SYS->GetMaximum()));
+  plotZmmPt.TransLegend(-0.05,-0.01);
+  plotZmmPt.Draw(c,kTRUE,format);
 
   //
   // PhiStar
@@ -2524,19 +2526,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"#phi_{#eta}*");
   PHISTAR_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuPhiStar("zmmPhiStarSys","",xlabel,ylabel);
-  plotZmumuPhiStar.AddHist1D(PHISTAR_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuPhiStar.AddHist1D(PHISTAR_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuPhiStar.AddHist1D(PHISTAR_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuPhiStar.AddHist1D(PHISTAR_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuPhiStar.AddHist1D(PHISTAR_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuPhiStar.AddHist1D(PHISTAR_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuPhiStar.SetLogx();
-  plotZmumuPhiStar.SetLogy(0);
-  plotZmumuPhiStar.SetYRange(0,2*(PHISTAR_REL_EXP_SYS->GetMaximum()));
-  plotZmumuPhiStar.TransLegend(-0.05,-0.01);
-  plotZmumuPhiStar.Draw(c,kTRUE,format);
+  CPlot plotZmmPhiStar("zmmPhiStarSys","",xlabel,ylabel);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmPhiStar.SetLogx();
+  plotZmmPhiStar.SetLogy(0);
+  plotZmmPhiStar.SetYRange(0,1.5*(PHISTAR_REL_EXP_SYS->GetMaximum()));
+  plotZmmPhiStar.TransLegend(-0.05,-0.01);
+  plotZmmPhiStar.Draw(c,kTRUE,format);
 
   //
   // ZRap
@@ -2545,18 +2547,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"|y^{#mu^{+}#mu^{-}}|");
   ZRAP_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuRap("zmmRapSys","",xlabel,ylabel);
-  plotZmumuRap.AddHist1D(ZRAP_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuRap.AddHist1D(ZRAP_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuRap.AddHist1D(ZRAP_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuRap.AddHist1D(ZRAP_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuRap.AddHist1D(ZRAP_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuRap.AddHist1D(ZRAP_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuRap.SetLogy(0);
-  plotZmumuRap.SetYRange(0,2*(ZRAP_REL_EXP_SYS->GetMaximum()));
-  plotZmumuRap.TransLegend(-0.05,-0.01);
-  plotZmumuRap.Draw(c,kTRUE,format);
+  CPlot plotZmmRap("zmmRapSys","",xlabel,ylabel);
+  plotZmmRap.AddHist1D(ZRAP_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmRap.AddHist1D(ZRAP_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmRap.AddHist1D(ZRAP_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmRap.AddHist1D(ZRAP_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmRap.AddHist1D(ZRAP_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmRap.AddHist1D(ZRAP_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmRap.SetLogy(0);
+  //plotZmmRap.SetYRange(0,2.0*(ZRAP_REL_EXP_SYS->GetMaximum()));
+  plotZmmRap.SetYRange(0,0.1);
+  plotZmmRap.TransLegend(-0.05,-0.01);
+  plotZmmRap.Draw(c,kTRUE,format);
 
   //
   // Lep1 Pt
@@ -2565,19 +2568,20 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"p_{T}(leading muon) [GeV]");
   LEP1PT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuLep1Pt("zmmLep1PtSys","",xlabel,ylabel);
-  plotZmumuLep1Pt.AddHist1D(LEP1PT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuLep1Pt.AddHist1D(LEP1PT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuLep1Pt.AddHist1D(LEP1PT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuLep1Pt.AddHist1D(LEP1PT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuLep1Pt.AddHist1D(LEP1PT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuLep1Pt.AddHist1D(LEP1PT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuLep1Pt.SetLogx();
-  plotZmumuLep1Pt.SetLogy(0);
-  plotZmumuLep1Pt.SetYRange(0,2*(LEP1PT_REL_EXP_SYS->GetMaximum()));
-  plotZmumuLep1Pt.TransLegend(-0.05,-0.01);
-  plotZmumuLep1Pt.Draw(c,kTRUE,format);
+  CPlot plotZmmLep1Pt("zmmLep1PtSys","",xlabel,ylabel);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmLep1Pt.SetLogx();
+  plotZmmLep1Pt.SetLogy(0);
+  //plotZmmLep1Pt.SetYRange(0,2*(LEP1PT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLep1Pt.SetYRange(0,0.1);
+  plotZmmLep1Pt.TransLegend(-0.05,-0.01);
+  plotZmmLep1Pt.Draw(c,kTRUE,format);
 
   //
   // Lep2 Pt
@@ -2586,19 +2590,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"p_{T}(2nd leading muon) [GeV]");
   LEP2PT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuLep2Pt("zmmLep2PtSys","",xlabel,ylabel);
-  plotZmumuLep2Pt.AddHist1D(LEP2PT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuLep2Pt.AddHist1D(LEP2PT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuLep2Pt.AddHist1D(LEP2PT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuLep2Pt.AddHist1D(LEP2PT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuLep2Pt.AddHist1D(LEP2PT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuLep2Pt.AddHist1D(LEP2PT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuLep2Pt.SetLogx();
-  plotZmumuLep2Pt.SetLogy(0);
-  plotZmumuLep2Pt.SetYRange(0,2*(LEP2PT_REL_EXP_SYS->GetMaximum()));
-  plotZmumuLep2Pt.TransLegend(-0.05,-0.01);
-  plotZmumuLep2Pt.Draw(c,kTRUE,format);
+  CPlot plotZmmLep2Pt("zmmLep2PtSys","",xlabel,ylabel);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmLep2Pt.SetLogx();
+  plotZmmLep2Pt.SetLogy(0);
+  plotZmmLep2Pt.SetYRange(0,1.5*(LEP2PT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLep2Pt.TransLegend(-0.05,-0.01);
+  plotZmmLep2Pt.Draw(c,kTRUE,format);
 
   //
   // Lep1 Eta
@@ -2607,18 +2611,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"|#eta|(leading muon)");
   LEP1ETA_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuLep1Eta("zmmLep1EtaSys","",xlabel,ylabel);
-  plotZmumuLep1Eta.AddHist1D(LEP1ETA_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuLep1Eta.AddHist1D(LEP1ETA_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuLep1Eta.AddHist1D(LEP1ETA_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuLep1Eta.AddHist1D(LEP1ETA_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuLep1Eta.AddHist1D(LEP1ETA_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuLep1Eta.AddHist1D(LEP1ETA_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuLep1Eta.SetLogy(0);
-  plotZmumuLep1Eta.SetYRange(0,2*(LEP1ETA_REL_EXP_SYS->GetMaximum()));
-  plotZmumuLep1Eta.TransLegend(-0.05,-0.01);
-  plotZmumuLep1Eta.Draw(c,kTRUE,format);
+  CPlot plotZmmLep1Eta("zmmLep1EtaSys","",xlabel,ylabel);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmLep1Eta.SetLogy(0);
+  //plotZmmLep1Eta.SetYRange(0,1.5*(LEP1ETA_REL_EXP_SYS->GetMaximum()));
+  plotZmmLep1Eta.SetYRange(0,0.1);
+  plotZmmLep1Eta.TransLegend(-0.05,-0.01);
+  plotZmmLep1Eta.Draw(c,kTRUE,format);
 
   //
   // Lep2 Eta
@@ -2627,18 +2632,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"|#eta|(2nd leading muon)");
   LEP2ETA_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuLep2Eta("zmmLep2EtaSys","",xlabel,ylabel);
-  plotZmumuLep2Eta.AddHist1D(LEP2ETA_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuLep2Eta.AddHist1D(LEP2ETA_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuLep2Eta.AddHist1D(LEP2ETA_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuLep2Eta.AddHist1D(LEP2ETA_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuLep2Eta.AddHist1D(LEP2ETA_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuLep2Eta.AddHist1D(LEP2ETA_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuLep2Eta.SetLogy(0);
-  plotZmumuLep2Eta.SetYRange(0,2*(LEP2ETA_REL_EXP_SYS->GetMaximum()));
-  plotZmumuLep2Eta.TransLegend(-0.05,-0.01);
-  plotZmumuLep2Eta.Draw(c,kTRUE,format);
+  CPlot plotZmmLep2Eta("zmmLep2EtaSys","",xlabel,ylabel);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmLep2Eta.SetLogy(0);
+  //plotZmmLep2Eta.SetYRange(0,1.5*(LEP2ETA_REL_EXP_SYS->GetMaximum()));
+  plotZmmLep2Eta.SetYRange(0,0.1);
+  plotZmmLep2Eta.TransLegend(-0.05,-0.01);
+  plotZmmLep2Eta.Draw(c,kTRUE,format);
 
   //
   // LepNeg Pt
@@ -2647,19 +2653,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"p_{T}^{#mu^{-}} [GeV]");
   LEPNEGPT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuLepNegPt("zmmLepNegPtSys","",xlabel,ylabel);
-  plotZmumuLepNegPt.AddHist1D(LEPNEGPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuLepNegPt.AddHist1D(LEPNEGPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuLepNegPt.AddHist1D(LEPNEGPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuLepNegPt.AddHist1D(LEPNEGPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuLepNegPt.AddHist1D(LEPNEGPT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuLepNegPt.AddHist1D(LEPNEGPT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuLepNegPt.SetLogx();
-  plotZmumuLepNegPt.SetLogy(0);
-  plotZmumuLepNegPt.SetYRange(0,2*(LEPNEGPT_REL_EXP_SYS->GetMaximum()));
-  plotZmumuLepNegPt.TransLegend(-0.05,-0.01);
-  plotZmumuLepNegPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepNegPt("zmmLepNegPtSys","",xlabel,ylabel);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmLepNegPt.SetLogx();
+  plotZmmLepNegPt.SetLogy(0);
+  plotZmmLepNegPt.SetYRange(0,1.5*(LEPNEGPT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLepNegPt.TransLegend(-0.05,-0.01);
+  plotZmmLepNegPt.Draw(c,kTRUE,format);
 
   //
   // LepPos Pt
@@ -2668,19 +2674,19 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   sprintf(ylabel,"Relative Systematic Uncertainty");
   sprintf(xlabel,"p_{T}^{#mu^{+}} [GeV]");
   LEPPOSPT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
-  CPlot plotZmumuLepPosPt("zmmLepPosPtSys","",xlabel,ylabel);
-  plotZmumuLepPosPt.AddHist1D(LEPPOSPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
-  plotZmumuLepPosPt.AddHist1D(LEPPOSPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
-  plotZmumuLepPosPt.AddHist1D(LEPPOSPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
-  plotZmumuLepPosPt.AddHist1D(LEPPOSPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
-  plotZmumuLepPosPt.AddHist1D(LEPPOSPT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
-  plotZmumuLepPosPt.AddHist1D(LEPPOSPT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
-  plotZmumuLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZmumuLepPosPt.SetLogx();
-  plotZmumuLepPosPt.SetLogy(0);
-  plotZmumuLepPosPt.SetYRange(0,2*(LEPPOSPT_REL_EXP_SYS->GetMaximum()));
-  plotZmumuLepPosPt.TransLegend(-0.05,-0.01);
-  plotZmumuLepPosPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepPosPt("zmmLepPosPtSys","",xlabel,ylabel);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_UNFOLD_SYS,"Unfolding","",linecolorUnfoldSys,linestyleUnfoldSys);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
+  plotZmmLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmmLepPosPt.SetLogx();
+  plotZmmLepPosPt.SetLogy(0);
+  plotZmmLepPosPt.SetYRange(0,1.5*(LEPPOSPT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLepPosPt.TransLegend(-0.05,-0.01);
+  plotZmmLepPosPt.Draw(c,kTRUE,format);
 
 
   

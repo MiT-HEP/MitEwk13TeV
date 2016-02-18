@@ -463,7 +463,7 @@ vector<TFile*> file;
 	  cov_ZPt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_ZPt[i][j]+=uncert_ZPt[k][i]*uncert_ZPt[k][j];
+	       if(k!=3) cov_ZPt[i][j]+=uncert_ZPt[k][i]*uncert_ZPt[k][j];
 	    }
 	  ZPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_ZPt[i][j]);
 	  ZPT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -648,7 +648,7 @@ vector<TFile*> file;
 	  cov_PhiStar[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_PhiStar[i][j]+=uncert_PhiStar[k][i]*uncert_PhiStar[k][j];
+	      if(k!=3) cov_PhiStar[i][j]+=uncert_PhiStar[k][i]*uncert_PhiStar[k][j];
 	    }
 	  PHISTAR_COV_MATRIX->SetBinContent(i+1,j+1,cov_PhiStar[i][j]);
 	  PHISTAR_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -837,7 +837,7 @@ vector<TFile*> file;
 	  cov_ZRap[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_ZRap[i][j]+=uncert_ZRap[k][i]*uncert_ZRap[k][j];
+	      if(k!=3) cov_ZRap[i][j]+=uncert_ZRap[k][i]*uncert_ZRap[k][j];
 	    }
 	  ZRAP_COV_MATRIX->SetBinContent(i+1,j+1,cov_ZRap[i][j]);
 	  ZRAP_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1024,7 +1024,7 @@ vector<TFile*> file;
 	  cov_Lep1Pt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep1Pt[i][j]+=uncert_Lep1Pt[k][i]*uncert_Lep1Pt[k][j];
+	      if(k!=3) cov_Lep1Pt[i][j]+=uncert_Lep1Pt[k][i]*uncert_Lep1Pt[k][j];
 	    }
 	  LEP1PT_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep1Pt[i][j]);
 	  LEP1PT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1210,7 +1210,7 @@ vector<TFile*> file;
 	  cov_Lep2Pt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep2Pt[i][j]+=uncert_Lep2Pt[k][i]*uncert_Lep2Pt[k][j];
+	      if(k!=3) cov_Lep2Pt[i][j]+=uncert_Lep2Pt[k][i]*uncert_Lep2Pt[k][j];
 	    }
 	  LEP2PT_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep2Pt[i][j]);
 	  LEP2PT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1396,7 +1396,7 @@ vector<TFile*> file;
 	  cov_Lep1Eta[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep1Eta[i][j]+=uncert_Lep1Eta[k][i]*uncert_Lep1Eta[k][j];
+	      if(k!=3) cov_Lep1Eta[i][j]+=uncert_Lep1Eta[k][i]*uncert_Lep1Eta[k][j];
 	    }
 	  LEP1ETA_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep1Eta[i][j]);
 	  LEP1ETA_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1582,7 +1582,7 @@ vector<TFile*> file;
 	  cov_Lep2Eta[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep2Eta[i][j]+=uncert_Lep2Eta[k][i]*uncert_Lep2Eta[k][j];
+	      if(k!=3) cov_Lep2Eta[i][j]+=uncert_Lep2Eta[k][i]*uncert_Lep2Eta[k][j];
 	    }
 	  LEP2ETA_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep2Eta[i][j]);
 	  LEP2ETA_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1770,7 +1770,7 @@ vector<TFile*> file;
 	  cov_LepNegPt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_LepNegPt[i][j]+=uncert_LepNegPt[k][i]*uncert_LepNegPt[k][j];
+	      if(k!=3) cov_LepNegPt[i][j]+=uncert_LepNegPt[k][i]*uncert_LepNegPt[k][j];
 	    }
 	  LEPNEGPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_LepNegPt[i][j]);
 	  LEPNEGPT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1956,7 +1956,7 @@ vector<TFile*> file;
 	  cov_LepPosPt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_LepPosPt[i][j]+=uncert_LepPosPt[k][i]*uncert_LepPosPt[k][j];
+	      if(k!=3) cov_LepPosPt[i][j]+=uncert_LepPosPt[k][i]*uncert_LepPosPt[k][j];
 	    }
 	  LEPPOSPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_LepPosPt[i][j]);
 	  LEPPOSPT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -2009,14 +2009,14 @@ vector<TFile*> file;
   sprintf(ylabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   sprintf(xlabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   ZPT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  ZPT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuPt("zmmPtCorrelations","",xlabel,ylabel);
-  plotZmumuPt.AddHist2D(ZPT_CORR_MATRIX,"COLZ");
-  plotZmumuPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuPt.SetLogx();
-  plotZmumuPt.SetLogy();
-  plotZmumuPt.Draw(c,kTRUE,format);
+  ZPT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmPt("zmmPtCorrelations","",xlabel,ylabel);
+  plotZmmPt.AddHist2D(ZPT_CORR_MATRIX,"COLZ");
+  plotZmmPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmPt.SetLogx();
+  plotZmmPt.SetLogy();
+  plotZmmPt.Draw(c,kTRUE,format);
 
   //
   // PhiStar
@@ -2025,14 +2025,14 @@ vector<TFile*> file;
   sprintf(ylabel,"#phi_{#eta}*");
   sprintf(xlabel,"#phi_{#eta}*");
   PHISTAR_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  PHISTAR_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuPhiStar("zmmPhiStarCorrelations","",xlabel,ylabel);
-  plotZmumuPhiStar.AddHist2D(PHISTAR_CORR_MATRIX,"COLZ");
-  plotZmumuPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuPhiStar.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuPhiStar.SetLogx();
-  plotZmumuPhiStar.SetLogy();
-  plotZmumuPhiStar.Draw(c,kTRUE,format);
+  PHISTAR_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmPhiStar("zmmPhiStarCorrelations","",xlabel,ylabel);
+  plotZmmPhiStar.AddHist2D(PHISTAR_CORR_MATRIX,"COLZ");
+  plotZmmPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmPhiStar.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmPhiStar.SetLogx();
+  plotZmmPhiStar.SetLogy();
+  plotZmmPhiStar.Draw(c,kTRUE,format);
 
   //
   // ZRap
@@ -2041,12 +2041,12 @@ vector<TFile*> file;
   sprintf(ylabel,"|y^{#mu^{+}#mu^{-}}|");
   sprintf(xlabel,"|y^{#mu^{+}#mu^{-}}|");
   ZRAP_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  ZRAP_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuRap("zmmRapCorrelations","",xlabel,ylabel);
-  plotZmumuRap.AddHist2D(ZRAP_CORR_MATRIX,"COLZ");
-  plotZmumuRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuRap.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuRap.Draw(c,kTRUE,format);
+  ZRAP_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmRap("zmmRapCorrelations","",xlabel,ylabel);
+  plotZmmRap.AddHist2D(ZRAP_CORR_MATRIX,"COLZ");
+  plotZmmRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmRap.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmRap.Draw(c,kTRUE,format);
 
   //
   // Lep1Pt
@@ -2054,15 +2054,15 @@ vector<TFile*> file;
 
   sprintf(ylabel,"p_{T} (leading muon) [GeV]");
   sprintf(xlabel,"p_{T} (leading muon) [GeV]");
-  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
+  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLep1Pt("zmmLep1PtCorrelations","",xlabel,ylabel);
-  plotZmumuLep1Pt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
-  plotZmumuLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep1Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep1Pt.SetLogx();
-  plotZmumuLep1Pt.SetLogy();
-  plotZmumuLep1Pt.Draw(c,kTRUE,format);
+  CPlot plotZmmLep1Pt("zmmLep1PtCorrelations","",xlabel,ylabel);
+  plotZmmLep1Pt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
+  plotZmmLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep1Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep1Pt.SetLogx();
+  plotZmmLep1Pt.SetLogy();
+  plotZmmLep1Pt.Draw(c,kTRUE,format);
 
   //
   // Lep2Pt
@@ -2071,14 +2071,14 @@ vector<TFile*> file;
   sprintf(ylabel,"p_{T} (2nd leading muon) [GeV]");
   sprintf(xlabel,"p_{T} (2nd leading muon) [GeV]");
   LEP2PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  LEP2PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuLep2Pt("zmmLep2PtCorrelations","",xlabel,ylabel);
-  plotZmumuLep2Pt.AddHist2D(LEP2PT_CORR_MATRIX,"COLZ");
-  plotZmumuLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep2Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep2Pt.SetLogx();
-  plotZmumuLep2Pt.SetLogy();
-  plotZmumuLep2Pt.Draw(c,kTRUE,format);
+  LEP2PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmLep2Pt("zmmLep2PtCorrelations","",xlabel,ylabel);
+  plotZmmLep2Pt.AddHist2D(LEP2PT_CORR_MATRIX,"COLZ");
+  plotZmmLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep2Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep2Pt.SetLogx();
+  plotZmmLep2Pt.SetLogy();
+  plotZmmLep2Pt.Draw(c,kTRUE,format);
 
   //
   // Lep1Eta
@@ -2087,12 +2087,12 @@ vector<TFile*> file;
   sprintf(ylabel,"|#eta| (leading muon)");
   sprintf(xlabel,"|#eta| (leading muon)");
   LEP1ETA_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  LEP1ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuLep1Eta("zmmLep1EtaCorrelations","",xlabel,ylabel);
-  plotZmumuLep1Eta.AddHist2D(LEP1ETA_CORR_MATRIX,"COLZ");
-  plotZmumuLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep1Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep1Eta.Draw(c,kTRUE,format);
+  LEP1ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmLep1Eta("zmmLep1EtaCorrelations","",xlabel,ylabel);
+  plotZmmLep1Eta.AddHist2D(LEP1ETA_CORR_MATRIX,"COLZ");
+  plotZmmLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep1Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep1Eta.Draw(c,kTRUE,format);
 
   //
   // Lep2Eta
@@ -2101,12 +2101,12 @@ vector<TFile*> file;
   sprintf(ylabel,"|#eta| (2nd leading muon)");
   sprintf(xlabel,"|#eta| (2nd leading muon)");
   LEP2ETA_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  LEP2ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuLep2Eta("zmmLep2EtaCorrelations","",xlabel,ylabel);
-  plotZmumuLep2Eta.AddHist2D(LEP2ETA_CORR_MATRIX,"COLZ");
-  plotZmumuLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep2Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep2Eta.Draw(c,kTRUE,format);
+  LEP2ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmLep2Eta("zmmLep2EtaCorrelations","",xlabel,ylabel);
+  plotZmmLep2Eta.AddHist2D(LEP2ETA_CORR_MATRIX,"COLZ");
+  plotZmmLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep2Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep2Eta.Draw(c,kTRUE,format);
 
   //
   // LepNegPt
@@ -2114,15 +2114,15 @@ vector<TFile*> file;
 
   sprintf(ylabel,"p_{T}^{#mu^{-}} [GeV]");
   sprintf(xlabel,"p_{T}^{#mu^{-}} [GeV]");
-  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
+  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLepNegPt("zmmLepNegPtCorrelations","",xlabel,ylabel);
-  plotZmumuLepNegPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
-  plotZmumuLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLepNegPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLepNegPt.SetLogx();
-  plotZmumuLepNegPt.SetLogy();
-  plotZmumuLepNegPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepNegPt("zmmLepNegPtCorrelations","",xlabel,ylabel);
+  plotZmmLepNegPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
+  plotZmmLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLepNegPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLepNegPt.SetLogx();
+  plotZmmLepNegPt.SetLogy();
+  plotZmmLepNegPt.Draw(c,kTRUE,format);
 
   //
   // LepPosPt
@@ -2130,15 +2130,15 @@ vector<TFile*> file;
 
   sprintf(ylabel,"p_{T}^{#mu^{+}} [GeV]");
   sprintf(xlabel,"p_{T}^{#mu^{+}} [GeV]");
-  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
+  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLepPosPt("zmmLepPosPtCorrelations","",xlabel,ylabel);
-  plotZmumuLepPosPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
-  plotZmumuLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLepPosPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLepPosPt.SetLogx();
-  plotZmumuLepPosPt.SetLogy();
-  plotZmumuLepPosPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepPosPt("zmmLepPosPtCorrelations","",xlabel,ylabel);
+  plotZmmLepPosPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
+  plotZmmLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLepPosPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLepPosPt.SetLogx();
+  plotZmmLepPosPt.SetLogy();
+  plotZmmLepPosPt.Draw(c,kTRUE,format);
 
   
   
