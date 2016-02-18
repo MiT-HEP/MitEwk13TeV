@@ -13,6 +13,7 @@
 #include <TGraphErrors.h>   
 #include <TGraphAsymmErrors.h>   
 #include <TColor.h>             // histogram class
+#include "TLatex.h"
 #include <vector>                         // STL vector class
 #include <iostream>                       // standard I/O
 #include <iomanip>                        // functions to format standard I/O
@@ -227,8 +228,9 @@ void plotZmm(const TString  outputDir,   // output directory
   TFile* fileFEWZ=new TFile("FEWZ_Histograms.root", "OPEN");
 
 
-  // plot output file format
-  const TString format("png");
+  // plot output file format, all=root+pdf+png
+  //const TString format("png");
+  const TString format("all");
 
    
   //--------------------------------------------------------------------------------------------------------------
@@ -1846,7 +1848,54 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   c->cd(2)->SetTickx(1);
   c->cd(2)->SetTicky(1); 
   TGaxis::SetMaxDigits(3);
+
+  // canvas for ratio, will be modified
+  vector<TCanvas*> cR; // SPLIT
+  cR.push_back(  MakeCanvas("c_0_ratio","c",800,800) );
+  cR.push_back(  MakeCanvas("c_1_ratio","c",800,400) );
+  cR.push_back(  MakeCanvas("c_2_ratio","c",800,600) );
+  cR.push_back(  MakeCanvas("c_3_ratio","c",800,800) );
+  cR.push_back(  MakeCanvas("c_4_ratio","c",800,1000) );
+  double topmargin=0.05;
+  double bottommargin=0.15;
+  double firstextra=0.05; // for CMS Preliminary, etc..
+
+  for(int n=2;n<=4 ;++n)
+  {
+        double base = (1.0 - 0.)*(1.-topmargin-bottommargin-firstextra)/n;
+
+  	cR[n]->Divide(1,n,0,0);
+  	cR[n]->Draw();
+  	for( int subpad=1; subpad<=n; ++subpad)
+  	{
+       	double ymin = bottommargin + (subpad-1)* base;
+       	double ymax = bottommargin + (subpad)* base;
+
+       	cR[n]->cd(subpad)->SetTopMargin(0);
+       	cR[n]->cd(subpad)->SetBottomMargin(0);
+  	cR[n]->cd(subpad)->SetLeftMargin(0.15);  
+  	cR[n]->cd(subpad)->SetRightMargin(0.07);  
+  	cR[n]->cd(subpad)->SetTickx(1);
+  	cR[n]->cd(subpad)->SetTicky(1);  
+       	if (subpad==1){
+       		ymin=0;
+       		cR[n]->cd(subpad)->SetBottomMargin(bottommargin/(bottommargin+base));
+       	}
+       	if (subpad==n){
+       		ymax=1;
+       		cR[n]->cd(subpad)->SetTopMargin(topmargin/(topmargin+base+firstextra));
+       	}
+
+	cout <<" subpad "<<subpad <<" : "<<ymin << " -- "<<ymax<<endl;
+       	cR[n]->cd(subpad)->SetPad(0,ymin,1,ymax);
+  		
+  	}
   
+  }
+  cR[0]->cd();
+
+
+
   //
   // ZPt
   //   
@@ -1903,6 +1952,93 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
 
   plotZmmPtDiff.Draw(c,kTRUE,format,2);
   
+  // ----
+  // AMCATNLO POWHEG MADG FEWZ
+  { // draw split
+    cout <<"DOING SPlit"<<endl;
+     TH1D *hZmmPtDiffDummySplit = (TH1D*) hZmmPtDiffDummy->Clone("hZmmPtDiffDummySplit");
+  	hZmmPtDiffDummySplit->GetYaxis()->SetTitleFont(43);
+  	hZmmPtDiffDummySplit->GetYaxis()->SetTitleSize(24);
+  	hZmmPtDiffDummySplit->GetYaxis()->SetTitleOffset(2);
+  	hZmmPtDiffDummySplit->GetYaxis()->SetLabelFont(43);
+  	hZmmPtDiffDummySplit->GetYaxis()->SetLabelSize(22);
+  	hZmmPtDiffDummySplit->GetYaxis()->SetNdivisions(408);
+  	hZmmPtDiffDummySplit->GetXaxis()->SetTickSize(.1);
+	int n=4;
+        double base = (1.0 - 0.)*(1.-topmargin-bottommargin-firstextra)/n;
+	double eps=0.01;
+ 
+     CPlot plotZmmPtDiffSplit_AMCATNLO("zmmPtSplit","","p_{T}^{#mu^{+}#mu^{-}} [GeV]","aMC@NLO");
+     plotZmmPtDiffSplit_AMCATNLO.AddHist1D( hZmmPtDiffDummySplit);
+     plotZmmPtDiffSplit_AMCATNLO.AddGraph(ZPT_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
+     plotZmmPtDiffSplit_AMCATNLO.AddGraph(ZPT_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+     plotZmmPtDiffSplit_AMCATNLO.AddGraph(ZPT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
+     plotZmmPtDiffSplit_AMCATNLO.AddGraph(ZPT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
+     plotZmmPtDiffSplit_AMCATNLO.SetLogx();
+     plotZmmPtDiffSplit_AMCATNLO.SetYRange(0.8+ eps,1.2 + (1.2-0.8) *(firstextra)/ base );
+     plotZmmPtDiffSplit_AMCATNLO.AddLine(0, 1,1000, 1,kBlack,1);
+     plotZmmPtDiffSplit_AMCATNLO.AddLine(0, 1.1,1000, 1.1,kBlack,3);
+     plotZmmPtDiffSplit_AMCATNLO.AddLine(0,0.9,1000,0.9,kBlack,3);
+
+  	hZmmPtDiffDummySplit->GetYaxis()->SetNdivisions(405);
+
+     CPlot plotZmmPtDiffSplit_MADGRAPH("zmmPtSplit","","p_{T}^{#mu^{+}#mu^{-}} [GeV]","MadGraph");
+     plotZmmPtDiffSplit_MADGRAPH.AddHist1D( hZmmPtDiffDummySplit);
+     plotZmmPtDiffSplit_MADGRAPH.AddGraph(ZPT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
+     plotZmmPtDiffSplit_MADGRAPH.AddGraph(ZPT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
+     plotZmmPtDiffSplit_MADGRAPH.AddGraph(ZPT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
+     plotZmmPtDiffSplit_MADGRAPH.SetLogx();
+     plotZmmPtDiffSplit_MADGRAPH.SetYRange(0.80+eps,1.20-eps);
+     plotZmmPtDiffSplit_MADGRAPH.AddLine(0, 1,1000, 1,kBlack,1);
+     plotZmmPtDiffSplit_MADGRAPH.AddLine(0, 1.1,1000, 1.1,kBlack,3);
+     plotZmmPtDiffSplit_MADGRAPH.AddLine(0,0.9,1000,0.9,kBlack,3);
+
+     CPlot plotZmmPtDiffSplit_POWHEG("zmmPtSplit","","p_{T}^{#mu^{+}#mu^{-}} [GeV]","POWHEG");
+     plotZmmPtDiffSplit_POWHEG.AddHist1D( hZmmPtDiffDummySplit);
+     plotZmmPtDiffSplit_POWHEG.AddGraph(ZPT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
+     plotZmmPtDiffSplit_POWHEG.AddGraph(ZPT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
+     plotZmmPtDiffSplit_POWHEG.AddGraph(ZPT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
+     plotZmmPtDiffSplit_POWHEG.SetLogx();
+     plotZmmPtDiffSplit_POWHEG.SetYRange(0.80+eps,1.20-eps);
+     plotZmmPtDiffSplit_POWHEG.AddLine(0, 1,1000, 1,kBlack,1);
+     plotZmmPtDiffSplit_POWHEG.AddLine(0, 1.1,1000, 1.1,kBlack,3);
+     plotZmmPtDiffSplit_POWHEG.AddLine(0,0.9,1000,0.9,kBlack,3);
+
+     CPlot plotZmmPtDiffSplit_FEWZ("zmmPtSplit","","p_{T}^{#mu^{+}#mu^{-}} [GeV]","FEWZ");
+     plotZmmPtDiffSplit_FEWZ.AddHist1D(hZmmPtDiffDummySplit);
+     plotZmmPtDiffSplit_FEWZ.AddGraph(ZPT_RATIO_STAT_UNCERT_BAND_DATA_FEWZ_COMP,"0P",kBlue,24,1);
+     plotZmmPtDiffSplit_FEWZ.AddGraph(ZPT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
+     plotZmmPtDiffSplit_FEWZ.AddGraph(ZPT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
+     plotZmmPtDiffSplit_FEWZ.SetLogx();
+     plotZmmPtDiffSplit_FEWZ.SetYRange(0.80,1.20-eps);
+     plotZmmPtDiffSplit_FEWZ.AddLine(0, 1,1000, 1,kBlack,1);
+     plotZmmPtDiffSplit_FEWZ.AddLine(0, 1.1,1000, 1.1,kBlack,3);
+     plotZmmPtDiffSplit_FEWZ.AddLine(0,0.9,1000,0.9,kBlack,3);
+
+     plotZmmPtDiffSplit_FEWZ.Draw(cR[4],kFALSE,format,1);
+     plotZmmPtDiffSplit_POWHEG.Draw(cR[4],kFALSE,format,2);
+     plotZmmPtDiffSplit_MADGRAPH.Draw(cR[4],kFALSE,format,3);
+     plotZmmPtDiffSplit_AMCATNLO.Draw(cR[4],kFALSE,format,4);
+
+     cR[4]->cd();
+     TLatex *l=new TLatex();
+     l->SetNDC();
+     l->SetTextFont(43);
+     l->SetTextSize(30);
+     l->SetTextAlign(13);
+     l->DrawLatex(.20,1.-topmargin - 0.01,"#bf{CMS} #scale[0.75]{#it{Preliminary}}");
+     l->SetTextSize(24);
+     l->SetTextAlign(31);
+     l->DrawLatex(.92,1.-topmargin+0.01,lumitext);
+
+     cR[4]->SaveAs( (outputDir + "/zmmPtSplit.pdf" ).Data() );
+     cR[4]->SaveAs( (outputDir + "/zmmPtSplit.png" ).Data() );
+     cR[4]->SaveAs( (outputDir + "/zmmPtSplit.root").Data() );
+
+  }
+  // ---
+
+  cout <<" -- Preparing 2nd "<<endl; // DEBUG LINE
   CPlot plotZmmPt2("zmmPtlog","","",ylabel);
   plotZmmPt2.AddHist1D(ZPT_HIST_DUMMY);
   plotZmmPt2.AddGraph(ZPT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
@@ -1940,6 +2076,8 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   PHISTAR_STAT_SYS_UNCERT_BAND_DATA_COMP->SetFillStyle(3554);
   PHISTAR_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP->SetFillColor(kRed-10);
   PHISTAR_RATIO_STAT_SYS_UNCERT_BAND_DATA_FEWZ_COMP->SetFillColor(kBlue-10);
+
+
   CPlot plotZmmPhiStar("zmmPhiStar","","",ylabel);
   plotZmmPhiStar.AddHist1D(PHISTAR_HIST_DUMMY);
   plotZmmPhiStar.AddGraph(PHISTAR_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
@@ -1979,6 +2117,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmPhiStarDiff.AddLine(0,0.9,3,0.9,kBlack,3);
 
   plotZmmPhiStarDiff.Draw(c,kTRUE,format,2);
+  //plotZmmPhiStarDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmPhiStar2("zmmPhiStarlog","","",ylabel);
   plotZmmPhiStar2.AddHist1D(PHISTAR_HIST_DUMMY);
@@ -2056,6 +2195,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmRapDiff.AddLine(0,0.9,2.4,0.9,kBlack,3);
 
   plotZmmRapDiff.Draw(c,kTRUE,format,2);
+  //plotZmmRapDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmRap2("zmmRaplog","","",ylabel);
   plotZmmRap2.AddHist1D(ZRAP_HIST_DUMMY);
@@ -2127,6 +2267,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1PtDiff.AddLine(0,0.9,300,0.9,kBlack,3);
 
   plotZmmLep1PtDiff.Draw(c,kTRUE,format,2);
+  //plotZmumuLep1PtDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmLep1Pt2("zmmLep1Ptlog","","",ylabel);
   plotZmmLep1Pt2.AddHist1D(LEP1PT_HIST_DUMMY);
@@ -2196,6 +2337,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2PtDiff.AddLine(0,0.9,200,0.9,kBlack,3);
 
   plotZmmLep2PtDiff.Draw(c,kTRUE,format,2);
+  //plotZmmLep2PtDiff.DrawSplit(cR,kTRUE,"all");
   
   CPlot plotZmmLep2Pt2("zmmLep2Ptlog","","",ylabel);
   plotZmmLep2Pt2.AddHist1D(LEP2PT_HIST_DUMMY);
@@ -2265,6 +2407,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1EtaDiff.AddLine(0,0.9,2.4,0.9,kBlack,3);
 
   plotZmmLep1EtaDiff.Draw(c,kTRUE,format,2);
+  //plotZmumuLep1EtaDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmLep1Eta2("zmmLep1Etalog","","",ylabel);
   plotZmmLep1Eta2.AddHist1D(LEP1ETA_HIST_DUMMY);
@@ -2334,6 +2477,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2EtaDiff.AddLine(0,0.9,2.4,0.9,kBlack,3);
 
   plotZmmLep2EtaDiff.Draw(c,kTRUE,format,2);
+  //plotZmmLep2EtaDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmLep2Eta2("zmmLep2Etalog","","",ylabel);
   plotZmmLep2Eta2.AddHist1D(LEP2ETA_HIST_DUMMY);
@@ -2409,6 +2553,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepNegPtDiff.AddLine(0,0.9,300,0.9,kBlack,3);
 
   plotZmmLepNegPtDiff.Draw(c,kTRUE,format,2);
+  //plotZmmLepNegPtDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmLepNegPt2("zmmLepNegPtlog","","",ylabel);
   plotZmmLepNegPt2.AddHist1D(LEPNEGPT_HIST_DUMMY);
@@ -2486,6 +2631,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepPosPtDiff.AddLine(0,0.9,300,0.9,kBlack,3);
 
   plotZmmLepPosPtDiff.Draw(c,kTRUE,format,2);
+  //plotZmmLepPosPtDiff.DrawSplit(cR,kTRUE,format);
   
   CPlot plotZmmLepPosPt2("zmmLepPosPtlog","","",ylabel);
   plotZmmLepPosPt2.AddHist1D(LEPPOSPT_HIST_DUMMY);
