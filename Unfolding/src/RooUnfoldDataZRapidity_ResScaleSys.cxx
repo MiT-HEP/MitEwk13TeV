@@ -91,7 +91,7 @@ TH2D* hCov_ResScale;
 Int_t TrainNominal ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs.root");
+  TFile *file1 = new TFile("../UnfoldingInput/Zmm/zmm_UnfoldInputs.root");
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth_Nominal = (TH1D*)file1->Get("hZRapTruth");
   hReco_Nominal = (TH1D*)file1->Get("hZRapReco");
@@ -119,7 +119,7 @@ Int_t TrainNominal ()
 Int_t Train ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1= new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs_ResScale.root");
+  TFile *file1= new TFile("../UnfoldingInput/Zmm/zmm_UnfoldInputs_ResScale.root");
 
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   for(int i=0;i!=100;++i)
@@ -156,7 +156,7 @@ Int_t Train ()
 Int_t TestNominal ()
 {
  cout <<"==================== TEST ===================="<<endl;
- TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg.root");
  
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData_Nominal = (TH1D*)f->Get("hDataZRap");
@@ -176,7 +176,7 @@ Int_t TestNominal ()
 Int_t Test ()
 {
   cout <<"==================== TEST ===================="<<endl;
-  TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg_ResScale.root");
+  TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg_ResScale.root");
   
   if (f == NULL) cout<<"file does not exists"<<endl;
   for(int i=0;i!=100;++i)

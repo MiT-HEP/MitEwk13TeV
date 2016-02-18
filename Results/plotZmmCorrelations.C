@@ -53,169 +53,169 @@ void plotZmmCorrelations(const TString  outputDir,   // output directory
   // input ntuple file names
   //
 vector<TFile*> file;
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStar.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRap.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1Pt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2Pt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1Eta.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2Eta.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStar.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRap.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1Pt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2Pt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1Eta.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2Eta.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPt.root", "OPEN"));
 
   vector<TFile*> fileLumiUp;
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtLumiUp.root", "OPEN"));
-  fileLumiUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtLumiUp.root", "OPEN"));
+  fileLumiUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtLumiUp.root", "OPEN"));
 
   vector<TFile*> fileLumiDown;
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtLumiDown.root", "OPEN"));
-  fileLumiDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtLumiDown.root", "OPEN"));
+  fileLumiDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtLumiDown.root", "OPEN"));
 
   vector<TFile*> fileEWKBkgUp;
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEWKBkgUp.root", "OPEN"));
-  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEWKBkgUp.root", "OPEN"));
+  fileEWKBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEWKBkgUp.root", "OPEN"));
 
   vector<TFile*> fileEWKBkgDown;
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEWKBkgDown.root", "OPEN"));
-  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEWKBkgDown.root", "OPEN"));
+  fileEWKBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEWKBkgDown.root", "OPEN"));
 
   vector<TFile*> fileTopBkgUp;
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtTopBkgUp.root", "OPEN"));
-  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtTopBkgUp.root", "OPEN"));
+  fileTopBkgUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtTopBkgUp.root", "OPEN"));
 
   vector<TFile*> fileTopBkgDown;
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtTopBkgDown.root", "OPEN"));
-  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtTopBkgDown.root", "OPEN"));
+  fileTopBkgDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtTopBkgDown.root", "OPEN"));
 
   vector<TFile*> fileEffBinSys;
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEffBin.root", "OPEN"));
-  fileEffBinSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEffBin.root", "OPEN"));
+  fileEffBinSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEffBin.root", "OPEN"));
 
   vector<TFile*> fileEffStatUp;
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEffStatUp.root", "OPEN"));
-  fileEffStatUp.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEffStatUp.root", "OPEN"));
+  fileEffStatUp.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEffStatUp.root", "OPEN"));
 
   vector<TFile*> fileEffStatDown;
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEffStatDown.root", "OPEN"));
-  fileEffStatDown.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEffStatDown.root", "OPEN"));
+  fileEffStatDown.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEffStatDown.root", "OPEN"));
 
   vector<TFile*> fileEffSigShapeSys;
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEffSigShape.root", "OPEN"));
-  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEffSigShape.root", "OPEN"));
+  fileEffSigShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEffSigShape.root", "OPEN"));
 
   vector<TFile*> fileEffBkgShapeSys;
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtEffBkgShape.root", "OPEN"));
-  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtEffBkgShape.root", "OPEN"));
+  fileEffBkgShapeSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtEffBkgShape.root", "OPEN"));
 
   vector<TFile*> fileResScaleSys;
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtResScale.root", "OPEN"));
-  fileResScaleSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtResScale.root", "OPEN"));
+  fileResScaleSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtResScale.root", "OPEN"));
 
   vector<TFile*> fileUnfoldModelSys;
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtUnfoldModel_Smoothed.root", "OPEN"));
-  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtUnfoldModel_Smoothed.root", "OPEN"));
+  fileUnfoldModelSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtUnfoldModel_Smoothed.root", "OPEN"));
 
   vector<TFile*> fileUnfoldMatrixSys;
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPtUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStarUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRapUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1PtUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2PtUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1EtaUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2EtaUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPtUnfoldMatrix.root", "OPEN"));
-  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStarUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRapUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1PtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2PtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1EtaUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2EtaUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPtUnfoldMatrix.root", "OPEN"));
+  fileUnfoldMatrixSys.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPtUnfoldMatrix.root", "OPEN"));
 
   
   // plot output file format
@@ -463,7 +463,7 @@ vector<TFile*> file;
 	  cov_ZPt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_ZPt[i][j]+=uncert_ZPt[k][i]*uncert_ZPt[k][j];
+	       if(k!=3) cov_ZPt[i][j]+=uncert_ZPt[k][i]*uncert_ZPt[k][j];
 	    }
 	  ZPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_ZPt[i][j]);
 	  ZPT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -648,7 +648,7 @@ vector<TFile*> file;
 	  cov_PhiStar[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_PhiStar[i][j]+=uncert_PhiStar[k][i]*uncert_PhiStar[k][j];
+	      if(k!=3) cov_PhiStar[i][j]+=uncert_PhiStar[k][i]*uncert_PhiStar[k][j];
 	    }
 	  PHISTAR_COV_MATRIX->SetBinContent(i+1,j+1,cov_PhiStar[i][j]);
 	  PHISTAR_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -837,7 +837,7 @@ vector<TFile*> file;
 	  cov_ZRap[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_ZRap[i][j]+=uncert_ZRap[k][i]*uncert_ZRap[k][j];
+	      if(k!=3) cov_ZRap[i][j]+=uncert_ZRap[k][i]*uncert_ZRap[k][j];
 	    }
 	  ZRAP_COV_MATRIX->SetBinContent(i+1,j+1,cov_ZRap[i][j]);
 	  ZRAP_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1024,7 +1024,7 @@ vector<TFile*> file;
 	  cov_Lep1Pt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep1Pt[i][j]+=uncert_Lep1Pt[k][i]*uncert_Lep1Pt[k][j];
+	      if(k!=3) cov_Lep1Pt[i][j]+=uncert_Lep1Pt[k][i]*uncert_Lep1Pt[k][j];
 	    }
 	  LEP1PT_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep1Pt[i][j]);
 	  LEP1PT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1210,7 +1210,7 @@ vector<TFile*> file;
 	  cov_Lep2Pt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep2Pt[i][j]+=uncert_Lep2Pt[k][i]*uncert_Lep2Pt[k][j];
+	      if(k!=3) cov_Lep2Pt[i][j]+=uncert_Lep2Pt[k][i]*uncert_Lep2Pt[k][j];
 	    }
 	  LEP2PT_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep2Pt[i][j]);
 	  LEP2PT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1396,7 +1396,7 @@ vector<TFile*> file;
 	  cov_Lep1Eta[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep1Eta[i][j]+=uncert_Lep1Eta[k][i]*uncert_Lep1Eta[k][j];
+	      if(k!=3) cov_Lep1Eta[i][j]+=uncert_Lep1Eta[k][i]*uncert_Lep1Eta[k][j];
 	    }
 	  LEP1ETA_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep1Eta[i][j]);
 	  LEP1ETA_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1582,7 +1582,7 @@ vector<TFile*> file;
 	  cov_Lep2Eta[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_Lep2Eta[i][j]+=uncert_Lep2Eta[k][i]*uncert_Lep2Eta[k][j];
+	      if(k!=3) cov_Lep2Eta[i][j]+=uncert_Lep2Eta[k][i]*uncert_Lep2Eta[k][j];
 	    }
 	  LEP2ETA_COV_MATRIX->SetBinContent(i+1,j+1,cov_Lep2Eta[i][j]);
 	  LEP2ETA_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1770,7 +1770,7 @@ vector<TFile*> file;
 	  cov_LepNegPt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_LepNegPt[i][j]+=uncert_LepNegPt[k][i]*uncert_LepNegPt[k][j];
+	      if(k!=3) cov_LepNegPt[i][j]+=uncert_LepNegPt[k][i]*uncert_LepNegPt[k][j];
 	    }
 	  LEPNEGPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_LepNegPt[i][j]);
 	  LEPNEGPT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -1956,7 +1956,7 @@ vector<TFile*> file;
 	  cov_LepPosPt[i][j]=0;
 	  for(int k=0;k!=7;++k)
 	    {
-	      cov_LepPosPt[i][j]+=uncert_LepPosPt[k][i]*uncert_LepPosPt[k][j];
+	      if(k!=3) cov_LepPosPt[i][j]+=uncert_LepPosPt[k][i]*uncert_LepPosPt[k][j];
 	    }
 	  LEPPOSPT_COV_MATRIX->SetBinContent(i+1,j+1,cov_LepPosPt[i][j]);
 	  LEPPOSPT_COV_MATRIX->SetBinError(i+1,j+1,0);
@@ -2009,14 +2009,14 @@ vector<TFile*> file;
   sprintf(ylabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   sprintf(xlabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   ZPT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  ZPT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuPt("zmmPtCorrelations","",xlabel,ylabel);
-  plotZmumuPt.AddHist2D(ZPT_CORR_MATRIX,"COLZ");
-  plotZmumuPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuPt.SetLogx();
-  plotZmumuPt.SetLogy();
-  plotZmumuPt.Draw(c,kTRUE,format);
+  ZPT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmPt("zmmPtCorrelations","",xlabel,ylabel);
+  plotZmmPt.AddHist2D(ZPT_CORR_MATRIX,"COLZ");
+  plotZmmPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmPt.SetLogx();
+  plotZmmPt.SetLogy();
+  plotZmmPt.Draw(c,kTRUE,format);
 
   //
   // PhiStar
@@ -2025,14 +2025,14 @@ vector<TFile*> file;
   sprintf(ylabel,"#phi_{#eta}*");
   sprintf(xlabel,"#phi_{#eta}*");
   PHISTAR_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  PHISTAR_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuPhiStar("zmmPhiStarCorrelations","",xlabel,ylabel);
-  plotZmumuPhiStar.AddHist2D(PHISTAR_CORR_MATRIX,"COLZ");
-  plotZmumuPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuPhiStar.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuPhiStar.SetLogx();
-  plotZmumuPhiStar.SetLogy();
-  plotZmumuPhiStar.Draw(c,kTRUE,format);
+  PHISTAR_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmPhiStar("zmmPhiStarCorrelations","",xlabel,ylabel);
+  plotZmmPhiStar.AddHist2D(PHISTAR_CORR_MATRIX,"COLZ");
+  plotZmmPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmPhiStar.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmPhiStar.SetLogx();
+  plotZmmPhiStar.SetLogy();
+  plotZmmPhiStar.Draw(c,kTRUE,format);
 
   //
   // ZRap
@@ -2041,12 +2041,12 @@ vector<TFile*> file;
   sprintf(ylabel,"|y^{#mu^{+}#mu^{-}}|");
   sprintf(xlabel,"|y^{#mu^{+}#mu^{-}}|");
   ZRAP_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  ZRAP_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuRap("zmmRapCorrelations","",xlabel,ylabel);
-  plotZmumuRap.AddHist2D(ZRAP_CORR_MATRIX,"COLZ");
-  plotZmumuRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuRap.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuRap.Draw(c,kTRUE,format);
+  ZRAP_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmRap("zmmRapCorrelations","",xlabel,ylabel);
+  plotZmmRap.AddHist2D(ZRAP_CORR_MATRIX,"COLZ");
+  plotZmmRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmRap.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmRap.Draw(c,kTRUE,format);
 
   //
   // Lep1Pt
@@ -2054,15 +2054,15 @@ vector<TFile*> file;
 
   sprintf(ylabel,"p_{T} (leading muon) [GeV]");
   sprintf(xlabel,"p_{T} (leading muon) [GeV]");
-  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
+  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLep1Pt("zmmLep1PtCorrelations","",xlabel,ylabel);
-  plotZmumuLep1Pt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
-  plotZmumuLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep1Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep1Pt.SetLogx();
-  plotZmumuLep1Pt.SetLogy();
-  plotZmumuLep1Pt.Draw(c,kTRUE,format);
+  CPlot plotZmmLep1Pt("zmmLep1PtCorrelations","",xlabel,ylabel);
+  plotZmmLep1Pt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
+  plotZmmLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep1Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep1Pt.SetLogx();
+  plotZmmLep1Pt.SetLogy();
+  plotZmmLep1Pt.Draw(c,kTRUE,format);
 
   //
   // Lep2Pt
@@ -2071,14 +2071,14 @@ vector<TFile*> file;
   sprintf(ylabel,"p_{T} (2nd leading muon) [GeV]");
   sprintf(xlabel,"p_{T} (2nd leading muon) [GeV]");
   LEP2PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  LEP2PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuLep2Pt("zmmLep2PtCorrelations","",xlabel,ylabel);
-  plotZmumuLep2Pt.AddHist2D(LEP2PT_CORR_MATRIX,"COLZ");
-  plotZmumuLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep2Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep2Pt.SetLogx();
-  plotZmumuLep2Pt.SetLogy();
-  plotZmumuLep2Pt.Draw(c,kTRUE,format);
+  LEP2PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmLep2Pt("zmmLep2PtCorrelations","",xlabel,ylabel);
+  plotZmmLep2Pt.AddHist2D(LEP2PT_CORR_MATRIX,"COLZ");
+  plotZmmLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep2Pt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep2Pt.SetLogx();
+  plotZmmLep2Pt.SetLogy();
+  plotZmmLep2Pt.Draw(c,kTRUE,format);
 
   //
   // Lep1Eta
@@ -2087,12 +2087,12 @@ vector<TFile*> file;
   sprintf(ylabel,"|#eta| (leading muon)");
   sprintf(xlabel,"|#eta| (leading muon)");
   LEP1ETA_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  LEP1ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuLep1Eta("zmmLep1EtaCorrelations","",xlabel,ylabel);
-  plotZmumuLep1Eta.AddHist2D(LEP1ETA_CORR_MATRIX,"COLZ");
-  plotZmumuLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep1Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep1Eta.Draw(c,kTRUE,format);
+  LEP1ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmLep1Eta("zmmLep1EtaCorrelations","",xlabel,ylabel);
+  plotZmmLep1Eta.AddHist2D(LEP1ETA_CORR_MATRIX,"COLZ");
+  plotZmmLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep1Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep1Eta.Draw(c,kTRUE,format);
 
   //
   // Lep2Eta
@@ -2101,12 +2101,12 @@ vector<TFile*> file;
   sprintf(ylabel,"|#eta| (2nd leading muon)");
   sprintf(xlabel,"|#eta| (2nd leading muon)");
   LEP2ETA_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  LEP2ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
-  CPlot plotZmumuLep2Eta("zmmLep2EtaCorrelations","",xlabel,ylabel);
-  plotZmumuLep2Eta.AddHist2D(LEP2ETA_CORR_MATRIX,"COLZ");
-  plotZmumuLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep2Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLep2Eta.Draw(c,kTRUE,format);
+  LEP2ETA_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
+  CPlot plotZmmLep2Eta("zmmLep2EtaCorrelations","",xlabel,ylabel);
+  plotZmmLep2Eta.AddHist2D(LEP2ETA_CORR_MATRIX,"COLZ");
+  plotZmmLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep2Eta.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLep2Eta.Draw(c,kTRUE,format);
 
   //
   // LepNegPt
@@ -2114,15 +2114,15 @@ vector<TFile*> file;
 
   sprintf(ylabel,"p_{T}^{#mu^{-}} [GeV]");
   sprintf(xlabel,"p_{T}^{#mu^{-}} [GeV]");
-  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
+  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLepNegPt("zmmLepNegPtCorrelations","",xlabel,ylabel);
-  plotZmumuLepNegPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
-  plotZmumuLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLepNegPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLepNegPt.SetLogx();
-  plotZmumuLepNegPt.SetLogy();
-  plotZmumuLepNegPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepNegPt("zmmLepNegPtCorrelations","",xlabel,ylabel);
+  plotZmmLepNegPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
+  plotZmmLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLepNegPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLepNegPt.SetLogx();
+  plotZmmLepNegPt.SetLogy();
+  plotZmmLepNegPt.Draw(c,kTRUE,format);
 
   //
   // LepPosPt
@@ -2130,15 +2130,15 @@ vector<TFile*> file;
 
   sprintf(ylabel,"p_{T}^{#mu^{+}} [GeV]");
   sprintf(xlabel,"p_{T}^{#mu^{+}} [GeV]");
-  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-0.5,1);
+  LEP1PT_CORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_CORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLepPosPt("zmmLepPosPtCorrelations","",xlabel,ylabel);
-  plotZmumuLepPosPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
-  plotZmumuLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLepPosPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
-  plotZmumuLepPosPt.SetLogx();
-  plotZmumuLepPosPt.SetLogy();
-  plotZmumuLepPosPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepPosPt("zmmLepPosPtCorrelations","",xlabel,ylabel);
+  plotZmmLepPosPt.AddHist2D(LEP1PT_CORR_MATRIX,"COLZ");
+  plotZmmLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLepPosPt.AddTextBox("Correlation Matrix",0.63,0.90,0.86,0.95,0);
+  plotZmmLepPosPt.SetLogx();
+  plotZmmLepPosPt.SetLogy();
+  plotZmmLepPosPt.Draw(c,kTRUE,format);
 
   
   

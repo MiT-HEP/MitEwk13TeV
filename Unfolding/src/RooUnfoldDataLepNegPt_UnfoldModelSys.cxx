@@ -63,7 +63,7 @@ TGraphAsymmErrors *gUnfold;
 Int_t TrainNominal ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs.root");
+  TFile *file1 = new TFile("../UnfoldingInput/Zmm/zmm_UnfoldInputs.root");
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth_Nominal = (TH1D*)file1->Get("hLepNegPtTruth");
   hReco_Nominal = (TH1D*)file1->Get("hLepNegPtReco");
@@ -91,7 +91,7 @@ Int_t TrainNominal ()
 Int_t Train ()
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmmph_UnfoldInputs.root");
+  TFile *file1 = new TFile("../UnfoldingInput/Zmm/zmmph_UnfoldInputs.root");
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth = (TH1D*)file1->Get("hLepNegPtTruth");
   hReco = (TH1D*)file1->Get("hLepNegPtReco");
@@ -123,7 +123,7 @@ Int_t Train ()
 Int_t TestNominal ()
 {
  cout <<"==================== TEST ===================="<<endl;
- TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg.root");
  
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData_Nominal = (TH1D*)f->Get("hDataLepNegPt");
@@ -143,7 +143,7 @@ Int_t TestNominal ()
 Int_t Test ()
 {
  cout <<"==================== TEST ===================="<<endl;
- TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg.root");
  
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData = (TH1D*)f->Get("hDataLepNegPt");

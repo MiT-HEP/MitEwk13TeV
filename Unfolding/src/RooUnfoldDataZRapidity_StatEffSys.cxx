@@ -61,7 +61,7 @@ TGraphAsymmErrors *gUnfold;
 Int_t Train (const Int_t uncert)
 {
   cout <<"================ TRAIN ======================="<<endl;
-  TFile *file1 = new TFile("../UnfoldingInput/Zmumu/zmm_UnfoldInputs.root");
+  TFile *file1 = new TFile("../UnfoldingInput/Zmm/zmm_UnfoldInputs.root");
   if (file1 == NULL) cout <<"File does not exists"<<endl;
   hTruth = (TH1D*)file1->Get("hZRapTruth");
   if(uncert==1)
@@ -101,7 +101,7 @@ Int_t Train (const Int_t uncert)
 Int_t Test (const Int_t uncert)
 {
  cout <<"==================== TEST ===================="<<endl;
- TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg.root");
  
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData = (TH1D*)f->Get("hDataZRap");
