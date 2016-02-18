@@ -44,14 +44,15 @@
 
 
 // load pileup reweighting file
-TFile *f_rw = TFile::Open("../Tools/pileup_weights_2015B.root", "read");
-TH1D *h_rw = (TH1D*) f_rw->Get("npv_rw");
+TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
+TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
 
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelWe(const TString conf,       // input file
                      const TString outputDir,  // output directory
-		     const Int_t   charge      // 0 = inclusive, +1 = W+, -1 = W-
+		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
+		     const Int_t   doPU
 ) {
   gBenchmark->Start("computeAccSelWe");
 
@@ -71,21 +72,21 @@ void computeAccSelWe(const TString conf,       // input file
   const Int_t LEPTON_ID = 11;
  
   // efficiency files
-  TString dataHLTEffName(   "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root");
-  TString zeeHLTEffName(    "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root");
-  TString dataGsfSelEffName("/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root");
-  TString zeeGsfSelEffName( "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root");
+  TString dataHLTEffName(   "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root");
+  TString zeeHLTEffName(    "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root");
+  TString dataGsfSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root");
+  TString zeeGsfSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
-    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root"; 
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root"; 
   }
   if(charge==-1) {
-    dataHLTEffName    = "/data/blue/cmedlock/wz-efficiency-results/DataZee_EleHLTEff/eff.root";
-    zeeHLTEffName     = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleHLTEff/eff.root";
-    dataGsfSelEffName = "/data/blue/xniu/WZXSection/CorrectEle/EleGsfSelEff/MStep1Output/MG/eff.root";
-    zeeGsfSelEffName  = "/data/blue/cmedlock/wz-efficiency-results/Zee_EleGsfSelEff/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
   }
  
   //--------------------------------------------------------------------------------------------------------------
@@ -253,8 +254,9 @@ void computeAccSelWe(const TString conf,       // input file
       vertexArr->Clear();
       vertexBr->GetEntry(ientry);
       double npv  = vertexArr->GetEntries();
-      Double_t weight=gen->weight/225892.;
-      weight*=h_rw->GetBinContent(npv+1);
+      Double_t weight=gen->weight;
+      if(doPU>0) weight*=h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+
       nEvtsv[ifile]+=weight;
       
       // trigger requirement                

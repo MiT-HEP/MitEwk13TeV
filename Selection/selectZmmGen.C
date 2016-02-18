@@ -66,7 +66,7 @@ void selectZmmGen(const TString conf="zmmgen.conf", // input file
 
   // load pileup reweighting file  
 
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read"); 
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read"); 
   
   // for systematics we need 3
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");

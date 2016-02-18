@@ -235,6 +235,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
 
       // Format axes
       TH1D* hDummyEff = new TH1D("hDummyEff","",10,etalow,etahigh);
+      hDummyEff->SetStats(0);
       hDummyEff->GetXaxis()->SetLabelSize(0);
       hDummyEff->GetXaxis()->SetLabelOffset(0.005);
       hDummyEff->GetXaxis()->SetTitleSize(0.05);
@@ -251,7 +252,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
       hDummyEff->GetYaxis()->SetRangeUser(efflow,effhigh);
 
       TH1D* hDummyScale = new TH1D("hDummyScale","",10,etalow,etahigh);
-
+      hDummyScale->SetStats(0);
       hDummyScale->GetXaxis()->SetLabelSize(0.05*(0.69444/0.30556));
       hDummyScale->GetXaxis()->SetLabelOffset(0.005/0.30556);
       hDummyScale->GetXaxis()->SetTitleSize(0.05*(0.69444/0.30556));
