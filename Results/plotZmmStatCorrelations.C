@@ -53,15 +53,15 @@ void plotZmmStatCorrelations(const TString  outputDir,   // output directory
   // input ntuple file names
   //
 vector<TFile*> file;
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZPt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputPhiStar.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputZRap.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1Pt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2Pt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep1Eta.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLep2Eta.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepNegPt.root", "OPEN"));
-  file.push_back(new TFile("../Unfolding/Zmumu/UnfoldingOutputLepPosPt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZPt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputPhiStar.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputZRap.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1Pt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2Pt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep1Eta.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLep2Eta.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepNegPt.root", "OPEN"));
+  file.push_back(new TFile("../Unfolding/Zmm/UnfoldingOutputLepPosPt.root", "OPEN"));
 
   
   // plot output file format
@@ -134,13 +134,13 @@ vector<TFile*> file;
   sprintf(xlabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   ZPT_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
   ZPT_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
-  CPlot plotZmumuPt("zmmPtStatCorrelations","",xlabel,ylabel);
-  plotZmumuPt.AddHist2D(ZPT_STATCORR_MATRIX,"COLZ");
-  plotZmumuPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuPt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuPt.SetLogx();
-  plotZmumuPt.SetLogy();
-  plotZmumuPt.Draw(c,kTRUE,format);
+  CPlot plotZmmPt("zmmPtStatCorrelations","",xlabel,ylabel);
+  plotZmmPt.AddHist2D(ZPT_STATCORR_MATRIX,"COLZ");
+  plotZmmPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmPt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmPt.SetLogx();
+  plotZmmPt.SetLogy();
+  plotZmmPt.Draw(c,kTRUE,format);
 
   //
   // PhiStar
@@ -150,13 +150,13 @@ vector<TFile*> file;
   sprintf(xlabel,"#phi_{#eta}*");
   PHISTAR_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
   PHISTAR_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
-  CPlot plotZmumuPhiStar("zmmPhiStarStatCorrelations","",xlabel,ylabel);
-  plotZmumuPhiStar.AddHist2D(PHISTAR_STATCORR_MATRIX,"COLZ");
-  plotZmumuPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuPhiStar.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuPhiStar.SetLogx();
-  plotZmumuPhiStar.SetLogy();
-  plotZmumuPhiStar.Draw(c,kTRUE,format);
+  CPlot plotZmmPhiStar("zmmPhiStarStatCorrelations","",xlabel,ylabel);
+  plotZmmPhiStar.AddHist2D(PHISTAR_STATCORR_MATRIX,"COLZ");
+  plotZmmPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmPhiStar.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmPhiStar.SetLogx();
+  plotZmmPhiStar.SetLogy();
+  plotZmmPhiStar.Draw(c,kTRUE,format);
 
   //
   // ZRap
@@ -166,11 +166,11 @@ vector<TFile*> file;
   sprintf(xlabel,"|y^{#mu^{+}#mu^{-}}|");
   ZRAP_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
   ZRAP_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
-  CPlot plotZmumuRap("zmmRapStatCorrelations","",xlabel,ylabel);
-  plotZmumuRap.AddHist2D(ZRAP_STATCORR_MATRIX,"COLZ");
-  plotZmumuRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuRap.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuRap.Draw(c,kTRUE,format);
+  CPlot plotZmmRap("zmmRapStatCorrelations","",xlabel,ylabel);
+  plotZmmRap.AddHist2D(ZRAP_STATCORR_MATRIX,"COLZ");
+  plotZmmRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmRap.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmRap.Draw(c,kTRUE,format);
 
   //
   // Lep1Pt
@@ -180,13 +180,13 @@ vector<TFile*> file;
   sprintf(xlabel,"p_{T} (leading muon) [GeV]");
   LEP1PT_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLep1Pt("zmmLep1PtStatCorrelations","",xlabel,ylabel);
-  plotZmumuLep1Pt.AddHist2D(LEP1PT_STATCORR_MATRIX,"COLZ");
-  plotZmumuLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep1Pt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuLep1Pt.SetLogx();
-  plotZmumuLep1Pt.SetLogy();
-  plotZmumuLep1Pt.Draw(c,kTRUE,format);
+  CPlot plotZmmLep1Pt("zmmLep1PtStatCorrelations","",xlabel,ylabel);
+  plotZmmLep1Pt.AddHist2D(LEP1PT_STATCORR_MATRIX,"COLZ");
+  plotZmmLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep1Pt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmLep1Pt.SetLogx();
+  plotZmmLep1Pt.SetLogy();
+  plotZmmLep1Pt.Draw(c,kTRUE,format);
 
   //
   // Lep2Pt
@@ -196,13 +196,13 @@ vector<TFile*> file;
   sprintf(xlabel,"p_{T} (2nd leading muon) [GeV]");
   LEP2PT_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
   LEP2PT_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
-  CPlot plotZmumuLep2Pt("zmmLep2PtStatCorrelations","",xlabel,ylabel);
-  plotZmumuLep2Pt.AddHist2D(LEP2PT_STATCORR_MATRIX,"COLZ");
-  plotZmumuLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep2Pt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuLep2Pt.SetLogx();
-  plotZmumuLep2Pt.SetLogy();
-  plotZmumuLep2Pt.Draw(c,kTRUE,format);
+  CPlot plotZmmLep2Pt("zmmLep2PtStatCorrelations","",xlabel,ylabel);
+  plotZmmLep2Pt.AddHist2D(LEP2PT_STATCORR_MATRIX,"COLZ");
+  plotZmmLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep2Pt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmLep2Pt.SetLogx();
+  plotZmmLep2Pt.SetLogy();
+  plotZmmLep2Pt.Draw(c,kTRUE,format);
 
   //
   // Lep1Eta
@@ -212,11 +212,11 @@ vector<TFile*> file;
   sprintf(xlabel,"|#eta| (leading muon)");
   LEP1ETA_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
   LEP1ETA_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
-  CPlot plotZmumuLep1Eta("zmmLep1EtaStatCorrelations","",xlabel,ylabel);
-  plotZmumuLep1Eta.AddHist2D(LEP1ETA_STATCORR_MATRIX,"COLZ");
-  plotZmumuLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep1Eta.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuLep1Eta.Draw(c,kTRUE,format);
+  CPlot plotZmmLep1Eta("zmmLep1EtaStatCorrelations","",xlabel,ylabel);
+  plotZmmLep1Eta.AddHist2D(LEP1ETA_STATCORR_MATRIX,"COLZ");
+  plotZmmLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep1Eta.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmLep1Eta.Draw(c,kTRUE,format);
 
   //
   // Lep2Eta
@@ -226,11 +226,11 @@ vector<TFile*> file;
   sprintf(xlabel,"|#eta| (2nd leading muon)");
   LEP2ETA_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
   LEP2ETA_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
-  CPlot plotZmumuLep2Eta("zmmLep2EtaStatCorrelations","",xlabel,ylabel);
-  plotZmumuLep2Eta.AddHist2D(LEP2ETA_STATCORR_MATRIX,"COLZ");
-  plotZmumuLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLep2Eta.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuLep2Eta.Draw(c,kTRUE,format);
+  CPlot plotZmmLep2Eta("zmmLep2EtaStatCorrelations","",xlabel,ylabel);
+  plotZmmLep2Eta.AddHist2D(LEP2ETA_STATCORR_MATRIX,"COLZ");
+  plotZmmLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLep2Eta.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmLep2Eta.Draw(c,kTRUE,format);
 
   //
   // LepNegPt
@@ -240,13 +240,13 @@ vector<TFile*> file;
   sprintf(xlabel,"p_{T}^{#mu^{-}} [GeV]");
   LEP1PT_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLepNegPt("zmmLepNegPtStatCorrelations","",xlabel,ylabel);
-  plotZmumuLepNegPt.AddHist2D(LEP1PT_STATCORR_MATRIX,"COLZ");
-  plotZmumuLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLepNegPt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuLepNegPt.SetLogx();
-  plotZmumuLepNegPt.SetLogy();
-  plotZmumuLepNegPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepNegPt("zmmLepNegPtStatCorrelations","",xlabel,ylabel);
+  plotZmmLepNegPt.AddHist2D(LEP1PT_STATCORR_MATRIX,"COLZ");
+  plotZmmLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLepNegPt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmLepNegPt.SetLogx();
+  plotZmmLepNegPt.SetLogy();
+  plotZmmLepNegPt.Draw(c,kTRUE,format);
 
   //
   // LepPosPt
@@ -256,13 +256,13 @@ vector<TFile*> file;
   sprintf(xlabel,"p_{T}^{#mu^{+}} [GeV]");
   LEP1PT_STATCORR_MATRIX->GetZaxis()->SetRangeUser(-1,1);
   LEP1PT_STATCORR_MATRIX->GetYaxis()->SetTitleOffset(1.25);
-  CPlot plotZmumuLepPosPt("zmmLepPosPtStatCorrelations","",xlabel,ylabel);
-  plotZmumuLepPosPt.AddHist2D(LEP1PT_STATCORR_MATRIX,"COLZ");
-  plotZmumuLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
-  plotZmumuLepPosPt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
-  plotZmumuLepPosPt.SetLogx();
-  plotZmumuLepPosPt.SetLogy();
-  plotZmumuLepPosPt.Draw(c,kTRUE,format);
+  CPlot plotZmmLepPosPt("zmmLepPosPtStatCorrelations","",xlabel,ylabel);
+  plotZmmLepPosPt.AddHist2D(LEP1PT_STATCORR_MATRIX,"COLZ");
+  plotZmmLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.15,0.90,0.4,0.95,0);
+  plotZmmLepPosPt.AddTextBox("Bayes Correlation Matrix",0.53,0.90,0.86,0.95,0);
+  plotZmmLepPosPt.SetLogx();
+  plotZmmLepPosPt.SetLogy();
+  plotZmmLepPosPt.Draw(c,kTRUE,format);
 
   
   

@@ -1,8 +1,8 @@
 #! /bin/bash
 
-LUMI=2215
+LUMI=2263
 
-root -l -q  plotZmm.C+\(\"Zmumu\",${LUMI}\)
-root -l -q  plotZmmSystematics.C+\(\"Zmumu\",${LUMI}\)
-root -l -q  plotZmmCorrelations.C+\(\"Zmumu\",${LUMI}\)
-root -l -q  plotZmmStatCorrelations.C+\(\"Zmumu\",${LUMI}\)
+root -l -q  plotZmm.C+\(\"Zmm\",${LUMI}\)
+root -l -q  plotZmmSystematics.C+\(\"Zmm\",${LUMI}\)
+root -l -q  plotZmmCorrelations.C+\(\"Zmm\",${LUMI}\)
+root -l -q  plotZmmStatCorrelations.C+\(\"Zmm\",${LUMI}\)

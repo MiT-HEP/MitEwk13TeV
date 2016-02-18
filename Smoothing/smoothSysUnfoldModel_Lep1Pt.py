@@ -142,9 +142,9 @@ def createInclusiveAndRatio(file, directory):
 
 
 
-fileIn = ROOT.TFile.Open("../Unfolding/Zmumu/UnfoldingOutputLep1PtUnfoldModel.root")
+fileIn = ROOT.TFile.Open("../Unfolding/Zmm/UnfoldingOutputLep1PtUnfoldModel.root")
 fileOutCtrl = ROOT.TFile.Open("smoothingControlPlots_Lep1PtUnfoldModel.root", "RECREATE")
-fileOut = ROOT.TFile.Open("../Unfolding/Zmumu/UnfoldingOutputLep1PtUnfoldModel_Smoothed.root", "RECREATE")
+fileOut = ROOT.TFile.Open("../Unfolding/Zmm/UnfoldingOutputLep1PtUnfoldModel_Smoothed.root", "RECREATE")
 
 
 sysNames = ["UNFOLDMODEL"]
