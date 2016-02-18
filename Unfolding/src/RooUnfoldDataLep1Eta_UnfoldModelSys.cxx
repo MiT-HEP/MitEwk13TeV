@@ -123,7 +123,7 @@ Int_t Train ()
 Int_t TestNominal ()
 {
  cout <<"==================== TEST ===================="<<endl;
- TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg.root");
  
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData_Nominal = (TH1D*)f->Get("hDataLep1Eta");
@@ -143,7 +143,7 @@ Int_t TestNominal ()
 Int_t Test ()
 {
  cout <<"==================== TEST ===================="<<endl;
- TFile *f=new TFile("../SignalExtraction/Zmumu/Zmm_DataBkg.root");
+ TFile *f=new TFile("../SignalExtraction/Zmm/Zmm_DataBkg.root");
  
   if (f == NULL) cout<<"file does not exists"<<endl;
   hData = (TH1D*)f->Get("hDataLep1Eta");
