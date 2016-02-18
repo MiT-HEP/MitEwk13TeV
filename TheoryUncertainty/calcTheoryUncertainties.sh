@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #ntuple directory
-NTUPDIR=/afs/cern.ch/work/a/amarini/Bacon/Run2/wz_flat_76X_nominal
+NTUPDIR=/afs/cern.ch/user/a/amarini/work/Bacon/Run2/wz_flat_76X_newpu
 
 # integrated luminosity for data
 LUMI=2263
