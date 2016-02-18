@@ -603,10 +603,24 @@ void plotZmm(const TString  outputDir,   // output directory
 
 
   TH1D * hUnfoldZRap;
-  TH1D * hTruthZRapMadgraph;
-
   hUnfoldZRap=(TH1D*)(file[2]->Get("hUnfold"));
-  hTruthZRapMadgraph=(TH1D*)(fileUnfoldModelSys[2]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthZRapMadgraph;
+  TH1D * hTruthZRapPowheg;
+  hTruthZRapMadgraph=(TH1D*)(fileMadgraph->Get("hZRapTruth"));
+  hTruthZRapPowheg=(TH1D*)(filePowheg->Get("hZRapTruth"));
+
+  for(int j=0;j!=24;++j)
+    {
+      hTruthZRapMadgraph->SetBinContent(j+1,hTruthZRapMadgraph->GetBinContent(j+1)/hTruthZRapMadgraph->GetBinWidth(j+1));
+      hTruthZRapMadgraph->SetBinError(j+1,hTruthZRapMadgraph->GetBinError(j+1)/hTruthZRapMadgraph->GetBinWidth(j+1));
+      hTruthZRapPowheg->SetBinContent(j+1,hTruthZRapPowheg->GetBinContent(j+1)/hTruthZRapPowheg->GetBinWidth(j+1));
+      hTruthZRapPowheg->SetBinError(j+1,hTruthZRapPowheg->GetBinError(j+1)/hTruthZRapPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthZRapMadgraph->Scale(1/lumi);
+  hTruthZRapPowheg->Scale(1/lumi);
+
 
   cout<<hUnfoldZRap->Integral("width")<<endl;
 
@@ -674,6 +688,8 @@ void plotZmm(const TString  outputDir,   // output directory
   
   TGraphAsymmErrors* gUnfoldZRap=TH1TOTGraphAsymmErrors(hUnfoldZRap);
   TGraphAsymmErrors* gTruthZRapMadgraph=TH1TOTGraphAsymmErrors(hTruthZRapMadgraph);
+  TGraphAsymmErrors* gTruthZRapPowheg=TH1TOTGraphAsymmErrors(hTruthZRapPowheg);
+
 
   TGraphAsymmErrors* ZRAP_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldZRap);
   TGraphAsymmErrors* ZRAP_LUMI_UNCERT_BAND_DATA;
@@ -724,6 +740,8 @@ void plotZmm(const TString  outputDir,   // output directory
 
   TGraphAsymmErrors* ZRAP_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthZRapMadgraph,ZRAP_STAT_UNCERT_BAND_DATA);
 
+  TGraphAsymmErrors* ZRAP_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthZRapPowheg,ZRAP_STAT_UNCERT_BAND_DATA);
+
   TH1D * hTruthZRapMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hZRapTruthNominal"));
   TH1D * hTruthZRapMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hZRapTruthPDFUp"));
   TH1D * hTruthZRapMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hZRapTruthPDFDown"));
@@ -754,10 +772,23 @@ void plotZmm(const TString  outputDir,   // output directory
   //---------------------------------------------------------------------------
 
   TH1D * hUnfoldLep1Pt;
-  TH1D * hTruthLep1PtMadgraph;
-  
   hUnfoldLep1Pt=(TH1D*)(file[3]->Get("hUnfold"));
-  hTruthLep1PtMadgraph=(TH1D*)(fileUnfoldModelSys[3]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthLep1PtMadgraph;
+  TH1D * hTruthLep1PtPowheg;
+  hTruthLep1PtMadgraph=(TH1D*)(fileMadgraph->Get("hLep1PtTruth"));
+  hTruthLep1PtPowheg=(TH1D*)(filePowheg->Get("hLep1PtTruth"));
+
+  for(int j=0;j!=nBinsLep1Pt;++j)
+    {
+      hTruthLep1PtMadgraph->SetBinContent(j+1,hTruthLep1PtMadgraph->GetBinContent(j+1)/hTruthLep1PtMadgraph->GetBinWidth(j+1));
+      hTruthLep1PtMadgraph->SetBinError(j+1,hTruthLep1PtMadgraph->GetBinError(j+1)/hTruthLep1PtMadgraph->GetBinWidth(j+1));
+      hTruthLep1PtPowheg->SetBinContent(j+1,hTruthLep1PtPowheg->GetBinContent(j+1)/hTruthLep1PtPowheg->GetBinWidth(j+1));
+      hTruthLep1PtPowheg->SetBinError(j+1,hTruthLep1PtPowheg->GetBinError(j+1)/hTruthLep1PtPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthLep1PtMadgraph->Scale(1/lumi);
+  hTruthLep1PtPowheg->Scale(1/lumi);
 
   cout<<hUnfoldLep1Pt->Integral("width")<<endl;
 
@@ -825,6 +856,7 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
  
   TGraphAsymmErrors* gUnfoldLep1Pt=TH1TOTGraphAsymmErrors(hUnfoldLep1Pt);
   TGraphAsymmErrors* gTruthLep1PtMadgraph=TH1TOTGraphAsymmErrors(hTruthLep1PtMadgraph);
+  TGraphAsymmErrors* gTruthLep1PtPowheg=TH1TOTGraphAsymmErrors(hTruthLep1PtPowheg);
 
   TGraphAsymmErrors* LEP1PT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep1Pt);
   TGraphAsymmErrors* LEP1PT_LUMI_UNCERT_BAND_DATA;
@@ -874,6 +906,8 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
 
   TGraphAsymmErrors* LEP1PT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep1PtMadgraph,LEP1PT_STAT_UNCERT_BAND_DATA);
 
+  TGraphAsymmErrors* LEP1PT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep1PtPowheg,LEP1PT_STAT_UNCERT_BAND_DATA);
+
   TH1D * hTruthLep1PtMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep1PtTruthNominal"));
   TH1D * hTruthLep1PtMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hLep1PtTruthPDFUp"));
   TH1D * hTruthLep1PtMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hLep1PtTruthPDFDown"));
@@ -903,10 +937,23 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
   //---------------------------------------------------------------------------
 
   TH1D * hUnfoldLep2Pt;
-  TH1D * hTruthLep2PtMadgraph;
-  
   hUnfoldLep2Pt=(TH1D*)(file[4]->Get("hUnfold"));
-  hTruthLep2PtMadgraph=(TH1D*)(fileUnfoldModelSys[4]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthLep2PtMadgraph;
+  TH1D * hTruthLep2PtPowheg;
+  hTruthLep2PtMadgraph=(TH1D*)(fileMadgraph->Get("hLep2PtTruth"));
+  hTruthLep2PtPowheg=(TH1D*)(filePowheg->Get("hLep2PtTruth"));
+
+  for(int j=0;j!=nBinsLep2Pt;++j)
+    {
+      hTruthLep2PtMadgraph->SetBinContent(j+1,hTruthLep2PtMadgraph->GetBinContent(j+1)/hTruthLep2PtMadgraph->GetBinWidth(j+1));
+      hTruthLep2PtMadgraph->SetBinError(j+1,hTruthLep2PtMadgraph->GetBinError(j+1)/hTruthLep2PtMadgraph->GetBinWidth(j+1));
+      hTruthLep2PtPowheg->SetBinContent(j+1,hTruthLep2PtPowheg->GetBinContent(j+1)/hTruthLep2PtPowheg->GetBinWidth(j+1));
+      hTruthLep2PtPowheg->SetBinError(j+1,hTruthLep2PtPowheg->GetBinError(j+1)/hTruthLep2PtPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthLep2PtMadgraph->Scale(1/lumi);
+  hTruthLep2PtPowheg->Scale(1/lumi);
 
   cout<<hUnfoldLep2Pt->Integral("width")<<endl;
 
@@ -974,6 +1021,7 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
 
   TGraphAsymmErrors* gUnfoldLep2Pt=TH1TOTGraphAsymmErrors(hUnfoldLep2Pt);
   TGraphAsymmErrors* gTruthLep2PtMadgraph=TH1TOTGraphAsymmErrors(hTruthLep2PtMadgraph);
+  TGraphAsymmErrors* gTruthLep2PtPowheg=TH1TOTGraphAsymmErrors(hTruthLep2PtPowheg);
 
   TGraphAsymmErrors* LEP2PT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep2Pt);
   TGraphAsymmErrors* LEP2PT_LUMI_UNCERT_BAND_DATA;
@@ -1023,6 +1071,8 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
 
   TGraphAsymmErrors* LEP2PT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep2PtMadgraph,LEP2PT_STAT_UNCERT_BAND_DATA);
 
+  TGraphAsymmErrors* LEP2PT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep2PtPowheg,LEP2PT_STAT_UNCERT_BAND_DATA);
+
   TH1D * hTruthLep2PtMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2PtTruthNominal"));
   TH1D * hTruthLep2PtMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hLep2PtTruthPDFUp"));
   TH1D * hTruthLep2PtMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hLep2PtTruthPDFDown"));
@@ -1052,10 +1102,23 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
   //---------------------------------------------------------------------------
 
   TH1D * hUnfoldLep1Eta;
-  TH1D * hTruthLep1EtaMadgraph;
-  
   hUnfoldLep1Eta=(TH1D*)(file[5]->Get("hUnfold"));
-  hTruthLep1EtaMadgraph=(TH1D*)(fileUnfoldModelSys[5]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthLep1EtaMadgraph;
+  TH1D * hTruthLep1EtaPowheg;
+  hTruthLep1EtaMadgraph=(TH1D*)(fileMadgraph->Get("hLep1EtaTruth"));
+  hTruthLep1EtaPowheg=(TH1D*)(filePowheg->Get("hLep1EtaTruth"));
+
+  for(int j=0;j!=24;++j)
+    {
+      hTruthLep1EtaMadgraph->SetBinContent(j+1,hTruthLep1EtaMadgraph->GetBinContent(j+1)/hTruthLep1EtaMadgraph->GetBinWidth(j+1));
+      hTruthLep1EtaMadgraph->SetBinError(j+1,hTruthLep1EtaMadgraph->GetBinError(j+1)/hTruthLep1EtaMadgraph->GetBinWidth(j+1));
+      hTruthLep1EtaPowheg->SetBinContent(j+1,hTruthLep1EtaPowheg->GetBinContent(j+1)/hTruthLep1EtaPowheg->GetBinWidth(j+1));
+      hTruthLep1EtaPowheg->SetBinError(j+1,hTruthLep1EtaPowheg->GetBinError(j+1)/hTruthLep1EtaPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthLep1EtaMadgraph->Scale(1/lumi);
+  hTruthLep1EtaPowheg->Scale(1/lumi);
 
   cout<<hUnfoldLep1Eta->Integral("width")<<endl;
 
@@ -1123,6 +1186,7 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
  
   TGraphAsymmErrors* gUnfoldLep1Eta=TH1TOTGraphAsymmErrors(hUnfoldLep1Eta);
   TGraphAsymmErrors* gTruthLep1EtaMadgraph=TH1TOTGraphAsymmErrors(hTruthLep1EtaMadgraph);
+  TGraphAsymmErrors* gTruthLep1EtaPowheg=TH1TOTGraphAsymmErrors(hTruthLep1EtaPowheg);
 
   TGraphAsymmErrors* LEP1ETA_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep1Eta);
   TGraphAsymmErrors* LEP1ETA_LUMI_UNCERT_BAND_DATA;
@@ -1173,6 +1237,8 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
 
   TGraphAsymmErrors* LEP1ETA_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep1EtaMadgraph,LEP1ETA_STAT_UNCERT_BAND_DATA);
 
+  TGraphAsymmErrors* LEP1ETA_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep1EtaPowheg,LEP1ETA_STAT_UNCERT_BAND_DATA);
+
   TH1D * hTruthLep1EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep1EtaTruthNominal"));
   TH1D * hTruthLep1EtaMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hLep1EtaTruthPDFUp"));
   TH1D * hTruthLep1EtaMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hLep1EtaTruthPDFDown"));
@@ -1202,10 +1268,23 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
   //---------------------------------------------------------------------------
 
   TH1D * hUnfoldLep2Eta;
-  TH1D * hTruthLep2EtaMadgraph;
-  
   hUnfoldLep2Eta=(TH1D*)(file[6]->Get("hUnfold"));
-  hTruthLep2EtaMadgraph=(TH1D*)(fileUnfoldModelSys[6]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthLep2EtaMadgraph;
+  TH1D * hTruthLep2EtaPowheg;
+  hTruthLep2EtaMadgraph=(TH1D*)(fileMadgraph->Get("hLep2EtaTruth"));
+  hTruthLep2EtaPowheg=(TH1D*)(filePowheg->Get("hLep2EtaTruth"));
+
+  for(int j=0;j!=24;++j)
+    {
+      hTruthLep2EtaMadgraph->SetBinContent(j+1,hTruthLep2EtaMadgraph->GetBinContent(j+1)/hTruthLep2EtaMadgraph->GetBinWidth(j+1));
+      hTruthLep2EtaMadgraph->SetBinError(j+1,hTruthLep2EtaMadgraph->GetBinError(j+1)/hTruthLep2EtaMadgraph->GetBinWidth(j+1));
+      hTruthLep2EtaPowheg->SetBinContent(j+1,hTruthLep2EtaPowheg->GetBinContent(j+1)/hTruthLep2EtaPowheg->GetBinWidth(j+1));
+      hTruthLep2EtaPowheg->SetBinError(j+1,hTruthLep2EtaPowheg->GetBinError(j+1)/hTruthLep2EtaPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthLep2EtaMadgraph->Scale(1/lumi);
+  hTruthLep2EtaPowheg->Scale(1/lumi);
 
   cout<<hUnfoldLep2Eta->Integral("width")<<endl;
 
@@ -1273,6 +1352,7 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
 
   TGraphAsymmErrors* gUnfoldLep2Eta=TH1TOTGraphAsymmErrors(hUnfoldLep2Eta);
   TGraphAsymmErrors* gTruthLep2EtaMadgraph=TH1TOTGraphAsymmErrors(hTruthLep2EtaMadgraph);
+  TGraphAsymmErrors* gTruthLep2EtaPowheg=TH1TOTGraphAsymmErrors(hTruthLep2EtaPowheg);
 
   TGraphAsymmErrors* LEP2ETA_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLep2Eta);
   TGraphAsymmErrors* LEP2ETA_LUMI_UNCERT_BAND_DATA;
@@ -1322,6 +1402,8 @@ TH1D * hUnfoldLep1PtUnfoldMatrixSys;
 
   TGraphAsymmErrors* LEP2ETA_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep2EtaMadgraph,LEP2ETA_STAT_UNCERT_BAND_DATA);
   
+  TGraphAsymmErrors* LEP2ETA_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLep2EtaPowheg,LEP2ETA_STAT_UNCERT_BAND_DATA);
+  
 TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   TH1D * hTruthLep2EtaMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthPDFUp"));
   TH1D * hTruthLep2EtaMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthPDFDown"));
@@ -1351,10 +1433,23 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   //---------------------------------------------------------------------------
 
   TH1D * hUnfoldLepNegPt;
-  TH1D * hTruthLepNegPtMadgraph;
-  
   hUnfoldLepNegPt=(TH1D*)(file[7]->Get("hUnfold"));
-  hTruthLepNegPtMadgraph=(TH1D*)(fileUnfoldModelSys[7]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthLepNegPtMadgraph;
+  TH1D * hTruthLepNegPtPowheg;
+  hTruthLepNegPtMadgraph=(TH1D*)(fileMadgraph->Get("hLepNegPtTruth"));
+  hTruthLepNegPtPowheg=(TH1D*)(filePowheg->Get("hLepNegPtTruth"));
+
+  for(int j=0;j!=nBinsLepNegPt;++j)
+    {
+      hTruthLepNegPtMadgraph->SetBinContent(j+1,hTruthLepNegPtMadgraph->GetBinContent(j+1)/hTruthLepNegPtMadgraph->GetBinWidth(j+1));
+      hTruthLepNegPtMadgraph->SetBinError(j+1,hTruthLepNegPtMadgraph->GetBinError(j+1)/hTruthLepNegPtMadgraph->GetBinWidth(j+1));
+      hTruthLepNegPtPowheg->SetBinContent(j+1,hTruthLepNegPtPowheg->GetBinContent(j+1)/hTruthLepNegPtPowheg->GetBinWidth(j+1));
+      hTruthLepNegPtPowheg->SetBinError(j+1,hTruthLepNegPtPowheg->GetBinError(j+1)/hTruthLepNegPtPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthLepNegPtMadgraph->Scale(1/lumi);
+  hTruthLepNegPtPowheg->Scale(1/lumi);
 
   cout<<hUnfoldLepNegPt->Integral("width")<<endl;
 
@@ -1422,6 +1517,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
 
   TGraphAsymmErrors* gUnfoldLepNegPt=TH1TOTGraphAsymmErrors(hUnfoldLepNegPt);
   TGraphAsymmErrors* gTruthLepNegPtMadgraph=TH1TOTGraphAsymmErrors(hTruthLepNegPtMadgraph);
+  TGraphAsymmErrors* gTruthLepNegPtPowheg=TH1TOTGraphAsymmErrors(hTruthLepNegPtPowheg);
 
   TGraphAsymmErrors* LEPNEGPT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLepNegPt);
   TGraphAsymmErrors* LEPNEGPT_LUMI_UNCERT_BAND_DATA;
@@ -1471,6 +1567,8 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
 
   TGraphAsymmErrors* LEPNEGPT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLepNegPtMadgraph,LEPNEGPT_STAT_UNCERT_BAND_DATA);
 
+  TGraphAsymmErrors* LEPNEGPT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLepNegPtPowheg,LEPNEGPT_STAT_UNCERT_BAND_DATA);
+
   TH1D * hTruthLepNegPtMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLepNegPtTruthNominal"));
   TH1D * hTruthLepNegPtMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hLepNegPtTruthPDFUp"));
   TH1D * hTruthLepNegPtMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hLepNegPtTruthPDFDown"));
@@ -1500,10 +1598,23 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   //---------------------------------------------------------------------------
 
   TH1D * hUnfoldLepPosPt;
-  TH1D * hTruthLepPosPtMadgraph;
-  
   hUnfoldLepPosPt=(TH1D*)(file[8]->Get("hUnfold"));
-  hTruthLepPosPtMadgraph=(TH1D*)(fileUnfoldModelSys[8]->Get("UNFOLDMODEL/hTruth"));
+
+  TH1D * hTruthLepPosPtMadgraph;
+  TH1D * hTruthLepPosPtPowheg;
+  hTruthLepPosPtMadgraph=(TH1D*)(fileMadgraph->Get("hLepPosPtTruth"));
+  hTruthLepPosPtPowheg=(TH1D*)(filePowheg->Get("hLepPosPtTruth"));
+
+  for(int j=0;j!=nBinsLepPosPt;++j)
+    {
+      hTruthLepPosPtMadgraph->SetBinContent(j+1,hTruthLepPosPtMadgraph->GetBinContent(j+1)/hTruthLepPosPtMadgraph->GetBinWidth(j+1));
+      hTruthLepPosPtMadgraph->SetBinError(j+1,hTruthLepPosPtMadgraph->GetBinError(j+1)/hTruthLepPosPtMadgraph->GetBinWidth(j+1));
+      hTruthLepPosPtPowheg->SetBinContent(j+1,hTruthLepPosPtPowheg->GetBinContent(j+1)/hTruthLepPosPtPowheg->GetBinWidth(j+1));
+      hTruthLepPosPtPowheg->SetBinError(j+1,hTruthLepPosPtPowheg->GetBinError(j+1)/hTruthLepPosPtPowheg->GetBinWidth(j+1));
+    }
+
+  hTruthLepPosPtMadgraph->Scale(1/lumi);
+  hTruthLepPosPtPowheg->Scale(1/lumi);
 
   cout<<hUnfoldLepPosPt->Integral("width")<<endl;
 
@@ -1571,6 +1682,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
 
   TGraphAsymmErrors* gUnfoldLepPosPt=TH1TOTGraphAsymmErrors(hUnfoldLepPosPt);
   TGraphAsymmErrors* gTruthLepPosPtMadgraph=TH1TOTGraphAsymmErrors(hTruthLepPosPtMadgraph);
+  TGraphAsymmErrors* gTruthLepPosPtPowheg=TH1TOTGraphAsymmErrors(hTruthLepPosPtPowheg);
 
   TGraphAsymmErrors* LEPPOSPT_STAT_UNCERT_BAND_DATA=TH1TOTGraphAsymmErrors(hUnfoldLepPosPt);
   TGraphAsymmErrors* LEPPOSPT_LUMI_UNCERT_BAND_DATA;
@@ -1619,6 +1731,8 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   TGraphAsymmErrors* LEPPOSPT_STAT_SYS_UNCERT_BAND_DATA_COMP=myTGraphErrorsDivide_noErrGraph2(LEPPOSPT_TOT_UNCERT_BAND_DATA,LEPPOSPT_STAT_UNCERT_BAND_DATA);
 
   TGraphAsymmErrors* LEPPOSPT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLepPosPtMadgraph,LEPPOSPT_STAT_UNCERT_BAND_DATA);
+
+  TGraphAsymmErrors* LEPPOSPT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP=myTGraphErrorsDivide_noErrGraph2(gTruthLepPosPtPowheg,LEPPOSPT_STAT_UNCERT_BAND_DATA);
 
   TH1D * hTruthLepPosPtMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLepPosPtTruthNominal"));
   TH1D * hTruthLepPosPtMcAtNloPDFUp=(TH1D*)(fileMcAtNlo->Get("hLepPosPtTruthPDFUp"));
@@ -1842,6 +1956,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmRap.AddGraph(ZRAP_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmRap.AddGraph(ZRAP_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmRap.AddGraph(ZRAP_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmRap.AddGraph(gTruthZRapPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmRap.AddGraph(gTruthZRapMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmRap.AddGraph(ZRAP_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmRap.AddGraph(ZRAP_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -1859,6 +1974,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmRapDiff.AddHist1D(hZmmRapDiffDummy);
   plotZmmRapDiff.AddGraph(ZRAP_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmRapDiff.AddGraph(ZRAP_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmRapDiff.AddGraph(ZRAP_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmRapDiff.AddGraph(ZRAP_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmRapDiff.AddGraph(ZRAP_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmRapDiff.AddGraph(ZRAP_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -1876,6 +1992,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmRap2.AddGraph(ZRAP_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmRap2.AddGraph(ZRAP_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmRap2.AddGraph(ZRAP_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmRap2.AddGraph(gTruthZRapPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmRap2.AddGraph(gTruthZRapMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmRap2.AddGraph(ZRAP_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmRap2.AddGraph(ZRAP_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -1908,6 +2025,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1Pt.AddGraph(LEP1PT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep1Pt.AddGraph(LEP1PT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep1Pt.AddGraph(LEP1PT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep1Pt.AddGraph(gTruthLep1PtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep1Pt.AddGraph(gTruthLep1PtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep1Pt.AddGraph(LEP1PT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep1Pt.AddGraph(LEP1PT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -1925,6 +2043,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1PtDiff.AddHist1D(hZmmLep1PtDiffDummy);
   plotZmmLep1PtDiff.AddGraph(LEP1PT_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmLep1PtDiff.AddGraph(LEP1PT_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmLep1PtDiff.AddGraph(LEP1PT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmLep1PtDiff.AddGraph(LEP1PT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmLep1PtDiff.AddGraph(LEP1PT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmLep1PtDiff.AddGraph(LEP1PT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -1942,6 +2061,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1Pt2.AddGraph(LEP1PT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep1Pt2.AddGraph(LEP1PT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep1Pt2.AddGraph(LEP1PT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep1Pt2.AddGraph(gTruthLep1PtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep1Pt2.AddGraph(gTruthLep1PtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep1Pt2.AddGraph(LEP1PT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep1Pt2.AddGraph(LEP1PT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -1974,6 +2094,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2Pt.AddGraph(LEP2PT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep2Pt.AddGraph(LEP2PT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep2Pt.AddGraph(LEP2PT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep2Pt.AddGraph(gTruthLep2PtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep2Pt.AddGraph(gTruthLep2PtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep2Pt.AddGraph(LEP2PT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep2Pt.AddGraph(LEP2PT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -1991,6 +2112,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2PtDiff.AddHist1D(hZmmLep2PtDiffDummy);
   plotZmmLep2PtDiff.AddGraph(LEP2PT_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmLep2PtDiff.AddGraph(LEP2PT_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmLep2PtDiff.AddGraph(LEP2PT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmLep2PtDiff.AddGraph(LEP2PT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmLep2PtDiff.AddGraph(LEP2PT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmLep2PtDiff.AddGraph(LEP2PT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -2008,6 +2130,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2Pt2.AddGraph(LEP2PT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep2Pt2.AddGraph(LEP2PT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep2Pt2.AddGraph(LEP2PT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep2Pt2.AddGraph(gTruthLep2PtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep2Pt2.AddGraph(gTruthLep2PtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep2Pt2.AddGraph(LEP2PT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep2Pt2.AddGraph(LEP2PT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2040,6 +2163,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1Eta.AddGraph(LEP1ETA_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep1Eta.AddGraph(LEP1ETA_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep1Eta.AddGraph(LEP1ETA_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep1Eta.AddGraph(gTruthLep1EtaPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep1Eta.AddGraph(gTruthLep1EtaMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep1Eta.AddGraph(LEP1ETA_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep1Eta.AddGraph(LEP1ETA_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2057,6 +2181,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1EtaDiff.AddHist1D(hZmmLep1EtaDiffDummy);
   plotZmmLep1EtaDiff.AddGraph(LEP1ETA_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmLep1EtaDiff.AddGraph(LEP1ETA_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmLep1EtaDiff.AddGraph(LEP1ETA_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmLep1EtaDiff.AddGraph(LEP1ETA_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmLep1EtaDiff.AddGraph(LEP1ETA_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmLep1EtaDiff.AddGraph(LEP1ETA_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -2074,6 +2199,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep1Eta2.AddGraph(LEP1ETA_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep1Eta2.AddGraph(LEP1ETA_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep1Eta2.AddGraph(LEP1ETA_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep1Eta2.AddGraph(gTruthLep1EtaPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep1Eta2.AddGraph(gTruthLep1EtaMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep1Eta2.AddGraph(LEP1ETA_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep1Eta2.AddGraph(LEP1ETA_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2106,6 +2232,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2Eta.AddGraph(LEP2ETA_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep2Eta.AddGraph(LEP2ETA_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep2Eta.AddGraph(LEP2ETA_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep2Eta.AddGraph(gTruthLep2EtaPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep2Eta.AddGraph(gTruthLep2EtaMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep2Eta.AddGraph(LEP2ETA_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep2Eta.AddGraph(LEP2ETA_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2123,6 +2250,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2EtaDiff.AddHist1D(hZmmLep2EtaDiffDummy);
   plotZmmLep2EtaDiff.AddGraph(LEP2ETA_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmLep2EtaDiff.AddGraph(LEP2ETA_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmLep2EtaDiff.AddGraph(LEP2ETA_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmLep2EtaDiff.AddGraph(LEP2ETA_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmLep2EtaDiff.AddGraph(LEP2ETA_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmLep2EtaDiff.AddGraph(LEP2ETA_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -2140,6 +2268,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLep2Eta2.AddGraph(LEP2ETA_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLep2Eta2.AddGraph(LEP2ETA_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLep2Eta2.AddGraph(LEP2ETA_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLep2Eta2.AddGraph(gTruthLep2EtaPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLep2Eta2.AddGraph(gTruthLep2EtaMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLep2Eta2.AddGraph(LEP2ETA_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLep2Eta2.AddGraph(LEP2ETA_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2172,6 +2301,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepNegPt.AddGraph(LEPNEGPT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLepNegPt.AddGraph(LEPNEGPT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLepNegPt.AddGraph(LEPNEGPT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLepNegPt.AddGraph(gTruthLepNegPtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLepNegPt.AddGraph(gTruthLepNegPtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLepNegPt.AddGraph(LEPNEGPT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLepNegPt.AddGraph(LEPNEGPT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2189,6 +2319,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepNegPtDiff.AddHist1D(hZmmLepNegPtDiffDummy);
   plotZmmLepNegPtDiff.AddGraph(LEPNEGPT_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmLepNegPtDiff.AddGraph(LEPNEGPT_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmLepNegPtDiff.AddGraph(LEPNEGPT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmLepNegPtDiff.AddGraph(LEPNEGPT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmLepNegPtDiff.AddGraph(LEPNEGPT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmLepNegPtDiff.AddGraph(LEPNEGPT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -2206,6 +2337,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepNegPt2.AddGraph(LEPNEGPT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLepNegPt2.AddGraph(LEPNEGPT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLepNegPt2.AddGraph(LEPNEGPT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLepNegPt2.AddGraph(gTruthLepNegPtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLepNegPt2.AddGraph(gTruthLepNegPtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLepNegPt2.AddGraph(LEPNEGPT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLepNegPt2.AddGraph(LEPNEGPT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2238,6 +2370,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepPosPt.AddGraph(LEPPOSPT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLepPosPt.AddGraph(LEPPOSPT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLepPosPt.AddGraph(LEPPOSPT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLepPosPt.AddGraph(gTruthLepPosPtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLepPosPt.AddGraph(gTruthLepPosPtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLepPosPt.AddGraph(LEPPOSPT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLepPosPt.AddGraph(LEPPOSPT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
@@ -2255,6 +2388,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepPosPtDiff.AddHist1D(hZmmLepPosPtDiffDummy);
   plotZmmLepPosPtDiff.AddGraph(LEPPOSPT_RATIO_STAT_SYS_UNCERT_BAND_DATA_AMCATNLO_COMP,"0E2",kRed+2,21,1);
   plotZmmLepPosPtDiff.AddGraph(LEPPOSPT_RATIO_STAT_UNCERT_BAND_DATA_AMCATNLO_COMP,"0P",kRed+2,21,1);
+  plotZmmLepPosPtDiff.AddGraph(LEPPOSPT_RATIO_STAT_UNCERT_BAND_DATA_POWHEG_COMP,"0P",kGreen+3,22,1);
   plotZmmLepPosPtDiff.AddGraph(LEPPOSPT_RATIO_STAT_UNCERT_BAND_DATA_MADGRAPH_COMP,"0P",kPink,23,1);
   plotZmmLepPosPtDiff.AddGraph(LEPPOSPT_STAT_SYS_UNCERT_BAND_DATA_COMP,"E2",TColor::GetColor("#828282"),0,1);
   plotZmmLepPosPtDiff.AddGraph(LEPPOSPT_STAT_UNCERT_BAND_DATA_COMP,"z",1,0,1);
@@ -2272,6 +2406,7 @@ TH1D * hTruthLep2EtaMcAtNlo=(TH1D*)(fileMcAtNlo->Get("hLep2EtaTruthNominal"));
   plotZmmLepPosPt2.AddGraph(LEPPOSPT_TOT_UNCERT_BAND_DATA,"Data","PE2",1,20,1);
   plotZmmLepPosPt2.AddGraph(LEPPOSPT_TOT_UNCERT_BAND_AMCATNLO,"aMC@NLO","PE2",kRed+2,21,1);
   plotZmmLepPosPt2.AddGraph(LEPPOSPT_STAT_UNCERT_BAND_AMCATNLO,"P",kRed+2,21,1);
+  plotZmmLepPosPt2.AddGraph(gTruthLepPosPtPowheg,"POWHEG","P",kGreen+3,22,1);
   plotZmmLepPosPt2.AddGraph(gTruthLepPosPtMadgraph,"MADGRAPH","P",kPink,23,1);
   plotZmmLepPosPt2.AddGraph(LEPPOSPT_TOT_UNCERT_BAND_DATA,"PE2",1,20,1);
   plotZmmLepPosPt2.AddGraph(LEPPOSPT_STAT_UNCERT_BAND_DATA,"P",1,20,1);
