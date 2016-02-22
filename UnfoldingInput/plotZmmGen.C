@@ -52,7 +52,7 @@ void plotZmmGen(const TString  conf,            // input file
   //============================================================================================================== 
   const Double_t mu_MASS  = 0.1057;
   
-  const TString format("png");
+  const TString format("all");
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
@@ -1212,7 +1212,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotZPtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZPtEff.SetLogx();
   plotZPtEff.SetLogy(0);
-  plotZPtEff.SetYRange(0,1);
+  plotZPtEff.SetYRange(0,1.2);
   plotZPtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1222,7 +1222,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotZPtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZPtPurity.SetLogx();
   plotZPtPurity.SetLogy(0);
-  plotZPtPurity.SetYRange(0,1);
+  plotZPtPurity.SetYRange(0,1.2);
   plotZPtPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"p_{T}^{#mu^{+}#mu^{-}} (detector level) [GeV]");
@@ -1277,7 +1277,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotPhiStarEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotPhiStarEff.SetLogx();
   plotPhiStarEff.SetLogy(0);
-  plotPhiStarEff.SetYRange(0,1);
+  plotPhiStarEff.SetYRange(0,1.2);
   plotPhiStarEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1287,7 +1287,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotPhiStarPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotPhiStarPurity.SetLogx();
   plotPhiStarPurity.SetLogy(0);
-  plotPhiStarPurity.SetYRange(0,1);
+  plotPhiStarPurity.SetYRange(0,1.2);
   plotPhiStarPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"#phi_{#eta}* (detector level)");
@@ -1339,7 +1339,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotZRapEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZRapEff.SetLogx(0);
   plotZRapEff.SetLogy(0);
-  plotZRapEff.SetYRange(0,1);
+  plotZRapEff.SetYRange(0,1.2);
   plotZRapEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1349,7 +1349,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotZRapPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZRapPurity.SetLogx(0);
   plotZRapPurity.SetLogy(0);
-  plotZRapPurity.SetYRange(0,1);
+  plotZRapPurity.SetYRange(0,1.2);
   plotZRapPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"|y^{#mu^{+}#mu^{-}}| (detector level)");
@@ -1402,7 +1402,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep1PtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep1PtEff.SetLogx();
   plotLep1PtEff.SetLogy(0);
-  plotLep1PtEff.SetYRange(0,1);
+  plotLep1PtEff.SetYRange(0,1.2);
   plotLep1PtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1412,7 +1412,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep1PtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep1PtPurity.SetLogx();
   plotLep1PtPurity.SetLogy(0);
-  plotLep1PtPurity.SetYRange(0,1);
+  plotLep1PtPurity.SetYRange(0,1.2);
   plotLep1PtPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"p_{T} (leading muon, detector level) [GeV]");
@@ -1465,7 +1465,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep2PtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep2PtEff.SetLogx();
   plotLep2PtEff.SetLogy(0);
-  plotLep2PtEff.SetYRange(0,1);
+  plotLep2PtEff.SetYRange(0,1.2);
   plotLep2PtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1475,7 +1475,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep2PtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep2PtPurity.SetLogx();
   plotLep2PtPurity.SetLogy(0);
-  plotLep2PtPurity.SetYRange(0,1);
+  plotLep2PtPurity.SetYRange(0,1.2);
   plotLep2PtPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"p_{T} (2nd leading muon, detector level) [GeV]");
@@ -1528,7 +1528,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLepNegPtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLepNegPtEff.SetLogx();
   plotLepNegPtEff.SetLogy(0);
-  plotLepNegPtEff.SetYRange(0,1);
+  plotLepNegPtEff.SetYRange(0,1.2);
   plotLepNegPtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1538,7 +1538,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLepNegPtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLepNegPtPurity.SetLogx();
   plotLepNegPtPurity.SetLogy(0);
-  plotLepNegPtPurity.SetYRange(0,1);
+  plotLepNegPtPurity.SetYRange(0,1.2);
   plotLepNegPtPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"p_{T}^{#mu^{-}} (detector level) [GeV]");
@@ -1591,7 +1591,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLepPosPtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLepPosPtEff.SetLogx();
   plotLepPosPtEff.SetLogy(0);
-  plotLepPosPtEff.SetYRange(0,1);
+  plotLepPosPtEff.SetYRange(0,1.2);
   plotLepPosPtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1601,7 +1601,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLepPosPtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLepPosPtPurity.SetLogx();
   plotLepPosPtPurity.SetLogy(0);
-  plotLepPosPtPurity.SetYRange(0,1);
+  plotLepPosPtPurity.SetYRange(0,1.2);
   plotLepPosPtPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"p_{T}^{#mu^{+}} (detector level) [GeV]");
@@ -1654,7 +1654,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep1EtaEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep1EtaEff.SetLogx(0);
   plotLep1EtaEff.SetLogy(0);
-  plotLep1EtaEff.SetYRange(0,1);
+  plotLep1EtaEff.SetYRange(0,1.2);
   plotLep1EtaEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1664,7 +1664,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep1EtaPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep1EtaPurity.SetLogx(0);
   plotLep1EtaPurity.SetLogy(0);
-  plotLep1EtaPurity.SetYRange(0,1);
+  plotLep1EtaPurity.SetYRange(0,1.2);
   plotLep1EtaPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"|#eta| (leading muon, detector level)");
@@ -1717,7 +1717,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep2EtaEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep2EtaEff.SetLogx(0);
   plotLep2EtaEff.SetLogy(0);
-  plotLep2EtaEff.SetYRange(0,1);
+  plotLep2EtaEff.SetYRange(0,1.2);
   plotLep2EtaEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
@@ -1727,7 +1727,7 @@ void plotZmmGen(const TString  conf,            // input file
   plotLep2EtaPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotLep2EtaPurity.SetLogx(0);
   plotLep2EtaPurity.SetLogy(0);
-  plotLep2EtaPurity.SetYRange(0,1);
+  plotLep2EtaPurity.SetYRange(0,1.2);
   plotLep2EtaPurity.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"|#eta| (2nd leading muon, detector level)");
