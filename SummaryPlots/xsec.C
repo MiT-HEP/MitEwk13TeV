@@ -42,7 +42,7 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
   Double_t nWmp,      nWmm,      nWm,      nZmm,      nWep,      nWem,      nWe,      nZee;
   Double_t nWmpErr,   nWmmErr,   nWmErr,   nZmmErr,   nWepErr,   nWemErr,   nWeErr,   nZeeErr;
   Double_t accWmp,    accWmm,    accWm,    accZmm,    accWep,    accWem,    accWe,    accZee;
-  Double_t accWmpErr, accWmmErr, accWmErr, accZmmErr, accWepErr, accWemErr, accWeErr, accZeeErr;
+  //Double_t accWmpErr, accWmmErr, accWmErr, accZmmErr, accWepErr, accWemErr, accWeErr, accZeeErr;
   Double_t lumi, lumiErr;
   
   Double_t errWmp=0, errWmm=0, errWm=0, errZmm=0, errWmpm=0, errWZm=0, errWmpZm=0, errWmmZm=0;
@@ -82,25 +82,24 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
     } else if(state==4) {
       stringstream ss(line);
       string label;
-      ss >> label >> accWmpErr >> accWmmErr >> accWmErr >> accZmmErr >> accWepErr >> accWemErr >> accWeErr >> accZeeErr;
+      //ss >> label >> accWmpErr >> accWmmErr >> accWmErr >> accZmmErr >> accWepErr >> accWemErr >> accWeErr >> accZeeErr;
       state++;
-      errWmp  = accWmpErr*accWmpErr/accWmp/accWmp;
-      errWmm  = accWmmErr*accWmmErr/accWmm/accWmm;
-      errWm   = accWmErr*accWmErr/accWm/accWm;
-      errZmm  = accZmmErr*accZmmErr/accZmm/accZmm;
-      errWmpm = errWmp+errWmm;
-      errWmpZm  = errWmp+errZmm;
-      errWmmZm  = errWmm+errZmm;
-      errWZm  = errWm+errZmm;
-      errWep  = accWepErr*accWepErr/accWep/accWep;
-      errWem  = accWemErr*accWemErr/accWem/accWem;
-      errWe   = accWeErr*accWeErr/accWe/accWe;
-      errZee  = accZeeErr*accZeeErr/accZee/accZee;
-      errWepm = errWep+errWem;
-      errWepZe  = errWep+errZee;
-      errWemZe  = errWem+errZee;
-      errWZe  = errWe+errZee;
-    
+      //errWmp  = accWmpErr*accWmpErr/accWmp/accWmp;
+      //errWmm  = accWmmErr*accWmmErr/accWmm/accWmm;
+      //errWm   = accWmErr*accWmErr/accWm/accWm;
+      //errZmm  = accZmmErr*accZmmErr/accZmm/accZmm;
+      //errWmpm = errWmp+errWmm;
+      //errWmpZm  = errWmp+errZmm;
+      //errWmmZm  = errWmm+errZmm;
+      //errWZm  = errWm+errZmm;
+      //errWep  = accWepErr*accWepErr/accWep/accWep;
+      //errWem  = accWemErr*accWemErr/accWem/accWem;
+      //errWe   = accWeErr*accWeErr/accWe/accWe;
+      //errZee  = accZeeErr*accZeeErr/accZee/accZee;
+      //errWepm = errWep+errWem;
+      //errWepZe  = errWep+errZee;
+      //errWemZe  = errWem+errZee;
+      //errWZe  = errWe+errZee;
     } else {
       stringstream ss(line);
       string label;
@@ -114,6 +113,8 @@ void xsec(const TString infilename="input.txt", const TString outputDir=".")
       errWmpZm  += err[14] *err[14];
       errWmmZm  += err[15] *err[15];
       errWZm  += err[5] *err[5];
+      std::cout << err[5] << std::endl;
+      std::cout << errWZm << std::endl;
       errWep  += err[6] *err[6];
       errWem  += err[7] *err[7];
       errWe   += err[8] *err[8];
