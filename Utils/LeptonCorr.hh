@@ -4,22 +4,22 @@
 Double_t getEleScaleCorr(const Double_t eta, const Int_t sigma)
 {
   if (sigma==0) {
-    if      (fabs(eta) < 0.4)    { return 1.0/0.998094; }
-    else if (fabs(eta) < 0.8)    { return 1.0/0.998722; }
+    if      (fabs(eta) < 0.4)    { return 1.0/0.998062; }
+    else if (fabs(eta) < 0.8)    { return 1.0/0.998656; }
     else if (fabs(eta) < 1.4442) { return 1.0/1.00281; }
-    else                         { return 1.0/1.00499; }
+    else                         { return 1.0/1.00496; }
   }
   else if (sigma==1) {
-    if      (fabs(eta) < 0.4)    { return 1.0/(0.998094+0.000270935); }
-    else if (fabs(eta) < 0.8)    { return 1.0/(0.998722+0.000284622); }
-    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 +4.52316e-05); }
-    else                         { return 1.0/(1.00499 +0.000110672); }
+    if      (fabs(eta) < 0.4)    { return 1.0/(0.998062+8.98619e-05); }
+    else if (fabs(eta) < 0.8)    { return 1.0/(0.998656+8.62067e-05); }
+    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 +7.5253e-05); }
+    else                         { return 1.0/(1.00496 +0.000114103); }
   }
   else if (sigma==-1) {
-    if      (fabs(eta) < 0.4)    { return 1.0/(0.998094-0.000270935); }
-    else if (fabs(eta) < 0.8)    { return 1.0/(0.998722-0.000284622); }
-    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 -4.52316e-05); }
-    else                         { return 1.0/(1.00499 -0.000110672); }
+    if      (fabs(eta) < 0.4)    { return 1.0/(0.998062-8.98619e-05); }
+    else if (fabs(eta) < 0.8)    { return 1.0/(0.998656-8.62067e-05); }
+    else if (fabs(eta) < 1.4442) { return 1.0/(1.00281 -7.5253e-05); }
+    else                         { return 1.0/(1.00496 -0.000114103); }
   }
   else return -1.0;
 }
@@ -27,22 +27,22 @@ Double_t getEleScaleCorr(const Double_t eta, const Int_t sigma)
 Double_t getEleResCorr(const Double_t eta, const Int_t sigma)
 {
   if (sigma==0) {
-    if      (fabs(eta) < 0.4)    { return 0.342735; }
-    else if (fabs(eta) < 0.8)    { return 0.37259; }
-    else if (fabs(eta) < 1.4442) { return 0.647278; }
-    else                         { return 1.08814; }
+    if      (fabs(eta) < 0.4)    { return 0.361086; }
+    else if (fabs(eta) < 0.8)    { return 0.371181; }
+    else if (fabs(eta) < 1.4442) { return 0.658034; }
+    else                         { return 1.09921; }
   }
   else if (sigma==1) {
-    if      (fabs(eta) < 0.4)    { return 0.342735+0.0220807; }
-    else if (fabs(eta) < 0.8)    { return 0.37259 +0.0224161; }
-    else if (fabs(eta) < 1.4442) { return 0.647278+0.0151588; }
-    else                         { return 1.08814 +0.0122041; }
+    if      (fabs(eta) < 0.4)    { return 0.361086+0.0196288; }
+    else if (fabs(eta) < 0.8)    { return 0.371181+0.020926; }
+    else if (fabs(eta) < 1.4442) { return 0.658034+0.0149622; }
+    else                         { return 1.09921 +0.0121135; }
   }
   else if (sigma==-1) {
-    if      (fabs(eta) < 0.4)    { return 0.342735-0.0220807; }
-    else if (fabs(eta) < 0.8)    { return 0.37259 -0.0224161; }
-    else if (fabs(eta) < 1.4442) { return 0.647278-0.0151588; }
-    else                         { return 1.08814 -0.0122041; }
+    if      (fabs(eta) < 0.4)    { return 0.361086-0.0196288; }
+    else if (fabs(eta) < 0.8)    { return 0.371181-0.020926; }
+    else if (fabs(eta) < 1.4442) { return 0.658034-0.0149622; }
+    else                         { return 1.09921 -0.0121135; }
   }
   else return -1.0;
 }
