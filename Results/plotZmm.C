@@ -610,7 +610,8 @@ void plotZmm(const TString  outputDir,   // output directory
   hTruthZRapPowheg->Scale(1/lumi);
 
 
-  cout<<hUnfoldZRap->Integral("width")<<endl;
+  cout<<"Data: "<<hUnfoldZRap->Integral("width")<<endl;
+  cout<<"Powheg: "<<hTruthZRapPowheg->Integral("width")<<endl;
 
   TH1D * hUnfoldZRapLumiUp;
   TH1D * hUnfoldZRapLumiDown;
@@ -732,6 +733,8 @@ void plotZmm(const TString  outputDir,   // output directory
   TH1D * hTruthZRapMcAtNloPDFDown=(TH1D*)(fileMcAtNlo->Get("hZRapTruthPDFDown"));
   TH1D * hTruthZRapMcAtNloScaleUp=(TH1D*)(fileMcAtNlo->Get("hZRapTruthScaleUp"));
   TH1D * hTruthZRapMcAtNloScaleDown=(TH1D*)(fileMcAtNlo->Get("hZRapTruthScaleDown"));
+
+  cout<<"aMC@NLO: "<<hTruthZRapMcAtNlo->Integral("width")<<endl;
 
   TGraphAsymmErrors* gTruthZRapMcAtNlo=TH1TOTGraphAsymmErrors(hTruthZRapMcAtNlo);
 
