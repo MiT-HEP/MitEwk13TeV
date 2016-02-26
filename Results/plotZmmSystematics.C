@@ -2536,7 +2536,8 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmPhiStar.SetLogx();
   plotZmmPhiStar.SetLogy(0);
-  plotZmmPhiStar.SetYRange(0,1.5*(PHISTAR_REL_EXP_SYS->GetMaximum()));
+  //plotZmmPhiStar.SetYRange(0,1.5*(PHISTAR_REL_EXP_SYS->GetMaximum()));
+  plotZmmPhiStar.SetYRange(0,0.05);
   plotZmmPhiStar.TransLegend(-0.05,-0.01);
   plotZmmPhiStar.Draw(c,kTRUE,format);
 
@@ -2557,7 +2558,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmRap.SetLogy(0);
   //plotZmmRap.SetYRange(0,2.0*(ZRAP_REL_EXP_SYS->GetMaximum()));
-  plotZmmRap.SetYRange(0,0.1);
+  plotZmmRap.SetYRange(0,0.05);
   plotZmmRap.TransLegend(-0.05,-0.01);
   plotZmmRap.Draw(c,kTRUE,format);
 

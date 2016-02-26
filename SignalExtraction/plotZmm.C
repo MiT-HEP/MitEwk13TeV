@@ -1068,11 +1068,11 @@ void plotZmm(const TString  inputDir,    // input directory
 	      hMCZPt->Fill(pt,weight*corr);
 
 	      hEWKPhiStar->Fill(phistar,weight*corr);
-	      hEWKPhiStar_EffBin->Fill(pt,weight*corr2Bin); 
-	      hEWKPhiStar_EffStatUp->Fill(pt,weight*corrUp);
-	      hEWKPhiStar_EffStatDown->Fill(pt,weight*corrDown);
-	      hEWKPhiStar_EffSigShape->Fill(pt,weight*corrSigShape);
-	      hEWKPhiStar_EffBkgShape->Fill(pt,weight*corrBkgShape);
+	      hEWKPhiStar_EffBin->Fill(phistar,weight*corr2Bin); 
+	      hEWKPhiStar_EffStatUp->Fill(phistar,weight*corrUp);
+	      hEWKPhiStar_EffStatDown->Fill(phistar,weight*corrDown);
+	      hEWKPhiStar_EffSigShape->Fill(phistar,weight*corrSigShape);
+	      hEWKPhiStar_EffBkgShape->Fill(phistar,weight*corrBkgShape);
 	      hMCPhiStar->Fill(phistar,weight*corr);
 
 	      hEWKZRap->Fill(fabs(rapidity),weight*corr); 
@@ -1171,11 +1171,11 @@ void plotZmm(const TString  inputDir,    // input directory
 	      hMCZPt->Fill(pt,weight*corr);
 
 	      hTopPhiStar->Fill(phistar,weight*corr);
-	      hTopPhiStar_EffBin->Fill(pt,weight*corr2Bin); 
-	      hTopPhiStar_EffStatUp->Fill(pt,weight*corrUp);
-	      hTopPhiStar_EffStatDown->Fill(pt,weight*corrDown);
-	      hTopPhiStar_EffSigShape->Fill(pt,weight*corrSigShape); 
-	      hTopPhiStar_EffBkgShape->Fill(pt,weight*corrBkgShape); 
+	      hTopPhiStar_EffBin->Fill(phistar,weight*corr2Bin); 
+	      hTopPhiStar_EffStatUp->Fill(phistar,weight*corrUp);
+	      hTopPhiStar_EffStatDown->Fill(phistar,weight*corrDown);
+	      hTopPhiStar_EffSigShape->Fill(phistar,weight*corrSigShape); 
+	      hTopPhiStar_EffBkgShape->Fill(phistar,weight*corrBkgShape); 
 	      hMCPhiStar->Fill(phistar,weight*corr);
 
 	      hTopZRap->Fill(fabs(rapidity),weight*corr); 
