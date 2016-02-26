@@ -140,7 +140,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
   for(UInt_t isam=0; isam<samplev.size(); isam++) {
     
     // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
-    Bool_t isSignal = (snamev[isam].Contains("zee",TString::kIgnoreCase)==0);
+    Bool_t isSignal = (snamev[isam].Contains("zee",TString::kIgnoreCase));
   
     // flag to reject Z->ee events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);  
