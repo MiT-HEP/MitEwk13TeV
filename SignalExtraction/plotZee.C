@@ -44,8 +44,8 @@ TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
 void plotZee(const TString  inputDir,    // input directory
 	     const TString  outputDir,   // output directory
-             const Double_t lumi,         // integrated luminosity (/fb)
-	     const Bool_t   normToData=0 //draw MC normalized to data
+             const Double_t lumi,        // integrated luminosity (/fb)
+	     const Bool_t   normToData=0 // draw MC normalized to data
 ) {
   gBenchmark->Start("plotZee");
   gStyle->SetTitleOffset(1.100,"Y");
@@ -76,30 +76,32 @@ void plotZee(const TString  inputDir,    // input directory
   const Double_t ETA_CUT   = 2.5;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-  const TString zeeHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
+
+  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
+  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MG/eff.root";
+  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CT/eff.root";
   
-  const TString dataGsfSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
+  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MG/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MG/eff.root";
+  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CT/eff.root";
 
   //efficiency files 2Bins
 
-  const TString dataHLTEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-  const TString dataHLTEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-  const TString zeeHLTEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
-  const TString zeeHLTEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
+  const TString dataHLTEff2BinName_pos = baseDir + "EleHLTEff/1MG/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir + "EleHLTEff/1MG/eff.root";
+  const TString zeeHLTEff2BinName_pos  = baseDir + "EleHLTEff/1CT/eff.root";
+  const TString zeeHLTEff2BinName_neg  = baseDir + "EleHLTEff/1CT/eff.root";
   
-  const TString dataGsfSelEff2BinName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEff2BinName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
-  const TString zeeGsfSelEff2BinName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEff2BinName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
+  const TString dataGsfSelEff2BinName_pos = baseDir + "EleGsfSelEff/1MG/eff.root";
+  const TString dataGsfSelEff2BinName_neg = baseDir + "EleGsfSelEff/1MG/eff.root";
+  const TString zeeGsfSelEff2BinName_pos  = baseDir + "EleGsfSelEff/1CT/eff.root";
+  const TString zeeGsfSelEff2BinName_neg  = baseDir + "EleGsfSelEff/1CT/eff.root";
 
-  TString GsfSelEffSignalShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/EleGsfSelSigSys.root";
-  TString GsfSelEffBackgroundShapeSys = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/EleGsfSelBkgSys.root";
+  TString GsfSelEffSignalShapeSys = baseDir + "Results/EleGsfSelSigSys.root";
+  TString GsfSelEffBackgroundShapeSys = baseDir + "Results/EleGsfSelBkgSys.root";
 
 
   //
@@ -109,15 +111,15 @@ void plotZee(const TString  inputDir,    // input directory
   TFile *outFile = new TFile(outfilename,"RECREATE");
   TH1::AddDirectory(kFALSE);
 
-  const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
-  const bool doScaleAndSmear = true;
+  //const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
+  //const bool doScaleAndSmear = true;
 
   //data
-  EnergyScaleCorrection_class eleCorr( scaleFile); eleCorr.doScale= true; eleCorr.doSmear = true;
+  //EnergyScaleCorrection_class eleCorr( scaleFile); eleCorr.doScale= true; eleCorr.doSmear = true;
  
 
   // plot output file format
-  const TString format("png");
+  const TString format("all");
 
   // setup efficiency shape systematics
   TFile *GsfSelSigSysFile = new TFile(GsfSelEffSignalShapeSys);
@@ -476,7 +478,7 @@ void plotZee(const TString  inputDir,    // input directory
       if(q1*q2>0) continue;
 
 
-      if ( doScaleAndSmear )
+      /*if ( doScaleAndSmear )
       {
 
       	float smear1 = 0.0, scale1 = 1.0;
@@ -508,7 +510,7 @@ void plotZee(const TString  inputDir,    // input directory
 		lep1 * = corr;
 		lep2 * = corr;
        	}
-      } // do scale and smear
+	} // do scale and smear*/
 
       //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),1), getEleResCorr(lep1->Eta(),-1));
       //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),1), getEleResCorr(lep2->Eta(),-1));
@@ -516,7 +518,7 @@ void plotZee(const TString  inputDir,    // input directory
       //l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
       //l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
       //double mass=(l1+l2).M();
-      Float_t mass = dilep->M();
+      //Float_t mass = dilep->M();
       
       float mass = 0;
       float pt = 0;
@@ -592,21 +594,14 @@ void plotZee(const TString  inputDir,    // input directory
 	  hDataZRap->Fill(fabs(rapidity));
 	  
 	  yield++;
-
-	  //cout<<hData->Integral()<<endl;
 	  
 	} else {
 
-	  TLorentzVector el1;
-	  TLorentzVector el2;
-	  el1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
-	  el2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
+       	  Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
+	  Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
 	  
-	  //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
-	  //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
-	  
-	  Double_t lp1 = el1.Pt();
-	  Double_t lp2 = el2.Pt();
+	  //Double_t lp1 = lep1->Pt();
+	  //Double_t lp2 = lep2->Pt();
 	  Double_t lq1 = q1;
 	  Double_t lq2 = q2;
 	  

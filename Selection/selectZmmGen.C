@@ -43,9 +43,8 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectZmmGen(const TString conf="zmmgen.conf", // input file
-                  const TString outputDir=".",   // output directory
-	          const Bool_t  doScaleCorr=0    // apply energy scale corrections
-) {
+                  const TString outputDir="."   // output directory
+	          ) {
   gBenchmark->Start("selectZmmGen");
 
 //--------------------------------------------------------------------------------------------------------------
@@ -139,8 +138,7 @@ void selectZmmGen(const TString conf="zmmgen.conf", // input file
     //
     // Set up output ntuple
     //
-    TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(!doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+    TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
 
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
@@ -270,26 +268,14 @@ void selectZmmGen(const TString conf="zmmgen.conf", // input file
 	for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i1]);
 
-          // apply scale and resolution corrections to MC
-          Double_t mupt_corr = mu->pt;
-          if(doScaleCorr)
-            mupt_corr = gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
+	  double Mu_Pt=mu->pt;
 	
-	  if(mupt_corr     < PT_CUT)        continue;  // lepton pT cut
+	  if(Mu_Pt     < PT_CUT)        continue;  // lepton pT cut
 	  if(fabs(mu->eta) > ETA_CUT)       continue;  // lepton |eta| cut
 	  if(!passMuonID(mu))               continue;  // lepton selection
 
           if(isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) hasTriggerMatch=kTRUE;
-
-	  double Mu_Pt=0;
-	  if(doScaleCorr) {
-	    Mu_Pt=gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
-	  }
-	  else
-	    {
-	      Mu_Pt=mu->pt;
-	    }
-	     
+	  
 	  if(Mu_Pt>vlep1.Pt())
 	    {
 	      vlep2=vlep1;

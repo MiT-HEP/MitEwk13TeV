@@ -219,7 +219,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
 
   
   // plot output file format
-  const TString format("png");
+  const TString format("all");
 
    
   //--------------------------------------------------------------------------------------------------------------

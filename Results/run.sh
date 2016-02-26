@@ -1,6 +1,6 @@
 #! /bin/bash
 
-LUMI=2263
+LUMI=2318.3
 
 root -l -q  plotZmm.C+\(\"Zmm\",${LUMI}\)
 root -l -q  plotZmmSystematics.C+\(\"Zmm\",${LUMI}\)
