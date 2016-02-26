@@ -134,7 +134,7 @@ void plotZmm(const TString  inputDir,    // input directory
 
 
   // plot output file format
-  const TString format("png");
+  const TString format("all");
 
   // setup efficiency shape systematics
   TFile *StaSigSysFile = new TFile(StaEffSignalShapeSys);
