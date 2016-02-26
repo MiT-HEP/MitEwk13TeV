@@ -46,9 +46,8 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectZeeGen(const TString conf="zee.conf", // input file
-               const TString outputDir=".",   // output directory
-	       const Bool_t  doScaleCorr=0    // apply energy scale corrections?
-) {
+		  const TString outputDir="."   // output directory
+		  ) {
   gBenchmark->Start("selectZeeGen");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -118,6 +117,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
   Int_t   genq1, genq2;
   UInt_t nlep;
   TLorentzVector *lep1=0, *lep2=0;
+  TLorentzVector *sc1=0, *sc2=0;
   Int_t   q1, q2;
   Float_t scale1fbGen,scale1fb,scale1fbUp,scale1fbDown;
 
@@ -150,8 +150,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
     //
     // Set up output ntuple
     //
-    TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(!doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+    TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
@@ -171,6 +170,8 @@ void selectZeeGen(const TString conf="zee.conf", // input file
     outTree->Branch("nlep",     &nlep,     "nlep/i");      // number of leptons
     outTree->Branch("lep1",       "TLorentzVector",  &lep1);     // lepton1 4-vector
     outTree->Branch("lep2",       "TLorentzVector",  &lep2);     // lepton2 4-vector
+    outTree->Branch("sc1",       "TLorentzVector",  &sc1);       // tag supercluster 4-vector
+    outTree->Branch("sc2",       "TLorentzVector",  &sc2);       // probe supercluster 4-vector
     outTree->Branch("q1",          &q1,         "q1/I");          // charge of lepton1
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of lepton2
     outTree->Branch("scale1fbGen",   &scale1fbGen,   "scale1fbGen/F");    // event weight per 1/fb (MC)
@@ -278,14 +279,14 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	Int_t n_el=0;
 	TLorentzVector vlep1(0., 0., 0., 0.);
 	TLorentzVector vlep2(0., 0., 0., 0.);
+	TLorentzVector vsc1(0., 0., 0., 0.);
+	TLorentzVector vsc2(0., 0., 0., 0.);
 	Bool_t hasTriggerMatch = kFALSE;
 	for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
 	  const baconhep::TElectron *el = (baconhep::TElectron*)((*electronArr)[i]);
 	  // apply scale and resolution corrections to MC
           Double_t elscEt_corr = el->scEt;
-          if(doScaleCorr)
-            elscEt_corr = gRandom->Gaus(el->scEt*getEleScaleCorr(el->scEta,0),getEleResCorr(el->scEta,0));
-	  
+          	  
 	  if(elscEt_corr        < PT_CUT)     continue;  // lepton pT cut
 	  if(fabs(el->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
 	  if(fabs(el->scEta)>=ECAL_GAP_LOW && fabs(el->scEta)<=ECAL_GAP_HIGH) continue; // check ECAL gap
@@ -293,25 +294,20 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 
 	  if(isEleTriggerObj(triggerMenu, el->hltMatchBits, kFALSE, 0)) hasTriggerMatch=kTRUE;
 
-	  double El_Pt=0;
-	  if(doScaleCorr) {
-	    El_Pt=gRandom->Gaus(el->pt*getEleScaleCorr(el->scEta,0),getEleResCorr(el->scEta,0));
-	  }
-	  else
-	    {
-	      El_Pt=el->pt;
-	    }
+	  double El_Pt=el->pt;
 	     
 	  if(El_Pt>vlep1.Pt())
 	    {
 	      vlep2=vlep1;
 	      vlep1.SetPtEtaPhiM(El_Pt, el->eta, el->phi, ELE_MASS);
+	      vsc1.SetPtEtaPhiM(el->scEt, el->scEta, el->scPhi, ELE_MASS);
 	      q2=q1;
 	      q1=el->q;
 	    }
 	  else if(El_Pt<=vlep1.Pt()&&El_Pt>vlep2.Pt())
 	    {
 	      vlep2.SetPtEtaPhiM(El_Pt, el->eta, el->phi, ELE_MASS);
+	      vsc2.SetPtEtaPhiM(el->scEt, el->scEta, el->scPhi, ELE_MASS);
 	      q2=el->q;
 	    }
 	 
@@ -399,6 +395,8 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	nlep=n_el;
 	lep1=&vlep1;
         lep2=&vlep2;
+	sc1=&vsc1;
+        sc2=&vsc2;
 	
 	nsel+=weight;
 	nselvar+=weight*weight;
@@ -410,6 +408,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	delete glep2;
 	delete gph;
 	lep1=0, lep2=0;
+	sc1=0, sc2=0;
 	genlep1=0, genlep2=0;
       }
       delete infile;
