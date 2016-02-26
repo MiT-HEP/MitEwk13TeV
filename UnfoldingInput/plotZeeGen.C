@@ -941,7 +941,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
     }
 
   sprintf(ylabel,"Efficiency [%%]");
-  sprintf(xlabel,"p_{T}^{#e^{+}#e^{-}} [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{+}e^{-}} [GeV]");
   CPlot plotZPtEff("ZPtBinEfficiency","",xlabel,ylabel);
   plotZPtEff.AddHist1D(hZPtBinEfficiency,"E");
   plotZPtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -951,7 +951,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotZPtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
-  sprintf(xlabel,"p_{T}^{#e^{+}#e^{-}} [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{+}e^{-}} [GeV]");
   CPlot plotZPtPurity("ZPtBinPurity","",xlabel,ylabel);
   plotZPtPurity.AddHist1D(hZPtBinPurity,"E");
   plotZPtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -960,8 +960,8 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotZPtPurity.SetYRange(0,1.2);
   plotZPtPurity.Draw(c,kTRUE,format);
 
-  sprintf(ylabel,"p_{T}^{#e^{+}#e^{-}} (detector level) [GeV]");
-  sprintf(xlabel,"p_{T}^{#e^{+}#e^{-}} (hadron level) [GeV]");
+  sprintf(ylabel,"p_{T}^{e^{+}e^{-}} (detector level) [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{+}e^{-}} (hadron level) [GeV]");
   CPlot plotZPtMatrix("ZPtMatrixNorm","",xlabel,ylabel);
   plotZPtMatrix.AddHist2D(hZPtMatrixNorm,"COLZ");
   plotZPtMatrix.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1068,7 +1068,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
     }
 
   sprintf(ylabel,"Efficiency [%%]");
-  sprintf(xlabel,"|y^{#e^{+}#e^{-}}|");
+  sprintf(xlabel,"|y^{e^{+}e^{-}}|");
   CPlot plotZRapEff("ZRapBinEfficiency","",xlabel,ylabel);
   plotZRapEff.AddHist1D(hZRapBinEfficiency,"E");
   plotZRapEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1078,7 +1078,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotZRapEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
-  sprintf(xlabel,"|y^{#e^{+}#e^{-}}|");
+  sprintf(xlabel,"|y^{e^{+}e^{-}}|");
   CPlot plotZRapPurity("ZRapBinPurity","",xlabel,ylabel);
   plotZRapPurity.AddHist1D(hZRapBinPurity,"E");
   plotZRapPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1087,8 +1087,8 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotZRapPurity.SetYRange(0,1.2);
   plotZRapPurity.Draw(c,kTRUE,format);
 
-  sprintf(ylabel,"|y^{#e^{+}#e^{-}}| (detector level)");
-  sprintf(xlabel,"|y^{#e^{+}#e^{-}}| (hadron level)");
+  sprintf(ylabel,"|y^{e^{+}e^{-}}| (detector level)");
+  sprintf(xlabel,"|y^{e^{+}e^{-}}| (hadron level)");
   CPlot plotZRapMatrix("ZRapMatrixNorm","",xlabel,ylabel);
   plotZRapMatrix.AddHist2D(hZRapMatrixNorm,"COLZ");
   plotZRapMatrix.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1257,7 +1257,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
     }
 
   sprintf(ylabel,"Efficiency [%%]");
-  sprintf(xlabel,"p_{T}^{#e^{-}} [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{-}} [GeV]");
   CPlot plotLepNegPtEff("LepNegPtBinEfficiency","",xlabel,ylabel);
   plotLepNegPtEff.AddHist1D(hLepNegPtBinEfficiency,"E");
   plotLepNegPtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1267,7 +1267,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotLepNegPtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
-  sprintf(xlabel,"p_{T}^{#e^{-}} [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{-}} [GeV]");
   CPlot plotLepNegPtPurity("LepNegPtBinPurity","",xlabel,ylabel);
   plotLepNegPtPurity.AddHist1D(hLepNegPtBinPurity,"E");
   plotLepNegPtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1276,8 +1276,8 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotLepNegPtPurity.SetYRange(0,1.2);
   plotLepNegPtPurity.Draw(c,kTRUE,format);
 
-  sprintf(ylabel,"p_{T}^{#e^{-}} (detector level) [GeV]");
-  sprintf(xlabel,"p_{T}^{#e^{-}} (hadron level) [GeV]");
+  sprintf(ylabel,"p_{T}^{e^{-}} (detector level) [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{-}} (hadron level) [GeV]");
   CPlot plotLepNegPtMatrix("LepNegPtMatrixNorm","",xlabel,ylabel);
   plotLepNegPtMatrix.AddHist2D(hLepNegPtMatrixNorm,"COLZ");
   plotLepNegPtMatrix.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1320,7 +1320,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
     }
 
   sprintf(ylabel,"Efficiency [%%]");
-  sprintf(xlabel,"p_{T}^{#e^{+}} [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{+}} [GeV]");
   CPlot plotLepPosPtEff("LepPosPtBinEfficiency","",xlabel,ylabel);
   plotLepPosPtEff.AddHist1D(hLepPosPtBinEfficiency,"E");
   plotLepPosPtEff.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1330,7 +1330,7 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotLepPosPtEff.Draw(c,kTRUE,format);
 
   sprintf(ylabel,"Purity [%%]");
-  sprintf(xlabel,"p_{T}^{#e^{+}} [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{+}} [GeV]");
   CPlot plotLepPosPtPurity("LepPosPtBinPurity","",xlabel,ylabel);
   plotLepPosPtPurity.AddHist1D(hLepPosPtBinPurity,"E");
   plotLepPosPtPurity.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
@@ -1339,8 +1339,8 @@ TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   plotLepPosPtPurity.SetYRange(0,1.2);
   plotLepPosPtPurity.Draw(c,kTRUE,format);
 
-  sprintf(ylabel,"p_{T}^{#e^{+}} (detector level) [GeV]");
-  sprintf(xlabel,"p_{T}^{#e^{+}} (hadron level) [GeV]");
+  sprintf(ylabel,"p_{T}^{e^{+}} (detector level) [GeV]");
+  sprintf(xlabel,"p_{T}^{e^{+}} (hadron level) [GeV]");
   CPlot plotLepPosPtMatrix("LepPosPtMatrixNorm","",xlabel,ylabel);
   plotLepPosPtMatrix.AddHist2D(hLepPosPtMatrixNorm,"COLZ");
   plotLepPosPtMatrix.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
