@@ -415,7 +415,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZPT_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_ZPT[i]*100<<endl;
-      ZPT_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_ZPT[i]);
+      ZPT_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_ZPT[i]);
     }
 
   cout<<endl<<endl;
@@ -431,7 +431,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZPT_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_ZPT[i]*100<<endl;
-      ZPT_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_ZPT[i]);
+      ZPT_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_ZPT[i]);
     }
 
   cout<<endl<<endl;
@@ -447,7 +447,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZPT_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_ZPT[i]*100<<endl;
-      ZPT_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_ZPT[i]);
+      ZPT_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_ZPT[i]);
     }
 
   cout<<endl<<endl;
@@ -463,7 +463,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZPT_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_ZPT[i]*100<<endl;
-      ZPT_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_ZPT[i]);
+      ZPT_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_ZPT[i]);
     }
 
   cout<<endl<<endl;
@@ -479,7 +479,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZPT_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_ZPT[i]*100<<endl;
-      ZPT_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_ZPT[i]);
+      ZPT_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_ZPT[i]);
     }
 
   cout<<endl<<endl;
@@ -495,7 +495,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZPT_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_ZPT[i]*100<<endl;
-      ZPT_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_ZPT[i]);
+      ZPT_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_ZPT[i]);
     }
 
   cout<<endl<<endl;
@@ -659,7 +659,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=PHISTAR_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_PHISTAR[i]*100<<endl;
-      PHISTAR_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_PHISTAR[i]);
+      PHISTAR_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_PHISTAR[i]);
     }
 
   cout<<endl<<endl;
@@ -675,7 +675,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=PHISTAR_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_PHISTAR[i]*100<<endl;
-      PHISTAR_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_PHISTAR[i]);
+      PHISTAR_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_PHISTAR[i]);
     }
 
   cout<<endl<<endl;
@@ -691,7 +691,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=PHISTAR_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_PHISTAR[i]*100<<endl;
-      PHISTAR_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_PHISTAR[i]);
+      PHISTAR_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_PHISTAR[i]);
     }
 
   cout<<endl<<endl;
@@ -707,7 +707,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=PHISTAR_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_PHISTAR[i]*100<<endl;
-      PHISTAR_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_PHISTAR[i]);
+      PHISTAR_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_PHISTAR[i]);
     }
 
   cout<<endl<<endl;
@@ -723,7 +723,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=PHISTAR_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_PHISTAR[i]*100<<endl;
-      PHISTAR_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_PHISTAR[i]);
+      PHISTAR_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_PHISTAR[i]);
     }
 
   cout<<endl<<endl;
@@ -739,7 +739,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=PHISTAR_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_PHISTAR[i]*100<<endl;
-      PHISTAR_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_PHISTAR[i]);
+      PHISTAR_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_PHISTAR[i]);
     }
 
   cout<<endl<<endl;
@@ -903,7 +903,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZRAP_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_ZRAP[i]*100<<endl;
-      ZRAP_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_ZRAP[i]);
+      ZRAP_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_ZRAP[i]);
     }
 
   cout<<endl<<endl;
@@ -920,7 +920,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZRAP_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_ZRAP[i]*100<<endl;
-      ZRAP_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_ZRAP[i]);
+      ZRAP_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_ZRAP[i]);
     }
 
   cout<<endl<<endl;
@@ -936,7 +936,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZRAP_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_ZRAP[i]*100<<endl;
-      ZRAP_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_ZRAP[i]);
+      ZRAP_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_ZRAP[i]);
     }
 
   cout<<endl<<endl;
@@ -952,7 +952,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZRAP_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_ZRAP[i]*100<<endl;
-      ZRAP_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_ZRAP[i]);
+      ZRAP_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_ZRAP[i]);
     }
 
   cout<<endl<<endl;
@@ -968,7 +968,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZRAP_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_ZRAP[i]*100<<endl;
-      ZRAP_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_ZRAP[i]);
+      ZRAP_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_ZRAP[i]);
     }
 
   cout<<endl<<endl;
@@ -984,7 +984,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=ZRAP_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_ZRAP[i]*100<<endl;
-      ZRAP_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_ZRAP[i]);
+      ZRAP_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_ZRAP[i]);
     }
 
   cout<<endl<<endl;
@@ -1149,7 +1149,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1PT_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_LEP1PT[i]*100<<endl;
-      LEP1PT_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_LEP1PT[i]);
+      LEP1PT_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_LEP1PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1165,7 +1165,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1PT_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_LEP1PT[i]*100<<endl;
-      LEP1PT_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_LEP1PT[i]);
+      LEP1PT_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_LEP1PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1181,7 +1181,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1PT_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_LEP1PT[i]*100<<endl;
-      LEP1PT_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_LEP1PT[i]);
+      LEP1PT_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_LEP1PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1197,7 +1197,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1PT_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_LEP1PT[i]*100<<endl;
-      LEP1PT_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_LEP1PT[i]);
+      LEP1PT_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_LEP1PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1213,7 +1213,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1PT_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_LEP1PT[i]*100<<endl;
-      LEP1PT_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_LEP1PT[i]);
+      LEP1PT_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_LEP1PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1229,7 +1229,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1PT_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_LEP1PT[i]*100<<endl;
-      LEP1PT_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_LEP1PT[i]);
+      LEP1PT_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_LEP1PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1393,7 +1393,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2PT_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_LEP2PT[i]*100<<endl;
-      LEP2PT_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_LEP2PT[i]);
+      LEP2PT_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_LEP2PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1411,7 +1411,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2PT_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_LEP2PT[i]*100<<endl;
-      LEP2PT_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_LEP2PT[i]);
+      LEP2PT_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_LEP2PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1427,7 +1427,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2PT_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_LEP2PT[i]*100<<endl;
-      LEP2PT_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_LEP2PT[i]);
+      LEP2PT_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_LEP2PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1443,7 +1443,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2PT_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_LEP2PT[i]*100<<endl;
-      LEP2PT_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_LEP2PT[i]);
+      LEP2PT_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_LEP2PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1459,7 +1459,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2PT_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_LEP2PT[i]*100<<endl;
-      LEP2PT_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_LEP2PT[i]);
+      LEP2PT_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_LEP2PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1475,7 +1475,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2PT_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_LEP2PT[i]*100<<endl;
-      LEP2PT_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_LEP2PT[i]);
+      LEP2PT_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_LEP2PT[i]);
     }
 
   cout<<endl<<endl;
@@ -1640,7 +1640,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1ETA_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_LEP1ETA[i]*100<<endl;
-      LEP1ETA_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_LEP1ETA[i]);
+      LEP1ETA_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_LEP1ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1656,7 +1656,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1ETA_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_LEP1ETA[i]*100<<endl;
-      LEP1ETA_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_LEP1ETA[i]);
+      LEP1ETA_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_LEP1ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1672,7 +1672,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1ETA_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_LEP1ETA[i]*100<<endl;
-      LEP1ETA_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_LEP1ETA[i]);
+      LEP1ETA_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_LEP1ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1688,7 +1688,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1ETA_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_LEP1ETA[i]*100<<endl;
-      LEP1ETA_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_LEP1ETA[i]);
+      LEP1ETA_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_LEP1ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1704,7 +1704,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1ETA_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_LEP1ETA[i]*100<<endl;
-      LEP1ETA_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_LEP1ETA[i]);
+      LEP1ETA_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_LEP1ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1720,7 +1720,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP1ETA_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_LEP1ETA[i]*100<<endl;
-      LEP1ETA_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_LEP1ETA[i]);
+      LEP1ETA_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_LEP1ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1884,7 +1884,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2ETA_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_LEP2ETA[i]*100<<endl;
-      LEP2ETA_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_LEP2ETA[i]);
+      LEP2ETA_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_LEP2ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1900,7 +1900,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2ETA_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_LEP2ETA[i]*100<<endl;
-      LEP2ETA_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_LEP2ETA[i]);
+      LEP2ETA_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_LEP2ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1916,7 +1916,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2ETA_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_LEP2ETA[i]*100<<endl;
-      LEP2ETA_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_LEP2ETA[i]);
+      LEP2ETA_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_LEP2ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1932,7 +1932,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2ETA_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_LEP2ETA[i]*100<<endl;
-      LEP2ETA_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_LEP2ETA[i]);
+      LEP2ETA_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_LEP2ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1948,7 +1948,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2ETA_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_LEP2ETA[i]*100<<endl;
-      LEP2ETA_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_LEP2ETA[i]);
+      LEP2ETA_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_LEP2ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -1964,7 +1964,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEP2ETA_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_LEP2ETA[i]*100<<endl;
-      LEP2ETA_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_LEP2ETA[i]);
+      LEP2ETA_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_LEP2ETA[i]);
     }
 
   cout<<endl<<endl;
@@ -2128,7 +2128,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPNEGPT_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_LEPNEGPT[i]*100<<endl;
-      LEPNEGPT_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
+      LEPNEGPT_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2144,7 +2144,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPNEGPT_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_LEPNEGPT[i]*100<<endl;
-      LEPNEGPT_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
+      LEPNEGPT_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2161,7 +2161,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPNEGPT_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT[i]*100<<endl;
-      LEPNEGPT_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
+      LEPNEGPT_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2177,7 +2177,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPNEGPT_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_LEPNEGPT[i]*100<<endl;
-      LEPNEGPT_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
+      LEPNEGPT_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2193,7 +2193,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPNEGPT_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_LEPNEGPT[i]*100<<endl;
-      LEPNEGPT_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
+      LEPNEGPT_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2209,7 +2209,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPNEGPT_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_LEPNEGPT[i]*100<<endl;
-      LEPNEGPT_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
+      LEPNEGPT_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_LEPNEGPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2373,7 +2373,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPPOSPT_REL_BKG_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<BKG_SYSTEMATIC_UNCERT_LEPPOSPT[i]*100<<endl;
-      LEPPOSPT_REL_BKG_SYS->SetBinContent(i+1,BKG_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
+      LEPPOSPT_REL_BKG_SYS->SetBinContent(i+1,100*BKG_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2389,7 +2389,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPPOSPT_REL_EFF_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EFF_SYSTEMATIC_UNCERT_LEPPOSPT[i]*100<<endl;
-      LEPPOSPT_REL_EFF_SYS->SetBinContent(i+1,EFF_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
+      LEPPOSPT_REL_EFF_SYS->SetBinContent(i+1,100*EFF_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2406,7 +2406,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPPOSPT_REL_RESSCALE_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT[i]*100<<endl;
-      LEPPOSPT_REL_RESSCALE_SYS->SetBinContent(i+1,RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
+      LEPPOSPT_REL_RESSCALE_SYS->SetBinContent(i+1,100*RESSCALE_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2422,7 +2422,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPPOSPT_REL_UNFOLD_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<UNFOLD_SYSTEMATIC_UNCERT_LEPPOSPT[i]*100<<endl;
-      LEPPOSPT_REL_UNFOLD_SYS->SetBinContent(i+1,UNFOLD_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
+      LEPPOSPT_REL_UNFOLD_SYS->SetBinContent(i+1,100*UNFOLD_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2438,7 +2438,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPPOSPT_REL_LUMI_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<LUMI_SYSTEMATIC_UNCERT_LEPPOSPT[i]*100<<endl;
-      LEPPOSPT_REL_LUMI_SYS->SetBinContent(i+1,LUMI_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
+      LEPPOSPT_REL_LUMI_SYS->SetBinContent(i+1,100*LUMI_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2454,7 +2454,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   for(int i=0;i!=LEPPOSPT_REL_EXP_SYS->GetNbinsX();++i)
     {
       cout<<"Bin "<<i+1<<": "<<EXP_SYSTEMATIC_UNCERT_LEPPOSPT[i]*100<<endl;
-      LEPPOSPT_REL_EXP_SYS->SetBinContent(i+1,EXP_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
+      LEPPOSPT_REL_EXP_SYS->SetBinContent(i+1,100*EXP_SYSTEMATIC_UNCERT_LEPPOSPT[i]);
     }
 
   cout<<endl<<endl;
@@ -2502,11 +2502,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // ZPt
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"p_{T}^{#mu^{+}#mu^{-}} [GeV]");
   ZPT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmPt("zmmPtSys","",xlabel,ylabel);
-  plotZmmPt.AddHist1D(ZPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmPt.AddHist1D(ZPT_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmPt.AddHist1D(ZPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmPt.AddHist1D(ZPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmPt.AddHist1D(ZPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2515,7 +2515,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmPt.SetLogx();
   plotZmmPt.SetLogy(0);
-  plotZmmPt.SetYRange(0,1.5*(ZPT_REL_EXP_SYS->GetMaximum()));
+  plotZmmPt.SetYRange(0,25);
   plotZmmPt.TransLegend(-0.05,-0.01);
   plotZmmPt.Draw(c,kTRUE,format);
 
@@ -2523,11 +2523,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // PhiStar
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"#phi_{#eta}*");
   PHISTAR_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmPhiStar("zmmPhiStarSys","",xlabel,ylabel);
-  plotZmmPhiStar.AddHist1D(PHISTAR_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmPhiStar.AddHist1D(PHISTAR_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmPhiStar.AddHist1D(PHISTAR_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmPhiStar.AddHist1D(PHISTAR_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmPhiStar.AddHist1D(PHISTAR_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2536,8 +2536,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmPhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmPhiStar.SetLogx();
   plotZmmPhiStar.SetLogy(0);
-  //plotZmmPhiStar.SetYRange(0,1.5*(PHISTAR_REL_EXP_SYS->GetMaximum()));
-  plotZmmPhiStar.SetYRange(0,0.05);
+  plotZmmPhiStar.SetYRange(0,25);
   plotZmmPhiStar.TransLegend(-0.05,-0.01);
   plotZmmPhiStar.Draw(c,kTRUE,format);
 
@@ -2545,11 +2544,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // ZRap
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"|y^{#mu^{+}#mu^{-}}|");
   ZRAP_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmRap("zmmRapSys","",xlabel,ylabel);
-  plotZmmRap.AddHist1D(ZRAP_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmRap.AddHist1D(ZRAP_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmRap.AddHist1D(ZRAP_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmRap.AddHist1D(ZRAP_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmRap.AddHist1D(ZRAP_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2557,8 +2556,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmRap.AddHist1D(ZRAP_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
   plotZmmRap.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmRap.SetLogy(0);
-  //plotZmmRap.SetYRange(0,2.0*(ZRAP_REL_EXP_SYS->GetMaximum()));
-  plotZmmRap.SetYRange(0,0.05);
+  plotZmmRap.SetYRange(0,25);
   plotZmmRap.TransLegend(-0.05,-0.01);
   plotZmmRap.Draw(c,kTRUE,format);
 
@@ -2566,11 +2564,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // Lep1 Pt
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"p_{T}(leading muon) [GeV]");
   LEP1PT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmLep1Pt("zmmLep1PtSys","",xlabel,ylabel);
-  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep1Pt.AddHist1D(LEP1PT_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmLep1Pt.AddHist1D(LEP1PT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmLep1Pt.AddHist1D(LEP1PT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmLep1Pt.AddHist1D(LEP1PT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2579,8 +2577,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmLep1Pt.SetLogx();
   plotZmmLep1Pt.SetLogy(0);
-  //plotZmmLep1Pt.SetYRange(0,2*(LEP1PT_REL_EXP_SYS->GetMaximum()));
-  plotZmmLep1Pt.SetYRange(0,0.1);
+  plotZmmLep1Pt.SetYRange(0,25);
   plotZmmLep1Pt.TransLegend(-0.05,-0.01);
   plotZmmLep1Pt.Draw(c,kTRUE,format);
 
@@ -2588,11 +2585,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // Lep2 Pt
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"p_{T}(2nd leading muon) [GeV]");
   LEP2PT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmLep2Pt("zmmLep2PtSys","",xlabel,ylabel);
-  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep2Pt.AddHist1D(LEP2PT_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmLep2Pt.AddHist1D(LEP2PT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmLep2Pt.AddHist1D(LEP2PT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmLep2Pt.AddHist1D(LEP2PT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2601,7 +2598,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmLep2Pt.SetLogx();
   plotZmmLep2Pt.SetLogy(0);
-  plotZmmLep2Pt.SetYRange(0,1.5*(LEP2PT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLep2Pt.SetYRange(0,25);
   plotZmmLep2Pt.TransLegend(-0.05,-0.01);
   plotZmmLep2Pt.Draw(c,kTRUE,format);
 
@@ -2609,11 +2606,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // Lep1 Eta
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"|#eta|(leading muon)");
   LEP1ETA_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmLep1Eta("zmmLep1EtaSys","",xlabel,ylabel);
-  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2621,8 +2618,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmLep1Eta.AddHist1D(LEP1ETA_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
   plotZmmLep1Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmLep1Eta.SetLogy(0);
-  //plotZmmLep1Eta.SetYRange(0,1.5*(LEP1ETA_REL_EXP_SYS->GetMaximum()));
-  plotZmmLep1Eta.SetYRange(0,0.1);
+  plotZmmLep1Eta.SetYRange(0,25);
   plotZmmLep1Eta.TransLegend(-0.05,-0.01);
   plotZmmLep1Eta.Draw(c,kTRUE,format);
 
@@ -2630,11 +2626,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // Lep2 Eta
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"|#eta|(2nd leading muon)");
   LEP2ETA_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmLep2Eta("zmmLep2EtaSys","",xlabel,ylabel);
-  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2642,8 +2638,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmLep2Eta.AddHist1D(LEP2ETA_REL_LUMI_SYS,"Luminosity","",linecolorLumiSys,linestyleLumiSys);
   plotZmmLep2Eta.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmLep2Eta.SetLogy(0);
-  //plotZmmLep2Eta.SetYRange(0,1.5*(LEP2ETA_REL_EXP_SYS->GetMaximum()));
-  plotZmmLep2Eta.SetYRange(0,0.1);
+  plotZmmLep2Eta.SetYRange(0,25);
   plotZmmLep2Eta.TransLegend(-0.05,-0.01);
   plotZmmLep2Eta.Draw(c,kTRUE,format);
 
@@ -2651,11 +2646,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // LepNeg Pt
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"p_{T}^{#mu^{-}} [GeV]");
   LEPNEGPT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmLepNegPt("zmmLepNegPtSys","",xlabel,ylabel);
-  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmLepNegPt.AddHist1D(LEPNEGPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2664,7 +2659,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmLepNegPt.SetLogx();
   plotZmmLepNegPt.SetLogy(0);
-  plotZmmLepNegPt.SetYRange(0,1.5*(LEPNEGPT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLepNegPt.SetYRange(0,25);
   plotZmmLepNegPt.TransLegend(-0.05,-0.01);
   plotZmmLepNegPt.Draw(c,kTRUE,format);
 
@@ -2672,11 +2667,11 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   // LepPos Pt
   //   
 
-  sprintf(ylabel,"Relative Systematic Uncertainty");
+  sprintf(ylabel,"Relative Systematic Uncertainty [%]");
   sprintf(xlabel,"p_{T}^{#mu^{+}} [GeV]");
   LEPPOSPT_REL_EXP_SYS->GetYaxis()->SetTitleOffset(1.4);
   CPlot plotZmmLepPosPt("zmmLepPosPtSys","",xlabel,ylabel);
-  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_EXP_SYS,"Total Systematic","",linecolorTotSys,linestyleTotSys);
+  plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_EXP_SYS,"Tot. Syst. (No Lumi)","",linecolorTotSys,linestyleTotSys);
   plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_EFF_SYS,"Charge, Reco and ID","",linecolorIDSys,linestyleIDSys);
   plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_RESSCALE_SYS,"Scale and Resolution","",linecolorScaleSys,linestyleScaleSys);
   plotZmmLepPosPt.AddHist1D(LEPPOSPT_REL_BKG_SYS,"Background","",linecolorBkgSys,linestyleBkgSys);
@@ -2685,7 +2680,7 @@ void plotZmmSystematics(const TString  outputDir,   // output directory
   plotZmmLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZmmLepPosPt.SetLogx();
   plotZmmLepPosPt.SetLogy(0);
-  plotZmmLepPosPt.SetYRange(0,1.5*(LEPPOSPT_REL_EXP_SYS->GetMaximum()));
+  plotZmmLepPosPt.SetYRange(0,25);
   plotZmmLepPosPt.TransLegend(-0.05,-0.01);
   plotZmmLepPosPt.Draw(c,kTRUE,format);
 
