@@ -16,9 +16,9 @@ $(info You are on a mit server)
 ROOUNFOLD=/home/amarini/RooUnfold/
 else
 $(info You are Not on lxplus nor mit)
-ROOUNFOLD=/home/kfiekas/CMSSW_7_4_14/src/RooUnfold
-CXXFLAGS += -I /home/kfiekas/CMSSW_7_4_14/src/BootStrap -L /home/kfiekas/CMSSW_7_4_14/src/BootStrap/bin -l BootStrap
-CXXFLAGES += -Wl,-rpath=/home/kfiekas/CMSSW_7_4_14/src/BootStrap/bin
+ROOUNFOLD=/afs/cern.ch/work/k/kfiekas/Analysis/WZCrossSection/CMSSW_7_4_14/src/RooUnfold
+CXXFLAGS += -I /afs/cern.ch/work/k/kfiekas/Analysis/WZCrossSection/CMSSW_7_4_14/src/BootStrap -L /afs/cern.ch/work/k/kfiekas/Analysis/WZCrossSection/CMSSW_7_4_14/src/BootStrap/bin -l BootStrap
+CXXFLAGES += -Wl,-rpath=/afs/cern.ch/work/k/kfiekas/Analysis/WZCrossSection/CMSSW_7_4_14/src/BootStrap/bin
 endif
 
 #CXXFLAGS += -L$(PWD)/../NeroProducer/Core/bin -lBare -Wl,-rpath=$(PWD)/../NeroProducer/Core/bin -ggdb

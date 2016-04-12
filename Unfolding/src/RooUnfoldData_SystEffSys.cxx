@@ -28,10 +28,10 @@ using namespace std;
 
 
 //Include Headers
-#include "/afs/cern.ch/user/x/xniu/WZXSection/Copy/CMSSW_7_6_3_patch2/src/BootStrap/interface/BootStrap.hpp"
+#include "/afs/cern.ch/work/k/kfiekas/Analysis/WZCrossSection/CMSSW_7_4_14/src/BootStrap/interface/BootStrap.hpp"
 
 #ifdef __CINT__
-gSystem->Load("/afs/cern.ch/user/x/xniu/WZXSection/Copy/CMSSW_7_6_3_patch2/src/BootStrap/bin/libBootStrap.so")
+gSystem->Load("/afs/cern.ch/work/k/kfiekas/Analysis/WZCrossSection/CMSSW_7_4_14/src/BootStrap/bin/libBootStrap.so")
 #endif
 
 string int2string(int i) {
