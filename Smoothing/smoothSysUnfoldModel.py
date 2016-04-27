@@ -2,6 +2,7 @@ import ROOT
 import GausKernelSmoother
 import LatexDocument
 import math
+import argparse
 
 def SetPlotStyle():
     ROOT.gROOT.SetStyle("Plain")
@@ -141,10 +142,22 @@ def createInclusiveAndRatio(file, directory):
         inclRatio.Write()
 
 
+parser = argparse.ArgumentParser(description='This is a demo script by nixCraft.')
+parser.add_argument('-c','--channel', help='Channel [Zmm,Zee]',required=True)
+parser.add_argument('-v','--variable', help='Variable name [ZPt, ZRap]',required=True)
+parser.add_argument('-s','--scale', help='Log scale [True, False]',type=int,required=True)
+parser.add_argument('-w','--width', help='Gaus width',type=float,required=True)
+args = parser.parse_args()
+ 
+## show values ##
+print ("Channel: %s" % args.channel )
+print ("Variable: %s" % args.variable )
+print ("Log Scale: %s" % args.scale )
+print ("Gaus Width: %s" % args.width )
 
-fileIn = ROOT.TFile.Open("../Unfolding/Zmm/UnfoldingOutputLep1EtaUnfoldModel.root")
-fileOutCtrl = ROOT.TFile.Open("smoothingControlPlots_Lep1EtaUnfoldModel.root", "RECREATE")
-fileOut = ROOT.TFile.Open("../Unfolding/Zmm/UnfoldingOutputLep1EtaUnfoldModel_Smoothed.root", "RECREATE")
+fileIn = ROOT.TFile.Open("../Unfolding/"+args.channel+"/UnfoldingOutput"+args.variable+"UnfoldModel.root")
+fileOutCtrl = ROOT.TFile.Open("smoothingControlPlots_"+args.channel+"_"+args.variable+"UnfoldModel.root", "RECREATE")
+fileOut = ROOT.TFile.Open("../Unfolding/"+args.channel+"/UnfoldingOutput"+args.variable+"UnfoldModel_Smoothed.root", "RECREATE")
 
 
 sysNames = ["UNFOLDMODEL"]
@@ -162,13 +175,14 @@ for sysName in sysNames:
     sys[-1].outputControlFile = fileOutCtrl
     sys[-1].outputFile = fileOut
     sys[-1].histoName = "hUnfold"
-    sys[-1].variableName = "Lep1Eta"
+    sys[-1].channelName = args.channel
+    sys[-1].variableName = args.variable
     sys[-1].sysName = sysName
-    sys[-1].logScale = False
-    sys[-1].gausWidth = 0.3
+    sys[-1].logScale = args.scale
+    sys[-1].gausWidth = args.width
 
 tex = LatexDocument.LatexDocument()
-tex.texFileName = "smoothedSys_UnfoldModel_Lep1Eta.tex"
+tex.texFileName = "smoothedSys_UnfoldModel_"+args.channel+"_"+args.variable+".tex"
 tex.figDir = "plots/"
 tex.openDocument()
 
@@ -176,10 +190,9 @@ for s in sys:
     print "Smoothing "+s.sysName+"/"+s.variableName
     s.retrieveHistos()
     s.smooth()
-    #s.saveControlHistos(tex.figDir)
-    s.saveControlHistos(0)
+    s.saveControlHistos(args.scale)
     s.saveNewSys()
-    tex.insertFigure(s.sysName+"_"+s.variableName+"_ctrl.eps", s.sysName.replace("_", "-")+", "+s.histoName.replace("_", "-"))
+    tex.insertFigure(s.sysName+"_"+s.channelName+"_"+s.variableName+"_ctrl.eps", s.sysName.replace("_", "-")+", "+s.histoName.replace("_", "-"))
 
 tex.closeDocument()
 tex.compile()

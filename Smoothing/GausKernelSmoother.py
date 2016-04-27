@@ -188,7 +188,7 @@ class Systematic:
         if not self.outputControlFile:
             raise StandardError("ERROR: non existing output control file")
         self.outputControlFile.cd()
-        canvas = ROOT.TCanvas(self.sysName+"_"+self.variableName+"_ctrl", self.sysName+" shift "+self.histoNom.GetTitle(), 900, 900)
+        canvas = ROOT.TCanvas(self.sysName+"_"+self.channelName+"_"+self.variableName+"_ctrl", self.sysName+" shift "+self.histoNom.GetTitle(), 900, 900)
         canvas.SetLogx(y)
         self.histoShift.SetLineWidth(2)
         self.histoShift.SetLineColor(1)
