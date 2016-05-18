@@ -1,16 +1,6 @@
 #include "EnergyScaleCorrection_class.hh"
-// -------------------- FIGURE OUT if is CMSSW ---------------
-#ifdef PROJECT_NAME
-	#define VALUE strcmp(PROJECT_NAME,"CMSSW")
-	#if VALUE == 0 
-		#define CMSSW
-	#endif
-#endif
-// ----------------------------------------------------------
-
-#ifdef CMSSW
-	#include "FWCore/ParameterSet/interface/FileInPath.h"
-#endif
+#include <RooDataSet.h>
+#include <RooArgSet.h>
 
 #define NGENMAX 10000
 
@@ -23,6 +13,8 @@
 
 //#define DEBUG
 //#define PEDANTIC_OUTPUT
+//
+//#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 EnergyScaleCorrection_class::EnergyScaleCorrection_class(std::string correctionFileName, unsigned int genSeed):
   doScale(false), doSmearings(false),
@@ -106,13 +98,13 @@ correctionValue_class EnergyScaleCorrection_class::getScaleCorrection(unsigned i
     // }
     // corr_itr = scales_not_defined.find(category);
     /// \todo this can be switched to an exeption 
-    std::cout << "[ERROR] Category not found: " << std::endl;
+    std::cout << "[ERROR] Scale category not found: " << std::endl;
     std::cout << category << std::endl;
     //     exit(1);
   }
   
 #ifdef DEBUG
-  std::cout << "[DEBUG] Checking correction for category: " << category << std::endl;
+  std::cout << "[DEBUG] Checking scale correction for category: " << category << std::endl;
   std::cout << "[DEBUG] Correction is: " << corr_itr->second
 	    << std::endl
 	    << "        given for category " <<  corr_itr->first << std::endl;;
@@ -135,13 +127,13 @@ float EnergyScaleCorrection_class::getScaleOffset(unsigned int runNumber, bool i
     // }
     // corr_itr = scales_not_defined.find(category);
     /// \todo this can be switched to an exeption 
-    std::cout << "[ERROR] Category not found: " << std::endl;
+    std::cout << "[ERROR] Scale offset category not found: " << std::endl;
     std::cout << category << std::endl;
     //     exit(1);
   }
   
 #ifdef DEBUG
-  std::cout << "[DEBUG] Checking correction for category: " << category << std::endl;
+  std::cout << "[DEBUG] Checking scale offset correction for category: " << category << std::endl;
   std::cout << "[DEBUG] Correction is: " << corr_itr->second
 	    << std::endl
 	    << "        given for category " <<  corr_itr->first << std::endl;;
@@ -164,11 +156,7 @@ void EnergyScaleCorrection_class::ReadFromFile(TString filename)
   std::cout << "[STATUS] Reading energy scale correction  values from file: " << filename << std::endl;
 
   //std::ifstream Ccufile(edm::FileInPath(Ccufilename).fullPath().c_str(),std::ios::in);
-#ifdef CMSSW
-  std::ifstream f_in(edm::FileInPath(filename).fullPath().c_str());
-#else
   std::ifstream f_in(filename.Data());
-#endif
 
   if(!f_in.good()) {
     std::cerr << "[ERROR] file " << filename << " not readable" << std::endl;
@@ -224,7 +212,7 @@ void EnergyScaleCorrection_class::AddScale(TString category_, int runMin_, int r
 
 //============================== SMEARING
 void EnergyScaleCorrection_class::AddSmearing(TString category_, int runMin_, int runMax_,
-					      double constTerm, double err_constTerm, double alpha, double err_alpha,
+					      double rho, double err_rho, double phi, double err_phi,
 					      double Emean, double err_Emean)
 {
   
@@ -240,10 +228,10 @@ void EnergyScaleCorrection_class::AddSmearing(TString category_, int runMin_, in
   }
   
   correctionValue_class corr;
-  corr.constTerm    = constTerm;
-  corr.constTerm_err = err_constTerm;
-  corr.alpha        = alpha;
-  corr.alpha_err    = err_alpha;
+  corr.rho    = rho;
+  corr.rho_err = err_rho;
+  corr.phi        = phi;
+  corr.phi_err    = err_phi;
   corr.Emean        = Emean;
   corr.Emean_err    = err_Emean;
   smearings[cat] = corr;
@@ -280,11 +268,7 @@ void EnergyScaleCorrection_class::ReadSmearingFromFile(TString filename)
   std::cout << "[STATUS] Reading smearing values from file: " << filename << std::endl;
 #endif
   //edm::FileInPath(Ccufilename).fullPath().c_str(),std::ios::in); .fullPath().c_str()
-#ifdef CMSSW
-  std::ifstream f_in(edm::FileInPath(filename).fullPath().c_str());
-#else
   std::ifstream f_in(filename.Data());
-#endif
   if(!f_in.good()) {
     std::cerr << "[ERROR] file " << filename << " not readable" << std::endl;
     exit(1);
@@ -294,7 +278,7 @@ void EnergyScaleCorrection_class::ReadSmearingFromFile(TString filename)
   int unused = 0;
   TString category, region2;
   //double smearing, err_smearing;
-  double rho, phi, Emean, constTerm, alpha, err_rho, err_phi, err_Emean, err_alpha = 0., err_constTerm = 0.;
+  double rho, phi, Emean, err_rho, err_phi, err_Emean;
   double etaMin, etaMax, r9Min, r9Max;
   std::string phi_string, err_phi_string;
   
@@ -311,78 +295,40 @@ void EnergyScaleCorrection_class::ReadSmearingFromFile(TString filename)
     }
     
     if(smearingType_ == UNKNOWN) { // trying to guess: not recommended
-      std::string line;
-      std::getline(f_in, line);
-      std::istringstream s_in(line);
-      s_in >> category >> unused >> etaMin >> etaMax
-	   >> r9Min >> r9Max >> runMin >> runMax
-	   >> Emean >> err_Emean
-	   >> rho >> err_rho >> phi >> err_phi;
-      if(s_in.eof()) { // this is not the globe format but the ECALELF format for tests
-	std::cout << "[INFO] smearingType_=ECALELF TOY" << std::endl;
-	smearingType_ = ECALELF_TOY;
-	s_in >> category >> constTerm >> alpha;
-	AddSmearing(category, runMin, runMax, constTerm,  err_constTerm, alpha, err_alpha, Emean, err_Emean);
-      } else {
-	smearingType_ = GLOBE;
-	std::cout << "[INFO] smearingType= GLOBE" << std::endl;
-	if(Emean != 0) {
-	  constTerm = rho * sin(phi);
-	  alpha = rho * Emean * cos(phi);
-	} else {
-	  alpha = 0;
-	  constTerm = rho;
-	}
-	
-	AddSmearing(category, runMin, runMax, constTerm,  err_constTerm, alpha, err_alpha, Emean, err_Emean);
-	
-      }
+		std::cerr << "[ERROR] Not implemented" << std::endl;
+		assert(false);
+		
     } else if(smearingType_ == GLOBE) {
-      f_in >> category >> unused >> etaMin >> etaMax >> r9Min >> r9Max >> runMin >> runMax >>
-	Emean >> err_Emean >>
-	rho >> err_rho >> phi >> err_phi;
-      if(Emean != 0) {
-	constTerm = rho * sin(phi);
-	alpha = rho * Emean * cos(phi);
-      } else {
-	alpha = 0;
-	constTerm = rho;
-      }
+		f_in >> category >> unused >> etaMin >> etaMax >> r9Min >> r9Max >> runMin >> runMax >>
+			Emean >> err_Emean >>
+			rho >> err_rho >> phi >> err_phi;
+
+		AddSmearing(category, runMin, runMax, rho,  err_rho, phi, err_phi, Emean, err_Emean);
       
-      AddSmearing(category, runMin, runMax, constTerm,  err_constTerm, alpha, err_alpha, Emean, err_Emean);
     } else if(smearingType_ == ECALELF) {
-      f_in >> category >> 
-	Emean >> err_Emean >>
-	rho >> err_rho >> phi_string >> err_phi_string;
+		f_in >> category >> 
+			Emean >> err_Emean >>
+			rho >> err_rho >> phi_string >> err_phi_string;
 #ifdef DEBUG
-      std::cout << category 
-	//<< "\t" << etaMin << "\t" << etaMax << "\t" << r9Min << "\t" << r9Max << "\t" << runMin << "\t" << runMax 
-		<< "\tEmean=" << Emean << "\t" 
-		<< rho << "\t" << err_rho << "\tphi_string=" 
-		<< phi_string << "#\terr_phi_string=" << err_phi_string << std::endl;
+		std::cout << category 
+			//<< "\t" << etaMin << "\t" << etaMax << "\t" << r9Min << "\t" << r9Max << "\t" << runMin << "\t" << runMax 
+				  << "\tEmean=" << Emean << "\t" 
+				  << rho << "\t" << err_rho << "\tphi_string=" 
+				  << phi_string << "#\terr_phi_string=" << err_phi_string << std::endl;
 #endif
-      
+		
       if(phi_string=="M_PI_2") phi=M_PI_2;
       else phi = std::stod(phi_string);
       
       if(err_phi_string=="M_PI_2") err_phi=M_PI_2;
       else err_phi = std::stod(err_phi_string);
       
-      if(Emean != 0) {
-	constTerm = rho * sin(phi);
-	alpha = rho * Emean * cos(phi);
-      } else {
-	alpha = 0;
-	err_alpha = 0; ///\todo to be fixed Emean should always be !=0 in order to get the proper propagation
-	constTerm = rho;
-	err_constTerm = err_rho;
-      }
       
-      AddSmearing(category, runMin, runMax, constTerm,  err_constTerm, alpha, err_alpha, Emean, err_Emean);
+      AddSmearing(category, runMin, runMax, rho,  err_rho, phi, err_phi, Emean, err_Emean);
       
     } else {
-      f_in >> category >> constTerm >> alpha;
-      AddSmearing(category, runMin, runMax, constTerm,  err_constTerm, alpha, err_alpha, Emean, err_Emean);
+      f_in >> category >> rho >> phi;
+      AddSmearing(category, runMin, runMax, rho,  err_rho, phi, err_phi, Emean, err_Emean);
     }
 #ifdef DEBUG
     std::cout << category << "\t" << etaMin << "\t" << etaMax << "\t" << r9Min << "\t" << r9Max << "\t" << runMin << "\t" << runMax << "\tEmean=" << Emean << "\t" << rho << "\t" << phi << std::endl;
@@ -398,10 +344,17 @@ void EnergyScaleCorrection_class::ReadSmearingFromFile(TString filename)
 
 
 
-float EnergyScaleCorrection_class::getSmearingSigma(int runNumber, float energy, bool isEBEle, float R9Ele, float etaSCEle) const
+float EnergyScaleCorrection_class::getSmearingSigma(int runNumber, bool isEBEle, float R9Ele, float etaSCEle, float EtEle, paramSmear_t par, float nSigma) const
+{
+  if (par == kRho) return getSmearingSigma(runNumber, isEBEle, R9Ele, etaSCEle, EtEle, nSigma, 0.);
+  if (par == kPhi) return getSmearingSigma(runNumber, isEBEle, R9Ele, etaSCEle, EtEle, 0., nSigma);
+  return getSmearingSigma(runNumber, isEBEle, R9Ele, etaSCEle, EtEle, 0., 0.);
+}
+
+float EnergyScaleCorrection_class::getSmearingSigma(int runNumber, bool isEBEle, float R9Ele, float etaSCEle, float EtEle, float nSigma_rho, float nSigma_phi) const
 {
   
-  correctionCategory_class category(runNumber, etaSCEle, R9Ele, energy / cosh(etaSCEle));
+  correctionCategory_class category(runNumber, etaSCEle, R9Ele, EtEle);
   correction_map_t::const_iterator corr_itr = smearings.find(category);
   if(corr_itr == smearings.end()) { // if not in the standard classes, add it in the list of not defined classes
     // the following commented part makes the method non const
@@ -410,28 +363,32 @@ float EnergyScaleCorrection_class::getSmearingSigma(int runNumber, float energy,
     // 	smearings_not_defined[category] = corr;
     // }
     corr_itr = smearings_not_defined.find(category);
-    std::cerr << "[WARNING] Category not found: " << std::endl;
+    std::cerr << "[WARNING] Smearing category not found: " << std::endl;
     std::cerr << category << std::endl;
     //     exit(1);
   }
   
 #ifdef DEBUG
-  std::cout << "[DEBUG] Checking correction for category: " << category << std::endl;
+  std::cout << "[DEBUG] Checking smearing correction for category: " << category << std::endl;
   std::cout << "[DEBUG] Correction is: " << corr_itr->second
 	    << std::endl
 	    << "        given for category " <<  corr_itr->first;
 #endif
-  
-  double constTerm = corr_itr->second.constTerm;
-  double alpha = corr_itr->second.alpha;
-  return sqrt(constTerm * constTerm + alpha * alpha / (energy / cosh(etaSCEle)));
+
+  double rho = corr_itr->second.rho + corr_itr->second.rho_err * nSigma_rho;
+  double phi = corr_itr->second.phi + corr_itr->second.phi_err * nSigma_phi;
+
+  double constTerm =  rho * sin(phi);
+  double alpha =  rho *  corr_itr->second.Emean * cos( phi);
+
+  return sqrt(constTerm * constTerm + alpha * alpha / EtEle);
   
 }
 
-float EnergyScaleCorrection_class::getSmearingRho(int runNumber, float energy, bool isEBEle, float R9Ele, float etaSCEle) const
+float EnergyScaleCorrection_class::getSmearingRho(int runNumber, bool isEBEle, float R9Ele, float etaSCEle, float EtEle) const
 {
   
-  correctionCategory_class category(runNumber, etaSCEle, R9Ele, energy / cosh(etaSCEle));
+  correctionCategory_class category(runNumber, etaSCEle, R9Ele, EtEle);
   correction_map_t::const_iterator corr_itr = smearings.find(category);
   if(corr_itr == smearings.end()) { // if not in the standard classes, add it in the list of not defined classes
     // if(smearings_not_defined.count(category) == 0) {
@@ -441,12 +398,7 @@ float EnergyScaleCorrection_class::getSmearingRho(int runNumber, float energy, b
     corr_itr = smearings_not_defined.find(category);
   }
   
-  double constTerm = corr_itr->second.constTerm;
-  double alpha = (corr_itr->second.Emean == 0) ? 0 : corr_itr->second.alpha / corr_itr->second.Emean;
-  
-  //std::cout << (*corr_itr).second << std::endl;
-  return sqrt(constTerm * constTerm + alpha * alpha); ///< return rho; alpha is already scaled by Emean!
-  
+  return corr_itr->second.rho;
 }
 
 bool correctionCategory_class::operator<(const correctionCategory_class& b) const
@@ -472,13 +424,13 @@ correctionCategory_class::correctionCategory_class(TString category_)
 #ifdef DEBUG
   std::cout << "[DEBUG] correctionClass defined for category: " << category << std::endl;
 #endif
-  // default values
+  // default values (corresponding to an existing category -- the worst one)
   runmin = 0;
   runmax = 999999;
-  etamin = -1;
-  etamax = 10;
+  etamin = 2;
+  etamax = 7;
   r9min = -1;
-  r9max = 10;
+  r9max = 0.94;
   etmin = -1;
   etmax = 99999.;
   
@@ -540,7 +492,7 @@ correctionCategory_class::correctionCategory_class(TString category_)
     p1 = p2;
     p2 = category.find("-", p1);
     etmax = TString(category.substr(p1 + 1, p2 - p1 - 1)).Atof();
-    std::cout << etmin << "\t" << etmax << "\t" << category.substr(p1 + 1, p2 - p1 - 1) << std::endl;
+    //  std::cout << etmin << "\t" << etmax << "\t" << category.substr(p1 + 1, p2 - p1 - 1) << std::endl;
   }
   
   if(category.find("gold")   != std::string::npos || 

@@ -33,9 +33,12 @@
   gROOT->Macro("rochcor2015r.cc+");
   
   {  
-    TString path = gSystem->GetIncludePath();
-    path += " -I../EleScale/ ";
-    gSystem->SetIncludePath(path.Data());
+    //TString path = gSystem->GetIncludePath();
+    //path += " -I../EleScale/ ";
+    //gSystem->SetIncludePath(path.Data());
+    gSystem->AddIncludePath("-I../EleScale");
+    gInterpreter->AddIncludePath("../EleScale");
+    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
     gROOT->Macro("EnergyScaleCorrection_class.cc+");
   }
 

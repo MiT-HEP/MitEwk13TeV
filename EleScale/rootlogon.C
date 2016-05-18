@@ -12,4 +12,10 @@
                
   // Show which process needs debugging
   gInterpreter->ProcessLine(".! ps |grep root.exe");
+  {  
+    TString path = gSystem->GetIncludePath();
+    path += " -I./ ";
+    gSystem->SetIncludePath(path.Data());
+    gROOT->Macro("EnergyScaleCorrection_class.cc+");
+  }
 }
