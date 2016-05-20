@@ -33,6 +33,8 @@
 #include "CEffUser1D.hh"
 #include "CEffUser2D.hh"
 
+#include "../EleScale/EnergyScaleCorrection_class.hh"
+
 #endif
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -47,6 +49,7 @@ void plotZee(const TString  inputDir,    // input directory
              const Double_t lumi,        // integrated luminosity (/fb)
 	     const Bool_t   normToData=0 // draw MC normalized to data
 ) {
+  std::cout<<"---------------- STARTING ZEE ------------------------"<<std::endl;
   gBenchmark->Start("plotZee");
   gStyle->SetTitleOffset(1.100,"Y");
   
@@ -111,11 +114,11 @@ void plotZee(const TString  inputDir,    // input directory
   TFile *outFile = new TFile(outfilename,"RECREATE");
   TH1::AddDirectory(kFALSE);
 
-  //const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
-  //const bool doScaleAndSmear = true;
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
+  const bool doScaleAndSmear = true;
 
   //data
-  //EnergyScaleCorrection_class eleCorr( scaleFile); eleCorr.doScale= true; eleCorr.doSmear = true;
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
  
 
   // plot output file format
@@ -478,37 +481,48 @@ void plotZee(const TString  inputDir,    // input directory
       if(q1*q2>0) continue;
 
 
-      /*if ( doScaleAndSmear )
+      if ( doScaleAndSmear )
       {
 
       	float smear1 = 0.0, scale1 = 1.0;
       	float aeta1= fabs(lep1->Eta());
-      	float et1 = lep1.E() / cosh(aeta1);
+      	float et1 = lep1->E() / cosh(aeta1);
       	bool eb1 = aeta1 < 1.4442;
       	float smear2 = 0.0, scale2 = 1.0;
       	float aeta2= fabs(lep2->Eta());
-      	float et2 = lep2.E() / cosh(aeta2);
+      	float et2 = lep2->E() / cosh(aeta2);
       	bool eb2 = aeta2 < 1.4442;
+	float error1;
+	float error2;
 
        	if( typev[ifile]!=eData)
        	{// DATA
        		scale1 = eleCorr.ScaleCorrection( runNum, eb1, r91, aeta1, et1);
        		scale2 = eleCorr.ScaleCorrection( runNum, eb2, r92, aeta2, et2);
-		//newEcalEnergy      = electron.getNewEnergy() * scale;
-		//newEcalEnergyError = std::hypot(electron.getNewEnergyError() * scale, smear * newEcalEnergy);
-		lep1 *= scale;
-		lep2 *= scale;
+
+		error1 = eleCorr.ScaleCorrectionUncertainty(runNum, eb1, r91, aeta1, et1);
+		error2 = eleCorr.ScaleCorrectionUncertainty(runNum, eb2, r92, aeta2, et2);
+
+		(*lep1) *= scale1;
+		(*lep2) *= scale2;
        	}
        	else
        	{ // MC
-       		smear1 = eleCorr.getSmearingSigma( runNum, lep1->E(), eb1, r91, aeta1); 
-       		smear2 = eleCorr.getSmearingSigma( runNum, lep2->E(), eb2, r92, aeta2); 
-		double corr1 = 1.0 + smear1 * gRandom->Gaus(0,1);
-		double corr2 = 1.0 + smear2 * gRandom->Gaus(0,1);
+       		smear1 = eleCorr.getSmearingSigma( runNum, eb1, r91, aeta1, et1 ,0.,0.); 
+       		smear2 = eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2, et2 ,0.,0.); 
+
+       		float smearE1 = smear1 + std::hypot( eleCorr.getSmearingSigma( runNum, eb1, r91, aeta1,et1,1.,0.) -smear1,  eleCorr.getSmearingSigma( runNum,  eb1,r91, aeta1,et1,0.,1. ) -smear1 ) ;
+       		float smearE2 = smear2 + std::hypot( eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2,et2,1.,0.), eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2,et2,0.,1.) );
+		double r1= gRandom->Gaus(0,1);
+		double r2= gRandom->Gaus(0,1);
+		double corr1 = 1.0 + smear1 * r1;
+		double corr2 = 1.0 + smear2 * r2;
 		//float newEnergy = lep1->E() * corr1;
 		//float newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
-		lep1 * = corr;
-		lep2 * = corr;
+		error1 = lep1->E() * (1.0 + smearE1 * r1);
+		error2 = lep2->E() * (1.0 + smearE2 * r2);
+		(*lep1) *= corr1;
+		(*lep2) *= corr2;
        	}
 	} // do scale and smear*/
 
