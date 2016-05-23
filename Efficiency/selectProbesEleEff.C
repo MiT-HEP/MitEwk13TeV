@@ -316,7 +316,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       
       mass    = dilep->M();
       pt      = lep1->Pt();//sc1->Pt();
-      eta     = lep1->Pt();//sc1->Eta();
+      eta     = lep1->Eta();//sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
       weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
       q	      = q1;
