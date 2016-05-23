@@ -89,7 +89,7 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 	iv2=i;
       }
     }
-    else if ((absM==0 && genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) || (absM==1 && fabs(genloop->pdgId)==fabs(vid) && (genloop->status==3||genloop->status==22))) {
+    else if ((absM==0 && genloop->pdgId==vid && (genloop->status==3||genloop->status==62)) || (absM==1 && fabs(genloop->pdgId)==fabs(vid) && (genloop->status==3||genloop->status==62))) {
       vec=new TLorentzVector(0,0,0,0);
       vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
       iv=i;

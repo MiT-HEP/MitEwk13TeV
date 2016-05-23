@@ -55,7 +55,7 @@ void selectWm(const TString conf="wm.conf", // input file
   // Settings 
   //============================================================================================================== 
 
-  const Double_t PT_CUT    = 25;
+  const Double_t PT_CUT    = 20;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
@@ -69,7 +69,7 @@ void selectWm(const TString conf="wm.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_Golden.root", "read");
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
 
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
@@ -257,12 +257,36 @@ void selectWm(const TString conf="wm.conf", // input file
       const Double_t xsec = samp->xsecv[ifile];
       Double_t totalWeight=0;
 
+//       if (hasGen) {
+// 	TH1D *hall = new TH1D("hall", "", 1,0,1);
+// 	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
+// 	totalWeight=hall->Integral();
+// 	delete hall;
+// 	hall=0;
+//       }
+
       if (hasGen) {
-	TH1D *hall = new TH1D("hall", "", 1,0,1);
-	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
-	totalWeight=hall->Integral();
-	delete hall;
-	hall=0;
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      infoBr->GetEntry(ientry);
+      genBr->GetEntry(ientry);
+      puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+      puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+      puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      totalWeight+=gen->weight;//*puWeight; // mine has pu and gen separated
+//       totalWeightUp+=gen->weight;//*puWeightUp;
+//       totalWeightDown+=gen->weight;//*puWeightDown;
+    }
+      }
+      else if (not isData){
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+      puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+      puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      totalWeight+= 1.0;//*puWeight;
+//       totalWeightUp+= 1.0;//*puWeightUp;
+//       totalWeightDown+= 1.0;//*puWeightDown;
+    }
+
       }
 
       //
@@ -383,10 +407,12 @@ void selectWm(const TString conf="wm.conf", // input file
           weightPDF = -999;
 
 	  if(isSignal && hasGen) {
+            Int_t glepq1=-99;
+            Int_t glepq2=-99;
 	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
+	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
 	    
             if (gvec && glep1) {
 	      genV      = new TLorentzVector(0,0,0,0);
