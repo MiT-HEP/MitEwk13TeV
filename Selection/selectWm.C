@@ -55,7 +55,7 @@ void selectWm(const TString conf="wm.conf", // input file
   // Settings 
   //============================================================================================================== 
 
-  const Double_t PT_CUT    = 25;
+  const Double_t PT_CUT    = 20;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
