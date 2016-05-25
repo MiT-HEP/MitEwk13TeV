@@ -21,6 +21,13 @@
     gROOT->Macro("CEffUser1D.cc+");
     gROOT->Macro("CEffUser2D.cc+");    
 
+   {
+//    TString path = gSystem->GetIncludePath();
+//    path += " -I./ ";
+//    gSystem->SetIncludePath(path.Data());
+    gROOT->Macro("../EleScale/EnergyScaleCorrection_class.cc+");
+   }
+
   }
   
   // Show which process needs debugging
