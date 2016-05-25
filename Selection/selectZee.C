@@ -574,7 +574,7 @@ void selectZee(const TString conf="zee.conf", // input file
 //	    scProbept_corr = gRandom->Gaus(scProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0));
 	  
 //	  if(scProbept_corr        < PT_CUT)  continue;  // Supercluster ET cut ("pt" = corrected by PV position)
-	  if(vProbe.Pt()           < PT_CUT)  continue;
+//	  if(vProbe.Pt()           < PT_CUT)  continue;
 //	  if(fabs(scProbe->eta)  > ETA_CUT) continue;  // Supercluster |eta| cuts
           if(fabs(vProbe.Eta())  > ETA_CUT) continue;
 
@@ -594,6 +594,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	  if(eleProbe){
 	    vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
 	    vEleProbeSC.SetPtEtaPhiM(eleProbe->scEt, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
+
+	    if(vEleProbe.Pt()           < PT_CUT)  continue;
 
 	    float eleProbeError = 0.;
 	    float eleProbeSCError = 0.;
@@ -647,6 +649,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	    //El_Pt=eleProbe->pt;
 	    El_Pt = vEleProbe.Pt();
 	  }else{
+	    if(vProbe.Pt()           < PT_CUT)  continue;
 	    //El_Pt=scProbept_corr;
 	    El_Pt = vProbe.Pt();
 	  }
