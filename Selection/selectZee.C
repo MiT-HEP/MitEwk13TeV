@@ -25,6 +25,7 @@
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
 #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
+#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -57,7 +58,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 22;
+  const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.5;
   const Double_t ELE_MASS  = 0.000511;
   
@@ -73,6 +74,11 @@ void selectZee(const TString conf="zee.conf", // input file
 
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
+
+  //data
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
@@ -135,6 +141,7 @@ void selectZee(const TString conf="zee.conf", // input file
   Float_t r91,r92;
   UInt_t  isConv1, nexphits1, typeBits1, isConv2, nexphits2, typeBits2; 
   TLorentzVector *sc1=0, *sc2=0;
+  Float_t lep1error, lep2error, sc1error, sc2error; 
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -265,6 +272,10 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("sc2",       "TLorentzVector",  &sc2);       // probe supercluster 4-vector
     outTree->Branch("r91",        &r91,        "r91/F");	 // transverse impact parameter of tag
     outTree->Branch("r92",        &r92,        "r92/F");	 // transverse impact parameter of probe	  
+    outTree->Branch("lep1error",  &lep1error,  "lep1error/F");   // scale and smear correction uncertainty for tag lepton
+    outTree->Branch("lep2error",  &lep2error,  "lep2error/F");   // scale and smear correction uncertainty for probe leptom
+    outTree->Branch("sc1error",   &sc1error,   "sc1error/F");    // scale and smear correction uncertainty for tag supercluster
+    outTree->Branch("sc2error",   &sc2error,   "sc2error/F");    // scale and smear correction uncertainty for probe supercluster
 
     //
     // loop through files
@@ -377,6 +388,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	scBr->GetEntry(ientry);
 
 	TLorentzVector vTag(0,0,0,0);
+	TLorentzVector vTagfinal(0,0,0,0);
 	TLorentzVector vTagSC(0,0,0,0);
 	Double_t tagPt=0;
 	Double_t Pt1=0;
@@ -386,27 +398,68 @@ void selectZee(const TString conf="zee.conf", // input file
 		
 	for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
           const baconhep::TElectron *tag = (baconhep::TElectron*)((*electronArr)[i1]);
-	  
+
+	  vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
+	  vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
+
 	  // check ECAL gap
-	  if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue;
-	  
-          // apply scale and resolution corrections to MC
-          Double_t tagscEt_corr = tag->scEt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-            tagscEt_corr = gRandom->Gaus(tag->scEt*getEleScaleCorr(tag->scEta,0),getEleResCorr(tag->scEta,0));
-	  
-	  if(tagscEt_corr        < PT_CUT)     continue;  // lepton pT cut
-	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
-	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
-	
-	  double El_Pt=0;
-	  if(doScaleCorr) {
-	    El_Pt=gRandom->Gaus(tag->pt*getEleScaleCorr(tag->scEta,0),getEleResCorr(tag->scEta,0));
-	  }
-	  else
-	    {
-	      El_Pt=tag->pt;
+//        if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue
+	  if(fabs(vTag.Eta())>=ECAL_GAP_LOW && fabs(vTag.Eta())<=ECAL_GAP_HIGH) continue;
+
+	  float tagError = 0.;
+	  if(doScaleCorr && (tag->r9 < 1.)){
+            // set up variable and apply scale and smear correction to tag
+            // only apply correction to electron pt, not SC pt, since we never use tag SC info.
+            float tagSmear = 0.;
+            float tagScale = 1.;
+
+	    float tagAbsEta   = fabs(vTag.Eta());
+	    float tagEt       = vTag.E() / cosh(tagAbsEta);
+	    bool  tagisBarrel = tagAbsEta < 1.4442;
+
+	    if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+
+	      tagScale = eleCorr.ScaleCorrection(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt);
+              tagError = eleCorr.ScaleCorrectionUncertainty(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt);
+
+              (vTag) *= tagScale;
+
+	    }else{//MC
+
+	      tagSmear = eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt, 0., 0.);
+
+              float tagSmearE = tagSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt, 1., 0.) - tagSmear,  eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt, 0., 1.) - tagSmear);
+              double tagRamdom = gRandom->Gaus(0,1);
+	      tagError = vTag.E() * (1.0 + tagSmearE * tagRamdom);
+              tagSmear = 1. + tagSmear * tagRamdom;
+              
+	      (vTag) *= tagSmear;
 	    }
+	  }
+//	  std::cout<<vTag.Pt()<<", "<<vTag.Eta()<<", "<<vTag.Phi()<<", "<<vTag.E()<<std::endl;
+	  //assert(false); 
+
+          // apply scale and resolution corrections to MC
+//          Double_t tagscEt_corr = tag->scEt;
+//          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+//            tagscEt_corr = gRandom->Gaus(tag->scEt*getEleScaleCorr(tag->scEta,0),getEleResCorr(tag->scEta,0));
+	  
+//	  if(tagscEt_corr        < PT_CUT)     continue;  // lepton pT cut
+//	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
+//	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
+          if(vTag.Pt()	         < PT_CUT)     continue;  // lepton pT cut
+          if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+          if(!passEleID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+
+	  double El_Pt=0;
+	  El_Pt = vTag.Pt();
+//	  if(doScaleCorr) {
+//	    El_Pt=gRandom->Gaus(tag->pt*getEleScaleCorr(tag->scEta,0),getEleResCorr(tag->scEta,0));
+//	  }
+//	  else
+//	    {
+//	      El_Pt=tag->pt;
+//	    }
 
 	  if(El_Pt>Pt1)
 	    {
@@ -419,21 +472,21 @@ void selectZee(const TString conf="zee.conf", // input file
 	    }
 
 	  if(!isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData)) continue;
-	  
 	  if(El_Pt<tagPt) continue;
-	  
+
 	  tagPt=El_Pt;
 	  itag=i1;
 	  tagscID=tag->scID;
 
+	  vTagfinal = vTag;
 	  // apply scale and resolution corrections to MC
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
-            vTag.SetPtEtaPhiM(El_Pt, tag->eta, tag->phi, ELE_MASS);
-            vTagSC.SetPtEtaPhiM(tagscEt_corr, tag->scEta, tag->scPhi, ELE_MASS);
-          } else {
-  	    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
-	    vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
-          }
+//          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+//            vTag.SetPtEtaPhiM(El_Pt, tag->eta, tag->phi, ELE_MASS);
+//            vTagSC.SetPtEtaPhiM(tagscEt_corr, tag->scEta, tag->scPhi, ELE_MASS);
+//          } else {
+//  	    vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
+//	    vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
+//          }
 
 	  trkIso1    = tag->trkIso;
 	  emIso1     = tag->ecalIso;
@@ -441,7 +494,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	  pfChIso1   = tag->chHadIso;
 	  pfGamIso1  = tag->gammaIso;	    
 	  pfNeuIso1  = tag->neuHadIso;
-	  pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - (info->rhoIso)*getEffAreaEl(tag->scEta), 0.);
+//	  pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - (info->rhoIso)*getEffAreaEl(tag->scEta), 0.);
+          pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - (info->rhoIso)*getEffAreaEl(vTag.Eta()), 0.);
 	  sigieie1   = tag->sieie;
 	  hovere1    = tag->hovere;
 	  eoverp1    = tag->eoverp;
@@ -456,12 +510,14 @@ void selectZee(const TString conf="zee.conf", // input file
 	  typeBits1  = tag->typeBits;
 	  q1         = tag->q;
 	  r91        = tag->r9;
+	  lep1error  = tagError;
 
 	}
 
 	if(tagPt<Pt2) continue;
 
 	TLorentzVector vProbe(0,0,0,0); TLorentzVector vProbeSC(0,0,0,0);
+	TLorentzVector vProbefinal(0,0,0,0);
 	Double_t probePt=0;
 	Int_t iprobe=-1;
 	Int_t passID=false;
@@ -471,19 +527,56 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	for(Int_t j=0; j<scArr->GetEntriesFast(); j++) {
 	  const baconhep::TPhoton *scProbe = (baconhep::TPhoton*)((*scArr)[j]);
-	  
+
+          vProbe.SetPtEtaPhiM(scProbe->pt, scProbe->eta, scProbe->phi, ELE_MASS);
+
 	  if(scProbe->scID == tagscID) continue;
 
-	  // check ECAL gap
-	  if(fabs(scProbe->eta)>=ECAL_GAP_LOW && fabs(scProbe->eta)<=ECAL_GAP_HIGH) continue;
-	  
+          // check ECAL gap
+//        if(fabs(scProbe->eta)>=ECAL_GAP_LOW && fabs(scProbe->eta)<=ECAL_GAP_HIGH) continue;
+          if(fabs(vProbe.Eta())>=ECAL_GAP_LOW && fabs(vProbe.Eta())<=ECAL_GAP_HIGH) continue;
+
+          float probeError = 0.;
+	  float probeSCError = 0.;
+          if(doScaleCorr && (scProbe->r9 < 1.)){
+            // set up variable and apply scale and smear correction to probe
+            float probeSmear = 0.;
+            float probeScale = 1.;
+
+            float probeAbsEta   = fabs(vProbe.Eta());
+            float probeEt       = vProbe.E() / cosh(probeAbsEta);
+            bool  probeisBarrel = probeAbsEta < 1.4442;
+
+            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+
+              probeScale = eleCorr.ScaleCorrection(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt);
+              probeError = eleCorr.ScaleCorrectionUncertainty(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt);
+
+              (vProbe) *= probeScale;
+
+            }else{//MC
+
+              probeSmear = eleCorr.getSmearingSigma(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt, 0., 0.);
+
+              float probeSmearE = probeSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt, 1., 0.) - probeSmear,  eleCorr.getSmearingSigma(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt, 0., 1.) - probeSmear);
+              double probeRamdom = gRandom->Gaus(0,1);
+              probeError = vProbe.E() * (1.0 + probeSmearE * probeRamdom);
+              probeSmear = 1. + probeSmear * probeRamdom;
+
+              (vProbe) *= probeSmear;
+            }
+	    probeSCError = probeError;
+          }
+
 	  // apply scale and resolution corrections to MC
-	  Double_t scProbept_corr = scProbe->pt;
-	  if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-	    scProbept_corr = gRandom->Gaus(scProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0));
+//	  Double_t scProbept_corr = scProbe->pt;
+//	  if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+//	    scProbept_corr = gRandom->Gaus(scProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0));
 	  
-	  if(scProbept_corr        < PT_CUT)  continue;  // Supercluster ET cut ("pt" = corrected by PV position)
-	  if(fabs(scProbe->eta)  > ETA_CUT) continue;  // Supercluster |eta| cuts
+//	  if(scProbept_corr        < PT_CUT)  continue;  // Supercluster ET cut ("pt" = corrected by PV position)
+//	  if(vProbe.Pt()           < PT_CUT)  continue;
+//	  if(fabs(scProbe->eta)  > ETA_CUT) continue;  // Supercluster |eta| cuts
+          if(fabs(vProbe.Eta())  > ETA_CUT) continue;
 
 	  for(Int_t i2=0; i2<electronArr->GetEntriesFast(); i2++) {
 	    if(itag==i2) continue;
@@ -497,43 +590,99 @@ void selectZee(const TString conf="zee.conf", // input file
 	  }
 
 	  double El_Pt=0;
-	  if(doScaleCorr&&eleProbe) {
-	    El_Pt=gRandom->Gaus(eleProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0));
-	  }
-	  else if(!doScaleCorr&&eleProbe)
-	    {
-	      El_Pt=eleProbe->pt;
-	    }
-	  else
-	    {
-	      El_Pt=scProbept_corr;
-	    }
+	  TLorentzVector vEleProbe(0,0,0,0), vEleProbeSC(0,0,0,0);
+	  if(eleProbe){
+	    vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
+	    vEleProbeSC.SetPtEtaPhiM(eleProbe->scEt, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
 
-	  if(passID&&eleProbe&&passEleID(eleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-	  if(passID&&eleProbe&&!passEleID(eleProbe,info->rhoIso)) continue;
+	    if(vEleProbe.Pt()           < PT_CUT)  continue;
+
+	    float eleProbeError = 0.;
+	    float eleProbeSCError = 0.;
+	    if(doScaleCorr && (eleProbe->r9 < 1.)){
+//  	        El_Pt=gRandom->Gaus(eleProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0));
+              float eleProbeSmear = 0.;
+              float eleProbeScale = 1.;
+
+              float eleProbeSCSmear = 0.;
+              float eleProbeSCScale = 1.;
+
+              float eleProbeAbsEta   = fabs(vEleProbe.Eta());
+              float eleProbeEt       = vEleProbe.E() / cosh(eleProbeAbsEta);
+              bool  eleProbeisBarrel = eleProbeAbsEta < 1.4442;
+
+              float eleProbeSCAbsEta   = fabs(vEleProbeSC.Eta());
+              float eleProbeSCEt       = vEleProbeSC.E() / cosh(eleProbeSCAbsEta);
+              bool  eleProbeSCisBarrel = eleProbeSCAbsEta < 1.4442;
+  
+              if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+  
+                eleProbeScale = eleCorr.ScaleCorrection(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt);
+                eleProbeError = eleCorr.ScaleCorrectionUncertainty(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt);
+
+                eleProbeSCScale = eleCorr.ScaleCorrection(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt);
+                eleProbeSCError = eleCorr.ScaleCorrectionUncertainty(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt);
+  
+                (vEleProbe) *= eleProbeScale;
+		(vEleProbeSC) *= eleProbeSCScale;
+  
+              }else{//MC
+  
+                eleProbeSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt, 0., 0.);
+                float eleProbeSmearE = eleProbeSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt, 1., 0.) - eleProbeSmear,  eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt, 0., 1.) - eleProbeSmear);
+                double eleProbeRamdom = gRandom->Gaus(0,1); 
+                eleProbeError = vEleProbe.E() * (1.0 + eleProbeSmearE * eleProbeRamdom);
+                eleProbeSmear = 1. + eleProbeSmear * eleProbeRamdom;
+
+                eleProbeSCSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt, 0., 0.);
+                float eleProbeSCSmearE = eleProbeSCSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt, 1., 0.) - eleProbeSCSmear,  eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt, 0., 1.) - eleProbeSCSmear);
+                double eleProbeSCRamdom = gRandom->Gaus(0,1);
+                eleProbeSCError = vEleProbeSC.E() * (1.0 + eleProbeSCSmearE * eleProbeSCRamdom);
+                eleProbeSCSmear = 1. + eleProbeSCSmear * eleProbeSCRamdom;
+
+                (vEleProbe) *= eleProbeSmear;
+		(vEleProbeSC) *= eleProbeSCSmear;
+              }
+	      probeError = eleProbeError;
+	      probeSCError = eleProbeSCError;
+	    }
+	    //El_Pt=eleProbe->pt;
+	    El_Pt = vEleProbe.Pt();
+	  }else{
+	    if(vProbe.Pt()           < PT_CUT)  continue;
+	    //El_Pt=scProbept_corr;
+	    El_Pt = vProbe.Pt();
+	  }
+
+	  if(passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)) continue;
 	  if(passID&&!eleProbe) continue;
-	  if(!passID&&eleProbe&&!passEleID(eleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(!passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
 	  if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-	  if(!passID&&eleProbe&&passEleID(eleProbe,info->rhoIso)) passID=true;
+	  if(!passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
 	  probePt=El_Pt;
 
+	  vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
+	  vProbeSC = (eleProbe) ? vEleProbeSC : vProbe ;
+//	  vProbeSC.SetPtEtaPhiM(((eleProbe) ? vEleProbeSC.Pt() : vProbe.Pt()), vProbe.Eta(), vProbe.Phi(), ELE_MASS);
+
 	  // apply scale and resolution corrections to MC
-	  if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
-	    vProbe.SetPtEtaPhiM((eleProbe) ? gRandom->Gaus(eleProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0)) : scProbept_corr,
-				(eleProbe) ? eleProbe->eta : scProbe->eta,
-				(eleProbe) ? eleProbe->phi : scProbe->phi,
-				ELE_MASS);
-	    vProbeSC.SetPtEtaPhiM((eleProbe) ? gRandom->Gaus(eleProbe->scEt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0)) : gRandom->Gaus(scProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0)),
-				  scProbe->eta, scProbe->phi, ELE_MASS);
-	  } else {
-	    vProbe.SetPtEtaPhiM((eleProbe) ? eleProbe->pt : scProbe->pt,
-				(eleProbe) ? eleProbe->eta : scProbe->eta,
-				(eleProbe) ? eleProbe->phi : scProbe->phi,
-				ELE_MASS);
-	    vProbeSC.SetPtEtaPhiM((eleProbe) ? eleProbe->scEt : scProbe->pt,
-				  scProbe->eta, scProbe->phi, ELE_MASS);
-	  }
+//	  if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+//	    vProbe.SetPtEtaPhiM((eleProbe) ? gRandom->Gaus(eleProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0)) : scProbept_corr,
+//				(eleProbe) ? eleProbe->eta : scProbe->eta,
+//				(eleProbe) ? eleProbe->phi : scProbe->phi,
+//				ELE_MASS);
+//	    vProbeSC.SetPtEtaPhiM((eleProbe) ? gRandom->Gaus(eleProbe->scEt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0)) : gRandom->Gaus(scProbe->pt*getEleScaleCorr(scProbe->eta,0),getEleResCorr(scProbe->eta,0)),
+//				  scProbe->eta, scProbe->phi, ELE_MASS);
+//	  } else {
+//	    vProbe.SetPtEtaPhiM((eleProbe) ? eleProbe->pt : scProbe->pt,
+//				(eleProbe) ? eleProbe->eta : scProbe->eta,
+//				(eleProbe) ? eleProbe->phi : scProbe->phi,
+//				ELE_MASS);
+//	    vProbeSC.SetPtEtaPhiM((eleProbe) ? eleProbe->scEt : scProbe->pt,
+//				  scProbe->eta, scProbe->phi, ELE_MASS);
+//	  }
 
 	  trkIso2    = (eleProbe) ? eleProbe->trkIso        : -1;
 	  emIso2     = (eleProbe) ? eleProbe->ecalIso       : -1;
@@ -543,7 +692,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	  pfNeuIso2  = (eleProbe) ? eleProbe->neuHadIso     : -1;	    
 	  pfCombIso2 = (eleProbe) ? 
 	    eleProbe->chHadIso + TMath::Max(eleProbe->neuHadIso + eleProbe->gammaIso - 
-					    (info->rhoIso)*getEffAreaEl(eleProbe->scEta), 0.) :  -1;
+//					    (info->rhoIso)*getEffAreaEl(eleProbe->scEta), 0.) :  -1;
+					    (info->rhoIso)*getEffAreaEl(vEleProbe.Eta()), 0.) :  -1;
 	  sigieie2   = (eleProbe) ? eleProbe->sieie         : scProbe->sieie;
 	  hovere2    = (eleProbe) ? eleProbe->hovere        : scProbe->hovere;
 	  eoverp2    = (eleProbe) ? eleProbe->eoverp        : -1;
@@ -558,10 +708,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	  nexphits2  = (eleProbe) ? eleProbe->nMissingHits  : 0;
 	  typeBits2  = (eleProbe) ? eleProbe->typeBits      : 0;
 	  q2         = (eleProbe) ? eleProbe->q : -q1;
+	  lep2error  = probeError;
+	  sc2error   = probeSCError;
 
 	  // determine event category
 	  if(eleProbe) {
-	    if(passEleID(eleProbe,info->rhoIso)) {
+	    if(passEleID(eleProbe,vEleProbe,info->rhoIso)) {
 	      
 	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle2HLT;  
@@ -580,7 +732,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	if(q1 == q2)         continue;  // opposite charge requirement
 
 	// mass window
-	TLorentzVector vDilep = vTag + vProbe;
+	TLorentzVector vDilep = vTagfinal + vProbefinal;
 	if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
 
 	if(icat==0) continue;
@@ -601,11 +753,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	if(isSignal && hasGen) {
 	  toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
 	  
-	  Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTag.Eta(), vTag.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
-			    ((glep2) && toolbox::deltaR(vTag.Eta(), vTag.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+	  Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
+			    ((glep2) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
 	  
-	  Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
-			    ((glep2) && toolbox::deltaR(vProbe.Eta(), vProbe.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+	  Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
+			    ((glep2) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
 	  
 	  if(match1 && match2) {
 	    hasGenMatch = kTRUE;
@@ -697,8 +849,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	puppiMet = info->puppET;
         puppiMetPhi = info->puppETphi;
 	puppiSumEt = 0;
-	lep1     = &vTag;
-	lep2     = &vProbe;
+	lep1     = &vTagfinal;
+	lep2     = &vProbefinal;
 	dilep    = &vDilep;
 	sc1        = &vTagSC;
 	sc2        = &vProbeSC;
