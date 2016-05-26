@@ -65,9 +65,9 @@ void plotZee(const TString  inputDir,    // input directory
   vector<Int_t>   typev;
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  fnamev.push_back(inputDir + TString("/") + TString("zee_select.raw.root"));   typev.push_back(eZee);
-  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
-  fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
+  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
@@ -113,13 +113,6 @@ void plotZee(const TString  inputDir,    // input directory
   TString outfilename = outputDir + TString("/") + TString("Zee_DataBkg.root");
   TFile *outFile = new TFile(outfilename,"RECREATE");
   TH1::AddDirectory(kFALSE);
-
-  const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
-  const bool doScaleAndSmear = true;
-
-  //data
-  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
- 
 
   // plot output file format
   const TString format("all");
@@ -345,8 +338,6 @@ void plotZee(const TString  inputDir,    // input directory
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
-
-  Float_t r91,r92;
   
   //
   // HLT efficiency
@@ -449,8 +440,6 @@ void plotZee(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("lep2",1);
     intree -> SetBranchStatus("sc1",1);
     intree -> SetBranchStatus("sc2",1);
-    intree -> SetBranchStatus("r91",1);
-    intree -> SetBranchStatus("r92",1);
 
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
@@ -467,9 +456,7 @@ void plotZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
     intree->SetBranchAddress("sc1",       &sc1);        // sc1 4-vector
     intree->SetBranchAddress("sc2",       &sc2);        // sc2 4-vector
-    intree->SetBranchAddress("r91",       &r91);	       // r9
-    intree->SetBranchAddress("r92",       &r92);	       // r9
-
+  
     //
     // loop over events
     //
@@ -479,60 +466,6 @@ void plotZee(const TString  inputDir,    // input directory
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
-
-
-      if ( doScaleAndSmear )
-      {
-
-      	float smear1 = 0.0, scale1 = 1.0;
-      	float aeta1= fabs(lep1->Eta());
-      	float et1 = lep1->E() / cosh(aeta1);
-      	bool eb1 = aeta1 < 1.4442;
-      	float smear2 = 0.0, scale2 = 1.0;
-      	float aeta2= fabs(lep2->Eta());
-      	float et2 = lep2->E() / cosh(aeta2);
-      	bool eb2 = aeta2 < 1.4442;
-	float error1;
-	float error2;
-
-       	if( typev[ifile]!=eData)
-       	{// DATA
-       		scale1 = eleCorr.ScaleCorrection( runNum, eb1, r91, aeta1, et1);
-       		scale2 = eleCorr.ScaleCorrection( runNum, eb2, r92, aeta2, et2);
-
-		error1 = eleCorr.ScaleCorrectionUncertainty(runNum, eb1, r91, aeta1, et1);
-		error2 = eleCorr.ScaleCorrectionUncertainty(runNum, eb2, r92, aeta2, et2);
-
-		(*lep1) *= scale1;
-		(*lep2) *= scale2;
-       	}
-       	else
-       	{ // MC
-       		smear1 = eleCorr.getSmearingSigma( runNum, eb1, r91, aeta1, et1 ,0.,0.); 
-       		smear2 = eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2, et2 ,0.,0.); 
-
-       		float smearE1 = smear1 + std::hypot( eleCorr.getSmearingSigma( runNum, eb1, r91, aeta1,et1,1.,0.) -smear1,  eleCorr.getSmearingSigma( runNum,  eb1,r91, aeta1,et1,0.,1. ) -smear1 ) ;
-       		float smearE2 = smear2 + std::hypot( eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2,et2,1.,0.), eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2,et2,0.,1.) );
-		double r1= gRandom->Gaus(0,1);
-		double r2= gRandom->Gaus(0,1);
-		double corr1 = 1.0 + smear1 * r1;
-		double corr2 = 1.0 + smear2 * r2;
-		//float newEnergy = lep1->E() * corr1;
-		//float newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
-		error1 = lep1->E() * (1.0 + smearE1 * r1);
-		error2 = lep2->E() * (1.0 + smearE2 * r2);
-		(*lep1) *= corr1;
-		(*lep2) *= corr2;
-       	}
-	} // do scale and smear*/
-
-      //Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),1), getEleResCorr(lep1->Eta(),-1));
-      //Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),1), getEleResCorr(lep2->Eta(),-1));
-      //TLorentzVector l1, l2;
-      //l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-      //l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
-      //double mass=(l1+l2).M();
-      //Float_t mass = dilep->M();
       
       float mass = 0;
       float pt = 0;
@@ -553,12 +486,12 @@ void plotZee(const TString  inputDir,    // input directory
 	  TLorentzVector el2;
 	  el1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
 	  el2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
-
+	  
 	  Double_t lp1 = el1.Pt();
 	  Double_t lp2 = el2.Pt();
 	  Double_t lq1 = q1;
 	  Double_t lq2 = q2;
-
+	  
 	  TLorentzVector l1, l2;
 	  if(lp1>lp2)
 	    {
@@ -611,11 +544,9 @@ void plotZee(const TString  inputDir,    // input directory
 	  
 	} else {
 
-       	  Double_t lp1 = gRandom->Gaus(lep1->Pt()*getEleScaleCorr(lep1->Eta(),0), getEleResCorr(lep1->Eta(),0));
-	  Double_t lp2 = gRandom->Gaus(lep2->Pt()*getEleScaleCorr(lep2->Eta(),0), getEleResCorr(lep2->Eta(),0));
 	  
-	  //Double_t lp1 = lep1->Pt();
-	  //Double_t lp2 = lep2->Pt();
+	  Double_t lp1 = lep1->Pt();
+	  Double_t lp2 = lep2->Pt();
 	  Double_t lq1 = q1;
 	  Double_t lq2 = q2;
 	  
@@ -652,18 +583,18 @@ void plotZee(const TString  inputDir,    // input directory
 	  
 	  effdata=1; effmc=1;
           if(q1>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(sc1->Eta(), sc1->Pt())); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(sc1->Eta(), sc1->Pt())); 
+            effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
           } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(sc1->Eta(), sc1->Pt())); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(sc1->Eta(), sc1->Pt())); 
+            effdata *= (1.-dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
           }
           if(q2>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff(sc2->Eta(), sc2->Pt())); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(sc2->Eta(), sc2->Pt()));
+            effdata *= (1.-dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt()));
           } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(sc2->Eta(), sc2->Pt())); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(sc2->Eta(), sc2->Pt()));
+            effdata *= (1.-dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt()));
           }
           effdata = 1.-effdata;
           effmc   = 1.-effmc;
@@ -675,26 +606,26 @@ void plotZee(const TString  inputDir,    // input directory
 	  effSigShapedata=1;
 	  effBkgShapedata=1;
           if(q1>0) { 
-            effdata *= dataGsfSelEff_pos.getEff(sc1->Eta(), sc1->Pt()); 
-            effmc   *= zeeGsfSelEff_pos.getEff(sc1->Eta(), sc1->Pt());
-	    effSigShapedata *= dataGsfSelEff_pos.getEff((sc1->Eta()), sc1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(sc1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(sc1->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_pos.getEff((sc1->Eta()), sc1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(sc1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(sc1->Pt()));
+            effdata *= dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
+            effmc   *= zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    effSigShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
+	    effBkgShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(sc1->Eta(), sc1->Pt()); 
-            effmc   *= zeeGsfSelEff_neg.getEff(sc1->Eta(), sc1->Pt()); 
-	    effSigShapedata *= dataGsfSelEff_neg.getEff((sc1->Eta()), sc1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(sc1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(sc1->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_neg.getEff((sc1->Eta()), sc1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(sc1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(sc1->Pt()));
+            effdata *= dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+            effmc   *= zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+	    effSigShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
+	    effBkgShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
           }
           if(q2>0) {
-            effdata *= dataGsfSelEff_pos.getEff(sc2->Eta(), sc2->Pt()); 
-            effmc   *= zeeGsfSelEff_pos.getEff(sc2->Eta(), sc2->Pt());
-	    effSigShapedata *= dataGsfSelEff_pos.getEff((sc2->Eta()), sc2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(sc2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(sc2->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_pos.getEff((sc2->Eta()), sc2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(sc2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(sc2->Pt()));
+            effdata *= dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
+            effmc   *= zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    effSigShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
+	    effBkgShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(sc2->Eta(), sc2->Pt()); 
-            effmc   *= zeeGsfSelEff_neg.getEff(sc2->Eta(), sc2->Pt());
-	    effSigShapedata *= dataGsfSelEff_neg.getEff((sc2->Eta()), sc2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(sc2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(sc2->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_neg.getEff((sc2->Eta()), sc2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(sc2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(sc2->Pt()));
+            effdata *= dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
+            effmc   *= zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    effSigShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
+	    effBkgShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
           }
           corr *= effdata/effmc;
 	  corrSigShape *= effSigShapedata/effmc;
@@ -707,33 +638,33 @@ void plotZee(const TString  inputDir,    // input directory
 
 	  // GSF+SELECTION
 	  if(lq1>0) {
-	    Double_t effdata = dataGsfSelEff_pos.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(sc1->Eta(), sc1->Pt()), dataGsfSelEff_pos.getErrHigh(sc1->Eta(), sc1->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_pos.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(sc1->Eta(), sc1->Pt()), zeeGsfSelEff_pos.getErrHigh(sc1->Eta(), sc1->Pt()));
+	    Double_t effdata = dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    Double_t effmc   = zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errGsfSel*errGsfSel;
 	  } else {
-	    Double_t effdata = dataGsfSelEff_neg.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(sc1->Eta(), sc1->Pt()), dataGsfSelEff_neg.getErrHigh(sc1->Eta(), sc1->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_neg.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(sc1->Eta(), sc1->Pt()), zeeGsfSelEff_neg.getErrHigh(sc1->Eta(), sc1->Pt()));
+	    Double_t effdata = dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    Double_t effmc   = zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errGsfSel*errGsfSel;
 	  }
 	  
 	  if(lq2>0) {
-	    Double_t effdata = dataGsfSelEff_pos.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(sc2->Eta(), sc2->Pt()), dataGsfSelEff_pos.getErrHigh(sc2->Eta(), sc2->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_pos.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(sc2->Eta(), sc2->Pt()), zeeGsfSelEff_pos.getErrHigh(sc2->Eta(), sc2->Pt()));
+	    Double_t effdata = dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    Double_t effmc   = zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errGsfSel*errGsfSel;
 	  } else {
-	    Double_t effdata = dataGsfSelEff_neg.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(sc2->Eta(), sc2->Pt()), dataGsfSelEff_neg.getErrHigh(sc2->Eta(), sc2->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_neg.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(sc2->Eta(), sc2->Pt()), zeeGsfSelEff_neg.getErrHigh(sc2->Eta(), sc2->Pt()));
+	    Double_t effdata = dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    Double_t effmc   = zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errGsfSel*errGsfSel;
 	  }
@@ -741,33 +672,33 @@ void plotZee(const TString  inputDir,    // input directory
 	  
 	  //HLT
 	  if(lq1>0) {
-	    Double_t effdata = dataHLTEff_pos.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(sc1->Eta(), sc1->Pt()), dataHLTEff_pos.getErrHigh(sc1->Eta(), sc1->Pt()));
-	    Double_t effmc   = zeeHLTEff_pos.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(sc1->Eta(), sc1->Pt()), zeeHLTEff_pos.getErrHigh(sc1->Eta(), sc1->Pt()));
+	    Double_t effdata = dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    Double_t effmc   = zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
 	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errHLT*errHLT;
 	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(sc1->Eta(), sc1->Pt()), dataHLTEff_neg.getErrHigh(sc1->Eta(), sc1->Pt()));
-	    Double_t effmc   = zeeHLTEff_neg.getEff(sc1->Eta(), sc1->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(sc1->Eta(), sc1->Pt()), zeeHLTEff_neg.getErrHigh(sc1->Eta(), sc1->Pt()));
+	    Double_t effdata = dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    Double_t effmc   = zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
 	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errHLT*errHLT;
 	  }
 	  
 	  if(lq2>0) {
-	    Double_t effdata = dataHLTEff_pos.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(sc2->Eta(), sc2->Pt()), dataHLTEff_pos.getErrHigh(sc2->Eta(), sc2->Pt()));
-	    Double_t effmc   = zeeHLTEff_pos.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(sc2->Eta(), sc2->Pt()), zeeHLTEff_pos.getErrHigh(sc2->Eta(), sc2->Pt()));
+	    Double_t effdata = dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    Double_t effmc   = zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
 	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errHLT*errHLT;
 	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(sc2->Eta(), sc2->Pt()), dataHLTEff_neg.getErrHigh(sc2->Eta(), sc2->Pt()));
-	    Double_t effmc   = zeeHLTEff_neg.getEff(sc2->Eta(), sc2->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(sc2->Eta(), sc2->Pt()), zeeHLTEff_neg.getErrHigh(sc2->Eta(), sc2->Pt()));
+	    Double_t effdata = dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    Double_t effmc   = zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
 	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    var+=errHLT*errHLT;
 	  }
@@ -777,18 +708,18 @@ void plotZee(const TString  inputDir,    // input directory
 
 	  eff2Bindata=1; eff2Binmc=1;    
           if(lq1>0) { 
-            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((sc1->Eta()), sc1->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((sc1->Eta()), sc1->Pt())); 
+            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
+            eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
           } else {
-            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((sc1->Eta()), sc1->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((sc1->Eta()), sc1->Pt())); 
+            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
+            eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
           }
           if(lq2>0) {
-            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((sc2->Eta()), sc2->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((sc2->Eta()), sc2->Pt()));
+            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt())); 
+            eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()));
           } else {
-            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((sc2->Eta()), sc2->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((sc2->Eta()), sc2->Pt()));
+            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt())); 
+            eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()));
           }
           eff2Bindata = 1.-eff2Bindata;
           eff2Binmc   = 1.-eff2Binmc;
@@ -796,18 +727,18 @@ void plotZee(const TString  inputDir,    // input directory
     
           eff2Bindata=1; eff2Binmc=1;
           if(lq1>0) { 
-            eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((sc1->Eta()), sc1->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((sc1->Eta()), sc1->Pt()); 
+            eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
+            eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
           } else {
-            eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((sc1->Eta()), sc1->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((sc1->Eta()), sc1->Pt()); 
+            eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
+            eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
           }
           if(lq2>0) {
-            eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((sc2->Eta()), sc2->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((sc2->Eta()), sc2->Pt());
+            eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()); 
+            eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt());
           } else {
-            eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((sc2->Eta()), sc2->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((sc2->Eta()), sc2->Pt());
+            eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()); 
+            eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt());
           }
           corr2Bin *= eff2Bindata/eff2Binmc;
 
@@ -1632,7 +1563,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep1Pt.TransLegend(0.1,-0.05);
   plotZeeLep1Pt.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeLep1PtDiff("zeeLep1Pt"+norm,"","p_{T}(leading muon) [GeV]","#frac{Data-Pred}{Data}");
+  CPlot plotZeeLep1PtDiff("zeeLep1Pt"+norm,"","p_{T}(leading electron) [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLep1PtDiff.AddHist1D(hZeeLep1PtDiff,"EX0",ratioColor);
   plotZeeLep1PtDiff.SetLogx();
   plotZeeLep1PtDiff.SetYRange(-0.2,0.2);
@@ -1671,7 +1602,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep2Pt.TransLegend(0.1,-0.05);
   plotZeeLep2Pt.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeLep2PtDiff("zeeLep2Pt"+norm,"","p_{T}(2nd leading muon) [GeV]","#frac{Data-Pred}{Data}");
+  CPlot plotZeeLep2PtDiff("zeeLep2Pt"+norm,"","p_{T}(2nd leading electron) [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLep2PtDiff.AddHist1D(hZeeLep2PtDiff,"EX0",ratioColor);
   plotZeeLep2PtDiff.SetLogx();
   plotZeeLep2PtDiff.SetYRange(-0.2,0.2);
@@ -1787,7 +1718,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep1Eta.TransLegend(0.1,-0.05);
   plotZeeLep1Eta.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeLep1EtaDiff("zeeLep1Eta"+norm,"","|#eta| (leading muon)","#frac{Data-Pred}{Data}");
+  CPlot plotZeeLep1EtaDiff("zeeLep1Eta"+norm,"","|#eta| (leading electron)","#frac{Data-Pred}{Data}");
   plotZeeLep1EtaDiff.AddHist1D(hZeeLep1EtaDiff,"EX0",ratioColor);
   plotZeeLep1EtaDiff.SetYRange(-0.2,0.2);
   plotZeeLep1EtaDiff.AddLine(0, 0,2.4, 0,kBlack,1);
@@ -1823,7 +1754,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep2Eta.TransLegend(0.1,-0.05);
   plotZeeLep2Eta.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeLep2EtaDiff("zeeLep2Eta"+norm,"","|#eta| (2nd leading muon)","#frac{Data-Pred}{Data}");
+  CPlot plotZeeLep2EtaDiff("zeeLep2Eta"+norm,"","|#eta| (2nd leading electron)","#frac{Data-Pred}{Data}");
   plotZeeLep2EtaDiff.AddHist1D(hZeeLep2EtaDiff,"EX0",ratioColor);
   plotZeeLep2EtaDiff.SetYRange(-0.2,0.2);
   plotZeeLep2EtaDiff.AddLine(0, 0,2.4, 0,kBlack,1);
