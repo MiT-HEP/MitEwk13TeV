@@ -19,6 +19,7 @@
 #include "TRandom.h"
 
 #include "../Utils/LeptonCorr.hh"
+#include "../EleScale/EnergyScaleCorrection_class.hh"
 
 // structure for output ntuple
 #include "EffData.hh" 
@@ -31,6 +32,8 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
 			const Int_t   effType,              // type of efficiency to compute
 		        const Bool_t  doGenMatch = kFALSE,  // match to generator leptons
 			const Bool_t  doWeighted = kFALSE,  // store events with weights
+			const Bool_t  doScaleAndSmear = kTRUE,
+			const TString dataType = "",
                         const UInt_t  desiredrunNum = 0     // select a specific run (0 for all runs)
 ) {
   gBenchmark->Start("selectProbesEleEff");
@@ -53,8 +56,12 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC, eTrkSC, eTrkNoSC, eEleIso, eEleNoIso };  // event category enum
   
   Double_t nProbes = 0;
-  
-  //
+
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015";
+
+  //data
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;  
+
   // Set up output ntuple
   //
   gSystem->mkdir(outputDir,kTRUE);
@@ -91,6 +98,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
+  Float_t r91,r92;
   
   // Read input file and get the TTrees
   cout << "Processing " << infilename << "..." << endl;
@@ -120,6 +128,9 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
   intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
   intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector 
+  intree->SetBranchAddress("r91",      &r91);               // r9
+  intree->SetBranchAddress("r92",      &r92);               // r9
+
   
   //
   // loop over events
@@ -241,11 +252,53 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     
     nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
 
+      if(doScaleAndSmear && !(effType==eGsfSelEff && !pass)){
+
+        float smear1 = 0.0, scale1 = 1.0;
+        float aeta1= fabs(lep1->Eta());
+        float et1 = lep1->E() / cosh(aeta1);
+        bool eb1 = aeta1 < 1.4442; 
+        float smear2 = 0.0, scale2 = 1.0;
+        float aeta2= fabs(lep2->Eta());
+        float et2 = lep2->E() / cosh(aeta2);
+        bool eb2 = aeta2 < 1.4442;
+        float error1;
+        float error2;
+
+        if(dataType.CompareTo("data")==0){// DATA
+                scale1 = eleCorr.ScaleCorrection( runNum, eb1, r91, aeta1, et1);
+                scale2 = eleCorr.ScaleCorrection( runNum, eb2, r92, aeta2, et2);
+
+                error1 = eleCorr.ScaleCorrectionUncertainty(runNum, eb1, r91, aeta1, et1);
+                error2 = eleCorr.ScaleCorrectionUncertainty(runNum, eb2, r92, aeta2, et2);
+         
+                (*lep1) *= scale1;
+                (*lep2) *= scale2;
+        }else{ // MC
+                smear1 = eleCorr.getSmearingSigma( runNum, eb1, r91, aeta1, et1 ,0.,0.);
+                smear2 = eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2, et2 ,0.,0.);
+
+                float smearE1 = smear1 + std::hypot( eleCorr.getSmearingSigma( runNum, eb1, r91, aeta1,et1,1.,0.) -smear1,  eleCorr.getSmearingSigma( runNum,  eb1,r91, aeta1,et1,0.,1. ) -smear1 ) ;
+                float smearE2 = smear2 + std::hypot( eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2,et2,1.,0.), eleCorr.getSmearingSigma( runNum, eb2, r92, aeta2,et2,0.,1.) );
+                double r1= gRandom->Gaus(0,1);
+                double r2= gRandom->Gaus(0,1);
+                double corr1 = 1.0 + smear1 * r1;
+                double corr2 = 1.0 + smear2 * r2;
+                error1 = lep1->E() * (1.0 + smearE1 * r1);
+                error2 = lep2->E() * (1.0 + smearE2 * r2);
+                (*lep1) *= corr1;
+                (*lep2) *= corr2;
+        } 
+      } // do scale and smear*/
+
     // Fill tree
     mass    = dilep->M();
-    pt	    = (effType==eSCEff) ? lep2->Pt()  : sc2->Pt();
-    eta	    = (effType==eSCEff) ? lep2->Eta() : sc2->Eta();
-    phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
+    pt      = (effType==eGsfSelEff && !pass) ? sc2->Pt()  : lep2->Pt();
+    eta     = (effType==eGsfSelEff && !pass) ? sc2->Eta() : lep2->Eta();
+    phi     = (effType==eGsfSelEff && !pass) ? sc2->Phi() : lep2->Phi();
+//    pt	    = (effType==eSCEff) ? lep2->Pt()  : sc2->Pt();
+//    eta	    = (effType==eSCEff) ? lep2->Eta() : sc2->Eta();
+//    phi	    = (effType==eGsfEff || effType==eGsfSelEff) ? sc2->Phi() : lep2->Phi();
     weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
     q	    = q2;
     npv	    = npv;
@@ -262,8 +315,8 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
       
       mass    = dilep->M();
-      pt      = sc1->Pt();
-      eta     = sc1->Eta();
+      pt      = lep1->Pt();//sc1->Pt();
+      eta     = lep1->Eta();//sc1->Eta();
       phi     = (effType==eGsfEff) ? sc1->Phi() : lep1->Phi();
       weight  = doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
       q	      = q1;
