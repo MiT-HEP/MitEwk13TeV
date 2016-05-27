@@ -21,6 +21,7 @@
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
 #include "TRandom.h"
+#include "TGraph.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -83,6 +84,8 @@ void selectZee(const TString conf="zee.conf", // input file
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
 
+  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
+
   // for systematics we need 3
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
@@ -91,6 +94,9 @@ void selectZee(const TString conf="zee.conf", // input file
   if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_down==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+
+  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
+  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -426,9 +432,16 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    }else{//MC
 
-	      tagSmear = eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt, 0., 0.);
+	      float tagR9Prime; // r9 corrections MC only
+	      if(tagisBarrel){
+	                tagR9Prime = gR9EB->Eval(tag->r9);}
+	      else { 
+	                tagR9Prime = gR9EE->Eval(tag->r9);
+	      }
 
-              float tagSmearE = tagSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt, 1., 0.) - tagSmear,  eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt, 0., 1.) - tagSmear);
+	      tagSmear = eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tagR9Prime, tagAbsEta, tagEt, 0., 0.);
+
+              float tagSmearE = tagSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tagR9Prime, tagAbsEta, tagEt, 1., 0.) - tagSmear,  eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tagR9Prime, tagAbsEta, tagEt, 0., 1.) - tagSmear);
               double tagRamdom = gRandom->Gaus(0,1);
 	      tagError = vTag.E() * (1.0 + tagSmearE * tagRamdom);
               tagSmear = 1. + tagSmear * tagRamdom;
@@ -556,9 +569,16 @@ void selectZee(const TString conf="zee.conf", // input file
 
             }else{//MC
 
-              probeSmear = eleCorr.getSmearingSigma(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt, 0., 0.);
+	      float probeR9Prime; // r9 corrections MC only
+	      if(probeisBarrel){
+	                probeR9Prime = gR9EB->Eval(scProbe->r9);}
+	      else { 
+	                probeR9Prime = gR9EE->Eval(scProbe->r9);
+	      }
 
-              float probeSmearE = probeSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt, 1., 0.) - probeSmear,  eleCorr.getSmearingSigma(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt, 0., 1.) - probeSmear);
+              probeSmear = eleCorr.getSmearingSigma(info->runNum, probeisBarrel, probeR9Prime, probeAbsEta, probeEt, 0., 0.);
+
+              float probeSmearE = probeSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, probeisBarrel, probeR9Prime, probeAbsEta, probeEt, 1., 0.) - probeSmear,  eleCorr.getSmearingSigma(info->runNum, probeisBarrel, probeR9Prime, probeAbsEta, probeEt, 0., 1.) - probeSmear);
               double probeRamdom = gRandom->Gaus(0,1);
               probeError = vProbe.E() * (1.0 + probeSmearE * probeRamdom);
               probeSmear = 1. + probeSmear * probeRamdom;
@@ -627,15 +647,23 @@ void selectZee(const TString conf="zee.conf", // input file
 		(vEleProbeSC) *= eleProbeSCScale;
   
               }else{//MC
+
+                float eleProbeR9Prime; // r9 corrections MC only
+                if(eleProbeisBarrel){
+                          eleProbeR9Prime = gR9EB->Eval(eleProbe->r9);}
+                else {
+                          eleProbeR9Prime = gR9EE->Eval(eleProbe->r9);
+                }
+
   
-                eleProbeSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt, 0., 0.);
-                float eleProbeSmearE = eleProbeSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt, 1., 0.) - eleProbeSmear,  eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt, 0., 1.) - eleProbeSmear);
+                eleProbeSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbeR9Prime, eleProbeAbsEta, eleProbeEt, 0., 0.);
+                float eleProbeSmearE = eleProbeSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbeR9Prime, eleProbeAbsEta, eleProbeEt, 1., 0.) - eleProbeSmear,  eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbeR9Prime, eleProbeAbsEta, eleProbeEt, 0., 1.) - eleProbeSmear);
                 double eleProbeRamdom = gRandom->Gaus(0,1); 
                 eleProbeError = vEleProbe.E() * (1.0 + eleProbeSmearE * eleProbeRamdom);
                 eleProbeSmear = 1. + eleProbeSmear * eleProbeRamdom;
 
-                eleProbeSCSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt, 0., 0.);
-                float eleProbeSCSmearE = eleProbeSCSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt, 1., 0.) - eleProbeSCSmear,  eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt, 0., 1.) - eleProbeSCSmear);
+                eleProbeSCSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbeR9Prime, eleProbeSCAbsEta, eleProbeSCEt, 0., 0.);
+                float eleProbeSCSmearE = eleProbeSCSmear + std::hypot(eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbeR9Prime, eleProbeSCAbsEta, eleProbeSCEt, 1., 0.) - eleProbeSCSmear,  eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbeR9Prime, eleProbeSCAbsEta, eleProbeSCEt, 0., 1.) - eleProbeSCSmear);
                 double eleProbeSCRamdom = gRandom->Gaus(0,1);
                 eleProbeSCError = vEleProbeSC.E() * (1.0 + eleProbeSCSmearE * eleProbeSCRamdom);
                 eleProbeSCSmear = 1. + eleProbeSCSmear * eleProbeSCRamdom;
