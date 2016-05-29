@@ -15,6 +15,12 @@
     gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libBaconAnaDataFormats.so");
     
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
+  {
+    gSystem->AddIncludePath("-I../EleScale");
+    gInterpreter->AddIncludePath("../EleScale");
+    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+    gROOT->Macro("EnergyScaleCorrection_class.cc+");
+  }
 
     // turn on open mp not CINT only ACLIC
     //#ifndef __CINT__
