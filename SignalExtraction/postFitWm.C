@@ -103,37 +103,6 @@ void postFitWm(const TString  outputDir,   // output directory
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
-  //
-  // Declare MET histograms
-  //
-//   TH1D *hDataMet   = new TH1D("hDataMet","",  NBINS,0,METMAX); hDataMet->Sumw2();
-//   TH1D *hDataMetm  = new TH1D("hDataMetm","", NBINS,0,METMAX); hDataMetm->Sumw2();  
-//   TH1D *hDataMetp  = new TH1D("hDataMetp","", NBINS,0,METMAX); hDataMetp->Sumw2();
-  
-//   TH1D *hWmunuMet  = new TH1D("hWmunuMet","", NBINS,0,METMAX); hWmunuMet->Sumw2();
-//   TH1D *hWmunuMetp = new TH1D("hWmunuMetp","",NBINS,0,METMAX); hWmunuMetp->Sumw2();
-//   TH1D *hWmunuMetm = new TH1D("hWmunuMetm","",NBINS,0,METMAX); hWmunuMetm->Sumw2();
-  
-//   TH1D *hEWKMet    = new TH1D("hEWKMet", "",  NBINS,0,METMAX); hEWKMet->Sumw2();
-//   TH1D *hEWKMetp   = new TH1D("hEWKMetp", "", NBINS,0,METMAX); hEWKMetp->Sumw2();
-//   TH1D *hEWKMetm   = new TH1D("hEWKMetm", "", NBINS,0,METMAX); hEWKMetm->Sumw2();
-  
-//   TH1D *hWmunuMet_RecoilUp  = new TH1D("hWmunuMet_RecoilUp", "",NBINS,0,METMAX); hWmunuMet_RecoilUp->Sumw2();
-//   TH1D *hWmunuMetp_RecoilUp = new TH1D("hWmunuMetp_RecoilUp","",NBINS,0,METMAX); hWmunuMetp_RecoilUp->Sumw2();
-//   TH1D *hWmunuMetm_RecoilUp = new TH1D("hWmunuMetm_RecoilUp","",NBINS,0,METMAX); hWmunuMetm_RecoilUp->Sumw2();
-//   TH1D *hWmunuMetp_UncUp = new TH1D("hWmunuMetp_UncUp","",NBINS,0,METMAX); hWmunuMetp_UncUp->Sumw2();
-//   TH1D *hWmunuMetm_UncUp = new TH1D("hWmunuMetm_UncUp","",NBINS,0,METMAX); hWmunuMetm_UncUp->Sumw2();
-//   
-// //   TH1D *hWmunuMet_RecoilDown  = new TH1D("hWmunuMet_RecoilDown", "",NBINS,0,METMAX); hWmunuMet_RecoilDown->Sumw2();
-//   TH1D *hWmunuMetp_UncDown = new TH1D("hWmunuMetp_UncDown","",NBINS,0,METMAX); hWmunuMetp_UncDown->Sumw2();
-//   TH1D *hWmunuMetm_UncDown = new TH1D("hWmunuMetm_UncDown","",NBINS,0,METMAX); hWmunuMetm_UncDown->Sumw2();
-
-//   TH1D *hWmunuMet_ScaleUp  = new TH1D("hWmunuMet_ScaleUp", "",NBINS,0,METMAX); hWmunuMet_ScaleUp->Sumw2();
-//   TH1D *hWmunuMetp_ScaleUp = new TH1D("hWmunuMetp_ScaleUp","",NBINS,0,METMAX); hWmunuMetp_ScaleUp->Sumw2();
-//   TH1D *hWmunuMetm_ScaleUp = new TH1D("hWmunuMetm_ScaleUp","",NBINS,0,METMAX); hWmunuMetm_ScaleUp->Sumw2();
-//   TH1D *hWmunuMet_ScaleDown  = new TH1D("hWmunuMet_ScaleDown", "",NBINS,0,METMAX); hWmunuMet_ScaleDown->Sumw2();
-//   TH1D *hWmunuMetp_ScaleDown = new TH1D("hWmunuMetp_ScaleDown","",NBINS,0,METMAX); hWmunuMetp_ScaleDown->Sumw2();
-//   TH1D *hWmunuMetm_ScaleDown = new TH1D("hWmunuMetm_ScaleDown","",NBINS,0,METMAX); hWmunuMetm_ScaleDown->Sumw2();
   
   // Read in the Wmunu_pdfTemplates file here and start to get pdfs.
   TString inputName = "./Wmunu_pdfTemplates.root";
@@ -203,66 +172,12 @@ void postFitWm(const TString  outputDir,   // output directory
   RooRealVar nSig("nSig","nSig",1000);
   RooRealVar nQCD("nQCD","nQCD",1000);
   RooRealVar nEWK("nEWK","nEWK",1000);
-  
-/*  RooRealVar nSigp("nSigp","nSigp",0.9809*9932570.005);
-  RooRealVar nQCDp("nQCDp","nQCDp",1218720.9025);
-  RooRealVar nEWKp("nEWKp","nEWKp",0.9809*399910.9383);
-  
-  RooRealVar nSigm("nSigm","nSigm",0.9705*7761259.542);
-  RooRealVar nQCDm("nQCDm","nQCDm",1214518.8397);
-  RooRealVar nEWKm("nEWKm","nEWKm",0.9705*355045.8907); */ 
-  
 
-// Puppi, correct corrections 4/18
-//   RooRealVar nSigp("nSigp","nSigp",0.9925*9460644.222);
-//   RooRealVar nQCDp("nQCDp","nQCDp",10);
-//   RooRealVar nEWKp("nEWKp","nEWKp",0.9925*849566.0879);
-//   
-//   RooRealVar nSigm("nSigm","nSigm",0.9891*7314649.327);
-//   RooRealVar nQCDm("nQCDm","nQCDm",10);
-//   RooRealVar nEWKm("nEWKm","nEWKm",0.9891*757800.2728); 
-
-// // Puppi, correct corrections 4/18 comp a1
-//   RooRealVar nSigp("nSigp","nSigp",1.00043*9460644.222);
-//   RooRealVar nQCDp("nQCDp","nQCDp",10);
-//   RooRealVar nEWKp("nEWKp","nEWKp",1.0004*849566.0879);
-//   
-//   RooRealVar nSigm("nSigm","nSigm",0.9982*7314649.327);
-//   RooRealVar nQCDm("nQCDm","nQCDm",10);
-//   RooRealVar nEWKm("nEWKm","nEWKm",0.9982*757800.2728); 
-  
-//   //PF corrections CDF inversion 4/19
-//   RooRealVar nSigp("nSigp","nSigp",0.9998*9117357.686);
-//   RooRealVar nQCDp("nQCDp","nQCDp",10);
-//   RooRealVar nEWKp("nEWKp","nEWKp",0.9998*818820.1544);
-//   
-//   RooRealVar nSigm("nSigm","nSigm",0.8581*8238368.442);
-//   RooRealVar nQCDm("nQCDm","nQCDm",10);
-//   RooRealVar nEWKm("nEWKm","nEWKm",0.8581*853643.1958); 
-
-// idk
-//   RooRealVar nSigp("nSigp","nSigp",1.0650*8927682.043);
-//   RooRealVar nQCDp("nQCDp","nQCDp",10);
-//   RooRealVar nEWKp("nEWKp","nEWKp",1.0650*808712.9683 );
-//   
-//   RooRealVar nSigm("nSigm","nSigm",0.9601*7846348.787);
-//   RooRealVar nQCDm("nQCDm","nQCDm",10);
-//   RooRealVar nEWKm("nEWKm","nEWKm",0.9601*819050.3804); 
-
-// other pf
-//   RooRealVar nSigp("nSigp","nSigp",0.9998*9120045.161);
-//   RooRealVar nQCDp("nQCDp","nQCDp",10);
-//   RooRealVar nEWKp("nEWKp","nEWKp", 0.9998*819044.1664);
-// //   
-//   RooRealVar nSigm("nSigm","nSigm",0.8568*8238381.361);
-//   RooRealVar nQCDm("nQCDm","nQCDm",10);
-//   RooRealVar nEWKm("nEWKm","nEWKm",0.8568*853605.0207); 
-
-// new puppi extended
+  // set some values for W+
   RooRealVar nSigp("nSigp","nSigp",0.9501*10021859.52);
   RooRealVar nQCDp("nQCDp","nQCDp",10);
   RooRealVar nEWKp("nEWKp","nEWKp",0.9501*891027.7381);
-//   
+  //   
   RooRealVar nSigm("nSigm","nSigm",0.9328*7888766.721);
   RooRealVar nQCDm("nQCDm","nQCDm",10);
   RooRealVar nEWKm("nEWKm","nEWKm",0.9328*811026.9662); 
@@ -340,26 +255,6 @@ void postFitWm(const TString  outputDir,   // output directory
 
   std::cout  << "Selectedp: " << hDataMetp->Integral() << endl;
   std::cout  << "Selectedm: " << hDataMetm->Integral() << endl;
-
-  // EVerything Free, nice fit
-//   qcdp.a1->setVal(0.2604);
-//   qcdm.a1->setVal(0.2492);
-//   qcdp.sigma->setVal(12.5364);
-//   qcdm.sigma->setVal(13.0743);
-//   nQCDp.setVal(1218720.9025);
-//   nSigp.setVal(0.9809*9932570.005);
-//   nQCDm.setVal(1214518.8397);
-//   nSigm.setVal(0.9705*7761259.542); 
-
-// Fixed Both Parameters QCD
-//   qcdp.a1->setVal(0.2040);
-//   qcdm.a1->setVal(0.2040);
-//   qcdp.sigma->setVal(16.6000);
-//   qcdm.sigma->setVal(16.6000);
-//   nQCDp.setVal(1388074.7910);
-//   nSigp.setVal(0.9645*9928636.387);
-//   nQCDm.setVal(1381065.1601);
-//   nSigm.setVal(0.9500*7761259.542); 
 
 // Fixed Tail on QCD
   qcdp.a1->setVal(0.1262);
