@@ -104,7 +104,7 @@ void selectWm(const TString conf="wm.conf", // input file
   TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
-  Float_t scale1fb, puWeight,puWeightUp,puWeightDown;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
@@ -177,9 +177,8 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
-    outTree->Branch("puWeight",   &puWeight,   "puWeight/F");    // scale factor for pileup reweighting (MC)
-    outTree->Branch("puWeightUp",   &puWeightUp,   "puWeightUp/F");    // scale factor for pileup reweighting (MC)
-    outTree->Branch("puWeightDown",   &puWeightDown,   "puWeightDown/F");    // scale factor for pileup reweighting (MC)
+    outTree->Branch("scale1fbUp",   &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
+    outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
@@ -256,6 +255,8 @@ void selectWm(const TString conf="wm.conf", // input file
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
       Double_t totalWeight=0;
+      Double_t totalWeightUp=0;
+      Double_t totalWeightDown=0;
 
 //       if (hasGen) {
 // 	TH1D *hall = new TH1D("hall", "", 1,0,1);
@@ -272,9 +273,9 @@ void selectWm(const TString conf="wm.conf", // input file
       puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
       puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
       puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-      totalWeight+=gen->weight;//*puWeight; // mine has pu and gen separated
-//       totalWeightUp+=gen->weight;//*puWeightUp;
-//       totalWeightDown+=gen->weight;//*puWeightDown;
+      totalWeight+=gen->weight*puWeight; // mine has pu and gen separated
+      totalWeightUp+=gen->weight*puWeightUp;
+      totalWeightDown+=gen->weight*puWeightDown;
     }
       }
       else if (not isData){
@@ -282,9 +283,9 @@ void selectWm(const TString conf="wm.conf", // input file
       puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
       puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
       puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-      totalWeight+= 1.0;//*puWeight;
-//       totalWeightUp+= 1.0;//*puWeightUp;
-//       totalWeightDown+= 1.0;//*puWeightDown;
+      totalWeight+= 1.0*puWeight;
+      totalWeightUp+= 1.0*puWeightUp;
+      totalWeightDown+= 1.0*puWeightDown;
     }
 
       }
@@ -297,15 +298,31 @@ void selectWm(const TString conf="wm.conf", // input file
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-
-        Double_t weight=1;
+	Double_t weight=1;
+	Double_t weightUp=1;
+	Double_t weightDown=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
+	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
+	if(hasGen) {
+	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
+          genPartBr->GetEntry(ientry);
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  weight*=gen->weight*puWeight;
+	  weightUp*=gen->weight*puWeightUp;
+	  weightDown*=gen->weight*puWeightDown;
+	}
+       /* Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(hasGen) {
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
 	  weight*=gen->weight;
-	}
+	}*/
 
 	// veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
@@ -465,9 +482,8 @@ void selectWm(const TString conf="wm.conf", // input file
             gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(npu));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(npu));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(npu));
+          scale1fbUp = weightUp;
+          scale1fbDown = weightDown;
 	  met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
@@ -480,8 +496,8 @@ void selectWm(const TString conf="wm.conf", // input file
 	  mvaMetPhi = info->mvaMETphi;
 	  mvaSumEt  = 0;
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-      puppiMet = info->puppET;
-      puppiMetPhi = info->puppETphi;
+          puppiMet = info->puppET;
+          puppiMetPhi = info->puppETphi;
 	  puppiSumEt  = 0;
 	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodMuon->q;
