@@ -30,7 +30,7 @@
 #include "../Utils/CPlot.hh"              // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #include "../Utils/WModels.hh"            // definitions of PDFs for fitting
-#include "../Utils/RecoilCorrector_v2.hh"
+#include "../Utils/RecoilCorrector_asym2.hh"
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // #include "ZBackgrounds.hh"
@@ -314,20 +314,22 @@ void fitWm(const TString  outputDir,   // output directory
           
       Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
       if(lepPt        > PT_CUT)
-        { 
+        {
           //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
           hWmunuMet->Fill(corrMet,weight);
           if(q>0) 
         {
           pU1 = 0; pU2 = 0; 
-          recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+          recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
           hWmunuMetp->Fill(corrMet,weight); 
           corrMet=met, corrMetPhi=metPhi;
         } 
           else    
         { 
           pU1 = 0; pU2 = 0; 
-          recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//           recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+          recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
           hWmunuMetm->Fill(corrMet,weight); 
           corrMet=met, corrMetPhi=metPhi;
         }
@@ -336,14 +338,14 @@ void fitWm(const TString  outputDir,   // output directory
           if(q>0) 
         {
           pU1 = 0; pU2 = 0; 
-          recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
+//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
           hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
           corrMet=met, corrMetPhi=metPhi;
         } 
           else    
         { 
           pU1 = 0; pU2 = 0; 
-          recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
+//           recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
           hWmunuMetm_RecoilUp->Fill(corrMet,weight);
           corrMet=met, corrMetPhi=metPhi;
         }
@@ -352,14 +354,14 @@ void fitWm(const TString  outputDir,   // output directory
           if(q>0) 
         {
           pU1 = 0; pU2 = 0; 
-          recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
+//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
           hWmunuMetp_RecoilDown->Fill(corrMet,weight);
           corrMet=met, corrMetPhi=metPhi;
         } 
           else    
         { 
           pU1 = 0; pU2 = 0; 
-          recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
+//           recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
           hWmunuMetm_RecoilDown->Fill(corrMet,weight);
           corrMet=met, corrMetPhi=metPhi;
         }
