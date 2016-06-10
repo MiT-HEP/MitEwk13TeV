@@ -31,9 +31,14 @@
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
 #include "../Utils/WModels.hh"            // definitions of PDFs for fitting
 #include "../Utils/RecoilCorrector_asym2.hh"
+// #include "../Utils/RecoilCorrector_addJets.hh"
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // #include "ZBackgrounds.hh"
+
+//helper class to handle rochester corrections
+#include <rochcor2015r.h>
+#include <muresolution_run2r.h>
 
 // RooFit headers
 #include "RooRealVar.h"
@@ -86,65 +91,94 @@ void fitWm(const TString  outputDir,   // output directory
   
   const Double_t PT_CUT  = 25;
   const Double_t ETA_CUT = 2.4;
+  
+  const Double_t mu_MASS = 0.1057;
+  const int NTOYS = 100;
 
   TString pufname = "../Tools/pileup_weights_2015B.root";
+  
+//   TString ZmmShapes = "./ZmmShapes/Zmumu_pdfTemplates_BkgSub.root";
 
   // file format for output plots
   const TString format("png"); 
 
-  // recoil correction
-  //RecoilCorrector recoilCorr("../Recoil//fits_puppi_new.root");//, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
-                             //"../Recoil/WmpMC/fits.root",
-                 //"../Recoil/WmmMC/fits.root",
-                 //"../Recoil/ZmmMC/fits.root");
+
+  RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+  recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
+  recoilCorr->loadRooWorkspacesMC("../Recoil/WmpMC_newBacon/");
+  
+  RecoilCorrector *recoilCorrm = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+  recoilCorrm->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
+  recoilCorrm->loadRooWorkspacesMC("../Recoil/WmmMC_newBacon/");
+  
+  TH1D *hh_diff = new TH1D("hh_diff","hh_diff",75,0,150);
+    
+   /* PUPPI SHAPE 
+   Par  0                    p0 = -0.0147144                        
+ Par  1                    p1 = -0.00428769                       
+ Par  2                    p2 = 0.000717135                       
+ Par  3                    p3 = -2.99408e-05                      
+ Par  4                    p4 = 4.9586e-07                        
+ Par  5                    p5 = -2.74668e-09                      
+ Par  6                    p6 = -3.7269e-12                       
+ Par  7                    p7 = 5.0592e-14  
+  */
    
-  // NNLO boson pT k-factors
-  //TFile nnloCorrFile("/scratch/ksung/EWKAna/8TeV/Utils/Ratio.root");
-  //TH1D *hNNLOCorr = (TH1D*)nnloCorrFile.Get("RpT_B");
-  
-//      RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/WmpMC_mva_Qmean_10_09/fits.root","fcnPF");// PUPPI!
-//    recoilCorr->addMCFile("../Recoil/ZmumuMC_mva_Qmean_10_09/fits_mva.root"); // PUPPI
-//    recoilCorr->addDataFile("../Recoil/ZmumuData_mva_lin_10_09/fits_mva.root");// PUPPI
-  
-//    RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/WmpMC_puppi_Qmean_10_09/fits.root","fcnPF");// PUPPI!
-//    recoilCorr->addMCFile("../Recoil/ZmumuMC_puppi_Qmean_10_09/fits_puppi.root"); // PUPPI
-//    recoilCorr->addDataFile("../Recoil/ZmumuData_puppi_lin_10_09/fits_puppi.root");// PUPPI
+   /* Puppi Extended shape
+ Par  0                    p0 = -0.00945291
+ Par  1                    p1 = -0.00580972
+ Par  2                    p2 = 0.000981008
+ Par  3                    p3 = -4.88109e-05
+ Par  4                    p4 = 1.12054e-06
+ Par  5                    p5 = -1.28002e-08
+ Par  6                    p6 = 6.90726e-11
+ Par  7                    p7 = -1.39681e-13
 
-   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/WmpMC/fits.root","fcnPF");// PUPPI!
-   recoilCorr->addMCFile("../Recoil/ZmmMC_default/fits_puppi_ff.root"); // PUPPI
-   recoilCorr->addDataFile("../Recoil/ZmumuData_puppi_lin_10_12_small/fits_puppi.root");// PUPPI
-//    recoilCorr->addDataFile("../Recoil/ZmmData/fits_puppi_new.root");
-   recoilCorr->addMCTrueFile("../Recoil/ZmmData/fits_puppi_new.root");// PUPPI
-//   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/WmunuPlus_MC_mvaFixed_2015_09_22/fits.root","fcnPF");// MVA!
-//   recoilCorr->addMCFile("../Recoil/Zmumu_MC_mvaFixed_2015_09_22/fits_mva.root"); // MVA!
-//   recoilCorr->addDataFile("../Recoil/Zmumu_Data_mvaFixed_2015_09_22/fits_mva.root"); // MVA!
-//   recoilCorr->addMCTrueFile("../Recoil/Zmumu_Data_mvaFixed_2015_09_22/fits_mva.root"); // MVA!
+   */
+   
+   
+   /* PF SHAPE
+    Par  0                    p0 = 0.00247901
+ Par  1                    p1 = 1.32404e-05
+ Par  2                    p2 = -0.000109165
+ Par  3                    p3 = 7.19406e-06
+ Par  4                    p4 = -1.72942e-07
+ Par  5                    p5 = 2.19408e-09
+ Par  6                    p6 = -1.46137e-11
+ Par  7                    p7 = 3.84835e-14
+   
+   */
+   
+   /* PUPPI, Extended, Rochester
+  Par  0                    p0 = -0.00582912
+ Par  1                    p1 = -0.00685924
+ Par  2                    p2 = 0.00103105
+ Par  3                    p3 = -4.9861e-05
+ Par  4                    p4 = 1.1564e-06
+ Par  5                    p5 = -1.35275e-08
+ Par  6                    p6 = 7.54543e-11
+ Par  7                    p7 = -1.58874e-13
 
+   
+   */
+   
+  TF1 *fit = new TF1("fit","pol7");
+  fit->SetParameter(0,-0.00582912);
+  fit->SetParameter(1,-0.00685924);
+  fit->SetParameter(2, 0.00103105);
+  fit->SetParameter(3,-4.9861e-05);
+  fit->SetParameter(4,1.1564e-06);
+  fit->SetParameter(5,-1.35275e-08);
+  fit->SetParameter(6, 7.54543e-11);
+  fit->SetParameter(7, -1.58874e-13);
+  // fit->SetParameter(0,0.026647);
+  // z_corr->Fit(fit);
+  fit->Draw("same");
+  //   return;
+  // TH1D *hh_diff = (TH1D*) hh_diff->Clone("z_corr2");
+  for(int i = 0; i < 75; i++){hh_diff->SetBinContent(i,fit->Eval(2*i+1));}
+  //   hh_diff->Draw();
   
-  // recoil correction
-  //, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
-  
-//       RecoilCorrector *recoilCorrm = new  RecoilCorrector("../Recoil/WmmMC_mva_Qmean_10_09/fits.root","fcnPF"); // PUPPI!
-//     recoilCorrm->addMCFile("../Recoil/ZmumuMC_mva_Qmean_10_09/fits_mva.root");//puppi
-//     recoilCorrm->addDataFile("../Recoil/ZmumuData_mva_lin_10_09/fits_mva.root"); //puppi
-  
-//     RecoilCorrector *recoilCorrm = new  RecoilCorrector("../Recoil/WmmMC_puppi_Qmean_10_09/fits.root","fcnPF"); // PUPPI!
-//     recoilCorrm->addMCFile("../Recoil/ZmumuMC_puppi_Qmean_10_09/fits_puppi.root");//puppi
-//     recoilCorrm->addDataFile("../Recoil/ZmumuData_puppi_lin_10_09/fits_puppi.root"); //puppi
-
-    RecoilCorrector *recoilCorrm = new  RecoilCorrector("../Recoil/WmmMC/fits.root","fcnPF"); // PUPPI!
-    recoilCorrm->addMCFile("../Recoil/ZmmMC_default/fits_puppi_ff.root");//puppi
-    recoilCorrm->addDataFile("../Recoil/ZmumuData_puppi_lin_10_12_small/fits_puppi.root"); //puppi
-//     recoilCorrm->addDataFile("../Recoil/ZmmData/fits_puppi_new.root");
-    recoilCorrm->addMCTrueFile("../Recoil/ZmmData/fits_puppi_new.root"); //puppi
-//     RecoilCorrector *recoilCorrm = new  RecoilCorrector("../Recoil/WmunuMinus_MC_mvaFixed_2015_09_22/fits.root","fcnPF"); // MVA!
-//     recoilCorrm->addMCFile("../Recoil/Zmumu_MC_mvaFixed_2015_09_22/fits_mva.root"); // MVA
-//     recoilCorrm->addDataFile("../Recoil/Zmumu_Data_mvaFixed_2015_09_22/fits_mva.root"); // MVA
-//     recoilCorrm->addMCTrueFile("../Recoil/Zmumu_Data_mvaFixed_2015_09_22/fits_mva.root"); // MVA
-  
-  // setup pileup reweighting
-  TFile *pufile = new TFile(pufname); assert(pufile);
-  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
 
   //
   // input ntuple file names
@@ -152,21 +186,28 @@ void fitWm(const TString  outputDir,   // output directory
   enum { eData, eWmunu, eEWK, eQCD, eAntiData, eAntiWmunu, eAntiEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
-
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
   
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
-  fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
   
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_testMVA2/Wmunu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/ww_select.raw.root");  typev.push_back(eEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/wx_select.raw.root");  typev.push_back(eEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/wz_select.raw.root");  typev.push_back(eEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/zxx_select.raw.root");  typev.push_back(eEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/zz_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
+  
+//   // The anti-selection stuff
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/wm_select.raw.root");   typev.push_back(eAntiWmunu);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/ww_select.raw.root");  typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/wx_select.raw.root");  typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/wz_select.raw.root");  typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/zxx_select.raw.root");  typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/zz_select.raw.root");  typev.push_back(eAntiEWK);
+// //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/top_select.raw.root");  typev.push_back(eAntiEWK);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -219,6 +260,8 @@ void fitWm(const TString  outputDir,   // output directory
   TH1D *hAntiEWKMet    = new TH1D("hAntiEWKMet", "",  NBINS,0,METMAX); hAntiEWKMet->Sumw2();
   TH1D *hAntiEWKMetp   = new TH1D("hAntiEWKMetp", "", NBINS,0,METMAX); hAntiEWKMetp->Sumw2();
   TH1D *hAntiEWKMetm   = new TH1D("hAntiEWKMetm", "", NBINS,0,METMAX); hAntiEWKMetm->Sumw2();
+  
+  
 
   
 /*  
@@ -232,12 +275,18 @@ void fitWm(const TString  outputDir,   // output directory
   UInt_t  runNum, lumiSec, evtNum;
   UInt_t  npv, npu;
   Float_t genVPt, genVPhi;
-  Float_t scale1fb;
+  Float_t scale1fb, puWeight, puWeightDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
   TLorentzVector *lep=0;
   Float_t pfChIso, pfGamIso, pfNeuIso;
     
+  //Setting up rochester corrections
+//   vector<rochcor2015> vRocToys;
+//   for (int i=0 ; i<NTOYS; ++i) vRocToys.push_back(rochcor2015(1234+i*1000));
+  
+  rochcor2015 *rmcor = new rochcor2015();
+  
   TFile *infile=0;
   TTree *intree=0;
 
@@ -259,14 +308,20 @@ void fitWm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)   
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("puWeight", &puWeight);  // pu weight 
+    intree->SetBranchAddress("puWeightDown", &puWeightDown);  // puweight down
 //     intree->SetBranchAddress("mvaMet",      &met);       // MET
 //     intree->SetBranchAddress("mvaMetPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("puppiMet",      &met);       // MET
     intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
+//     intree->SetBranchAddress("met",      &met);       // MET
+//     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress("puppiU1",       &u1);        // parallel component of recoil
+    intree->SetBranchAddress("puppiU2",       &u2);        // perpendicular component of recoil
+//     intree->SetBranchAddress("u1",       &u1);        // parallel component of recoil
+//     intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
     intree->SetBranchAddress("pfChIso",  &pfChIso);
@@ -278,172 +333,203 @@ void fitWm(const TString  outputDir,   // output directory
     //
     // loop over events
     //
+    std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+//       std::cout << ientry << std::endl;
       intree->GetEntry(ientry);
+      if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
 
       double pU1         = 0;  //--
       double pU2         = 0;  //--
       
-      //met =-met;  
-      //if(lep->Pt()        < PT_CUT)  continue;    
-      if(fabs(lep->Eta()) > ETA_CUT) continue;
-      
-      //if( (typev[ifile]==eAntiData || typev[ifile]==eAntiWmunu || typev[ifile]==eAntiEWK) &&
-      //    (pfChIso+pfGamIso+pfNeuIso)>0.2*(lep->Pt()) ) 
-      //      continue;
+//       if(fabs(lep->Eta()) > 1.0) continue;
+
     
       mt     = sqrt( 2.0 * (lep->Pt()) * (met) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metPhi))) );
-
+      
+      
       if(typev[ifile]==eData) {
-        if(lep->Pt()        < PT_CUT)  continue;
+          
+        // Apply the Rochester Corrections to data
+        TLorentzVector mu1;
+        mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
+        float qter1=1.0;
+        rmcor->momcor_data(mu1,q,0,qter1);
+        if(mu1.Pt()        < PT_CUT)  continue;
         hDataMet->Fill(met);
-    if(q>0) { hDataMetp->Fill(met); } 
-    else    { hDataMetm->Fill(met); }
-      
+        if(q>0) { hDataMetp->Fill(met); } 
+        else    { hDataMetm->Fill(met); }
       } else if(typev[ifile]==eAntiData) {
+        // Apply the Rochester Corrections to data (anti-isolation)
+        TLorentzVector mu1;
+        mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
+        float qter1=1.0;
+        rmcor->momcor_data(mu1,q,0,qter1);
+        if(mu1.Pt()        < PT_CUT)  continue;
+        
         hAntiDataMet->Fill(met);
-    if(q>0) { hAntiDataMetp->Fill(met); } 
-    else    { hAntiDataMetm->Fill(met); }      
-      
+        if(q>0) { hAntiDataMetp->Fill(met); } 
+        else    { hAntiDataMetm->Fill(met); }   
       } else {
         Double_t weight = 1;
         weight *= scale1fb*lumi;
-    weight *=puWeights->GetBinContent(npv+1);
-    if(typev[ifile]==eWmunu) {
+        
+        // Do some Rochester corrections for MC
+        TLorentzVector mu1;
+        mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
+        float qter1=1.0;
+
+        rmcor->momcor_mc(mu1,q,0,qter1);
+        Double_t lepPt = mu1.Pt();
+        
+        if(typev[ifile]==eWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
           
-      Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
-      if(lepPt        > PT_CUT)
-        {
-          //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
-          hWmunuMet->Fill(corrMet,weight);
-          if(q>0) 
-        {
-          pU1 = 0; pU2 = 0; 
-//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-          recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
-          hWmunuMetp->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-        } 
-          else    
-        { 
-          pU1 = 0; pU2 = 0; 
-//           recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-          recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
-          hWmunuMetm->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
+          if(lepPt        > PT_CUT) {
+              //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
+            hWmunuMet->Fill(corrMet,weight);
+            if(q>0) {
+              pU1 = 0; pU2 = 0; 
+//           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//           recoilCorr->CorrectType0(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetp->Fill(corrMet,weight); 
+              corrMet=met, corrMetPhi=metPhi;
+            } else { 
+              pU1 = 0; pU2 = 0; 
+//           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//           recoilCorrm->CorrectType0(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetm->Fill(corrMet,weight); 
+              corrMet=met, corrMetPhi=metPhi;
+            }
+            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
+            hWmunuMet_RecoilUp->Fill(corrMet,weight);
+            if(q>0) 
+            {
+            pU1 = 0; pU2 = 0; 
+//           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
+//           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
+            hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
+            corrMet=met, corrMetPhi=metPhi;
+            }
+            else    
+            { 
+            pU1 = 0; pU2 = 0; 
+//           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
+//           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
+            hWmunuMetm_RecoilUp->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+            }
+            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),-1,q);
+            hWmunuMet_RecoilDown->Fill(corrMet,weight);
+            if(q>0) 
+            {
+            pU1 = 0; pU2 = 0; 
+  //           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
+  //           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
+            hWmunuMetp_RecoilDown->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+            } 
+            else    
+            { 
+            pU1 = 0; pU2 = 0; 
+  //           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
+  //           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
+            hWmunuMetm_RecoilDown->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+            }
+          }
+          Double_t lepPtup = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),1),getEleResCorr(lep->Eta(),1)));  // (!) uncomment to apply scale/res corrections to MC
+          if(lepPtup        > PT_CUT) {
+            corrMet=met, corrMetPhi=metPhi;
+            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),0,q);
+            hWmunuMet_ScaleUp->Fill(corrMet,weight);
+            if(q>0){
+            pU1 = 0; pU2 = 0; 
+  //           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
+  //           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
+            hWmunuMetp_ScaleUp->Fill(corrMet,weight); 
+            corrMet=met, corrMetPhi=metPhi;
+            } else {
+              pU1 = 0; pU2 = 0; 
+    //           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
+    //           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
+              hWmunuMetm_ScaleUp->Fill(corrMet,weight);
+              corrMet=met, corrMetPhi=metPhi;
+            }
+          }
+          Double_t lepPtdown = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),-1),getEleResCorr(lep->Eta(),-1)));  // (!) uncomment to apply scale/res corrections to MC
+          if(lepPtdown        > PT_CUT) {
+            corrMet=met, corrMetPhi=metPhi;
+            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),0,q);
+            hWmunuMet_ScaleDown->Fill(corrMet,weight);
+            if(q>0) {
+              pU1 = 0; pU2 = 0; 
+  //           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
+  //           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
+              hWmunuMetp_ScaleDown->Fill(corrMet,weight);
+              corrMet=met, corrMetPhi=metPhi;
+            } else { 
+              pU1 = 0; pU2 = 0; 
+  //           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
+  //           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
+              hWmunuMetm_ScaleDown->Fill(corrMet,weight); 
+            }
+          }
         }
-          //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
-          hWmunuMet_RecoilUp->Fill(corrMet,weight);
-          if(q>0) 
-        {
-          pU1 = 0; pU2 = 0; 
-//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
-          hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-        } 
-          else    
-        { 
-          pU1 = 0; pU2 = 0; 
-//           recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
-          hWmunuMetm_RecoilUp->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-        }
-          //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),-1,q);
-          hWmunuMet_RecoilDown->Fill(corrMet,weight);
-          if(q>0) 
-        {
-          pU1 = 0; pU2 = 0; 
-//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
-          hWmunuMetp_RecoilDown->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-        } 
-          else    
-        { 
-          pU1 = 0; pU2 = 0; 
-//           recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
-          hWmunuMetm_RecoilDown->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-        }
-        }
-      Double_t lepPtup = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),1),getEleResCorr(lep->Eta(),1)));  // (!) uncomment to apply scale/res corrections to MC
-      if(lepPtup        > PT_CUT)
-        {
-          corrMet=met, corrMetPhi=metPhi;
-          //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),0,q);
-          hWmunuMet_ScaleUp->Fill(corrMet,weight);
-          if(q>0) 
-        {
-          pU1 = 0; pU2 = 0; 
-          recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-          hWmunuMetp_ScaleUp->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-        } 
-          else    
-        {
-          pU1 = 0; pU2 = 0; 
-          recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-          hWmunuMetm_ScaleUp->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-        }
-        }
-      Double_t lepPtdown = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),-1),getEleResCorr(lep->Eta(),-1)));  // (!) uncomment to apply scale/res corrections to MC
-      if(lepPtdown        > PT_CUT)
-        {
-          corrMet=met, corrMetPhi=metPhi;
-          //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),0,q);
-          hWmunuMet_ScaleDown->Fill(corrMet,weight);
-          if(q>0) 
-        {
-          pU1 = 0; pU2 = 0; 
-          recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-          hWmunuMetp_ScaleDown->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-        } 
-          else    
-        { 
-          pU1 = 0; pU2 = 0; 
-          recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
-          hWmunuMetm_ScaleDown->Fill(corrMet,weight); 
-        }
-        }
-        }
-    if(typev[ifile]==eAntiWmunu) {
+        if(typev[ifile]==eAntiWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-      
-      // apply recoil corrections to W MC
-      Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
-      //Double_t lepPt = gRandom->Gaus(lep->Pt(),0.5);  // (!) uncomment to apply scale/res corrections to MC
-      //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
-          
-      /*      Double_t nnlocorr=1;
-          for(Int_t ibin=1; ibin<=hNNLOCorr->GetNbinsX(); ibin++) {
-            if(genVPt >= hNNLOCorr->GetBinLowEdge(ibin) &&
-               genVPt < (hNNLOCorr->GetBinLowEdge(ibin)+hNNLOCorr->GetBinWidth(ibin)))
-              nnlocorr = hNNLOCorr->GetBinContent(ibin);
-          }*/
-      //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-          
-      hAntiWmunuMet->Fill(corrMet,weight);
-      if(q>0) { hAntiWmunuMetp->Fill(corrMet,weight); } 
-      else    { hAntiWmunuMetm->Fill(corrMet,weight); }
+          // apply recoil corrections to W MC
+          // old leptoon scale thing
+//           Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
+
+          hAntiWmunuMet->Fill(corrMet,weight);
+          if(q>0) {               
+            pU1 = 0; pU2 = 0; 
+//             recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            hAntiWmunuMetp->Fill(corrMet,weight); 
+            corrMet = met; corrMetPhi = metPhi;
+          } 
+          else { 
+            pU1 = 0; pU2 = 0; 
+//             recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            hAntiWmunuMetm->Fill(corrMet,weight);
+            corrMet = met; corrMetPhi = metPhi; 
+          }
         }
         if(typev[ifile]==eEWK) {
-      if(lep->Pt()        < PT_CUT)  continue;
+          if(lep->Pt()        < PT_CUT)  continue;
           hEWKMet->Fill(met,weight);
-      if(q>0) { hEWKMetp->Fill(met,weight); }
-      else    { hEWKMetm->Fill(met,weight); }
+          if(q>0) { hEWKMetp->Fill(met,weight); }
+          else    { hEWKMetm->Fill(met,weight); }
         }
         if(typev[ifile]==eAntiEWK) {
           hAntiEWKMet->Fill(met,weight);
-      if(q>0) { hAntiEWKMetp->Fill(met,weight); }
-      else    { hAntiEWKMetm->Fill(met,weight); }
+          if(q>0) { hAntiEWKMetp->Fill(met,weight); }
+          else    { hAntiEWKMetm->Fill(met,weight); }
         }
       }
     }
-  }  
+  }
   delete infile;
   infile=0, intree=0;   
+ 
+//   // Here rescale the up/down whatever
+  // Calculate the shapes for W+
+  TH1D *corrP = (TH1D*) hWmunuMetp->Clone("up");
+  *corrP = (*hh_diff)*(*hWmunuMetp);
+  hWmunuMetp_RecoilUp->Add(corrP,hWmunuMetp,-1);
+  hWmunuMetp_RecoilDown->Add(corrP,hWmunuMetp,1);
+  hWmunuMetp_ScaleUp->Add(corrP,hWmunuMetp,-1);
+  hWmunuMetp_ScaleDown->Add(corrP,hWmunuMetp,1);
+  // Calculate the shapes for W-
+  TH1D *corrM = (TH1D*) hWmunuMetm->Clone("up");
+  *corrM = (*hh_diff)*(*hWmunuMetm);
+  hWmunuMetm_RecoilUp->Add(corrM,hWmunuMetm,-1);
+  hWmunuMetm_RecoilDown->Add(corrM,hWmunuMetm,1);
+  hWmunuMetm_ScaleUp->Add(corrM,hWmunuMetm,-1);
+  hWmunuMetm_ScaleDown->Add(corrM,hWmunuMetm,1);
   
   //
   // Declare fit parameters for signal and background yields
@@ -465,7 +551,7 @@ void fitWm(const TString  outputDir,   // output directory
 //   RooRealVar nSigp("nSigp","nSigp",0.7*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nSigp("nSigp","nSigp",90000,0,hDataMetp->Integral());
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
-  RooRealVar nQCDp("nQCDp","nQCDp",5000,0,30000);
+  RooRealVar nQCDp("nQCDp","nQCDp",5000,0,hDataMetp->Integral()*0.50);
   RooRealVar cewkp("cewkp","cewkp",0.1,0,5) ;
   cewkp.setVal(hEWKMetp->Integral()/hWmunuMetp->Integral());
   cewkp.setConstant(kTRUE);
@@ -480,7 +566,7 @@ void fitWm(const TString  outputDir,   // output directory
 //   RooRealVar nSigm("nSigm","nSigm",0.7*(hDataMetm->Integral()),0,hDataMetm->Integral());
   RooRealVar nSigm("nSigm","nSigm",75000,0,hDataMetm->Integral());
   //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
-  RooRealVar nQCDm("nQCDm","nQCDm",5000,0,30000);
+  RooRealVar nQCDm("nQCDm","nQCDm",5000,0,hDataMetp->Integral()*0.50);
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
   cewkm.setVal(hEWKMetm->Integral()/hWmunuMetm->Integral());
   cewkm.setConstant(kTRUE);
@@ -647,8 +733,8 @@ void fitWm(const TString  outputDir,   // output directory
 
 //   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
 //   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-  RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",15000,0,30000);
-  RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",15000,0,30000);
+  RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",15000,0,hDataMet->Integral()*0.5);
+  RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",15000,0,hDataMet->Integral()*0.5);
 
   RooWorkspace combine_workspace("combine_workspace");
   combine_workspace.import(dataMet);
@@ -833,10 +919,10 @@ void fitWm(const TString  outputDir,   // output directory
   plotMet.SetYRange(0.1,1.1*(hDataMet->GetMaximum()));
   plotMet.Draw(c,kFALSE,format,1);
 
-  CPlot plotMetDiff("fitmet","","#slash{E}_{T} [GeV]","#chi");
+  CPlot plotMetDiff("fitmet","","#slash{E}_{T} [GeV]","MC/Data");
   //CPlot plotMetDiff("fitmet","","mT [GeV]","#chi");
   plotMetDiff.AddHist1D(hMetDiff,"EX0",ratioColor);
-  plotMetDiff.SetYRange(-8,8);
+  plotMetDiff.SetYRange(-1,1);
   plotMetDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotMetDiff.AddLine(0, 5,METMAX, 5,kBlack,3);
   plotMetDiff.AddLine(0,-5,METMAX,-5,kBlack,3);
@@ -872,7 +958,7 @@ void fitWm(const TString  outputDir,   // output directory
 
   CPlot plotAntiMetDiff("fitantimet","","#slash{E}_{T} [GeV]","#chi");
   plotAntiMetDiff.AddHist1D(hMetDiff,"EX0",ratioColor);
-  plotAntiMetDiff.SetYRange(-8,8);
+  plotAntiMetDiff.SetYRange(-0.2,0.2);
   plotAntiMetDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotAntiMetDiff.AddLine(0, 5,METMAX, 5,kBlack,3);
   plotAntiMetDiff.AddLine(0,-5,METMAX,-5,kBlack,3);
@@ -914,7 +1000,7 @@ void fitWm(const TString  outputDir,   // output directory
   CPlot plotMetpDiff("fitmetp","","#slash{E}_{T} [GeV]","#chi");
   //CPlot plotMetpDiff("fitmetp","","mT [GeV]","#chi");
   plotMetpDiff.AddHist1D(hMetpDiff,"EX0",ratioColor);
-  plotMetpDiff.SetYRange(-8,8);
+  plotMetpDiff.SetYRange(-0.2,0.2);
   plotMetpDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotMetpDiff.AddLine(0, 5,METMAX, 5,kBlack,3);
   plotMetpDiff.AddLine(0,-5,METMAX,-5,kBlack,3);
@@ -951,7 +1037,7 @@ plotAntiMetp.SetYRange(0.1,1500);
 
   CPlot plotAntiMetpDiff("fitantimetp","","#slash{E}_{T} [GeV]","#chi");
   plotAntiMetpDiff.AddHist1D(hAntiMetpDiff,"EX0",ratioColor);
-  plotAntiMetpDiff.SetYRange(-8,8);
+  plotAntiMetpDiff.SetYRange(-0.2,0.2);
   plotAntiMetpDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotAntiMetpDiff.AddLine(0, 5,METMAX, 5,kBlack,3);
   plotAntiMetpDiff.AddLine(0,-5,METMAX,-5,kBlack,3);
@@ -993,7 +1079,7 @@ plotAntiMetp.SetYRange(0.1,1500);
   CPlot plotMetmDiff("fitmetm","","#slash{E}_{T} [GeV]","#chi");
   //CPlot plotMetmDiff("fitmetm","","mT [GeV]","#chi");
   plotMetmDiff.AddHist1D(hMetmDiff,"EX0",ratioColor);
-  plotMetmDiff.SetYRange(-8,8);
+  plotMetmDiff.SetYRange(-0.2,0.2);
   plotMetmDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotMetmDiff.AddLine(0, 5,METMAX, 5,kBlack,3);
   plotMetmDiff.AddLine(0,-5,METMAX,-5,kBlack,3);
@@ -1030,7 +1116,7 @@ plotAntiMetm.SetYRange(0.1,1500);
 
   CPlot plotAntiMetmDiff("fitantimetm","","#slash{E}_{T} [GeV]","#chi");
   plotAntiMetmDiff.AddHist1D(hAntiMetmDiff,"EX0",ratioColor);
-  plotAntiMetmDiff.SetYRange(-8,8);
+  plotAntiMetmDiff.SetYRange(-0.2,0.2);
   plotAntiMetmDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotAntiMetmDiff.AddLine(0, 5,METMAX, 5,kBlack,3);
   plotAntiMetmDiff.AddLine(0,-5,METMAX,-5,kBlack,3);
@@ -1157,14 +1243,15 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
     
-    Double_t diff = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     
-    Double_t err = sqrt(hData->GetBinContent(ibin));
-    if(err==0) err= sqrt(hFit->GetBinContent(ibin));
+    Double_t diff = diff0/hData->GetBinContent(ibin);
+    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+//     if(err==0) err= sqrt(hFit->GetBinContent(ibin));
     
-    if(err>0) hDiff->SetBinContent(ibin,diff/err);
-    else      hDiff->SetBinContent(ibin,0);
-    hDiff->SetBinError(ibin,1);   
+    hDiff->SetBinContent(ibin,diff);
+//     else      hDiff->SetBinContent(ibin,0);
+    hDiff->SetBinError(ibin,err);   
   }
   
   hDiff->GetYaxis()->SetTitleOffset(0.42);

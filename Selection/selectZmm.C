@@ -329,7 +329,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	Double_t weight=1;
 	Double_t weightUp=1;
 	Double_t weightDown=1;
-        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+    if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {

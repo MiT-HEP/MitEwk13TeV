@@ -2,7 +2,7 @@
 
 # output ntuple directory
 #NTUPDIR=/data/blue/Bacon/Run2/wz_flat_diffxsec
-NTUPDIR=/afs/cern.ch/work/a/amarini/Bacon/Run2/wz_flat_76X
+NTUPDIR=/afs/cern.ch/work/s/sabrandt/public/SM/2016_05_29_Selection
 
 # integrated luminosity for data
 LUMI=2215
@@ -10,7 +10,7 @@ LUMI=2215
 root -l -q selectZmm.C+g\(\"zmm_eos.conf\",\"${NTUPDIR}/Zmumu\",0\)
 #root -l -q selectZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu\",0\)
 #root -l -q selectZmmGen.C+\(\"zmmgen.conf\",\"${NTUPDIR}/ZmumuGen\",0\)
-#root -l -q selectWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu\"\)
+# root -l -q selectWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu\"\)
 #root -l -q selectAntiWm.C+\(\"wm.conf\",\"${NTUPDIR}/AntiWmunu\"\)
 #root -l -q rootlogon.plot.C plotZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu/ntuples\",\"Zmumu\",${LUMI}\)
 #root -l -q rootlogon.plot.C plotWm.C+\(\"wm.conf\",\"${NTUPDIR}/Wmunu/ntuples\",\"Wmunu\",${LUMI}\)
