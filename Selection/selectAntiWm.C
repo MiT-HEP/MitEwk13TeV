@@ -373,7 +373,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           nselvar+=weight*weight;
 	  
 	  TLorentzVector vLep; 
-	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
+	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
 	  //
 	  // Fill tree
