@@ -64,8 +64,7 @@ public:
   void CorrectType2(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectType2FromGraph(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectInvCdf(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
-  void CorrectU1U2(double &pfu1, double &pfu2, double &trku1, double &trku2, 
-           double iGenPt, double iGenPhi, double iLepPt, double iLepPhi,double iFluc,double iScale=0,int njet=0);
+  void CorrectFromToys(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void addDataFile(std::string iNameDat);
   void addMCFile  (std::string iNameMC);
   void addFileWithGraph  (std::string iNameMC);
@@ -164,6 +163,12 @@ protected:
                 double iLepPt,double iLepPhi,
                 TGraphErrors *iU1Default,TGraphErrors *iU1Default2,
                 double &iU1, double &iU2,double iFluc=0,double iScale=0);
+  
+  void metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                double iLepPt,double iLepPhi,
+                TGraphErrors *iU1Default,TGraphErrors *iU1Default2,
+                double &iU1, double &iU2,double iFluc=0,double iScale=0);            
+                
                 
   Double_t calcErrorGraph(const TGraphErrors *graph, const Double_t x, const Double_t bins[], const Int_t bin);
 
@@ -294,68 +299,62 @@ RecoilCorrector::RecoilCorrector(string iNameZ, int iSeed) {
 void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
   vZPtBins ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
   
+//   std::cout << "n Bins = " << std::endl;
+
+//   vZPtBins ={0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
+  
   TFile *lFile  = new TFile((iFName+"pdfsU1.root").c_str());
   rooWData[0] = (RooWorkspace*) lFile->Get("pdfsU1");
   lFile->Delete();
   TFile *lFile2  = new TFile((iFName+"pdfsU2.root").c_str());
   rooWData[1] = (RooWorkspace*) lFile2->Get("pdfsU2");
   lFile2->Delete();
-//   std::cout << "loading data" << std::endl;
- // rooWData[0]->Print();
-//   
-    for(int i = 0; i < vZPtBins.size()-1; ++i){
-      std::stringstream name;
-      name << "sig_" << i;
-      //std::cout << "blah " << name.str().c_str() << std::endl;
-      RooAbsPdf* pdf1 = rooWData[0]->pdf(name.str().c_str());
-      RooAbsPdf* pdf2 = rooWData[1]->pdf(name.str().c_str());
-      name.str(""); name << "u_" << i;
-      //std::cout << name.str().c_str() << std::endl;
-      RooRealVar* myX1 = (RooRealVar*) rooWData[0]->var(name.str().c_str());
-      RooRealVar* myX2 = (RooRealVar*) rooWData[1]->var(name.str().c_str());
-      RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
-      rooWData[0]->import(*cdfU1, RooFit::Silence());
-      RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
-      rooWData[1]->import(*cdfU2, RooFit::Silence());
-//       std::cout << name << std::endl;
-//       RooPlot *rooFrame = myX1->frame(Title(TString("Plot of MC and Data: Double-Gaussians" )));
-//       pdf1->plotOn(rooFrame,RooFit::LineColor(kBlue));
-//       cdfU1->plotOn(rooFrame,RooFit::LineColor(kGreen));
-//       rooFrame->Draw();
-// //         TCanvas *iC = new TCanvas("C1","C1",800,600); 
-//       iC->cd(); rooFrame->Draw();
-//       iC->SaveAs((name.str()+"_orig.png").c_str());
-    }
-    rooWData[0]->Print();
+//   std::cout << "vZPtBins.size() = " << vZPtBins.size() << std::endl;
+  for(int i = 0; i < vZPtBins.size()-1; ++i){
+//     std::cout << "iBin = " << i << std::endl;
+//     std::cout << "lower,upper bound = [" << vZPtBins[i] << ", " << vZPtBins[i+1] << "]" << std::endl;
+    std::stringstream name;
+    name << "sig_" << i;
+    RooAbsPdf* pdf1 = rooWData[0]->pdf(name.str().c_str());
+    RooAbsPdf* pdf2 = rooWData[1]->pdf(name.str().c_str());
+    name.str(""); name << "u_" << i;
+    RooRealVar* myX1 = (RooRealVar*) rooWData[0]->var(name.str().c_str());
+    RooRealVar* myX2 = (RooRealVar*) rooWData[1]->var(name.str().c_str());
+    RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
+    rooWData[0]->import(*cdfU1, RooFit::Silence());
+    RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
+    rooWData[1]->import(*cdfU2, RooFit::Silence());
+    
+//     myX1->Print("v");
+    
+//     RooPlot* xframe = myX1->frame(); 
+//     pdf1->plotOn(xframe); 
+//     xframe->Draw(); 
+//     iC->SaveAs(("PDF_"+name.str()+".png").c_str());
+  }
+//   rooWData[0]->Print();
 }
 void RecoilCorrector::loadRooWorkspacesMC(std::string iFName){
-//   std::cout << "hello " << std::endl;
   TFile *lFile  = new TFile((iFName+"pdfsU1.root").c_str());
   rooWMC[0] = (RooWorkspace*) lFile->Get("pdfsU1");
   lFile->Delete();
   TFile *lFile2  = new TFile((iFName+"pdfsU2.root").c_str());
   rooWMC[1] = (RooWorkspace*) lFile2->Get("pdfsU2");
   lFile2->Delete();
-//   std::cout << "loading data" << std::endl;
- // rooWMC[0]->Print();
-//   
-    for(int i = 0; i < vZPtBins.size()-1; ++i){
-//       std::cout << vZPtBins.size()-1 << std::endl;
-      std::stringstream name;
-      name << "sig_" << i;
-      //std::cout << "blah " << name.str().c_str() << std::endl;
-      RooAbsPdf* pdf1 = rooWMC[0]->pdf(name.str().c_str());
-      RooAbsPdf* pdf2 = rooWMC[1]->pdf(name.str().c_str());
-      name.str(""); name << "u_" << i;
-      //std::cout << name.str().c_str() << std::endl;
-      RooRealVar* myX1 = (RooRealVar*) rooWMC[0]->var(name.str().c_str());
-      RooRealVar* myX2 = (RooRealVar*) rooWMC[1]->var(name.str().c_str());
-      RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
-      rooWMC[0]->import(*cdfU1, RooFit::Silence());
-      RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
-      rooWMC[1]->import(*cdfU2, RooFit::Silence());
-    }
-    rooWMC[0]->Print();
+  for(int i = 0; i < vZPtBins.size()-1; ++i){
+    std::stringstream name;
+    name << "sig_" << i;
+    RooAbsPdf* pdf1 = rooWMC[0]->pdf(name.str().c_str());
+    RooAbsPdf* pdf2 = rooWMC[1]->pdf(name.str().c_str());
+    name.str(""); name << "u_" << i;
+    RooRealVar* myX1 = (RooRealVar*) rooWMC[0]->var(name.str().c_str());
+    RooRealVar* myX2 = (RooRealVar*) rooWMC[1]->var(name.str().c_str());
+    RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
+    rooWMC[0]->import(*cdfU1, RooFit::Silence());
+    RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
+    rooWMC[1]->import(*cdfU2, RooFit::Silence());
+  }
+//   rooWMC[0]->Print();
 }
 
 void RecoilCorrector::addDataFile(std::string iNameData) {
@@ -446,14 +445,15 @@ void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, 
 
   metDistributionInvCdf(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,
                fF1U1Fit[fJet],fF1U1Fit2[fJet],
-//                fMT1U1Fit     [fJet],fM1U1Fit     [fJet],
-//                fMT1U1Fit2    [fJet],fM1U1Fit2    [fJet],
-//                fMT1U1RMSSMFit[fJet],fM1U1RMSSMFit[fJet],
-//                fMT1U1RMS1Fit [fJet],fM1U1RMS1Fit [fJet],
-//                fMT1U1RMS2Fit [fJet],fM1U1RMS2Fit [fJet],
-//                fMT1U2RMSSMFit[fJet],fM1U2RMSSMFit[fJet],
-//                fMT1U2RMS1Fit [fJet],fM1U2RMS1Fit [fJet],
-//                fMT1U2RMS2Fit [fJet],fM1U2RMS2Fit [fJet], 
+               iU1,iU2,iFluc,iScale);
+}
+
+void RecoilCorrector::CorrectFromToys(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
+  fJet = njet; if(njet > 2) fJet = 2;
+  if(fJet >= int(fF1U1Fit.size())) fJet = 0; 
+
+  metDistributionFromToys(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,
+               fF1U1Fit[fJet],fF1U1Fit2[fJet],
                iU1,iU2,iFluc,iScale);
 }
 
@@ -1141,6 +1141,8 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   
   double pDefU1    = iU1Default->Eval(iGenPt);
   double pDefU1_2    = iU1Default2->Eval(iGenPt);
+//   std::cout << "---------------------------" << std::endl;
+//     std::cout << "original u1 = " << iU1 << std::endl;
 
   double iGenPt2 = 0;
   Int_t nbinsPt = vZPtBins.size()-1;
@@ -1181,7 +1183,6 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   std::stringstream name;
   name << "sig_" << iBin;
   RooAbsPdf *thisPdfDataU1 = rooWData[0]->pdf(name.str().c_str()); name.str("");
-
   name << "sig_" << iBin;
   RooAbsPdf *thisPdfMCU1 = rooWMC[0]->pdf(name.str().c_str()); name.str("");
   name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
@@ -1204,17 +1205,81 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   RooRealVar* myXdU2 =  (RooRealVar*) rooWData[1]->var(varName.str().c_str());
   RooRealVar* myXmU2 =  (RooRealVar*) rooWMC[1]->var(varName.str().c_str());
   
+//   sw.Start();
   double pU1ValD = triGausInvGraphPDF(pU1,iGenPt,thisCdfMCU1,thisCdfDataU1,thisPdfMCU1,thisPdfDataU1,myXdU1,myXmU1,iBin,pDefU1);
+//   sw.Stop();
+//   std::cout << "Real time, inversion = " << sw.RealTime() << std::endl;
+//   sw.Reset();
   double pU2ValD = triGausInvGraphPDF(pU2,iGenPt,thisCdfMCU2,thisCdfDataU2,thisPdfMCU2,thisPdfDataU2,myXdU2,myXmU2,iBin,0);
 
   pU1   = /*pDefU1             +*/ pU1ValD;
   pU2   =                      pU2ValD;
   iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
   iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+//   std::cout << "u1 = " << pU1 << std::endl;
+//   std::cout << "met  = " << iMet << std::endl;
   
   iU1   = pU1; 
   iU2   = pU2;
  
+  return;
+}
+
+void RecoilCorrector::metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                       double iLepPt,double iLepPhi,
+                       TGraphErrors *iU1Default, TGraphErrors *iU1Default2,
+                       double &iU1,double &iU2,double iFluc,double iScale) {
+  
+  double pDefU1    = iU1Default->Eval(iGenPt);
+  double pDefU1_2    = iU1Default2->Eval(iGenPt);
+
+  double iGenPt2 = 0;
+  Int_t nbinsPt = vZPtBins.size()-1;
+  int iBin = 0;
+  for(int i = 0; i < nbinsPt-1; ++i){
+    if(iGenPt > vZPtBins[nbinsPt]){
+      iBin = nbinsPt-1;
+      iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
+      break;
+    }
+    if(vZPtBins[i+1] < iGenPt) continue;
+    if(vZPtBins[i] > iGenPt ) continue;
+    if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
+      iBin = i; 
+      iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
+      break;
+    }
+  }
+  
+  double pU1 = 0; 
+  double pU2 = 0;
+
+
+  std::stringstream varName;
+  varName.str("");varName << "u_"<<iBin;
+  RooRealVar* myXdU1 =  (RooRealVar*) rooWData[0]->var(varName.str().c_str());
+  RooRealVar* myXmU1 =  (RooRealVar*) rooWMC[0]->var(varName.str().c_str());
+  RooRealVar* myXdU2 =  (RooRealVar*) rooWData[1]->var(varName.str().c_str());
+  RooRealVar* myXmU2 =  (RooRealVar*) rooWMC[1]->var(varName.str().c_str());
+  
+  std::stringstream name;
+  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
+  RooAbsReal *thisCdfDataU1 = rooWData[0]->function(name.str().c_str()); name.str("");
+
+  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
+  RooAbsReal *thisCdfDataU2 = rooWData[1]->function(name.str().c_str()); name.str("");
+
+  double r1 = ((double) rand() / (RAND_MAX));
+  double r2 = ((double) rand() / (RAND_MAX));
+  pU1=thisCdfDataU1->findRoot(*myXdU1,myXdU1->getMin(),myXdU1->getMax(),r1);
+  pU2=thisCdfDataU2->findRoot(*myXdU2,myXdU2->getMin(),myXdU2->getMax(),r2);
+
+  iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  
+  iU1   = pU1; 
+  iU2   = pU2;
+  
   return;
 }
 
