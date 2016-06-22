@@ -150,8 +150,6 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
-    cout << outfilename << endl;
     TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
@@ -332,7 +330,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if (!isMuonTriggerNoIso(triggerMenu, info->triggerBits)) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -352,14 +350,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
-          // apply scale and resolution corrections to MC
-          Double_t mupt_corr = mu->pt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-            mupt_corr = gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
-
-          if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
-          if(mupt_corr     < VETO_PT)  continue; // loose lepton pT cut
-          if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
+          if(fabs(mu->eta) > VETO_PT)  continue; // loose lepton |eta| cut
+          if(mu->pt        < VETO_ETA) continue; // loose lepton pT cut
+//          if(passMuonLooseID(mu)) nLooseLep++; // loose lepton selection
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
@@ -368,7 +361,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           if(fabs(mu->eta) > ETA_CUT)         continue; // lepton |eta| cut
           if(mu->pt < PT_CUT)                 continue; // lepton pT cut   
           if(!passAntiMuonID(mu))             continue; // lepton anti-selection
-          if(!isMuonTriggerObjNoIso(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 
 	  passSel=kTRUE;
 	  goodMuon = mu;
@@ -379,13 +372,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
-          // apply scale and resolution corrections to MC
-          Double_t goodMuonpt_corr = goodMuon->pt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-            goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
-
 	  TLorentzVector vLep; 
-	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
+	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
 	  //
 	  // Fill tree
