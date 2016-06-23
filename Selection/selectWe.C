@@ -448,7 +448,7 @@ void selectWe(const TString conf="we.conf", // input file
 //          if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;  // loose lepton selection
 	  if(fabs(vEle.Eta())    > VETO_ETA) continue;
           if(vEle.Pt()           < VETO_PT)  continue; 
-          if(passEleLooseID(ele, info->rhoIso)) nLooseLep++;
+          if(passEleLooseID(ele,vEle, info->rhoIso)) nLooseLep++;
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
