@@ -15,22 +15,22 @@
     gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libBaconAnaDataFormats.so");
     
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
-  {
-    gSystem->AddIncludePath("-I../EleScale");
-    gInterpreter->AddIncludePath("../EleScale");
-    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
-    gROOT->Macro("EnergyScaleCorrection_class.cc+");
-  }
-
-    // turn on open mp not CINT only ACLIC
-    //#ifndef __CINT__
-    // TString cmd(gSystem->GetMakeSharedLib());
-    // cmd.ReplaceAll("g++","g++ -fopenmp");
     // gSystem->SetMakeSharedLib(cmd);
     //#endif
   
   }
                
+    {
+     //TString path = gSystem->GetIncludePath();
+     //path += " -I../EleScale/ ";
+     //gSystem->SetIncludePath(path.Data());
+      gSystem->AddIncludePath("-I../EleScale");
+      gInterpreter->AddIncludePath("../EleScale");
+      gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+      gROOT->Macro("EnergyScaleCorrection_class.cc+");
+    }
+                     
+
   // Show which process needs debugging
   gInterpreter->ProcessLine(".! ps |grep root.exe");
 }
