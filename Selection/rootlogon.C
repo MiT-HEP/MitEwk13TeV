@@ -18,7 +18,12 @@
     // gSystem->SetMakeSharedLib(cmd);
     //#endif
   
-  }
+  
+   }
+
+  gROOT->Macro("../Utils/CPlot.cc++");
+  gROOT->Macro("../Utils/MitStyleRemix.cc++");
+
                
     {
      //TString path = gSystem->GetIncludePath();
