@@ -23,10 +23,12 @@
 #include "TH1D.h"
 #include "TCanvas.h"
 #include "TRandom.h"
+#include "TGraph.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
 #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
+#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
 
 // define structures to read in ntuple
 
@@ -51,7 +53,8 @@
 
 void selectWe(const TString conf="we.conf", // input file
               const TString outputDir=".",  // output directory
-	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
+	      const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+	      const Int_t   sigma=0
 ) {
   gBenchmark->Start("selectWe");
 
@@ -85,6 +88,16 @@ void selectWe(const TString conf="we.conf", // input file
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
+
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+
+  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
+
+  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
+  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
+
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -368,30 +381,86 @@ void selectWe(const TString conf="we.conf", // input file
 
 	Int_t nLooseLep=0;
 	const baconhep::TElectron *goodEle=0;
+	TLorentzVector vEle(0,0,0,0);
 	Bool_t passSel=kFALSE;
 
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
-	  
+	  vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
 	  // check ECAL gap
-	  if(fabs(ele->scEta)>=ECAL_GAP_LOW && fabs(ele->scEta)<=ECAL_GAP_HIGH) continue;
-	  
-          // apply scale and resolution corrections to MC
-          Double_t elescEt_corr = ele->scEt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-            elescEt_corr = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0),getEleResCorr(ele->scEta,0));
+	  //if(fabs(ele->scEta)>=ECAL_GAP_LOW && fabs(ele->scEta)<=ECAL_GAP_HIGH) continue;
+	  if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;
 
-	  if(fabs(ele->scEta)   > VETO_ETA) continue;        // loose lepton |eta| cut
-          if(elescEt_corr       < VETO_PT)  continue;        // loose lepton pT cut
-          if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;  // loose lepton selection
+          if(doScaleCorr && (ele->r9 < 1.)){
+            float eleSmear = 0.;
+            float eleScale = 1.;
+
+            float eleError = 0;
+            float eleAbsEta   = fabs(vEle.Eta());
+            float eleEt       = vEle.E() / cosh(eleAbsEta);
+            bool  eleisBarrel = eleAbsEta < 1.4442;
+
+            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+
+              eleScale = eleCorr.ScaleCorrection(info->runNum, eleisBarrel, ele->r9, eleAbsEta, eleEt);
+              eleError = eleCorr.ScaleCorrectionUncertainty(info->runNum, eleisBarrel, ele->r9, eleAbsEta, eleEt);
+
+              if(sigma==0){
+                (vEle) *= eleScale;
+              }else if(sigma==1){
+                (vEle) *= eleScale * (1 + eleError);
+              }else if(sigma==-1){
+                (vEle) *= eleScale * (1 - eleError);
+              }
+
+            }else{//MC
+
+              float eleR9Prime = ele->r9; // r9 corrections MC only
+              if(eleisBarrel){
+                        eleR9Prime = gR9EB->Eval(ele->r9);}
+              else {
+                        eleR9Prime = gR9EE->Eval(ele->r9);
+              }
+
+              double eleRamdom = gRandom->Gaus(0,1);
+
+              if(sigma==0){
+                eleSmear = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 0., 0.);
+                (vEle) *= 1. + eleSmear * eleRamdom;
+              }else if(sigma==1){
+                float eleSmearEP = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 1., 0.);
+                (vEle) *= 1. + eleSmearEP * eleRamdom;
+              }else if(sigma==-1){
+                float eleSmearEM = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, -1., 0.);
+                (vEle) *= 1.  + eleSmearEM * eleRamdom;
+              }
+
+            }
+          }
+ 
+          // apply scale and resolution corrections to MC
+//          Double_t elescEt_corr = ele->scEt;
+//          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+//            elescEt_corr = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0),getEleResCorr(ele->scEta,0));
+
+//	  if(fabs(ele->scEta)   > VETO_ETA) continue;        // loose lepton |eta| cut
+//          if(elescEt_corr       < VETO_PT)  continue;        // loose lepton pT cut
+//          if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;  // loose lepton selection
+	  if(fabs(vEle.Eta())    > VETO_ETA) continue;
+          if(vEle.Pt()           < VETO_PT)  continue; 
+          if(passEleLooseID(ele, info->rhoIso)) nLooseLep++;
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
           }
           
-          if(fabs(ele->scEta)   > ETA_CUT)     continue;  // lepton |eta| cut
-          if(elescEt_corr       < PT_CUT)      continue;  // lepton pT cut
-          if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
+//          if(fabs(ele->scEta)   > ETA_CUT)     continue;  // lepton |eta| cut
+//          if(elescEt_corr       < PT_CUT)      continue;  // lepton pT cut
+//          if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
+          if(vEle.Pt()           < PT_CUT)     continue;  // lepton pT cut
+          if(fabs(vEle.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+          if(!passEleID(ele, vEle, info->rhoIso))     continue;  // lepton selection
+
 	  if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, isData)) continue;
 	  
 	  passSel=kTRUE;
@@ -405,19 +474,20 @@ void selectWe(const TString conf="we.conf", // input file
           nselvar+=weight*weight;
 	  
           // apply scale and resolution corrections to MC
-          Double_t goodElept_corr = goodEle->pt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-            goodElept_corr = gRandom->Gaus(goodEle->pt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0));
+//          Double_t goodElept_corr = goodEle->pt;
+//          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+//            goodElept_corr = gRandom->Gaus(goodEle->pt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0));
 
           TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0);
           // apply scale and resolution corrections to MC
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
-            vLep.SetPtEtaPhiM(goodElept_corr, goodEle->eta, goodEle->phi, ELE_MASS);
-            vSC.SetPtEtaPhiM(gRandom->Gaus(goodEle->scEt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0)), goodEle->scEta, goodEle->scPhi, ELE_MASS);
-          } else {
-            vLep.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
-            vSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
-          }
+//          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+//            vLep.SetPtEtaPhiM(goodElept_corr, goodEle->eta, goodEle->phi, ELE_MASS);
+//            vSC.SetPtEtaPhiM(gRandom->Gaus(goodEle->scEt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0)), goodEle->scEta, goodEle->scPhi, ELE_MASS);
+//          } else {
+//            vLep.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
+//            vSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
+//          }
+	  vLep = vEle;
 
 	  //
 	  // Fill tree
