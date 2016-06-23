@@ -16,7 +16,7 @@ public:
 class CExponential : public CBackgroundModel
 {
 public:
-  CExponential(RooRealVar &m, const Bool_t pass);
+  CExponential(RooRealVar &m, const Bool_t pass, const int ibin);
   ~CExponential();
   RooRealVar *t;
 };
@@ -24,7 +24,7 @@ public:
 class CErfExpo : public CBackgroundModel
 {
 public:
-  CErfExpo(RooRealVar &m, const Bool_t pass);
+  CErfExpo(RooRealVar &m, const Bool_t pass, const int ibin);
   ~CErfExpo();
   RooRealVar *alfa, *beta, *gamma, *peak; 
 };
@@ -49,17 +49,33 @@ public:
 class CQuadraticExp : public CBackgroundModel
 {
 public:
-  CQuadraticExp(RooRealVar &m, const Bool_t pass);
+  CQuadraticExp(RooRealVar &m, const Bool_t pass, const int ibin);
   ~CQuadraticExp();
   RooRealVar *a1, *a2, *t;
 };
 
+class CQuadratic : public CBackgroundModel
+{
+public:
+  CQuadratic(RooRealVar &m, const Bool_t pass, const int ibin, const float p0, const float e0, const float p1, const float e1, const float p2, const float e2);
+  ~CQuadratic();
+  RooRealVar *a0, *a1, *a2;
+};
+
+class CPower : public CBackgroundModel
+{
+public:
+  CPower(RooRealVar &m, const Bool_t pass, const int ibin, const float p0, const float e0);
+  ~CPower();
+  RooRealVar *t;
+};
+
 //--------------------------------------------------------------------------------------------------
-CExponential::CExponential(RooRealVar &m, const Bool_t pass)
+CExponential::CExponential(RooRealVar &m, const Bool_t pass, const int ibin)
 {
   char name[10];
-  if(pass) sprintf(name,"%s","Pass");
-  else     sprintf(name,"%s","Fail");
+  if(pass) sprintf(name,"%s_%d","Pass",ibin);
+  else     sprintf(name,"%s_%d","Fail",ibin);
   
   char vname[50];
   
@@ -79,11 +95,11 @@ CExponential::~CExponential()
 }
 
 //--------------------------------------------------------------------------------------------------
-CErfExpo::CErfExpo(RooRealVar &m, const Bool_t pass)
+CErfExpo::CErfExpo(RooRealVar &m, const Bool_t pass, const int ibin)
 {
   char name[10];
-  if(pass) sprintf(name,"%s","Pass");
-  else     sprintf(name,"%s","Fail");
+  if(pass) sprintf(name,"%s_%d","Pass",ibin);
+  else     sprintf(name,"%s_%d","Fail",ibin);
   
   char vname[50];
   
@@ -181,26 +197,23 @@ CLinearExp::~CLinearExp()
 }
 
 //--------------------------------------------------------------------------------------------------
-CQuadraticExp::CQuadraticExp(RooRealVar &m, const Bool_t pass)
+CQuadraticExp::CQuadraticExp(RooRealVar &m, const Bool_t pass, const int ibin)
 {
   char name[10];
-  if(pass) sprintf(name,"%s","Pass");
-  else     sprintf(name,"%s","Fail");
+  if(pass) sprintf(name,"%s_%d","Pass",ibin);
+  else     sprintf(name,"%s_%d","Fail",ibin);
 
   char a1name[50]; 
   sprintf(a1name,"a1%s",name);
-  a1 = new RooRealVar(a1name,a1name,0,-10,10.);
-  //a1->setConstant(kTRUE);
+  a1 = new RooRealVar(a1name,a1name,0.,-10,10.);
   
   char a2name[50]; 
   sprintf(a2name,"a2%s",name);
-  a2 = new RooRealVar(a2name,a2name,0.0,-10,10);
-  //a2->setConstant(kTRUE);
+  a2 = new RooRealVar(a2name,a2name,0.,-10,10);
   
   char tname[50];
   sprintf(tname,"t%s",name);
   t = new RooRealVar(tname,tname,-1e-6,-10.,0.); 
-  //t->setConstant(kTRUE); 
   
   char formula[200];
   sprintf(formula,"(1+%s*m+%s*m*m)*exp(%s*m)",a1name,a2name,tname);
@@ -215,3 +228,74 @@ CQuadraticExp::~CQuadraticExp()
   delete a2;
   delete t;
 }
+
+//--------------------------------------------------------------------------------------------------
+CQuadratic::CQuadratic(RooRealVar &m, const Bool_t pass, const int ibin, const float p0, const float e0, const float p1, const float e1, const float p2, const float e2)
+{ 
+  char name[10];
+  if(pass) sprintf(name,"%s_%d","Pass",ibin);
+  else     sprintf(name,"%s_%d","Fail",ibin);
+
+  char a0name[50];
+  sprintf(a0name,"a0%s",name); 
+  if((p0!=0.)||(p1!=0.)||(p2!=0.)){
+    a0 = new RooRealVar(a0name,a0name,p0,p0-e0,p0+e0);
+  }else{
+    a0 = new RooRealVar(a0name,a0name,0.,-10.,10.);
+  }
+
+  char a1name[50]; 
+  sprintf(a1name,"a1%s",name);
+  if((p0!=0.)||(p1!=0.)||(p2!=0.)){
+    a1 = new RooRealVar(a1name,a1name,p1,p1-e1,p1+e1);
+  }else{
+    a1 = new RooRealVar(a1name,a1name,0.,-10.,10.);
+  }
+
+  char a2name[50]; 
+  sprintf(a2name,"a2%s",name);
+  if((p0!=0.)||(p1!=0.)||(p2!=0.)){
+      a2 = new RooRealVar(a2name,a2name,p2,p2-e2,p2+e2);
+  }else{
+    a2 = new RooRealVar(a2name,a2name,0.,-10.,10.);
+  }
+  
+  char formula[200];
+  sprintf(formula,"(%s+%s*m+%s*m*m)",a0name, a1name,a2name);
+  
+  char vname[50]; sprintf(vname,"background%s",name);
+  model = new RooGenericPdf(vname,vname,formula,RooArgList(m,*a0,*a1,*a2));
+}
+
+CQuadratic::~CQuadratic()
+{
+  delete a0;
+  delete a1;
+  delete a2;
+}
+
+//--------------------------------------------------------------------------------------------------
+CPower::CPower(RooRealVar &m, const Bool_t pass, const int ibin, const float p0, const float e0)
+{
+  char name[10];
+  if(pass) sprintf(name,"%s_%d","Pass",ibin);
+  else     sprintf(name,"%s_%d","Fail",ibin);
+
+  char vname[50];
+
+  sprintf(vname,"t%s",name);
+  if((p0!=0.)||(e0!=0.)){
+    t = new RooRealVar(vname,vname,p0,p0-e0,p0+e0);
+  }else{
+    t = new RooRealVar(vname,vname,1.0,0.05,2.0);
+  }
+
+  sprintf(vname,"background%s",name);
+  model = new RooGenericPdf(vname,vname,"pow(@0,-@1)",RooArgSet(m,*t));
+}
+
+CPower::~CPower()
+{
+  delete t;
+}
+
