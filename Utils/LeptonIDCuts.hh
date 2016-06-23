@@ -14,7 +14,7 @@ Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho=0);
 
 Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passEleTightID(const baconhep::TElectron *electron, const Double_t rho);
-Bool_t passEleLooseID(const baconhep::TElectron *electron, const Double_t rho=0);
+Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho=0);
 
 Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits);
@@ -217,44 +217,44 @@ Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho)
 }
 
 //--------------------------------------------------------------------------------------------------
-Bool_t passEleLooseID(const baconhep::TElectron *electron, const Double_t rho)
+Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
 { // Phys14 Veto working point
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
-  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+  if((fabs(tag.Eta())>ECAL_GAP_LOW) && (fabs(tag.Eta())<ECAL_GAP_HIGH)) return kFALSE;
   
   if(!(electron->typeBits & baconhep::EEleType::kEcalDriven)) return kFALSE;
 
   // conversion rejection
   if(electron->isConv) return kFALSE;
        
-  Double_t ea = getEffAreaEl(electron->scEta);
+  Double_t ea = getEffAreaEl(tag.Eta());
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);     
 
   // barrel/endcap dependent requirements
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
     // barrel
-    if(iso > 0.158721*(electron->pt))                                return kFALSE;
+    if(iso > 0.0893*(tag.Pt()))                                       return kFALSE;
     if(electron->nMissingHits > 2)                                   return kFALSE;
-    if(electron->sieie        > 0.011586)                            return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.230374)                            return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.013625)                            return kFALSE;
-    if(electron->hovere       > 0.181130)                            return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.295751*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0)     > 0.094095)                            return kFALSE;
-    if(fabs(electron->dz)     > 0.713070)                            return kFALSE;
+    if(electron->sieie        > 0.0103)                              return kFALSE;
+    if(fabs(electron->dPhiIn) > 0.115)                               return kFALSE;
+    if(fabs(electron->dEtaIn) > 0.0105 )                             return kFALSE;
+    if(electron->hovere       > 0.104)                               return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.102*(electron->ecalEnergy))    return kFALSE;
+    if(fabs(electron->d0)     > 0.0261)                              return kFALSE;
+    if(fabs(electron->dz)     > 0.41)                                return kFALSE;
   } else {
     // endcap
-    if(iso > 0.177032*(electron->pt))                                return kFALSE;
+    if(iso > 0.121*(tag.Pt()))                                   return kFALSE;
     if(electron->nMissingHits > 3)                                   return kFALSE;
-    if(electron->sieie        > 0.031849)                            return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.255450)                            return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.011932)                            return kFALSE;
-    if(electron->hovere       > 0.223870)                            return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.155501*(electron->ecalEnergy)) return kFALSE;
-    if(fabs(electron->d0)     > 0.342293)                            return kFALSE;
-    if(fabs(electron->dz)     > 0.953461)                            return kFALSE;
+    if(electron->sieie        > 0.0301)                              return kFALSE;
+    if(fabs(electron->dPhiIn) > 0.182)                               return kFALSE;
+    if(fabs(electron->dEtaIn) > 0.00814)                             return kFALSE;
+    if(electron->hovere       > 0.0897)                              return kFALSE;
+    if(fabs(1.0-electron->eoverp) > 0.126*(electron->ecalEnergy))    return kFALSE;
+    if(fabs(electron->d0)     > 0.118)                               return kFALSE;
+    if(fabs(electron->dz)     > 0.822)                               return kFALSE;
   }
 
   return kTRUE;
