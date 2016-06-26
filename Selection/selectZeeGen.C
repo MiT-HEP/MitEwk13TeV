@@ -21,10 +21,12 @@
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
 #include "TRandom.h"
+#include "TGraph.h"
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
 #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
+#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -72,6 +74,14 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+
+  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
+  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
+  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
+
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
@@ -281,32 +291,59 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	TLorentzVector vlep2(0., 0., 0., 0.);
 	TLorentzVector vsc1(0., 0., 0., 0.);
 	TLorentzVector vsc2(0., 0., 0., 0.);
+
+	TLorentzVector vEle(0,0,0,0);
 	Bool_t hasTriggerMatch = kFALSE;
 	for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
 	  const baconhep::TElectron *el = (baconhep::TElectron*)((*electronArr)[i]);
+
 	  // apply scale and resolution corrections to MC
-          Double_t elscEt_corr = el->scEt;
+	  vEle.SetPtEtaPhiM(el->pt, el->eta, el->phi, ELE_MASS);
+
+          float elSmear = 0.;
+          float elAbsEta   = fabs(vEle.Eta());
+          float elEt       = vEle.E() / cosh(elAbsEta);
+          bool  elisBarrel = elAbsEta < 1.4442;
+	  float elR9Prime = el->r9; // r9 corrections MC only
+          if(elisBarrel){
+            elR9Prime = gR9EB->Eval(el->r9);}
+          else{
+            elR9Prime = gR9EE->Eval(el->r9);
+          }
+
+          double elRandom = gRandom->Gaus(0,1);
+
+          elSmear = eleCorr.getSmearingSigma(info->runNum, elisBarrel, elR9Prime, elAbsEta, elEt, 0., 0.);
+          (vEle) *= 1. + elSmear * elRandom;
+
+//          Double_t elscEt_corr = el->scEt;
           	  
-	  if(elscEt_corr        < PT_CUT)     continue;  // lepton pT cut
-	  if(fabs(el->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
-	  if(fabs(el->scEta)>=ECAL_GAP_LOW && fabs(el->scEta)<=ECAL_GAP_HIGH) continue; // check ECAL gap
-	  if(!passEleID(el,info->rhoIso))     continue;  // lepton selection
+//	  if(elscEt_corr        < PT_CUT)     continue;  // lepton pT cut
+//	  if(fabs(el->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
+//	  if(fabs(el->scEta)>=ECAL_GAP_LOW && fabs(el->scEta)<=ECAL_GAP_HIGH) continue; // check ECAL gap
+//	  if(!passEleID(el,info->rhoIso))     continue;  // lepton selection
+	  if(vEle.Pt()		< PT_CUT)     continue;  // lepton pT cut
+	  if(fabs(vEle.Eta())   > ETA_CUT)    continue;  // lepton |eta| cut
+	  if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;// check ECAL gap
+	  if(!passEleID(el, vEle, info->rhoIso))     continue;  // lepton selection
 
 	  if(isEleTriggerObj(triggerMenu, el->hltMatchBits, kFALSE, 0)) hasTriggerMatch=kTRUE;
 
-	  double El_Pt=el->pt;
+	  double El_Pt=vEle.Pt();//el->pt;
 	     
 	  if(El_Pt>vlep1.Pt())
 	    {
 	      vlep2=vlep1;
-	      vlep1.SetPtEtaPhiM(El_Pt, el->eta, el->phi, ELE_MASS);
+	      //vlep1.SetPtEtaPhiM(El_Pt, el->eta, el->phi, ELE_MASS);
+	      vlep1.SetPtEtaPhiM(El_Pt, vEle.Eta(), vEle.Phi(), ELE_MASS);
 	      vsc1.SetPtEtaPhiM(el->scEt, el->scEta, el->scPhi, ELE_MASS);
 	      q2=q1;
 	      q1=el->q;
 	    }
 	  else if(El_Pt<=vlep1.Pt()&&El_Pt>vlep2.Pt())
 	    {
-	      vlep2.SetPtEtaPhiM(El_Pt, el->eta, el->phi, ELE_MASS);
+//	      vlep2.SetPtEtaPhiM(El_Pt, el->eta, el->phi, ELE_MASS);
+	      vlep2.SetPtEtaPhiM(El_Pt, vEle.Eta(), vEle.Phi(), ELE_MASS);
 	      vsc2.SetPtEtaPhiM(el->scEt, el->scEta, el->scPhi, ELE_MASS);
 	      q2=el->q;
 	    }
