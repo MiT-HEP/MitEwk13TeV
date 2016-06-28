@@ -219,7 +219,7 @@ void CPlot::AddGraph(TGraph *gr, TString drawopt, int color, int marksty, int li
   
   gr->SetMarkerColor(color);
   gr->SetLineColor(color);
-  //gr->SetFillColor(color);
+  gr->SetFillColor(color);
   gr->SetLineStyle(linesty);
   gr->SetLineWidth(2);
   gr->SetMarkerStyle(marksty);
@@ -831,6 +831,15 @@ void CPlot::Draw(TCanvas *c, bool doSave, TString format, Int_t subpad)
   c->cd(subpad)->SetLogy(fLogy);
 
   c->cd(subpad)->RedrawAxis();
+  
+  
+  for(uint i=0; i<vHists.size(); i++) {
+    TH1D *h = vHists[i];              
+    h->SetLineWidth(2);
+    char opt[100];
+    sprintf(opt,"same%s",vHistOpts[i].Data());    
+    h->Draw(opt);
+  }
   
   //
   // Set grid lines if necessary
