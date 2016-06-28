@@ -48,7 +48,9 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectZeeGen(const TString conf="zee.conf", // input file
-		  const TString outputDir="."   // output directory
+		  const TString outputDir=".",   // output directory
+		  const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
+		  const Int_t   sigma=0
 		  ) {
   gBenchmark->Start("selectZeeGen");
 
@@ -128,6 +130,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
   UInt_t nlep;
   TLorentzVector *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
+  Float_t lep1error, lep2error;
   Int_t   q1, q2;
   Float_t scale1fbGen,scale1fb,scale1fbUp,scale1fbDown;
 
@@ -189,6 +192,8 @@ void selectZeeGen(const TString conf="zee.conf", // input file
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("lheweight",  &lheweight);
+    outTree->Branch("lep1error",  &lep1error,  "lep1error/F");   // scale and smear correction uncertainty for lepton
+    outTree->Branch("lep2error",  &lep2error,  "lep2error/F");   // scale and smear correction uncertainty for leptom
 
     //
     // loop through files
@@ -293,6 +298,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	TLorentzVector vsc2(0., 0., 0., 0.);
 
 	TLorentzVector vEle(0,0,0,0);
+	float elError = 0.;
 	Bool_t hasTriggerMatch = kFALSE;
 	for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
 	  const baconhep::TElectron *el = (baconhep::TElectron*)((*electronArr)[i]);
@@ -300,21 +306,34 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	  // apply scale and resolution corrections to MC
 	  vEle.SetPtEtaPhiM(el->pt, el->eta, el->phi, ELE_MASS);
 
-          float elSmear = 0.;
-          float elAbsEta   = fabs(vEle.Eta());
-          float elEt       = vEle.E() / cosh(elAbsEta);
-          bool  elisBarrel = elAbsEta < 1.4442;
-	  float elR9Prime = el->r9; // r9 corrections MC only
-          if(elisBarrel){
-            elR9Prime = gR9EB->Eval(el->r9);}
-          else{
-            elR9Prime = gR9EE->Eval(el->r9);
-          }
+          if(doScaleCorr && (el->r9 < 1.)){
+            float elSmear = 0.;
+            float elAbsEta   = fabs(vEle.Eta());
+            float elEt       = vEle.E() / cosh(elAbsEta);
+            bool  elisBarrel = elAbsEta < 1.4442;
+            float elR9Prime = el->r9; // r9 corrections MC only
+            if(elisBarrel){
+              elR9Prime = gR9EB->Eval(el->r9);}
+            else{
+              elR9Prime = gR9EE->Eval(el->r9);
+            }
+  
+            double elRandom = gRandom->Gaus(0,1);
+  
+            elSmear = eleCorr.getSmearingSigma(info->runNum, elisBarrel, elR9Prime, elAbsEta, elEt, 0., 0.);
+            float elSmearEP = eleCorr.getSmearingSigma(info->runNum, elisBarrel, elR9Prime, elAbsEta, elEt, 1., 0.);
+            float elSmearEM = eleCorr.getSmearingSigma(info->runNum, elisBarrel, elR9Prime, elAbsEta, elEt, -1., 0.);
+  
+            if(sigma==0){
+              (vEle) *= 1. + elSmear * elRandom;
+            }else if(sigma==1){
+              (vEle) *= 1. + elSmearEP * elRandom;
+            }else if(sigma==-1){
+              (vEle) *= 1. + elSmearEM * elRandom;
+            }
+            elError = elRandom * std::hypot(elSmearEP - elSmear, elSmearEM - elSmear);
+            }
 
-          double elRandom = gRandom->Gaus(0,1);
-
-          elSmear = eleCorr.getSmearingSigma(info->runNum, elisBarrel, elR9Prime, elAbsEta, elEt, 0., 0.);
-          (vEle) *= 1. + elSmear * elRandom;
 
 //          Double_t elscEt_corr = el->scEt;
           	  
@@ -339,6 +358,8 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	      vsc1.SetPtEtaPhiM(el->scEt, el->scEta, el->scPhi, ELE_MASS);
 	      q2=q1;
 	      q1=el->q;
+	      lep1error=elError;
+	      lep2error=lep1error;
 	    }
 	  else if(El_Pt<=vlep1.Pt()&&El_Pt>vlep2.Pt())
 	    {
@@ -346,6 +367,7 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 	      vlep2.SetPtEtaPhiM(El_Pt, vEle.Eta(), vEle.Phi(), ELE_MASS);
 	      vsc2.SetPtEtaPhiM(el->scEt, el->scEta, el->scPhi, ELE_MASS);
 	      q2=el->q;
+	      lep2error=elError;
 	    }
 	 
 	  n_el++;
