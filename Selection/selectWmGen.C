@@ -42,7 +42,7 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectWm(const TString conf="wm.conf", // input file
+void selectWmGen(const TString conf="wm.conf", // input file
               const TString outputDir=".",  // output directory
 	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
 ) {
@@ -108,6 +108,7 @@ void selectWm(const TString conf="wm.conf", // input file
   Int_t   q;
   Float_t scale1fbGen,scale1fb,scale1fbUp,scale1fbDown;
 
+  std::vector<float> *lheweight = new std::vector<float>();
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info  = new baconhep::TEventInfo();
@@ -215,11 +216,12 @@ void selectWm(const TString conf="wm.conf", // input file
       // loop over events
       //
       Double_t nsel=0, nselvar=0;
+
+     // for(UInt_t ientry=0; ientry<1000; ientry++) {
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-
 
         Double_t weightGen=1;
         Double_t weight=1;
@@ -242,12 +244,18 @@ void selectWm(const TString conf="wm.conf", // input file
           weightDown*=gen->weight*puWeightDown;
         }
 
+
         // veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
         else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue; 
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+        // if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+        Bool_t passMuTrigger = kFALSE;
+	    if (isMuonTrigger(triggerMenu, info->triggerBits)) passMuTrigger=kTRUE;
+	
+        // good vertex requirement
+        // Bool_t hasGoodPV = kFALSE;
       
         // good vertex requirement
         Bool_t hasGoodPV = kFALSE;
@@ -264,14 +272,15 @@ void selectWm(const TString conf="wm.conf", // input file
         Int_t nLooseLep=0;
         const baconhep::TMuon *goodMuon=0;
         Bool_t passSel=kFALSE;
-
+        Bool_t hasTriggerMatch=kFALSE;
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
-	      if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
+	      if(mu->pt     < PT_CUT)          continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
           if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+          if(isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) hasTriggerMatch=kTRUE;
 
           passSel=kTRUE;
           goodMuon = mu;
@@ -281,17 +290,57 @@ void selectWm(const TString conf="wm.conf", // input file
           /******** We have a W candidate! HURRAY! ********/
           nsel+=weight;
           nselvar+=weight*weight;
-
-          TLorentzVector vLep; 
-          vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
+          TLorentzVector vlep; 
+          vlep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
           
+
+          Int_t glepq1=-99;
+          Int_t glepq2=-99;
+          TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+          TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+          TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+          genV      = new TLorentzVector(0,0,0,0);
+          genlep    = new TLorentzVector(0,0,0,0);
+          Bool_t hasGenMatch = kFALSE;
+          Bool_t hasTriggerMatch = kFALSE;
+            
+          if(isSignal && hasGen) {
+            toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+            
+            hasGenMatch = ( ((glep1) && toolbox::deltaR(vlep.Eta(), vlep.Phi(), glep1->Eta(), glep1->Phi())<0.5) );
+            if (gvec && glep1) {
+              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+              genlep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              //genV->Print();
+              //genlep->Print(); 
+              // genVPt    = gvec->Pt();
+              // genVPhi   = gvec->Phi();
+              // genVy     = gvec->Rapidity();
+              // genVMass  = gvec->M();
+              // genLepPt  = glep1->Pt();
+              // genLepPhi = glep1->Phi();
+            }
+            // id_1      = gen->id_1;
+            // id_2      = gen->id_2;
+            // x_1       = gen->x_1;
+            // x_2       = gen->x_2;
+            // xPDF_1    = gen->xPDF_1;
+            // xPDF_2    = gen->xPDF_2;
+            // scalePDF  = gen->scalePDF;
+            // weightPDF = gen->weight;
+            delete gvec;
+            delete glep1;
+            delete glep2;
+            gvec=0; glep1=0; glep2=0;
+          }
+          //genV->Print();
+          //genlep->Print();
           //
           // Fill tree
           //
           runNum    = info->runNum;
           lumiSec   = info->lumiSec;
           evtNum    = info->evtNum;
-          
           if (hasGenMatch) matchGen=1;
           else matchGen=0;
           if (passMuTrigger) triggerDec=1;
@@ -306,61 +355,24 @@ void selectWm(const TString conf="wm.conf", // input file
 
           npv       = vertexArr->GetEntries();
           npu	    = info->nPUmean;
-          genV      = new TLorentzVector(0,0,0,0);
-          genLep    = new TLorentzVector(0,0,0,0);
-          genVPt    = -999;
-          genVPhi   = -999;
-          genVy     = -999;
-          genVMass  = -999;
-          genLepPt  = -999;
-          genLepPhi = -999;
-          id_1      = -999;
-          id_2      = -999;
-          x_1       = -999;
-          x_2       = -999;
-          xPDF_1    = -999;
-          xPDF_2    = -999;
-          scalePDF  = -999;
-          weightPDF = -999;
-
-          Int_t glepq1=-99;
-          Int_t glepq2=-99;
-          TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
-          TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-          TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-//           genV      = new TLorentzVector(0,0,0,0);
-//           genLep    = new TLorentzVector(0,0,0,0);
-            
-          if(isSignal && hasGen) {
-
-            toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-            
-            if (gvec && glep1) {
-              
-              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
-              
-              genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              genVPt    = gvec->Pt();
-              genVPhi   = gvec->Phi();
-              genVy     = gvec->Rapidity();
-              genVMass  = gvec->M();
-              genLepPt  = glep1->Pt();
-              genLepPhi = glep1->Phi();
-            }
-            id_1      = gen->id_1;
-            id_2      = gen->id_2;
-            x_1       = gen->x_1;
-            x_2       = gen->x_2;
-            xPDF_1    = gen->xPDF_1;
-            xPDF_2    = gen->xPDF_2;
-            scalePDF  = gen->scalePDF;
-            weightPDF = gen->weight;
-
-            delete gvec;
-            delete glep1;
-            delete glep2;
-            gvec=0; glep1=0; glep2=0;
-          }
+          //genV      = new TLorentzVector(0,0,0,0);
+          //genlep    = new TLorentzVector(0,0,0,0);
+          // lep = &vlep;
+          // genVPt    = -999;
+          // genVPhi   = -999;
+          // genVy     = -999;
+          // genVMass  = -999;
+          // genLepPt  = -999;
+          // genLepPhi = -999;
+          // id_1      = -999;
+          // id_2      = -999;
+          // x_1       = -999;
+          // // x_2       = -999;
+          // xPDF_1    = -999;
+          // xPDF_2    = -999;
+          // scalePDF  = -999;
+          // weightPDF = -999;
+          
           scale1fb     = weight;
           scale1fbGen  = weightGen;
           scale1fbUp   = weightUp;
@@ -371,15 +383,15 @@ void selectWm(const TString conf="wm.conf", // input file
             lheweight->push_back(gen->lheweight[j]);
           }
       
-          sumEt    = 0;
+          // sumEt    = 0;
           q        = goodMuon->q;
-          lep      = &vLep;
+          lep      = &vlep;
           
 
           outTree->Fill();
           delete genV;
-          delete genLep;
-          genV=0, genLep=0, lep=0;
+          delete genlep;
+          genV=0, genlep=0, lep=0;
         }
       }
       delete infile;
