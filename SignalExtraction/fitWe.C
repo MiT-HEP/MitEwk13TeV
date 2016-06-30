@@ -121,11 +121,20 @@ void fitWe(const TString  outputDir,   // output directory
   
   hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
   hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
+  
+  TFile *_rat1 = new TFile("zmm_PDFUnc.root");
+  TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal");
+  
+  TFile *_rat2 = new TFile("UnfoldingOutputZPt.root");
+  TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  hh_diff = (TH1D*)_rat2->Get("hUnfold");
+  hh_diff->Divide(hh_mc);
 
-  TFile *pufile = new TFile(pufname); assert(pufile);
-  TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+//   TFile *pufile = new TFile(pufname); assert(pufile);
+//   TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
 
-  enum { eData, eWenu, eEWK , eBKG};  // data type enum
+  enum { eData, eWenu, eEWK , eBKG, eWenup1, eWenum1};  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
@@ -134,6 +143,9 @@ void fitWe(const TString  outputDir,   // output directory
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
 
+// to test lepton scale uncertainty  
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wenup1/ntuples/we_select.root");   typev.push_back(eWenup1);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wenum1/ntuples/we_select.root");   typev.push_back(eWenum1);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -269,18 +281,27 @@ void fitWe(const TString  outputDir,   // output directory
               nnlocorr = hNNLOCorr->GetBinContent(ibin);
 	      }*/
 	  //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-	  if(lepPt        > PT_CUT) {  
+	  if(lepPt        > PT_CUT) {
+        double bin = 0;
+        for(int i = 1; i <= hh_diff->GetNbinsX();++i){
+          if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ 
+            bin = i;
+            break;
+          }
+        }
+        double w2 = hh_diff->GetBinContent(bin);
+        
           corrMet=met, corrMetPhi=metPhi;
 	      hWenuMet->Fill(corrMet,weight);
 	      if(q>0) {
             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //             recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hWenuMetp->Fill(corrMet,weight); 
+            hWenuMetp->Fill(corrMet,weight*w2); 
             corrMet=met, corrMetPhi=metPhi;
           } else { 
             recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //             recoilCorrm->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hWenuMetm->Fill(corrMet,weight); 
+            hWenuMetm->Fill(corrMet,weight*w2); 
             corrMet=met, corrMetPhi=metPhi;
           }
 	      corrMet=met, corrMetPhi=metPhi;
@@ -307,45 +328,46 @@ void fitWe(const TString  outputDir,   // output directory
           corrMet=met, corrMetPhi=metPhi;
 		}
       }
-	  if(lepPtup        > PT_CUT)
-	    {
-	      corrMet=met, corrMetPhi=metPhi;
-// 	      recoilCorr->Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),0,q);
-//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-	      hWenuMet_ScaleUp->Fill(corrMet,weight);
-	      if(q>0) 
-		{ 
-// 		  recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-		  hWenuMetp_ScaleUp->Fill(corrMet,weight); 
+//         }
+//       if(typev[ifile]==eWenup1){
+//         Double_t corrMet=met, corrMetPhi=metPhi;
+//         Double_t lepPt = lep->Pt();
+//         Double_t lepPtup = lep->Pt();
+//         Double_t lepPtdown = lep->Pt();
+        if(lepPtup        > PT_CUT) {
           corrMet=met, corrMetPhi=metPhi;
-		} 
-	      else    
-		{ 
-// 		  recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-// 		  hWenuMetm_ScaleUp->Fill(corrMet,weight); 
+          hWenuMet_ScaleUp->Fill(corrMet,weight);
+          if(q>0) {
+//             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            hWenuMetp_ScaleUp->Fill(corrMet,weight); 
+            corrMet=met, corrMetPhi=metPhi;
+          } else { 
+//           recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+          hWenuMetm_ScaleUp->Fill(corrMet,weight); 
           corrMet=met, corrMetPhi=metPhi;
-		}
+          }
 	    }
-	  if(lepPtdown        > PT_CUT)
-	    {
+//       }
+//       if(typev[ifile]==eWenum1){
+//         Double_t corrMet=met, corrMetPhi=metPhi;
+//         Double_t lepPt = lep->Pt();
+//         Double_t lepPtup = lep->Pt();
+//         Double_t lepPtdown = lep->Pt();
+        if(lepPtdown        > PT_CUT) {
 	      corrMet=met, corrMetPhi=metPhi;
-// 	      recoilCorr->Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),0,q);
-//           recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
 	      hWenuMet_ScaleDown->Fill(corrMet,weight);
           corrMet=met, corrMetPhi=metPhi;
-	      if(q>0) 
-		{ 
-// 		  recoilCorr->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
+	      if(q>0) { 
+//           recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 		  hWenuMetp_ScaleDown->Fill(corrMet,weight); 
           corrMet=met, corrMetPhi=metPhi;
-		} 
-	      else    
-		{ 
-// 		  recoilCorrm->CorrectType2(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
+          } else { 
+//           recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 		  hWenuMetm_ScaleDown->Fill(corrMet,weight); 
           corrMet=met, corrMetPhi=metPhi;
-		}
+          }
 	    }
+//       }
         }
         if(typev[ifile]==eEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
