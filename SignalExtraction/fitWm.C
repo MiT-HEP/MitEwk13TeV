@@ -124,14 +124,23 @@ void fitWm(const TString  outputDir,   // output directory
 //   recoilCorrm->loadRooWorkspacesMC("../Recoil/WmmMCPF/");
   
   
-  TFile *_rdWmp = new TFile("shapeDiff/WmpPF_relDiff.root");
-  TFile *_rdWmm = new TFile("shapeDiff/WmmPF_relDiff.root");
+  TFile *_rdWmp = new TFile("shapeDiff/Wmp_relDiff.root");
+  TFile *_rdWmm = new TFile("shapeDiff/Wmm_relDiff.root");
   
   TH1D *hh_diffm = new TH1D("hh_diffm","hh_diffm",75,0,150);
   TH1D *hh_diffp = new TH1D("hh_diffp","hh_diffp",75,0,150);
   
   hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
   hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
+  
+  TFile *_rat1 = new TFile("zmm_PDFUnc.root");
+  TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal");
+  
+  TFile *_rat2 = new TFile("UnfoldingOutputZPt.root");
+  TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  hh_diff = (TH1D*)_rat2->Get("hUnfold");
+  hh_diff->Divide(hh_mc);
    
   
  /*Fit to data
@@ -389,6 +398,17 @@ Par  0                    p0 = -0.249167
           Double_t corrMet=met, corrMetPhi=metPhi;
           
           if(lepPt        > PT_CUT) {
+            
+          double bin = 0;
+          for(int i = 1; i <= hh_diff->GetNbinsX();++i){
+            if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ 
+              bin = i;
+              break;
+            }
+          }
+          
+          double w2 = hh_diff->GetBinContent(bin);
+            
               //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
             hWmunuMet->Fill(corrMet,weight);
             if(q>0) {
@@ -400,7 +420,8 @@ Par  0                    p0 = -0.249167
               recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //                recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //           recoilCorr->CorrectType0(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetp->Fill(corrMet,weight); 
+              hWmunuMetp->Fill(corrMet,weight*w2); 
+//               hWmunuMetp_RecoilUp->Fill(corrMet,weight*w2); 
               corrMet=met, corrMetPhi=metPhi;
             } else { 
               pU1 = 0; pU2 = 0; 
@@ -410,10 +431,11 @@ Par  0                    p0 = -0.249167
               recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //               recoilCorrm->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //           recoilCorrm->CorrectType0(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetm->Fill(corrMet,weight); 
+              hWmunuMetm->Fill(corrMet,weight*w2); 
+//               hWmunuMetm_RecoilUp->Fill(corrMet,weight*w2);
               corrMet=met, corrMetPhi=metPhi;
             }
-            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
+//             recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
             hWmunuMet_RecoilUp->Fill(corrMet,weight);
             if(q>0) 
             {
@@ -796,7 +818,7 @@ Par  0                    p0 = -0.249167
              Import("Anti",   antiMetp));
              
   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
-//   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 // RooFitResult *fitResp = pdfMetp.fitTo(dataTotalp,Extended(),Minos(kTRUE),Save(kTRUE));
   
   RooDataHist antiMetm("antiMetm", "antiMetm", RooArgSet(pfmet), hAntiDataMetm);
@@ -806,7 +828,7 @@ Par  0                    p0 = -0.249167
              Import("Anti", antiMetm));
   RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResm = pdfMetm.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
-//   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResm = pdfTotalp.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
   
   //
