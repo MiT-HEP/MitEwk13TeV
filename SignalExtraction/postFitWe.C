@@ -106,7 +106,8 @@ void postFitWe(const TString  outputDir,   // output directory
   CPlot::sOutDir = outputDir;  
   
   // Read in the Wenu_pdfTemplates file here and start to get pdfs.
-  TString inputName = "Wenu_wShapes/Wenu_pdfTemplates.root";
+//   TString inputName = "Wenu_wShapes/Wenu_pdfTemplates.root";
+  TString inputName = "Wenu_reweight/Wenu_pdfTemplates.root";
   TFile *inWenuShapes = new TFile(inputName); assert(inWenuShapes);
   RooWorkspace* combine_workspace = (RooWorkspace*) inWenuShapes->Get("combine_workspace");
   std::cout << "what" << std::endl;
@@ -151,22 +152,40 @@ void postFitWe(const TString  outputDir,   // output directory
   TH1D *hEWKMetm = (TH1D*) ewkm->createHistogram("pfmet",NBINS);hEWKMetm->Sumw2();
   
   // Shape variation, recoil uncertainty - upwards
-  RooAbsPdf *wmet_u  = combine_workspace->pdf("we_RecoilUp");
-  RooAbsPdf *wmetp_u = combine_workspace->pdf("wep_RecoilUp");
-  RooAbsPdf *wmetm_u = combine_workspace->pdf("wem_RecoilUp");
+  RooAbsPdf *wmet_ru  = combine_workspace->pdf("we_RecoilUp");
+  RooAbsPdf *wmetp_ru = combine_workspace->pdf("wep_RecoilUp");
+  RooAbsPdf *wmetm_ru = combine_workspace->pdf("wem_RecoilUp");
   // Make histograms
-  TH1D *hWenuMet_RecoilUp  = (TH1D*) wmet_u->createHistogram("pfmet",NBINS);   hWenuMet_RecoilUp->Sumw2();
-  TH1D *hWenuMetp_RecoilUp = (TH1D*) wmetp_u->createHistogram("pfmet",NBINS); hWenuMetp_RecoilUp->Sumw2();
-  TH1D *hWenuMetm_RecoilUp = (TH1D*) wmetm_u->createHistogram("pfmet",NBINS); hWenuMetm_RecoilUp->Sumw2();
+  TH1D *hWenuMet_RecoilUp  = (TH1D*) wmet_ru->createHistogram("pfmet",NBINS);   hWenuMet_RecoilUp->Sumw2();
+  TH1D *hWenuMetp_RecoilUp = (TH1D*) wmetp_ru->createHistogram("pfmet",NBINS); hWenuMetp_RecoilUp->Sumw2();
+  TH1D *hWenuMetm_RecoilUp = (TH1D*) wmetm_ru->createHistogram("pfmet",NBINS); hWenuMetm_RecoilUp->Sumw2();
   
   // Shape variation, recoil uncertainty - downwards
-  RooAbsPdf *wmet_d  = combine_workspace->pdf("we_RecoilDown");
-  RooAbsPdf *wmetp_d = combine_workspace->pdf("wep_RecoilDown");
-  RooAbsPdf *wmetm_d = combine_workspace->pdf("wem_RecoilDown");
+  RooAbsPdf *wmet_rd  = combine_workspace->pdf("we_RecoilDown");
+  RooAbsPdf *wmetp_rd = combine_workspace->pdf("wep_RecoilDown");
+  RooAbsPdf *wmetm_rd = combine_workspace->pdf("wem_RecoilDown");
   
-  TH1D *hWenuMet_RecoilDown  = (TH1D*) wmet_d->createHistogram("pfmet",NBINS);   hWenuMet_RecoilDown->Sumw2();
-  TH1D *hWenuMetp_RecoilDown = (TH1D*) wmetp_d->createHistogram("pfmet",NBINS); hWenuMetp_RecoilDown->Sumw2();
-  TH1D *hWenuMetm_RecoilDown = (TH1D*) wmetm_d->createHistogram("pfmet",NBINS); hWenuMetm_RecoilDown->Sumw2();
+  TH1D *hWenuMet_RecoilDown  = (TH1D*) wmet_rd->createHistogram("pfmet",NBINS);   hWenuMet_RecoilDown->Sumw2();
+  TH1D *hWenuMetp_RecoilDown = (TH1D*) wmetp_rd->createHistogram("pfmet",NBINS); hWenuMetp_RecoilDown->Sumw2();
+  TH1D *hWenuMetm_RecoilDown = (TH1D*) wmetm_rd->createHistogram("pfmet",NBINS); hWenuMetm_RecoilDown->Sumw2();
+  
+    // Shape variation, Scale uncertainty - upwards
+  RooAbsPdf *wmet_su  = combine_workspace->pdf("we_ScaleUp");
+  RooAbsPdf *wmetp_su = combine_workspace->pdf("wep_ScaleUp");
+  RooAbsPdf *wmetm_su = combine_workspace->pdf("wem_ScaleUp");
+  // Make histograms
+  TH1D *hWenuMet_ScaleUp  = (TH1D*) wmet_su->createHistogram("pfmet",NBINS);   hWenuMet_ScaleUp->Sumw2();
+  TH1D *hWenuMetp_ScaleUp = (TH1D*) wmetp_su->createHistogram("pfmet",NBINS); hWenuMetp_ScaleUp->Sumw2();
+  TH1D *hWenuMetm_ScaleUp = (TH1D*) wmetm_su->createHistogram("pfmet",NBINS); hWenuMetm_ScaleUp->Sumw2();
+  
+  // Shape variation, Scale uncertainty - downwards
+  RooAbsPdf *wmet_sd  = combine_workspace->pdf("we_ScaleDown");
+  RooAbsPdf *wmetp_sd = combine_workspace->pdf("wep_ScaleDown");
+  RooAbsPdf *wmetm_sd = combine_workspace->pdf("wem_ScaleDown");
+  
+  TH1D *hWenuMet_ScaleDown  = (TH1D*) wmet_sd->createHistogram("pfmet",NBINS);   hWenuMet_ScaleDown->Sumw2();
+  TH1D *hWenuMetp_ScaleDown = (TH1D*) wmetp_sd->createHistogram("pfmet",NBINS); hWenuMetp_ScaleDown->Sumw2();
+  TH1D *hWenuMetm_ScaleDown = (TH1D*) wmetm_sd->createHistogram("pfmet",NBINS); hWenuMetm_ScaleDown->Sumw2();
   
   
   RooAbsData *wmetData = combine_workspace->embeddedData("wenuMET");
@@ -185,37 +204,53 @@ void postFitWe(const TString  outputDir,   // output directory
   RooRealVar nEWK("nEWK","nEWK",1000);
 
   // set some values for W+
-  RooRealVar nSigp("nSigp","nSigp",1.2590*5149968);
+//   RooRealVar nSigp("nSigp","nSigp",1.2592*5149968);
+//   RooRealVar nQCDp("nQCDp","nQCDp",10);
+//   RooRealVar nEWKp("nEWKp","nEWKp",1.2592*209068.752);
+//   //   
+//   RooRealVar nSigm("nSigm","nSigm",0.9729*5149968);
+//   RooRealVar nQCDm("nQCDm","nQCDm",10);
+//   RooRealVar nEWKm("nEWKm","nEWKm",0.9729*238586.6722); 
+  
+  RooRealVar nSigp("nSigp","nSigp",1.2104*5149968);
   RooRealVar nQCDp("nQCDp","nQCDp",10);
-  RooRealVar nEWKp("nEWKp","nEWKp",1.2590*209068.752);
+  RooRealVar nEWKp("nEWKp","nEWKp",1.2104*212941.5531);
   //   
-  RooRealVar nSigm("nSigm","nSigm",0.9735*5149968);
+  RooRealVar nSigm("nSigm","nSigm",0.9398*5149968);
   RooRealVar nQCDm("nQCDm","nQCDm",10);
-  RooRealVar nEWKm("nEWKm","nEWKm",0.9735*238586.6722); 
+  RooRealVar nEWKm("nEWKm","nEWKm",0.9398*242997.4699); 
   
 //   return;
   
   // Signal PDFs
   // Only using the Recoil shape for now, no Scale variations
   
-  double shape_p = 0.0729;
-  double shape_m = 0.1032;
-  double shape_p_err = 0.0015;
-  double shape_m_err = 0.0018;
+//   double recoil_p = 0.0729;
+//   double recoil_m = 0.1032;
+//   double recoil_p_err = 0.0015;
+//   double recoil_m_err = 0.0018;
+  
+  double recoil_p = -0.1103;
+  double recoil_m = -0.0756;
+  double recoil_p_err = 0.0015;
+  double recoil_m_err = 0.0018;
+  
+//   double scale_p = 0.6789;
+//   double scale_m =0.7304;
+//   double scale_p_err = 0.0015;
+//   double scale_m_err = 0.0018;
 
 //   double shape_p = 0.0821;
 //   double shape_m = 0.0519;
 //   double shape_p_err = 0.0060;
 //   double shape_m_err = 0.0082;
 //   
-  apply_postfit_shape(hWenuMetp, hWenuMetp_RecoilUp, hWenuMetp_RecoilDown, shape_p, shape_p_err);
-  apply_postfit_shape(hWenuMetm, hWenuMetm_RecoilUp, hWenuMetm_RecoilDown, shape_m, shape_m_err);
-//   
-//   apply_postfit_shape(hWenuMetp_UncUp, hWenuMetp_RecoilUp, hWenuMetp_RecoilDown, shape_p+shape_p_err, shape_p_err);
-//   apply_postfit_shape(hWenuMetp_UncDown, hWenuMetp_RecoilUp, hWenuMetp_RecoilDown, shape_p-shape_p_err, shape_p_err);
-//   
-//   apply_postfit_shape(hWenuMetm_UncUp, hWenuMetm_RecoilUp, hWenuMetm_RecoilDown, shape_m+shape_m_err, shape_m_err);
-//   apply_postfit_shape(hWenuMetm_UncDown, hWenuMetm_RecoilUp, hWenuMetm_RecoilDown, shape_m-shape_m_err, shape_m_err);
+  apply_postfit_shape(hWenuMetp, hWenuMetp_RecoilUp, hWenuMetp_RecoilDown, recoil_p, recoil_p_err);
+  apply_postfit_shape(hWenuMetm, hWenuMetm_RecoilUp, hWenuMetm_RecoilDown, recoil_m, recoil_m_err);
+  
+//   apply_postfit_shape(hWenuMetp, hWenuMetp_RecoilUp, hWenuMetp_RecoilDown,hWenuMetp_ScaleUp, hWenuMetp_ScaleDown, recoil_p, scale_p);
+//   apply_postfit_shape(hWenuMetm, hWenuMetm_RecoilUp, hWenuMetm_RecoilDown,hWenuMetm_ScaleUp, hWenuMetm_ScaleDown, recoil_m, scale_m);
+
   
   RooDataHist wenuMet ("wenuMET", "wenuMET", RooArgSet(*pfmet),hWenuMet);  RooHistPdf pdfWe ("we", "we", *pfmet,wenuMet, 1);
   RooDataHist wenuMetp("wenuMETp","wenuMETp",RooArgSet(*pfmet),hWenuMetp); RooHistPdf pdfWep("wep","wep",*pfmet,wenuMetp,1);
@@ -268,12 +303,12 @@ void postFitWe(const TString  outputDir,   // output directory
   std::cout  << "Selectedm: " << hDataMetm->Integral() << endl;
 
 // Fixed Tail on QCD
-  qcdp.a1->setVal(0.1722);
-  qcdm.a1->setVal(0.1777);
-  qcdp.sigma->setVal(13.3966);
-  qcdm.sigma->setVal(13.3966);
-  nQCDp.setVal(3552800.6279);
-  nQCDm.setVal(3623756.2109);
+  qcdp.a1->setVal(0.2019);
+  qcdm.a1->setVal(0.1973);
+  qcdp.sigma->setVal(12.8538);
+  qcdm.sigma->setVal(13.0679);
+  nQCDp.setVal(3808435.6635);
+  nQCDm.setVal(3801530.9737);
 
 
 
