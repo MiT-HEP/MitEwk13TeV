@@ -122,17 +122,21 @@ void fitWe(const TString  outputDir,   // output directory
   hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
   hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
   
-  TFile *_rat1 = new TFile("zmm_PDFUnc.root");
+  TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
   TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
   hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal");
+  hh_mc->Scale(1/hh_mc->Integral());
   
-  TFile *_rat2 = new TFile("UnfoldingOutputZPt.root");
+  TFile *_rat2 = new TFile("shapeDiff/UnfoldingOutputZPt.root");
   TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
   hh_diff = (TH1D*)_rat2->Get("hUnfold");
+  hh_diff->Scale(1/hh_diff->Integral());
   hh_diff->Divide(hh_mc);
-
-//   TFile *pufile = new TFile(pufname); assert(pufile);
-//   TH1D  *puWeights = (TH1D*)pufile->Get("npv_rw");
+//   TCanvas *b = new TCanvas("b","b",800,800);
+  hh_diff->Smooth(100);
+//   hh_diff->Draw("");
+//   b->SaveAs("smoothing.png");
+//   return;
 
   enum { eData, eWenu, eEWK , eBKG, eWenup1, eWenum1};  // data type enum
   vector<TString> fnamev;
@@ -238,6 +242,7 @@ void fitWe(const TString  outputDir,   // output directory
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
+      if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
     
       double pU1         = 0;  //--
       double pU2         = 0;  //--
@@ -259,115 +264,101 @@ void fitWe(const TString  outputDir,   // output directory
         if(typev[ifile]==eWenu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
 	  
-/*          Double_t eleCorr=1.0;
-          for (Int_t i=0; i<6; i++) {if( lep->Eta()>lower[i] && lep->Eta()<upper[i] ) {
-            eleCorr=fpcorr[i];
-            }
-          } */  
+          // apply recoil corrections to W MC
+          Double_t lepPt = lep->Pt();
+          Double_t lepPtup = lep->Pt();
+          Double_t lepPtdown = lep->Pt();
+          
 
-	  // apply recoil corrections to W MC
-	  Double_t lepPt = lep->Pt();
-      Double_t lepPtup = lep->Pt();
-      Double_t lepPtdown = lep->Pt();
-// 	  Double_t lepPt = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),0),getEleResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
-// 	  Double_t lepPtup = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),1),getEleResCorr(lep->Eta(),1)));  // (!) uncomment to apply scale/res corrections to MC
-// 	  Double_t lepPtdown = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),-1),getEleResCorr(lep->Eta(),-1)));  // (!) uncomment to apply scale/res corrections to MC
-	  
-	 
-	  /*       Double_t nnlocorr=1;
-          for(Int_t ibin=1; ibin<=hNNLOCorr->GetNbinsX(); ibin++) {
-            if(genVPt >= hNNLOCorr->GetBinLowEdge(ibin) &&
-               genVPt < (hNNLOCorr->GetBinLowEdge(ibin)+hNNLOCorr->GetBinWidth(ibin)))
-              nnlocorr = hNNLOCorr->GetBinContent(ibin);
-	      }*/
-	  //weight *= nnlocorr;  // (!) uncomment to apply NNLO corrections
-	  if(lepPt        > PT_CUT) {
-        double bin = 0;
-        for(int i = 1; i <= hh_diff->GetNbinsX();++i){
-          if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ 
-            bin = i;
-            break;
+          if(lepPt        > PT_CUT) {
+            double bin = 0;
+            for(int i = 1; i <= hh_diff->GetNbinsX();++i){
+              if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ 
+                bin = i;
+                break;
+              }
+            }
+            double w2 = hh_diff->GetBinContent(bin);
+            
+              corrMet=met, corrMetPhi=metPhi;
+              hWenuMet->Fill(corrMet,weight);
+              if(q>0) {
+                recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//                 recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+                hWenuMetp->Fill(corrMet,weight); 
+//                 hWenuMetp_ScaleDown->Fill(corrMet,weight); 
+                corrMet=met, corrMetPhi=metPhi;
+              } else { 
+                recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//                 recoilCorrm->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+                hWenuMetm->Fill(corrMet,weight); //*w2);
+//                 hWenuMetm_ScaleDown->Fill(corrMet,weight); 
+                corrMet=met, corrMetPhi=metPhi;
+              }
+              corrMet=met, corrMetPhi=metPhi;
+              hWenuMet_RecoilUp->Fill(corrMet,weight);
+              if(q>0) {
+    //             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
+                hWenuMetp_RecoilUp->Fill(corrMet,weight); 
+                corrMet=met, corrMetPhi=metPhi;
+              } else { 
+    //             recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
+                hWenuMetm_RecoilUp->Fill(corrMet,weight); 
+                corrMet=met, corrMetPhi=metPhi;
+              }
+              corrMet=met, corrMetPhi=metPhi;
+              hWenuMet_RecoilDown->Fill(corrMet,weight);
+              corrMet=met, corrMetPhi=metPhi;
+              if(q>0){ 
+    // 		  recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
+              hWenuMetp_RecoilDown->Fill(corrMet,weight); 
+              corrMet=met, corrMetPhi=metPhi;
+            } else { 
+    // 		  recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
+              hWenuMetm_RecoilDown->Fill(corrMet,weight); 
+              corrMet=met, corrMetPhi=metPhi;
+            }
           }
-        }
-        double w2 = hh_diff->GetBinContent(bin);
-        
-          corrMet=met, corrMetPhi=metPhi;
-	      hWenuMet->Fill(corrMet,weight);
-	      if(q>0) {
-            recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-//             recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hWenuMetp->Fill(corrMet,weight*w2); 
-            corrMet=met, corrMetPhi=metPhi;
-          } else { 
-            recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-//             recoilCorrm->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hWenuMetm->Fill(corrMet,weight*w2); 
-            corrMet=met, corrMetPhi=metPhi;
-          }
-	      corrMet=met, corrMetPhi=metPhi;
-	      hWenuMet_RecoilUp->Fill(corrMet,weight);
-	      if(q>0) {
-//             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
-            hWenuMetp_RecoilUp->Fill(corrMet,weight); 
-            corrMet=met, corrMetPhi=metPhi;
-          } else { 
-//             recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,2,2);
-            hWenuMetm_RecoilUp->Fill(corrMet,weight); 
-            corrMet=met, corrMetPhi=metPhi;
-          }
-	      corrMet=met, corrMetPhi=metPhi;
-	      hWenuMet_RecoilDown->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-	      if(q>0){ 
-// 		  recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
-		  hWenuMetp_RecoilDown->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-		} else { 
-// 		  recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-2,-2);
-		  hWenuMetm_RecoilDown->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-		}
-      }
 //         }
 //       if(typev[ifile]==eWenup1){
 //         Double_t corrMet=met, corrMetPhi=metPhi;
 //         Double_t lepPt = lep->Pt();
 //         Double_t lepPtup = lep->Pt();
 //         Double_t lepPtdown = lep->Pt();
-        if(lepPtup        > PT_CUT) {
-          corrMet=met, corrMetPhi=metPhi;
-          hWenuMet_ScaleUp->Fill(corrMet,weight);
-          if(q>0) {
-//             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hWenuMetp_ScaleUp->Fill(corrMet,weight); 
-            corrMet=met, corrMetPhi=metPhi;
-          } else { 
-//           recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-          hWenuMetm_ScaleUp->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-          }
-	    }
-//       }
-//       if(typev[ifile]==eWenum1){
-//         Double_t corrMet=met, corrMetPhi=metPhi;
-//         Double_t lepPt = lep->Pt();
-//         Double_t lepPtup = lep->Pt();
-//         Double_t lepPtdown = lep->Pt();
-        if(lepPtdown        > PT_CUT) {
-	      corrMet=met, corrMetPhi=metPhi;
-	      hWenuMet_ScaleDown->Fill(corrMet,weight);
-          corrMet=met, corrMetPhi=metPhi;
-	      if(q>0) { 
-//           recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-		  hWenuMetp_ScaleDown->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-          } else { 
-//           recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-		  hWenuMetm_ScaleDown->Fill(corrMet,weight); 
-          corrMet=met, corrMetPhi=metPhi;
-          }
-	    }
-//       }
+//         if(lepPtup        > PT_CUT) {
+//           corrMet=met, corrMetPhi=metPhi;
+//           hWenuMet_ScaleUp->Fill(corrMet,weight);
+//           if(q>0) {
+// //             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//             hWenuMetp_ScaleUp->Fill(corrMet,weight); 
+//             corrMet=met, corrMetPhi=metPhi;
+//           } else { 
+// //           recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//           hWenuMetm_ScaleUp->Fill(corrMet,weight); 
+//           corrMet=met, corrMetPhi=metPhi;
+//           }
+// 	    }
+// //       }
+// //       if(typev[ifile]==eWenum1){
+// //         Double_t corrMet=met, corrMetPhi=metPhi;
+// //         Double_t lepPt = lep->Pt();
+// //         Double_t lepPtup = lep->Pt();
+// //         Double_t lepPtdown = lep->Pt();
+//         if(lepPtdown        > PT_CUT) {
+// 	      corrMet=met, corrMetPhi=metPhi;
+// 	      hWenuMet_ScaleDown->Fill(corrMet,weight);
+//           corrMet=met, corrMetPhi=metPhi;
+// 	      if(q>0) { 
+// //           recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+// 		  hWenuMetp_ScaleDown->Fill(corrMet,weight); 
+//           corrMet=met, corrMetPhi=metPhi;
+//           } else { 
+// //           recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+// 		  hWenuMetm_ScaleDown->Fill(corrMet,weight); 
+//           corrMet=met, corrMetPhi=metPhi;
+//           }
+// 	    }
+// //       }
         }
         if(typev[ifile]==eEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
@@ -393,15 +384,15 @@ void fitWe(const TString  outputDir,   // output directory
   *corrP = (*hh_diffp)*(*hWenuMetp);
   hWenuMetp_RecoilUp->Add(corrP,hWenuMetp,-1);
   hWenuMetp_RecoilDown->Add(corrP,hWenuMetp,1);
-  hWenuMetp_ScaleUp->Add(corrP,hWenuMetp,-1);
-  hWenuMetp_ScaleDown->Add(corrP,hWenuMetp,1);
+//   hWenuMetp_ScaleUp->Add(corrP,hWenuMetp,-1);
+//   hWenuMetp_ScaleDown->Add(corrP,hWenuMetp,1);
   // Calculate the shapes for W-
   TH1D *corrM = (TH1D*) hWenuMetm->Clone("up");
   *corrM = (*hh_diffm)*(*hWenuMetm);
   hWenuMetm_RecoilUp->Add(corrM,hWenuMetm,-1);
   hWenuMetm_RecoilDown->Add(corrM,hWenuMetm,1);
-  hWenuMetm_ScaleUp->Add(corrM,hWenuMetm,-1);
-  hWenuMetm_ScaleDown->Add(corrM,hWenuMetm,1);
+//   hWenuMetm_ScaleUp->Add(corrM,hWenuMetm,-1);
+//   hWenuMetm_ScaleDown->Add(corrM,hWenuMetm,1);
   
   //
   // Declare fit parameters for signal and background yields
@@ -422,7 +413,7 @@ void fitWe(const TString  outputDir,   // output directory
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nQCDp("nQCDp","nQCDp",0.2*hDataMetp->Integral(),0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.1,0,5) ;
-  cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
+  cewkp.setVal(hEWKMetp->Integral()/hWenuMetp_ScaleDown->Integral());
   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
   
@@ -431,7 +422,7 @@ void fitWe(const TString  outputDir,   // output directory
   //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
   RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.2,0,hDataMetm->Integral());
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
-  cewkm.setVal(hEWKMetm->Integral()/hWenuMetm->Integral());
+  cewkm.setVal(hEWKMetm->Integral()/hWenuMetm_ScaleDown->Integral());
   cewkm.setConstant(kTRUE);
   RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
   
@@ -471,9 +462,13 @@ void fitWe(const TString  outputDir,   // output directory
   //CExponential qcd(pfmet,kTRUE);
   //CExponential qcdp(pfmet,kTRUE);
   //CExponential qcdm(pfmet,kTRUE);
-  CPepeModel1 qcd("qcd",pfmet);
-  CPepeModel1 qcdp("qcdp",pfmet);
-  CPepeModel1 qcdm("qcdm",pfmet);  
+//   CPepeModel1 qcd("qcd",pfmet);
+//   CPepeModel1 qcdp("qcdp",pfmet);
+//   CPepeModel1 qcdm("qcdm",pfmet);  
+  
+  CPepeModel2 qcd("qcd",pfmet);
+  CPepeModel2 qcdp("qcdp",pfmet);
+  CPepeModel2 qcdm("qcdm",pfmet);  
 
   
 //   qcdp.a1->setVal(0.227);
@@ -526,6 +521,9 @@ void fitWe(const TString  outputDir,   // output directory
   cout << "   sig: " << hWenuMetm->Integral() << endl;
   cout << "   EWK: " << hEWKMetm->Integral() << endl;
   cout << "   qcd: " << hDataMetm->Integral()-hWenuMetm->Integral()-hEWKMetm->Integral() << endl;
+
+//   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+//   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
 
   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
