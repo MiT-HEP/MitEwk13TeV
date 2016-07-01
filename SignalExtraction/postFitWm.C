@@ -111,8 +111,8 @@ void postFitWm(const TString  outputDir,   // output directory
   CPlot::sOutDir = outputDir;  
   
   // Read in the Wmunu_pdfTemplates file here and start to get pdfs.
-//   TString inputName = "./WmunuPF_WShapeDiff/Wmunu_pdfTemplates.root";
-  TString inputName = "./Wmunu_etaBins/Wmunu_pdfTemplates_3.root";
+  TString inputName = "./Wmunu_reweight2/Wmunu_pdfTemplates.root";
+//   TString inputName = "./Wmunu_etaBins/Wmunu_pdfTemplates_3.root";
   TFile *inWmunuShapes = new TFile(inputName); assert(inWmunuShapes);
   RooWorkspace* combine_workspace = (RooWorkspace*) inWmunuShapes->Get("combine_workspace");
   std::cout << "what" << std::endl;
@@ -220,13 +220,13 @@ void postFitWm(const TString  outputDir,   // output directory
 //   RooRealVar nQCDm("nQCDm","nQCDm",10);
 //   RooRealVar nEWKm("nEWKm","nEWKm",0.9999*71977.76818); 
 
-  RooRealVar nSigp("nSigp","nSigp",0.9993*836037.1543);
+  RooRealVar nSigp("nSigp","nSigp",0.9999*9326252.746);
   RooRealVar nQCDp("nQCDp","nQCDp",10);
-  RooRealVar nEWKp("nEWKp","nEWKp",0.9993*60736.34851);
+  RooRealVar nEWKp("nEWKp","nEWKp",0.9999*866619.6083);
   //   
-  RooRealVar nSigm("nSigm","nSigm",1.0048*694537.4844);
+  RooRealVar nSigm("nSigm","nSigm",1.0021*7145364.342);
   RooRealVar nQCDm("nQCDm","nQCDm",10);
-  RooRealVar nEWKm("nEWKm","nEWKm",1.0048*55359.83771); 
+  RooRealVar nEWKm("nEWKm","nEWKm",1.0021*770341.466); 
 
   
 //   return;
@@ -238,8 +238,8 @@ void postFitWm(const TString  outputDir,   // output directory
 //   double shape_p_err = 0.0102;
 //   double shape_m_err =0.0110;
 
-  double shape_p = -0.3489;
-  double shape_m = -0.3864;
+  double shape_p = 0.0220;
+  double shape_m = -0.1634;
   double shape_p_err = 0.0210;
   double shape_m_err = 0.0199;
 
@@ -318,12 +318,12 @@ void postFitWm(const TString  outputDir,   // output directory
 //   nQCDp.setVal(1063991.4498);
 //   nQCDm.setVal(1052542.2145);
   
-  qcdp.a1->setVal(0.1390);
-  qcdm.a1->setVal(0.1401);
-  qcdp.sigma->setVal(15.0598);
-  qcdm.sigma->setVal(15.5574);
-  nQCDp.setVal(95499.7775);
-  nQCDm.setVal(94069.4600);
+  qcdp.a1->setVal(0.2116);
+  qcdm.a1->setVal(0.2112);
+  qcdp.sigma->setVal(13.8811);
+  qcdm.sigma->setVal(14.0460);
+  nQCDp.setVal(1274213.1519);
+  nQCDm.setVal(1272907.1591);
 
 
 
