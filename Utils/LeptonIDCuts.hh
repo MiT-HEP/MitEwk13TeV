@@ -15,7 +15,7 @@ Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho=0);
 Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passEleTightID(const baconhep::TElectron *electron, const Double_t rho);
 Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
-Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho=0);
+Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
 
 Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits);
 Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1);
@@ -177,7 +177,7 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const Double_t rho)
 }
 
 //--------------------------------------------------------------------------------------------------
-Bool_t passAntiEleID(const baconhep::TElectron *electron, const Double_t rho)
+Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
 { 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
