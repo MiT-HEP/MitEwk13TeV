@@ -462,13 +462,13 @@ void fitWe(const TString  outputDir,   // output directory
   //CExponential qcd(pfmet,kTRUE);
   //CExponential qcdp(pfmet,kTRUE);
   //CExponential qcdm(pfmet,kTRUE);
-//   CPepeModel1 qcd("qcd",pfmet);
-//   CPepeModel1 qcdp("qcdp",pfmet);
-//   CPepeModel1 qcdm("qcdm",pfmet);  
+   CPepeModel1 qcd("qcd",pfmet);
+   CPepeModel1 qcdp("qcdp",pfmet);
+   CPepeModel1 qcdm("qcdm",pfmet);  
   
-  CPepeModel2 qcd("qcd",pfmet);
-  CPepeModel2 qcdp("qcdp",pfmet);
-  CPepeModel2 qcdm("qcdm",pfmet);  
+ // CPepeModel2 qcd("qcd",pfmet);
+ // CPepeModel2 qcdp("qcdp",pfmet);
+ // CPepeModel2 qcdm("qcdm",pfmet);  
 
   
 //   qcdp.a1->setVal(0.227);
