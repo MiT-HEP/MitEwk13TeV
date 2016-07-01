@@ -53,7 +53,8 @@
 
 void selectAntiWe(const TString conf="we.conf", // input file
                   const TString outputDir=".",   // output directory
-	          const Bool_t  doScaleCorr=0   // apply energy scale corrections?
+	          const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+                  const Int_t sigma=0
 ) {
   gBenchmark->Start("selectAntiWe");
 
