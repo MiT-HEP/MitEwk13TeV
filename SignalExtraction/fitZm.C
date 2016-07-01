@@ -148,20 +148,20 @@ void fitZm(const TString  outputDir,   // output directory
 
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk }; // event category enum
 
-  TString pufname = "../Tools/pileup_weights_2015B.root";
+//   TString pufname = "../Tools/pileup_weights_2015B.root";
 
   // file format for output plots
   const TString format("png"); 
   rochcor2015 *rmcor = new rochcor2015();
 
 // // Puppi Corrections
-//   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
-//   recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
-//   recoilCorr->loadRooWorkspacesMC("../Recoil/ZmmMCPuppi_newBacon/");
+  RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+  recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
+  recoilCorr->loadRooWorkspacesMC("../Recoil/ZmmMCPuppi_newBacon/");
 
-  RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPF/fits_pf.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
-  recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPF/");
-  recoilCorr->loadRooWorkspacesMC("../Recoil/ZmmMCPF/");
+//   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPF/fits_pf.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+//   recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPF/");
+//   recoilCorr->loadRooWorkspacesMC("../Recoil/ZmmMCPF/");
   
 //   RecoilCorrector *recoilCorr1 = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon_eta1/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
 //   recoilCorr1->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon_eta1/");
@@ -178,7 +178,6 @@ void fitZm(const TString  outputDir,   // output directory
   enum { eData, eWmunu, eEWK, eQCD, eAntiData, eAntiWmunu, eAntiEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
-
 
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Zmumu/ntuples/zmm_select.raw.root");   typev.push_back(eWmunu);
@@ -291,11 +290,11 @@ void fitZm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genVPt",      &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",     &genVPhi);   // GEN W boson phi (signal MC)   
     intree->SetBranchAddress("scale1fb",    &scale1fb);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",    &met);       // MET
-    intree->SetBranchAddress("metPhi", &metPhi);    // phi(MET)
+    intree->SetBranchAddress("puppiMet",    &met);       // MET
+    intree->SetBranchAddress("puppiMetPhi", &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",       &sumEt);     // Sum ET
-    intree->SetBranchAddress("u1",     &u1);        // parallel component of recoil
-    intree->SetBranchAddress("u2",     &u2);        // perpendicular component of recoil
+    intree->SetBranchAddress("puppiU1",     &u1);        // parallel component of recoil
+    intree->SetBranchAddress("puppiU2",     &u2);        // perpendicular component of recoil
     intree->SetBranchAddress("q1",          &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",          &q2);	  // charge of probe lepton
     //intree->SetBranchAddress("lep",       &lep);       // lepton 4-vector
@@ -329,6 +328,11 @@ void fitZm(const TString  outputDir,   // output directory
 //       if(nJets30 <2) continue;
 //       if(dilep->Pt() > 10) continue;// || dilep->Pt() < 40) continue;
 //   
+      double tl1Pt = 0;
+      double tl1Phi = 0;
+    
+
+      
       if(typev[ifile]==eData) {
         
         TLorentzVector mu1;
@@ -345,7 +349,16 @@ void fitZm(const TString  outputDir,   // output directory
 //         if(lep2->Pt()        < PT_CUT)  continue;
         if(dilep->M()        < MASS_LOW)  continue;
         if(dilep->M()        > MASS_HIGH) continue;
-            hDataMet->Fill(met);
+        
+        
+        // For making W-like met spectrum
+//       if(q1 > 0) {tl1Pt = mu1.Pt(); tl1Phi = mu1.Phi();}
+//       if(q2 > 0) {tl1Pt = mu2.Pt(); tl1Phi = mu2.Phi();}
+//       double lMX = -tl1Pt*cos(tl1Phi) - u1*cos(tl1Phi) + u2*sin(tl1Phi);
+//       double lMY = -tl1Pt*sin(tl1Phi) - u1*sin(tl1Phi) - u2*cos(tl1Phi);
+//       met= sqrt(lMX*lMX + lMY*lMY);
+      
+        hDataMet->Fill(met);
         if(q1*q2<0) {
           hDataMetp->Fill(met); 
           hU1vsZpt_rsp->Fill(dilep->Pt(),u1/dilep->Pt());
@@ -367,9 +380,17 @@ void fitZm(const TString  outputDir,   // output directory
         float qter1=1.0;
         float qter2=1.0;
 
+
         rmcor->momcor_mc(mu1,q1,0,qter1);
         rmcor->momcor_mc(mu2,q2,0,qter2);
 //         Double_t lepPt = mu1.Pt();
+
+/*        // For making W-like MET spectrum
+        if(q1 > 0) {tl1Pt = mu1.Pt(); tl1Phi = mu1.Phi();}
+        else if(q2 > 0) {tl1Pt = mu2.Pt(); tl1Phi = mu2.Phi();}
+        double lMX = -tl1Pt*cos(tl1Phi) - u1*cos(tl1Phi) + u2*sin(tl1Phi);
+        double lMY = -tl1Pt*sin(tl1Phi) - u1*sin(tl1Phi) - u2*cos(tl1Phi);
+        met= sqrt(lMX*lMX + lMY*lMY);*/
         
         if(typev[ifile]==eWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
@@ -386,8 +407,7 @@ void fitZm(const TString  outputDir,   // output directory
           if(lep2->Pt()        < PT_CUT)  continue;
           if(mll        < MASS_LOW)  continue;
           if(mll        > MASS_HIGH) continue;
-          
-//           if(dl.Pt() > 0 && genVPt <=0) continue;
+
 //           
           hWmunuMet->Fill(corrMet,weight);
           if(q1*q2<0) {
@@ -396,7 +416,8 @@ void fitZm(const TString  outputDir,   // output directory
 //            if(dl.Eta() < 1.0)recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
 //            if(dl.Eta() > 1.0)recoilCorr2->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
 //              recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
-              recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
+//               recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
               double pUX  = corrMet*cos(corrMetPhi) + dl.Pt()*cos(dl.Phi());
               double pUY  = corrMet*sin(corrMetPhi) + dl.Pt()*sin(dl.Phi());
               double pU   = sqrt(pUX*pUX+pUY*pUY);
@@ -405,13 +426,13 @@ void fitZm(const TString  outputDir,   // output directory
               pU1   = pU*pCos; // U1 in data
               pU2   = pU*pSin; // U2 in data
           
-              hU1vsZpt_rsp_MC_raw->Fill(dilep->Pt(),u1/dilep->Pt());
-              hU1vsZpt_MC_raw->Fill(dilep->Pt(),u1);
-              hU2vsZpt_MC_raw->Fill(dilep->Pt(),u2);
+              hU1vsZpt_rsp_MC_raw->Fill(dilep->Pt(),u1/dilep->Pt(),weight);
+              hU1vsZpt_MC_raw->Fill(dilep->Pt(),u1,weight);
+              hU2vsZpt_MC_raw->Fill(dilep->Pt(),u2,weight);
 
-              hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt());
-              hU1vsZpt_MC->Fill(dilep->Pt(),pU1);
-              hU2vsZpt_MC->Fill(dilep->Pt(),pU2);
+              hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt(),weight);
+              hU1vsZpt_MC->Fill(dilep->Pt(),pU1,weight);
+              hU2vsZpt_MC->Fill(dilep->Pt(),pU2,weight);
               
               hWmunuMetp->Fill(corrMet,weight); 
               corrMet=met, corrMetPhi=metPhi;
