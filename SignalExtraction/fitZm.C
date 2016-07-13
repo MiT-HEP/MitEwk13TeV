@@ -39,6 +39,9 @@
 
 // #include "ZBackgrounds.hh"
 
+#include <rochcor2015r.h>
+#include <muresolution_run2r.h>
+
 // RooFit headers
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -82,7 +85,7 @@ void fitWithGaus(TH2F *inputHist, std::string name, std::vector<double> &mean, s
   
   std::vector<TH1F*> vHistos;
   TF1* gaus;
- TCanvas *b = MakeCanvas("b","b",800,600);
+//  TCanvas *b = MakeCanvas("b","b",800,600);
   gStyle->SetOptStat(1111);
   //std::cout << "before loop" << std::endl;
   for(int bin = 1; bin < inputHist->GetNbinsX()+1; bin++){
@@ -97,10 +100,10 @@ void fitWithGaus(TH2F *inputHist, std::string name, std::vector<double> &mean, s
         gaus->SetParameters(500.,1.,0.2);
         vHistos.back()->Fit("gaus","Q");
         gaus = vHistos.back()->GetFunction("gaus");
-        
-       vHistos.back()->Draw();
-       b->SetLogy(kTRUE);
-       b->Print((outputdir+"/"+name+"bin_"+int2string(bin)+".png").c_str());
+       
+//        vHistos.back()->Draw();
+//        b->SetLogy(kTRUE);
+//        b->Print((outputdir+"/"+name+"bin_"+int2string(bin)+".png").c_str());
         
 //         mean.push_back(-gaus->GetParameter(1));///((bins[bin-1]+bins[bin])*0.5));
 //         sigma.push_back(gaus->GetParameter(2));
@@ -114,7 +117,7 @@ void fitWithGaus(TH2F *inputHist, std::string name, std::vector<double> &mean, s
 
     }
   }
- delete b;
+//  delete b;
   return;
 }
 
@@ -145,24 +148,36 @@ void fitZm(const TString  outputDir,   // output directory
 
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk }; // event category enum
 
-  TString pufname = "../Tools/pileup_weights_2015B.root";
+//   TString pufname = "../Tools/pileup_weights_2015B.root";
 
   // file format for output plots
   const TString format("png"); 
-  
+  rochcor2015 *rmcor = new rochcor2015();
 
-// Puppi Corrections
+// // Puppi Corrections
   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
   recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
   recoilCorr->loadRooWorkspacesMC("../Recoil/ZmmMCPuppi_newBacon/");
 
+//   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPF/fits_pf.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+//   recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPF/");
+//   recoilCorr->loadRooWorkspacesMC("../Recoil/ZmmMCPF/");
+  
+//   RecoilCorrector *recoilCorr1 = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon_eta1/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+//   recoilCorr1->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon_eta1/");
+//   recoilCorr1->loadRooWorkspacesMC("../Recoil/ZmmMCPuppi_newBacon_eta1/");
+// 
+//   
+//   RecoilCorrector *recoilCorr2 = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon_eta2/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+//   recoilCorr2->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon_eta2/");
+//   recoilCorr2->loadRooWorkspacesMC("../Recoil/ZmmMCPuppi_newBacon_eta2/");
+  
   //
   // input ntuple file names
   //
   enum { eData, eWmunu, eEWK, eQCD, eAntiData, eAntiWmunu, eAntiEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
-
 
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Zmumu/ntuples/zmm_select.raw.root");   typev.push_back(eWmunu);
@@ -224,6 +239,7 @@ void fitZm(const TString  outputDir,   // output directory
 
   
   double bins[] = {0,2,5,10,20,30,40,50,60,70,80,90,100};
+// double bins[] ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100/*,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300*/};
 //     double bins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100};// ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};// {0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100/*,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200*/};
   int nbins = sizeof(bins)/sizeof(double)-1; // calculate the number of bins
   
@@ -293,7 +309,7 @@ void fitZm(const TString  outputDir,   // output directory
     //
     // loop over events
     //
-//     for(UInt_t ientry=0; ientry<1500; ientry++) {
+//     for(UInt_t ientry=0; ientry<500000; ientry++) {
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
 
@@ -310,14 +326,39 @@ void fitZm(const TString  outputDir,   // output directory
       if(fabs(lep2->Eta()) > ETA_CUT) continue;
       
 //       if(nJets30 <2) continue;
-      if(dilep->Pt() > 10) continue;// || dilep->Pt() < 40) continue;
+//       if(dilep->Pt() > 10) continue;// || dilep->Pt() < 40) continue;
 //   
+      double tl1Pt = 0;
+      double tl1Phi = 0;
+    
+
+      
       if(typev[ifile]==eData) {
-        if(lep1->Pt()        < PT_CUT)  continue;
-        if(lep2->Pt()        < PT_CUT)  continue;
+        
+        TLorentzVector mu1;
+        TLorentzVector mu2;
+        mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+        mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+        float qter1=1.0;
+        float qter2=1.0;
+        rmcor->momcor_data(mu1,q1,0,qter1);
+        rmcor->momcor_data(mu2,q2,0,qter2);
+        if(mu1.Pt()        < PT_CUT)  continue;
+        if(mu2.Pt()        < PT_CUT)  continue;
+//         if(lep1->Pt()        < PT_CUT)  continue;
+//         if(lep2->Pt()        < PT_CUT)  continue;
         if(dilep->M()        < MASS_LOW)  continue;
         if(dilep->M()        > MASS_HIGH) continue;
-            hDataMet->Fill(met);
+        
+        
+        // For making W-like met spectrum
+//       if(q1 > 0) {tl1Pt = mu1.Pt(); tl1Phi = mu1.Phi();}
+//       if(q2 > 0) {tl1Pt = mu2.Pt(); tl1Phi = mu2.Phi();}
+//       double lMX = -tl1Pt*cos(tl1Phi) - u1*cos(tl1Phi) + u2*sin(tl1Phi);
+//       double lMY = -tl1Pt*sin(tl1Phi) - u1*sin(tl1Phi) - u2*cos(tl1Phi);
+//       met= sqrt(lMX*lMX + lMY*lMY);
+      
+        hDataMet->Fill(met);
         if(q1*q2<0) {
           hDataMetp->Fill(met); 
           hU1vsZpt_rsp->Fill(dilep->Pt(),u1/dilep->Pt());
@@ -332,13 +373,30 @@ void fitZm(const TString  outputDir,   // output directory
       } else {
         Double_t weight = 1;
         weight *= scale1fb*lumi;
+        
+        TLorentzVector mu1;TLorentzVector mu2;
+        mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+        mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+        float qter1=1.0;
+        float qter2=1.0;
+
+
+        rmcor->momcor_mc(mu1,q1,0,qter1);
+        rmcor->momcor_mc(mu2,q2,0,qter2);
+//         Double_t lepPt = mu1.Pt();
+
+/*        // For making W-like MET spectrum
+        if(q1 > 0) {tl1Pt = mu1.Pt(); tl1Phi = mu1.Phi();}
+        else if(q2 > 0) {tl1Pt = mu2.Pt(); tl1Phi = mu2.Phi();}
+        double lMX = -tl1Pt*cos(tl1Phi) - u1*cos(tl1Phi) + u2*sin(tl1Phi);
+        double lMY = -tl1Pt*sin(tl1Phi) - u1*sin(tl1Phi) - u2*cos(tl1Phi);
+        met= sqrt(lMX*lMX + lMY*lMY);*/
+        
         if(typev[ifile]==eWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
 	  
-//           Double_t lp1 = gRandom->Gaus(lep1->Pt()*getMuScaleCorr(lep1->Eta(),0), getMuResCorr(lep1->Eta(),0));
-//           Double_t lp2 = gRandom->Gaus(lep2->Pt()*getMuScaleCorr(lep2->Eta(),0), getMuResCorr(lep2->Eta(),0));
-          Double_t lp1 = lep1->Pt();
-          Double_t lp2 = lep2->Pt();
+          Double_t lp1 = mu1.Pt();
+          Double_t lp2 = mu2.Pt();
           TLorentzVector l1, l2, dl;
           l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),mu_MASS);
           l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),mu_MASS);
@@ -349,29 +407,32 @@ void fitZm(const TString  outputDir,   // output directory
           if(lep2->Pt()        < PT_CUT)  continue;
           if(mll        < MASS_LOW)  continue;
           if(mll        > MASS_HIGH) continue;
-          
+
+//           
           hWmunuMet->Fill(corrMet,weight);
           if(q1*q2<0) {
               pU1 = 0; pU2 = 0;
 //              recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+//            if(dl.Eta() < 1.0)recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+//            if(dl.Eta() > 1.0)recoilCorr2->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+//              recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
+//               recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+              double pUX  = corrMet*cos(corrMetPhi) + dl.Pt()*cos(dl.Phi());
+              double pUY  = corrMet*sin(corrMetPhi) + dl.Pt()*sin(dl.Phi());
+              double pU   = sqrt(pUX*pUX+pUY*pUY);
+              double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
+              double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
+              pU1   = pU*pCos; // U1 in data
+              pU2   = pU*pSin; // U2 in data
           
-            recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
-            // Need to properly recalculate the corrected U1 and U2 here
-            double pUX  = corrMet*cos(corrMetPhi) + dl.Pt()*cos(dl.Phi());
-            double pUY  = corrMet*sin(corrMetPhi) + dl.Pt()*sin(dl.Phi());
-            double pU   = sqrt(pUX*pUX+pUY*pUY);
-            double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
-            double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
-            pU1   = pU*pCos; // U1 in data
-            pU2   = pU*pSin; // U2 in data
-          
-              hU1vsZpt_rsp_MC_raw->Fill(dilep->Pt(),u1/dilep->Pt());
-              hU1vsZpt_MC_raw->Fill(dilep->Pt(),u1);
-              hU2vsZpt_MC_raw->Fill(dilep->Pt(),u2);
+              hU1vsZpt_rsp_MC_raw->Fill(dilep->Pt(),u1/dilep->Pt(),weight);
+              hU1vsZpt_MC_raw->Fill(dilep->Pt(),u1,weight);
+              hU2vsZpt_MC_raw->Fill(dilep->Pt(),u2,weight);
 
-              hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt());
-              hU1vsZpt_MC->Fill(dilep->Pt(),pU1);
-              hU2vsZpt_MC->Fill(dilep->Pt(),pU2);
+              hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt(),weight);
+              hU1vsZpt_MC->Fill(dilep->Pt(),pU1,weight);
+              hU2vsZpt_MC->Fill(dilep->Pt(),pU2,weight);
               
               hWmunuMetp->Fill(corrMet,weight); 
               corrMet=met, corrMetPhi=metPhi;

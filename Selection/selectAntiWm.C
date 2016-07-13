@@ -330,7 +330,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+        if (!isMuonTriggerNoIso(triggerMenu, info->triggerBits)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -361,7 +361,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           if(fabs(mu->eta) > ETA_CUT)         continue; // lepton |eta| cut
           if(mu->pt < PT_CUT)                 continue; // lepton pT cut   
           if(!passAntiMuonID(mu))             continue; // lepton anti-selection
-          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+          if(!isMuonTriggerObjNoIso(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 
 	  passSel=kTRUE;
 	  goodMuon = mu;

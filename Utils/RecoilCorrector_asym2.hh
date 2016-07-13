@@ -310,7 +310,7 @@ void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
   rooWData[1] = (RooWorkspace*) lFile2->Get("pdfsU2");
   lFile2->Delete();
 //   std::cout << "vZPtBins.size() = " << vZPtBins.size() << std::endl;
-  for(int i = 0; i < vZPtBins.size()-1; ++i){
+  for(uint i = 0; i < vZPtBins.size()-1; ++i){
 //     std::cout << "iBin = " << i << std::endl;
 //     std::cout << "lower,upper bound = [" << vZPtBins[i] << ", " << vZPtBins[i+1] << "]" << std::endl;
     std::stringstream name;
@@ -341,7 +341,7 @@ void RecoilCorrector::loadRooWorkspacesMC(std::string iFName){
   TFile *lFile2  = new TFile((iFName+"pdfsU2.root").c_str());
   rooWMC[1] = (RooWorkspace*) lFile2->Get("pdfsU2");
   lFile2->Delete();
-  for(int i = 0; i < vZPtBins.size()-1; ++i){
+  for(uint i = 0; i < vZPtBins.size()-1; ++i){
     std::stringstream name;
     name << "sig_" << i;
     RooAbsPdf* pdf1 = rooWMC[0]->pdf(name.str().c_str());

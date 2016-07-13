@@ -76,7 +76,8 @@ void makeHTML(const TString outDir);
 //=== MAIN MACRO ================================================================================================= 
 
 void fitWm(const TString  outputDir,   // output directory
-           const Double_t lumi,        // integrated luminosity (/fb)
+           const Double_t lumi,        // integrated luminosity (/fb)'
+           const Double_t lumi2, // lumi for the anti-isolation trigger
        const Double_t nsigma=0     // vary MET corrections by n-sigmas (nsigma=0 means nominal correction)
 ) {
   gBenchmark->Start("fitWm");
@@ -103,6 +104,7 @@ void fitWm(const TString  outputDir,   // output directory
   const TString format("png"); 
 
 
+//   // for Puppi
   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPuppi_newBacon/fits_puppi.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
   recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
   recoilCorr->loadRooWorkspacesMC("../Recoil/WmpMC_newBacon/");
@@ -111,75 +113,40 @@ void fitWm(const TString  outputDir,   // output directory
   recoilCorrm->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_newBacon/");
   recoilCorrm->loadRooWorkspacesMC("../Recoil/WmmMC_newBacon/");
   
-  TH1D *hh_diff = new TH1D("hh_diff","hh_diff",75,0,150);
-    
-   /* PUPPI SHAPE 
-   Par  0                    p0 = -0.0147144                        
- Par  1                    p1 = -0.00428769                       
- Par  2                    p2 = 0.000717135                       
- Par  3                    p3 = -2.99408e-05                      
- Par  4                    p4 = 4.9586e-07                        
- Par  5                    p5 = -2.74668e-09                      
- Par  6                    p6 = -3.7269e-12                       
- Par  7                    p7 = 5.0592e-14  
-  */
-   
-   /* Puppi Extended shape
- Par  0                    p0 = -0.00945291
- Par  1                    p1 = -0.00580972
- Par  2                    p2 = 0.000981008
- Par  3                    p3 = -4.88109e-05
- Par  4                    p4 = 1.12054e-06
- Par  5                    p5 = -1.28002e-08
- Par  6                    p6 = 6.90726e-11
- Par  7                    p7 = -1.39681e-13
-
-   */
-   
-   
-   /* PF SHAPE
-    Par  0                    p0 = 0.00247901
- Par  1                    p1 = 1.32404e-05
- Par  2                    p2 = -0.000109165
- Par  3                    p3 = 7.19406e-06
- Par  4                    p4 = -1.72942e-07
- Par  5                    p5 = 2.19408e-09
- Par  6                    p6 = -1.46137e-11
- Par  7                    p7 = 3.84835e-14
-   
-   */
-   
-   /* PUPPI, Extended, Rochester
-  Par  0                    p0 = -0.00582912
- Par  1                    p1 = -0.00685924
- Par  2                    p2 = 0.00103105
- Par  3                    p3 = -4.9861e-05
- Par  4                    p4 = 1.1564e-06
- Par  5                    p5 = -1.35275e-08
- Par  6                    p6 = 7.54543e-11
- Par  7                    p7 = -1.58874e-13
-
-   
-   */
-   
-  TF1 *fit = new TF1("fit","pol7");
-  fit->SetParameter(0,-0.00582912);
-  fit->SetParameter(1,-0.00685924);
-  fit->SetParameter(2, 0.00103105);
-  fit->SetParameter(3,-4.9861e-05);
-  fit->SetParameter(4,1.1564e-06);
-  fit->SetParameter(5,-1.35275e-08);
-  fit->SetParameter(6, 7.54543e-11);
-  fit->SetParameter(7, -1.58874e-13);
-  // fit->SetParameter(0,0.026647);
-  // z_corr->Fit(fit);
-  fit->Draw("same");
-  //   return;
-  // TH1D *hh_diff = (TH1D*) hh_diff->Clone("z_corr2");
-  for(int i = 0; i < 75; i++){hh_diff->SetBinContent(i,fit->Eval(2*i+1));}
-  //   hh_diff->Draw();
   
-
+//     // for PF
+//   RecoilCorrector *recoilCorr = new  RecoilCorrector("../Recoil/ZmmMCPF/fits_pf.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+//   recoilCorr->loadRooWorkspacesData("../Recoil/ZmmDataPF/");
+//   recoilCorr->loadRooWorkspacesMC("../Recoil/WmpMCPF/");
+//   
+//   RecoilCorrector *recoilCorrm = new  RecoilCorrector("../Recoil/ZmmMCPF/fits_pf.root","fcnPF"); // get tgraph from here? what i guess its mean so it doesn't matter?
+//   recoilCorrm->loadRooWorkspacesData("../Recoil/ZmmDataPF/");
+//   recoilCorrm->loadRooWorkspacesMC("../Recoil/WmmMCPF/");
+  
+  // ----------------------------------------------------
+  // Load the plots of relative difference, to create the up/down shapes
+  TFile *_rdWmp = new TFile("shapeDiff/Wmp_relDiff.root");
+  TFile *_rdWmm = new TFile("shapeDiff/Wmm_relDiff.root");
+  
+  TH1D *hh_diffm = new TH1D("hh_diffm","hh_diffm",75,0,150);
+  TH1D *hh_diffp = new TH1D("hh_diffp","hh_diffp",75,0,150);
+  
+  hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
+  hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
+  // -----------------------------------------------------
+  
+  // Load the Z data and Z MC Pt spectra
+  TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
+  TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal"); 
+  hh_mc->Scale(1/hh_mc->Integral()); // normalize
+  
+  TFile *_rat2 = new TFile("shapeDiff/UnfoldingOutputZPt.root");
+  TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  hh_diff = (TH1D*)_rat2->Get("hUnfold");
+  hh_diff->Scale(1/hh_diff->Integral()); // normalize
+  hh_diff->Divide(hh_mc);
+   
   //
   // input ntuple file names
   //
@@ -188,26 +155,16 @@ void fitWm(const TString  outputDir,   // output directory
   vector<Int_t>   typev;
   
   
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/data_select.root");     typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/ww_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/wx_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/wz_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/zxx_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/zz_select.raw.root");  typev.push_back(eEWK);
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/Wmunu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
   
-//   // The anti-selection stuff
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/wm_select.raw.root");   typev.push_back(eAntiWmunu);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/ww_select.raw.root");  typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/wx_select.raw.root");  typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/wz_select.raw.root");  typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/zxx_select.raw.root");  typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/zz_select.raw.root");  typev.push_back(eAntiEWK);
-// //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/Wmunu/ntuples/ewk_select.raw.root");  typev.push_back(eEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/2016_WSel/AntiWmunu/ntuples/top_select.raw.root");  typev.push_back(eAntiEWK);
+// // //   // The anti-selection stuff
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/AntiWmunu/ntuples/data_select.root"); typev.push_back(eData);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eWmunu);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/AntiWmunu/ntuples/top_select.root");  typev.push_back(eEWK);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -261,30 +218,18 @@ void fitWm(const TString  outputDir,   // output directory
   TH1D *hAntiEWKMetp   = new TH1D("hAntiEWKMetp", "", NBINS,0,METMAX); hAntiEWKMetp->Sumw2();
   TH1D *hAntiEWKMetm   = new TH1D("hAntiEWKMetm", "", NBINS,0,METMAX); hAntiEWKMetm->Sumw2();
   
-  
-
-  
-/*  
-  TH1D *hEWKMet    = new TH1D("hEWKMet", "",  NBINS,0,METMAX); hEWKMet->Sumw2();
-  TH1D *hEWKMetp   = new TH1D("hEWKMetp", "", NBINS,0,METMAX); hEWKMetp->Sumw2();
-  TH1D *hEWKMetm   = new TH1D("hEWKMetm", "", NBINS,0,METMAX); hEWKMetm->Sumw2();*/
-  
   //
   // Declare variables to read in ntuple
   //
   UInt_t  runNum, lumiSec, evtNum;
   UInt_t  npv, npu;
   Float_t genVPt, genVPhi;
-  Float_t scale1fb, puWeight, puWeightDown;
+  Float_t scale1fb;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  TLorentzVector *lep=0;
+  TLorentzVector *lep=0, *genV=0;
   Float_t pfChIso, pfGamIso, pfNeuIso;
     
-  //Setting up rochester corrections
-//   vector<rochcor2015> vRocToys;
-//   for (int i=0 ; i<NTOYS; ++i) vRocToys.push_back(rochcor2015(1234+i*1000));
-  
   rochcor2015 *rmcor = new rochcor2015();
   
   TFile *infile=0;
@@ -308,14 +253,10 @@ void fitWm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)   
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("puWeight", &puWeight);  // pu weight 
-    intree->SetBranchAddress("puWeightDown", &puWeightDown);  // puweight down
-//     intree->SetBranchAddress("mvaMet",      &met);       // MET
-//     intree->SetBranchAddress("mvaMetPhi",   &metPhi);    // phi(MET)
-    intree->SetBranchAddress("puppiMet",      &met);       // MET
-    intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
 //     intree->SetBranchAddress("met",      &met);       // MET
 //     intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
+    intree->SetBranchAddress("puppiMet",      &met);       // MET
+    intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress("puppiU1",       &u1);        // parallel component of recoil
@@ -324,6 +265,7 @@ void fitWm(const TString  outputDir,   // output directory
 //     intree->SetBranchAddress("u2",       &u2);        // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
+    intree->SetBranchAddress("genV",     &genV);       // lepton 4-vector
     intree->SetBranchAddress("pfChIso",  &pfChIso);
     intree->SetBranchAddress("pfGamIso", &pfGamIso);
     intree->SetBranchAddress("pfNeuIso", &pfNeuIso);
@@ -335,18 +277,13 @@ void fitWm(const TString  outputDir,   // output directory
     //
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-//       std::cout << ientry << std::endl;
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
 
       double pU1         = 0;  //--
       double pU2         = 0;  //--
       
-//       if(fabs(lep->Eta()) > 1.0) continue;
-
-    
       mt     = sqrt( 2.0 * (lep->Pt()) * (met) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metPhi))) );
-      
       
       if(typev[ifile]==eData) {
           
@@ -374,6 +311,9 @@ void fitWm(const TString  outputDir,   // output directory
         Double_t weight = 1;
         weight *= scale1fb*lumi;
         
+        Double_t weight2 = 1;
+        weight2 *= scale1fb*lumi2;
+        
         // Do some Rochester corrections for MC
         TLorentzVector mu1;
         mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
@@ -384,77 +324,59 @@ void fitWm(const TString  outputDir,   // output directory
         
         if(typev[ifile]==eWmunu) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-          
           if(lepPt        > PT_CUT) {
-              //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),nsigma,q); 
+            double bin = 0;
+            for(int i = 1; i <= hh_diff->GetNbinsX();++i){
+              if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
+            }
+            double w2 = hh_diff->GetBinContent(bin);
+            
             hWmunuMet->Fill(corrMet,weight);
             if(q>0) {
               pU1 = 0; pU2 = 0; 
-//           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-//           recoilCorr->CorrectType0(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//                recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               hWmunuMetp->Fill(corrMet,weight); 
               corrMet=met, corrMetPhi=metPhi;
             } else { 
               pU1 = 0; pU2 = 0; 
-//           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-//           recoilCorrm->CorrectType0(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetm->Fill(corrMet,weight); 
+//               recoilCorrm->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetm->Fill(corrMet,weight);//*w2); 
               corrMet=met, corrMetPhi=metPhi;
             }
-            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
+//             recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
             hWmunuMet_RecoilUp->Fill(corrMet,weight);
-            if(q>0) 
-            {
-            pU1 = 0; pU2 = 0; 
-//           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
-//           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
-            hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
-            corrMet=met, corrMetPhi=metPhi;
+            if(q>0) {
+              pU1 = 0; pU2 = 0; 
+              hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
+              corrMet=met, corrMetPhi=metPhi;
+            } else { 
+              pU1 = 0; pU2 = 0; 
+              hWmunuMetm_RecoilUp->Fill(corrMet,weight);
+              corrMet=met, corrMetPhi=metPhi;
             }
-            else    
-            { 
-            pU1 = 0; pU2 = 0; 
-//           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
-//           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,4,4);
-            hWmunuMetm_RecoilUp->Fill(corrMet,weight);
-            corrMet=met, corrMetPhi=metPhi;
-            }
-            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),-1,q);
             hWmunuMet_RecoilDown->Fill(corrMet,weight);
-            if(q>0) 
-            {
-            pU1 = 0; pU2 = 0; 
-  //           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
-  //           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
-            hWmunuMetp_RecoilDown->Fill(corrMet,weight);
-            corrMet=met, corrMetPhi=metPhi;
-            } 
-            else    
-            { 
-            pU1 = 0; pU2 = 0; 
-  //           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
-  //           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,-4,-4);
-            hWmunuMetm_RecoilDown->Fill(corrMet,weight);
-            corrMet=met, corrMetPhi=metPhi;
+            if(q>0) {
+              pU1 = 0; pU2 = 0; 
+              hWmunuMetp_RecoilDown->Fill(corrMet,weight);
+              corrMet=met, corrMetPhi=metPhi;
+            } else { 
+              pU1 = 0; pU2 = 0; 
+              hWmunuMetm_RecoilDown->Fill(corrMet,weight);
+              corrMet=met, corrMetPhi=metPhi;
             }
           }
           Double_t lepPtup = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),1),getEleResCorr(lep->Eta(),1)));  // (!) uncomment to apply scale/res corrections to MC
           if(lepPtup        > PT_CUT) {
             corrMet=met, corrMetPhi=metPhi;
-            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),0,q);
             hWmunuMet_ScaleUp->Fill(corrMet,weight);
             if(q>0){
             pU1 = 0; pU2 = 0; 
-  //           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-  //           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
             hWmunuMetp_ScaleUp->Fill(corrMet,weight); 
             corrMet=met, corrMetPhi=metPhi;
             } else {
               pU1 = 0; pU2 = 0; 
-    //           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-    //           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
               hWmunuMetm_ScaleUp->Fill(corrMet,weight);
               corrMet=met, corrMetPhi=metPhi;
             }
@@ -462,18 +384,13 @@ void fitWm(const TString  outputDir,   // output directory
           Double_t lepPtdown = (gRandom->Gaus((lep->Pt())*getEleScaleCorr(lep->Eta(),-1),getEleResCorr(lep->Eta(),-1)));  // (!) uncomment to apply scale/res corrections to MC
           if(lepPtdown        > PT_CUT) {
             corrMet=met, corrMetPhi=metPhi;
-            //recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),0,q);
             hWmunuMet_ScaleDown->Fill(corrMet,weight);
             if(q>0) {
               pU1 = 0; pU2 = 0; 
-  //           recoilCorr->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
-  //           recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtup,lep->Phi(),pU1,pU2,0);
               hWmunuMetp_ScaleDown->Fill(corrMet,weight);
               corrMet=met, corrMetPhi=metPhi;
             } else { 
               pU1 = 0; pU2 = 0; 
-  //           recoilCorrm->CorrectType2FunG(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
-  //           recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPtdown,lep->Phi(),pU1,pU2,0);
               hWmunuMetm_ScaleDown->Fill(corrMet,weight); 
             }
           }
@@ -482,19 +399,17 @@ void fitWm(const TString  outputDir,   // output directory
           Double_t corrMet=met, corrMetPhi=metPhi;
           // apply recoil corrections to W MC
           // old leptoon scale thing
-//           Double_t lepPt = (gRandom->Gaus((lep->Pt())*getMuScaleCorr(lep->Eta(),0),getMuResCorr(lep->Eta(),0)));  // (!) uncomment to apply scale/res corrections to MC
-
-          hAntiWmunuMet->Fill(corrMet,weight);
+          hAntiWmunuMet->Fill(corrMet,weight2);
           if(q>0) {               
             pU1 = 0; pU2 = 0; 
-//             recoilCorr->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hAntiWmunuMetp->Fill(corrMet,weight); 
+            recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            hAntiWmunuMetp->Fill(corrMet,weight2); 
             corrMet = met; corrMetPhi = metPhi;
           } 
           else { 
             pU1 = 0; pU2 = 0; 
-//             recoilCorrm->CorrectType2FromGraph(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hAntiWmunuMetm->Fill(corrMet,weight);
+            recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            hAntiWmunuMetm->Fill(corrMet,weight2);
             corrMet = met; corrMetPhi = metPhi; 
           }
         }
@@ -506,8 +421,8 @@ void fitWm(const TString  outputDir,   // output directory
         }
         if(typev[ifile]==eAntiEWK) {
           hAntiEWKMet->Fill(met,weight);
-          if(q>0) { hAntiEWKMetp->Fill(met,weight); }
-          else    { hAntiEWKMetm->Fill(met,weight); }
+          if(q>0) { hAntiEWKMetp->Fill(met,weight2); }
+          else    { hAntiEWKMetm->Fill(met,weight2); }
         }
       }
     }
@@ -515,21 +430,21 @@ void fitWm(const TString  outputDir,   // output directory
   delete infile;
   infile=0, intree=0;   
  
-//   // Here rescale the up/down whatever
-  // Calculate the shapes for W+
+  // Here rescale the up/down whatever
+//   Calculate the shapes for W+
   TH1D *corrP = (TH1D*) hWmunuMetp->Clone("up");
-  *corrP = (*hh_diff)*(*hWmunuMetp);
+  *corrP = (*hh_diffp)*(*hWmunuMetp);
   hWmunuMetp_RecoilUp->Add(corrP,hWmunuMetp,-1);
   hWmunuMetp_RecoilDown->Add(corrP,hWmunuMetp,1);
-  hWmunuMetp_ScaleUp->Add(corrP,hWmunuMetp,-1);
-  hWmunuMetp_ScaleDown->Add(corrP,hWmunuMetp,1);
+//   hWmunuMetp_ScaleUp->Add(corrP,hWmunuMetp,-1);
+//   hWmunuMetp_ScaleDown->Add(corrP,hWmunuMetp,1);
   // Calculate the shapes for W-
   TH1D *corrM = (TH1D*) hWmunuMetm->Clone("up");
-  *corrM = (*hh_diff)*(*hWmunuMetm);
+  *corrM = (*hh_diffm)*(*hWmunuMetm);
   hWmunuMetm_RecoilUp->Add(corrM,hWmunuMetm,-1);
   hWmunuMetm_RecoilDown->Add(corrM,hWmunuMetm,1);
-  hWmunuMetm_ScaleUp->Add(corrM,hWmunuMetm,-1);
-  hWmunuMetm_ScaleDown->Add(corrM,hWmunuMetm,1);
+//   hWmunuMetm_ScaleUp->Add(corrM,hWmunuMetm,-1);
+//   hWmunuMetm_ScaleDown->Add(corrM,hWmunuMetm,1);
   
   //
   // Declare fit parameters for signal and background yields
@@ -541,41 +456,44 @@ void fitWm(const TString  outputDir,   // output directory
   cewk.setVal(hEWKMet->Integral()/hWmunuMet->Integral());
   cewk.setConstant(kTRUE);
   RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
-  RooRealVar nAntiSig("nAntiSig","nAntiSig",0.05*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
+  RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiWmunuMet->Integral()*0.9,0,hAntiDataMet->Integral());
   RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hDataMet->Integral()),0,hDataMet->Integral());
   RooRealVar dewk("dewk","dewk",0.1,0,5) ;
   dewk.setVal(hAntiEWKMet->Integral()/hAntiWmunuMet->Integral());
   dewk.setConstant(kTRUE);
+//   nAntiSig.setConstant(kTRUE);
   RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
   
-//   RooRealVar nSigp("nSigp","nSigp",0.7*(hDataMetp->Integral()),0,hDataMetp->Integral());
-  RooRealVar nSigp("nSigp","nSigp",90000,0,hDataMetp->Integral());
+  RooRealVar nSigp("nSigp","nSigp",0.7*(hDataMetp->Integral()),0,hDataMetp->Integral());
+//   RooRealVar nSigp("nSigp","nSigp",90000,0,hDataMetp->Integral());
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
-  RooRealVar nQCDp("nQCDp","nQCDp",5000,0,hDataMetp->Integral()*0.50);
+  RooRealVar nQCDp("nQCDp","nQCDp",hDataMetp->Integral()*0.3,0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.1,0,5) ;
   cewkp.setVal(hEWKMetp->Integral()/hWmunuMetp->Integral());
   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
-  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",0.05*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
+  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWmunuMetp->Integral()*0.9,0,hAntiDataMetp->Integral());
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.9*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
   RooRealVar dewkp("dewkp","dewkp",0.1,0,5) ;
   dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWmunuMetp->Integral());
   dewkp.setConstant(kTRUE);
+//   nAntiSigp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
   
-//   RooRealVar nSigm("nSigm","nSigm",0.7*(hDataMetm->Integral()),0,hDataMetm->Integral());
-  RooRealVar nSigm("nSigm","nSigm",75000,0,hDataMetm->Integral());
+  RooRealVar nSigm("nSigm","nSigm",0.7*(hDataMetm->Integral()),0,hDataMetm->Integral());
+//   RooRealVar nSigm("nSigm","nSigm",75000,0,hDataMetm->Integral());
   //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
-  RooRealVar nQCDm("nQCDm","nQCDm",5000,0,hDataMetp->Integral()*0.50);
+  RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.3,0,hDataMetm->Integral());
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
   cewkm.setVal(hEWKMetm->Integral()/hWmunuMetm->Integral());
   cewkm.setConstant(kTRUE);
   RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
-  RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",0.05*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
+  RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiWmunuMetm->Integral()*0.9,0,hAntiDataMetm->Integral());
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.9*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
   dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWmunuMetm->Integral());
   dewkm.setConstant(kTRUE);
+//   nAntiSigm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
 
 
@@ -675,10 +593,10 @@ void fitWm(const TString  outputDir,   // output directory
   RooDataHist aewkMetp("aewkMETp","aewkMETp",RooArgSet(pfmet),hAntiEWKMetp); RooHistPdf apdfEWKp("aewkp","aewkp",pfmet,aewkMetp,1); 
   RooDataHist aewkMetm("aewkMETm","aewkMETm",RooArgSet(pfmet),hAntiEWKMetm); RooHistPdf apdfEWKm("aewkm","aewkm",pfmet,aewkMetm,1); 
   
-  // Anti-QCD Pdfs
-  //CPepeModel1 aqcd("aqcd",pfmet,qcd.a1);
-  //CPepeModel1 aqcdp("aqcdp",pfmet,qcdp.a1);
-  //CPepeModel1 aqcdm("aqcdm",pfmet,qcdm.a1);
+//   // Anti-QCD Pdfs
+//   CPepeModel1 aqcd("aqcd",pfmet, qcd.a1);
+//   CPepeModel1 aqcdp("aqcdp",pfmet, qcdp.a1);
+//   CPepeModel1 aqcdm("aqcdm",pfmet, qcdm.a1);
 
   CPepeModel1 aqcd("aqcd",pfmet);
   CPepeModel1 aqcdp("aqcdp",pfmet);
@@ -700,7 +618,7 @@ void fitWm(const TString  outputDir,   // output directory
   
   RooSimultaneous pdfTotalp("pdfTotalp","pdfTotalp",rooCat);
   pdfTotalp.addPdf(pdfMetp, "Selectp");
-  pdfTotalp.addPdf(pdfMetm,"Selectm");
+//   pdfTotalp.addPdf(pdfMetm,"Selectm");
   //pdfTotalp.addPdf(apdfMetp,"Anti");
   
   RooSimultaneous pdfTotalm("pdfTotalm","pdfTotalm",rooCat);
@@ -733,8 +651,8 @@ void fitWm(const TString  outputDir,   // output directory
 
 //   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
 //   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-  RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",15000,0,hDataMet->Integral()*0.5);
-  RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",15000,0,hDataMet->Integral()*0.5);
+  RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",1000000,0,hDataMet->Integral()*0.5);
+  RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",1000000,0,hDataMet->Integral()*0.5);
 
   RooWorkspace combine_workspace("combine_workspace");
   combine_workspace.import(dataMet);
@@ -779,15 +697,20 @@ void fitWm(const TString  outputDir,   // output directory
   RooDataHist dataTotalp("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat),
              Import("Select", dataMetp),
              Import("Anti",   antiMetp));
-  RooFitResult *fitResp =0;// pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+             
+  RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+// RooFitResult *fitResp = pdfMetp.fitTo(dataTotalp,Extended(),Minos(kTRUE),Save(kTRUE));
   
   RooDataHist antiMetm("antiMetm", "antiMetm", RooArgSet(pfmet), hAntiDataMetm);
-  RooDataHist dataMetp2("dataMetp2", "dataMetp2", RooArgSet(pfmet), hDataMetp);
+//   RooDataHist dataMetp2("dataMetp2", "dataMetp2", RooArgSet(pfmet), hDataMetp);
   RooDataHist dataTotalm("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat),
-             Import("Selectm", dataMetm),
-             Import("Selectp",   dataMetp2));
-  //RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResm = pdfTotalp.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
+             Import("Select", dataMetm),
+             Import("Anti", antiMetm));
+  RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResm = pdfMetm.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResm = pdfTotalp.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
   
   //
   // Use histogram version of fitted PDFs to make ratio plots
@@ -1215,10 +1138,25 @@ plotAntiMetm.SetYRange(0.1,1500);
   txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResm) << endl;
   txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResm) << endl;
   txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResm) << endl;
+  
+  txtfile << "reversed isolation sample" << endl;
+  txtfile << "Selected: " << hDataMetm->Integral() << endl;
+  txtfile << "  Signal: " << nAntiSigm.getVal() << " +/- " << nAntiSigm.getPropagatedError(*fitResm) << endl;
+  txtfile << "     QCD: " << nAntiQCDm.getVal() << " +/- " << nAntiQCDm.getPropagatedError(*fitResm) << endl;
+  txtfile << "   Other: " << nAntiEWKm.getVal() << " +/- " << nAntiEWKm.getPropagatedError(*fitResm) << endl;
+  txtfile << "  Signal: " << nAntiSigp.getVal() << " +/- " << nAntiSigp.getPropagatedError(*fitResm) << endl;
+  txtfile << "     QCD: " << nAntiQCDp.getVal() << " +/- " << nAntiQCDp.getPropagatedError(*fitResm) << endl;
+  txtfile << "   Other: " << nAntiEWKp.getVal() << " +/- " << nAntiEWKp.getPropagatedError(*fitResm) << endl;
   txtfile << endl;
   txtfile.flags(flags);
   
   fitResm->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  txtfile << endl;
+  fitResp->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  txtfile << endl;
+  fitResAntim->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  txtfile << endl;
+  fitResAntip->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
   printCorrelations(txtfile, fitResm);
   txtfile << endl;

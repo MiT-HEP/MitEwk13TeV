@@ -23,7 +23,7 @@ void plot()
 //   leg->AddEntry(plot3->findObject("d")  , "Z#rightarrow#mu#mu down", "L" );
   //leg->AddEntry(plot3->findObject("res_sig")  , "HH->bb#gamma#gamma", "L" );
   plot3->SetTitle("");
-  plot3->GetXaxis()->SetTitle("Puppi MET [GeV]");
+  plot3->GetXaxis()->SetTitle("PF MET [GeV]");
   plot3->GetYaxis()->SetTitle("Events / 2.0 GeV");
   leg->Draw();
 }

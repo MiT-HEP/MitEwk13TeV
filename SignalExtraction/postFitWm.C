@@ -24,6 +24,7 @@
 #include <TRandom3.h>
 #include <TGaxis.h>
 #include "TLorentzVector.h"           // 4-vector class
+#include "TGraphAsymmErrors.h"
 
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"  
 
@@ -54,6 +55,11 @@
 
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
+TGraphAsymmErrors* makeShapeErrorBand(TH1 *hUp, TH1 *hDown);
+TGraphAsymmErrors* TH1TOTGraphAsymmErrors(TH1 *h1);
+TGraphAsymmErrors* myMakeBandSymmetric(TGraphAsymmErrors* g0, TGraphAsymmErrors* g1,TGraphAsymmErrors* g2);
+void myAddtoBand(TGraphAsymmErrors* g1, TGraphAsymmErrors* g2);
+TGraphAsymmErrors* myTGraphErrorsDivide_noErrGraph2(TGraphAsymmErrors* g1,TGraphAsymmErrors* g2);
 
 // print correlations of fitted parameters
 void printCorrelations(ostream& os, RooFitResult *res);
@@ -105,7 +111,8 @@ void postFitWm(const TString  outputDir,   // output directory
   CPlot::sOutDir = outputDir;  
   
   // Read in the Wmunu_pdfTemplates file here and start to get pdfs.
-  TString inputName = "./Wmunu_pdfTemplates.root";
+  TString inputName = "./Wmunu_reweight2/Wmunu_pdfTemplates.root";
+//   TString inputName = "./Wmunu_etaBins/Wmunu_pdfTemplates_3.root";
   TFile *inWmunuShapes = new TFile(inputName); assert(inWmunuShapes);
   RooWorkspace* combine_workspace = (RooWorkspace*) inWmunuShapes->Get("combine_workspace");
   std::cout << "what" << std::endl;
@@ -138,6 +145,20 @@ void postFitWm(const TString  outputDir,   // output directory
   
   TH1D *hWmunuMetm_UncUp   = (TH1D*) hWmunuMetm->Clone("hWmunuMetm_UncUp");
   TH1D *hWmunuMetm_UncDown = (TH1D*) hWmunuMetm->Clone("hWmunuMetm_UncDown");
+  
+  RooAbsData *wmetData = combine_workspace->embeddedData("wmunuMET");
+  RooAbsData *wmetpData = combine_workspace->embeddedData("wmunuMETp");
+  RooAbsData *wmetmData = combine_workspace->embeddedData("wmunuMETm");
+  
+  TH1D *hWmunuMetWerr  = (TH1D*) wmetData->createHistogram("pfmet",NBINS);  hWmunuMetWerr->Sumw2();
+  TH1D *hWmunuMetpWerr  = (TH1D*) wmetpData->createHistogram("pfmet",NBINS);  hWmunuMetpWerr->Sumw2();
+  TH1D *hWmunuMetmWerr  = (TH1D*) wmetmData->createHistogram("pfmet",NBINS);  hWmunuMetmWerr->Sumw2();
+  
+//   for(int ibin = 1; ibin < hWmunuMet->GetNbinsX(); ++ibin){
+//     hWmunuMet->SetBinError(ibin, hWmunuMetWerr->GetBinError(ibin));
+//     hWmunuMetp->SetBinError(ibin, hWmunuMetpWerr->GetBinError(ibin));
+//     hWmunuMetm->SetBinError(ibin, hWmunuMetmWerr->GetBinError(ibin));
+//   }
   
   // Electroweak background contributions
   RooAbsPdf *ewk  = combine_workspace->pdf("ewk");
@@ -174,37 +195,70 @@ void postFitWm(const TString  outputDir,   // output directory
   RooRealVar nEWK("nEWK","nEWK",1000);
 
   // set some values for W+
-  RooRealVar nSigp("nSigp","nSigp",0.9501*10021859.52);
+//   RooRealVar nSigp("nSigp","nSigp",1.0004*9526797.471);
+//   RooRealVar nQCDp("nQCDp","nQCDp",10);
+//   RooRealVar nEWKp("nEWKp","nEWKp",1.0004*871008.6457);
+//   //   
+//   RooRealVar nSigm("nSigm","nSigm",1.0000*7370960.276);
+//   RooRealVar nQCDm("nQCDm","nQCDm",10);
+//   RooRealVar nEWKm("nEWKm","nEWKm",1.0000*781686.9035); 
+
+// pf met
+//   RooRealVar nSigp("nSigp","nSigp",0.9905*9202459.033);
+//   RooRealVar nQCDp("nQCDp","nQCDp",10);
+//   RooRealVar nEWKp("nEWKp","nEWKp",0.9905*841315.7742);
+//   //   
+//   RooRealVar nSigm("nSigm","nSigm",0.9022*7917395.403);
+//   RooRealVar nQCDm("nQCDm","nQCDm",10);
+//   RooRealVar nEWKm("nEWKm","nEWKm",0.9022*839599.0043); 
+  
+//     RooRealVar nSigp("nSigp","nSigp",1.0042*850815.7225);
+//   RooRealVar nQCDp("nQCDp","nQCDp",10);
+//   RooRealVar nEWKp("nEWKp","nEWKp",1.0042*80458.9007);
+//   //   
+//   RooRealVar nSigm("nSigm","nSigm",0.9999*665063.0581);
+//   RooRealVar nQCDm("nQCDm","nQCDm",10);
+//   RooRealVar nEWKm("nEWKm","nEWKm",0.9999*71977.76818); 
+
+  RooRealVar nSigp("nSigp","nSigp",0.9999*9326252.746);
   RooRealVar nQCDp("nQCDp","nQCDp",10);
-  RooRealVar nEWKp("nEWKp","nEWKp",0.9501*891027.7381);
+  RooRealVar nEWKp("nEWKp","nEWKp",0.9999*866619.6083);
   //   
-  RooRealVar nSigm("nSigm","nSigm",0.9328*7888766.721);
+  RooRealVar nSigm("nSigm","nSigm",1.0021*7145364.342);
   RooRealVar nQCDm("nQCDm","nQCDm",10);
-  RooRealVar nEWKm("nEWKm","nEWKm",0.9328*811026.9662); 
+  RooRealVar nEWKm("nEWKm","nEWKm",1.0021*770341.466); 
+
   
 //   return;
   
   // Signal PDFs
-  // Only using the Recoil shape for now, no Scale variations
   
-//   double shape_p = -0.1268;
-//   double shape_m = -0.1220;
-//   double shape_p_err = 0.0015;
-//   double shape_m_err = 0.0018;
+//   double shape_p = 0.2143;
+//   double shape_m = -0.0078;
+//   double shape_p_err = 0.0102;
+//   double shape_m_err =0.0110;
 
-//   double shape_p = 0.0821;
-//   double shape_m = 0.0519;
-//   double shape_p_err = 0.0060;
-//   double shape_m_err = 0.0082;
-//   
-//   apply_postfit_shape(hWmunuMetp, hWmunuMetp_RecoilUp, hWmunuMetp_RecoilDown, shape_p, shape_p_err);
-//   apply_postfit_shape(hWmunuMetm, hWmunuMetm_RecoilUp, hWmunuMetm_RecoilDown, shape_m, shape_m_err);
-//   
-//   apply_postfit_shape(hWmunuMetp_UncUp, hWmunuMetp_RecoilUp, hWmunuMetp_RecoilDown, shape_p+shape_p_err, shape_p_err);
-//   apply_postfit_shape(hWmunuMetp_UncDown, hWmunuMetp_RecoilUp, hWmunuMetp_RecoilDown, shape_p-shape_p_err, shape_p_err);
-//   
-//   apply_postfit_shape(hWmunuMetm_UncUp, hWmunuMetm_RecoilUp, hWmunuMetm_RecoilDown, shape_m+shape_m_err, shape_m_err);
-//   apply_postfit_shape(hWmunuMetm_UncDown, hWmunuMetm_RecoilUp, hWmunuMetm_RecoilDown, shape_m-shape_m_err, shape_m_err);
+  double shape_p = 0.0220;
+  double shape_m = -0.1634;
+  double shape_p_err = 0.0210;
+  double shape_m_err = 0.0199;
+
+  std::cout << "Nominal Shape W+" << std::endl;
+  apply_postfit_shape(hWmunuMetp, hWmunuMetp_RecoilUp, hWmunuMetp_RecoilDown, shape_p, shape_p_err);
+  std::cout << "Nominal Shape W-" << std::endl;
+  apply_postfit_shape(hWmunuMetm, hWmunuMetm_RecoilUp, hWmunuMetm_RecoilDown, shape_m, shape_m_err);
+  
+  std::cout << "hWmunumetp error = " << hWmunuMetp->GetBinError(60) << std::endl;
+  
+  std::cout << "Up Shape W+" << std::endl;
+  apply_postfit_shape(hWmunuMetp_UncUp, hWmunuMetp_RecoilUp, hWmunuMetp_RecoilDown, 1.0, shape_p_err);
+  std::cout << "Down Shape W+" << std::endl;
+  apply_postfit_shape(hWmunuMetp_UncDown, hWmunuMetp_RecoilUp, hWmunuMetp_RecoilDown, -1.0, shape_p_err);
+  
+  std::cout << "Up Shape W-" << std::endl;
+  apply_postfit_shape(hWmunuMetm_UncUp, hWmunuMetm_RecoilUp, hWmunuMetm_RecoilDown, 1.0, shape_m_err);
+  std::cout << "Down Shape W-" << std::endl;
+  apply_postfit_shape(hWmunuMetm_UncDown, hWmunuMetm_RecoilUp, hWmunuMetm_RecoilDown, -1.0, shape_m_err);
   
   RooDataHist wmunuMet ("wmunuMET", "wmunuMET", RooArgSet(*pfmet),hWmunuMet);  RooHistPdf pdfWm ("wm", "wm", *pfmet,wmunuMet, 1);
   RooDataHist wmunuMetp("wmunuMETp","wmunuMETp",RooArgSet(*pfmet),hWmunuMetp); RooHistPdf pdfWmp("wmp","wmp",*pfmet,wmunuMetp,1);
@@ -256,13 +310,20 @@ void postFitWm(const TString  outputDir,   // output directory
   std::cout  << "Selectedp: " << hDataMetp->Integral() << endl;
   std::cout  << "Selectedm: " << hDataMetm->Integral() << endl;
 
-// Fixed Tail on QCD
-  qcdp.a1->setVal(0.1262);
-  qcdm.a1->setVal(0.1381);
-  qcdp.sigma->setVal(16.2723);
-  qcdm.sigma->setVal(15.9323);
-  nQCDp.setVal(981878.4557);
-  nQCDm.setVal(976314.1977);
+// // Fixed Tail on QCD
+//   qcdp.a1->setVal(0.1421);
+//   qcdm.a1->setVal(0.1423);
+//   qcdp.sigma->setVal(15.2281);
+//   qcdm.sigma->setVal(15.2638);
+//   nQCDp.setVal(1063991.4498);
+//   nQCDm.setVal(1052542.2145);
+  
+  qcdp.a1->setVal(0.2116);
+  qcdm.a1->setVal(0.2112);
+  qcdp.sigma->setVal(13.8811);
+  qcdm.sigma->setVal(14.0460);
+  nQCDp.setVal(1274213.1519);
+  nQCDm.setVal(1272907.1591);
 
 
 
@@ -275,13 +336,23 @@ void postFitWm(const TString  outputDir,   // output directory
   // Use histogram version of fitted PDFs to make ratio plots
   // (Will also use PDF histograms later for Chi^2 and KS tests)
   //
+  
+  for(int ibin = 1; ibin < hWmunuMet->GetNbinsX(); ++ibin){
+//     std::cout << "bin error " << hWmunuMetp->GetBinError(ibin) << std::endl;
+    hWmunuMet->SetBinError(ibin, hWmunuMetWerr->GetBinError(ibin));
+    hWmunuMetp->SetBinError(ibin, hWmunuMetpWerr->GetBinError(ibin));
+    hWmunuMetm->SetBinError(ibin, hWmunuMetmWerr->GetBinError(ibin));
+  }
+  
   TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", *pfmet));
+  for(int ibin = 1; ibin < hPdfMet->GetNbinsX(); ++ibin){hPdfMet->SetBinError(ibin, hWmunuMet->GetBinError(ibin));}
   hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
   TH1D *hMetDiff = makeDiffHist(hDataMet,hPdfMet,"hMetDiff");
   hMetDiff->SetMarkerStyle(kFullCircle);
   hMetDiff->SetMarkerSize(0.9);
    
   TH1D *hPdfMetp = (TH1D*)(pdfMetp.createHistogram("hPdfMetp", *pfmet));
+  for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWmunuMetp->GetBinError(ibin));}
   hPdfMetp->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp->Integral());
   TH1D *hMetpDiff = makeDiffHist(hDataMetp,hPdfMetp,"hMetpDiff");
   hMetpDiff->SetMarkerStyle(kFullCircle);
@@ -290,20 +361,40 @@ void postFitWm(const TString  outputDir,   // output directory
   TH1D *hPdfMetp_UncUp = (TH1D*)(pdfMetp_UncUp.createHistogram("hPdfMetp_UncUp", *pfmet));
   hPdfMetp_UncUp->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp_UncUp->Integral());
   TH1D *hMetpDiff_UncUp = makeDiffHist(hDataMetp,hPdfMetp_UncUp,"hMetpDiff_UncUp");
-  hMetpDiff_UncUp->SetLineColor(kBlue);
-//   hMetpDiff_UncUp->SetMarkerSize(0.9);
+  hMetpDiff_UncUp->Add(hMetpDiff,-1);
+//   hMetpDiff_UncUp->SetLineColor(kBlue);
+//   hMetpDiff_UncUp->SetMarkerSize(0.5);
   
   TH1D *hPdfMetp_UncDown = (TH1D*)(pdfMetp_UncDown.createHistogram("hPdfMetp_UncDown", *pfmet));
   hPdfMetp_UncDown->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp_UncDown->Integral());
   TH1D *hMetpDiff_UncDown = makeDiffHist(hDataMetp,hPdfMetp_UncDown,"hMetpDiff_UncDown");
-  hMetpDiff_UncDown->SetLineColor(kRed);
-//   hMetpDiff_UncDown->SetMarkerSize(0.9);
+  hMetpDiff_UncDown->Add(hMetpDiff,-1);
+//   hMetpDiff_UncDown->SetLineColor(kRed);
+//   hMetpDiff_UncDown->SetMarkerSize(0.5);
+
+  TGraphAsymmErrors* gMetpDiff=makeShapeErrorBand(hMetpDiff_UncUp, hMetpDiff_UncDown);
     
   TH1D *hPdfMetm = (TH1D*)(pdfMetm.createHistogram("hPdfMetm", *pfmet));
+  for(int ibin = 1; ibin < hPdfMetm->GetNbinsX(); ++ibin){hPdfMetm->SetBinError(ibin, hWmunuMetm->GetBinError(ibin));}
   hPdfMetm->Scale((nSigm.getVal()+nEWKm.getVal()+nQCDm.getVal())/hPdfMetm->Integral());
   TH1D *hMetmDiff = makeDiffHist(hDataMetm,hPdfMetm,"hMetmDiff");
   hMetmDiff->SetMarkerStyle(kFullCircle); 
   hMetmDiff->SetMarkerSize(0.9);
+  
+  TH1D *hPdfMetm_UncUp = (TH1D*)(pdfMetm_UncUp.createHistogram("hPdfMetm_UncUp", *pfmet));
+  hPdfMetm_UncUp->Scale((nSigm.getVal()+nEWKm.getVal()+nQCDm.getVal())/hPdfMetm_UncUp->Integral());
+  TH1D *hMetmDiff_UncUp = makeDiffHist(hDataMetm,hPdfMetm_UncUp,"hMetmDiff_UncUp");
+  hMetmDiff_UncUp->Add(hMetmDiff,-1);
+  
+  TH1D *hPdfMetm_UncDown = (TH1D*)(pdfMetm_UncDown.createHistogram("hPdfMetm_UncDown", *pfmet));
+  hPdfMetm_UncDown->Scale((nSigm.getVal()+nEWKm.getVal()+nQCDm.getVal())/hPdfMetm_UncDown->Integral());
+  TH1D *hMetmDiff_UncDown = makeDiffHist(hDataMetm,hPdfMetm_UncDown,"hMetmDiff_UncDown");
+  hMetmDiff_UncDown->Add(hMetmDiff,-1);
+//   hMetmDiff_UncDown->Draw();
+//   return;
+  
+  TGraphAsymmErrors* gMetmDiff=makeShapeErrorBand(hMetmDiff_UncUp, hMetmDiff_UncDown);
+  
  
   //--------------------------------------------------------------------------------------------------------------
   // Make plots 
@@ -439,9 +530,8 @@ void postFitWm(const TString  outputDir,   // output directory
   CPlot plotMetpDiff("fitmetp","","#slash{E}_{T} [GeV]","#frac{Data-Pred}{Data}");
   hMetpDiff->GetYaxis()->SetTitleOffset(0.5);
   hMetpDiff->GetYaxis()->SetLabelSize(0.11);
+//   plotMetpDiff.AddGraph(gMetpDiff,"Data","PE2",3,1,3);
   plotMetpDiff.AddHist1D(hMetpDiff,"EX0",ratioColor);
-//   plotMetpDiff.AddHist1D(hMetpDiff_UncUp,"F",kBlue);
-//   plotMetpDiff.AddHist1D(hMetpDiff_UncDown,"F",kRed);
   plotMetpDiff.SetYRange(-0.2,0.2);
   plotMetpDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotMetpDiff.AddLine(0, 0.10,METMAX, 0.10,kBlack,3);
@@ -489,7 +579,10 @@ void postFitWm(const TString  outputDir,   // output directory
   plotMetmDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
   plotMetmDiff.AddLine(0, 0.10,METMAX, 0.10,kBlack,3);
   plotMetmDiff.AddLine(0,-0.10,METMAX,-0.10,kBlack,3);
+//   plotMetmDiff.AddGraph(gMetmDiff,"Err","FPE2",kGreen,1,kGreen);
   plotMetmDiff.AddHist1D(hMetmDiff,"EX0",ratioColor);
+//   plotMetmDiff.AddHist1D(hMetmDiff_UncUp,"F",kBlue);
+//   plotMetmDiff.AddHist1D(hMetmDiff_UncDown,"F",kRed);
   plotMetmDiff.Draw(c,kTRUE,format,2);
   plotMetmDiff.Draw(c,kTRUE,"pdf",2);
   
@@ -534,11 +627,19 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     
     Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     Double_t diff = diff0/hData->GetBinContent(ibin);
-    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    std::cout << "bin # " << ibin << std::endl;
+    std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
+    std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
+    std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
+    std::cout << "diff =  " << diff << std::endl;
+//     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     //Double_t err = sqrt(hData->GetBinContent(ibin));
     //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
     //if(err>0) hDiff->SetBinContent(ibin,diff/err);
     //else      hDiff->SetBinContent(ibin,0);
+    std::cout << "err = " << err << std::endl;
     hDiff->SetBinContent(ibin,diff);
     hDiff->SetBinError(ibin,err);   
   }
@@ -662,6 +763,8 @@ void apply_postfit_shape(TH1D *histogram, TH1D *up, TH1D *down, double shift, do
       uncertainty = shift_err * TMath::Min(2.0,temp);
       double error = sqrt(histogram->GetBinError(bin)*histogram->GetBinError(bin)+ (histogram->GetBinContent(bin) * uncertainty)*(histogram->GetBinContent(bin) * uncertainty));
       histogram->SetBinError(bin, error);
+      std::cout << "histo bin error " << histogram->GetBinError(bin) << std::endl;
+      std::cout << "error =" << error << std::endl;
     }
 }
 void apply_postfit_shape(TH1D *histogram, TH1D *up1, TH1D *down1,TH1D *up2, TH1D *down2, double shift1, double shift2)
@@ -708,4 +811,36 @@ void apply_postfit_shape(TH1D *histogram, TH1D *up1, TH1D *down1,TH1D *up2, TH1D
       double error = sqrt(histogram->GetBinError(bin)*histogram->GetBinError(bin)+ (histogram->GetBinContent(bin) * uncertainty)*(histogram->GetBinContent(bin) * uncertainty));
       histogram->SetBinError(bin, error);*/
     }
+}
+
+
+TGraphAsymmErrors* makeShapeErrorBand(TH1 *hUp, TH1 *hDown){
+  if (!hUp || !hDown) cout << "TH1TOTGraph: histogram not found !" << endl;
+  TGraphAsymmErrors* g1= new TGraphAsymmErrors();
+  
+//   if (hUp->GetN()!=g2->GetN())
+//   cout << " graphs have not the same # of elements " <<g1->GetN()<<" "<<g2->GetN()<< endl;
+    
+  Double_t x, y, exh,exl, eyh,eyl;
+  for (Int_t i=0; i<hUp->GetNbinsX(); i++) {
+    y=0;
+    if(hDown->GetBinContent(i+1) < 0){
+     eyl=fabs(hDown->GetBinContent(i+1));
+     eyh=fabs(hUp->GetBinContent(i+1));
+    } else {
+     eyl=fabs(hUp->GetBinContent(i+1));
+     eyh=fabs(hDown->GetBinContent(i+1));
+    }
+    x=hUp->GetBinCenter(i+1);
+    exl=hUp->GetBinWidth(i+1)/2;
+    exh=hUp->GetBinWidth(i+1)/2;
+    
+//     std::cout << "low = "
+
+    g1->SetPoint(i,x,y);
+    g1->SetPointError(i,exl,exh,eyl,eyh);
+
+  }
+  return g1;
+  
 }
