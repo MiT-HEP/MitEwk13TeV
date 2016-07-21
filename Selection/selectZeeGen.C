@@ -86,12 +86,16 @@ void selectZeeGen(const TString conf="zee.conf", // input file
 
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+//  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
 
   // for systematics we need 3
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
-  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden"); 
+//  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+//  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
+//  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden"); 
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
+  TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
   if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
