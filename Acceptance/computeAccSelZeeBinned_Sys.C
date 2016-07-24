@@ -24,6 +24,7 @@
 #include <sstream>                  // class for parsing strings
 #include "TLorentzVector.h"         // 4-vector class
 #include <TRandom3.h>
+#include "TGraph.h"
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -35,6 +36,7 @@
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
+#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -47,8 +49,11 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelZeeBinned_Sys(const TString conf,            // input file
+			    const TString inputDir,
                             const TString outputDir,        // output directory
 			    const Int_t   doPU,
+			    const Int_t   doScaleCorr,
+			    const Int_t   sigma,
 			    const TString sysFile
 ) {
   gBenchmark->Start("computeAccSelZeeBinned");
@@ -70,28 +75,41 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   const Int_t LEPTON_ID = 11;
   
   // efficiency files
-  const TString dataHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName     = inputDir+"EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MG/eff.root";
 
-  const TString zeeHLTEffName      = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName      = inputDir+"EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CT/eff.root";
   
-  const TString dataGsfSelEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CB/eff.root";
-  const TString dataGsfSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CB/eff.root";
-  const TString dataGsfSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CB/eff.root";
+  const TString dataGsfSelEffName     = inputDir+"EleGsfSelEff/MG/eff.root";
+  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MG/eff.root";
+  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MG/eff.root";
 
-  const TString zeeGsfSelEffName      = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName      = inputDir+"EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CT/eff.root";
+
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+
+  //data
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+//  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+//  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");                                                 
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+
+  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
+  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
+  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
   TFile *f_sys = TFile::Open(sysFile);
   TH2D  *h_sys = (TH2D*) f_sys->Get("h");
+
+
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
@@ -260,35 +278,115 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 
       for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
   	const baconhep::TElectron *ele1 = (baconhep::TElectron*)((*electronArr)[i1]);
+
+	TLorentzVector vEle1(0,0,0,0);
+	vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
 	
 	// check ECAL gap
-	if(fabs(ele1->scEta)>=ETA_BARREL && fabs(ele1->scEta)<=ETA_ENDCAP) continue;
+//	if(fabs(ele1->scEta)>=ETA_BARREL && fabs(ele1->scEta)<=ETA_ENDCAP) continue;
+	if(fabs(vEle1.Eta())>=ETA_BARREL && fabs(vEle1.Eta())<=ETA_ENDCAP) continue;
+
+        if(doScaleCorr && (ele1->r9 < 1.)){
+            // set up variable and apply smear correction to ele1 
+            float ele1Smear = 0.;
+	    float ele1Error = 0.;
+
+            float ele1AbsEta   = fabs(vEle1.Eta());
+            float ele1Et       = vEle1.E() / cosh(ele1AbsEta);
+            bool  ele1isBarrel = ele1AbsEta < 1.4442;
+
+              float ele1R9Prime = ele1->r9; // r9 corrections MC only
+              if(ele1isBarrel){
+                        ele1R9Prime = gR9EB->Eval(ele1->r9);}
+              else {
+                        ele1R9Prime = gR9EE->Eval(ele1->r9);
+              }
+
+	      double ele1Random = gRandom->Gaus(0,1);
+
+              ele1Smear = eleCorr.getSmearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, 0., 0.);
+              float ele1SmearEP = eleCorr.getSmearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, 1., 0.);
+              float ele1SmearEM = eleCorr.getSmearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, -1., 0.);
+
+              if(sigma==0){
+                (vEle1) *= 1. + ele1Smear * ele1Random;
+              }else if(sigma==1){
+                (vEle1) *= 1. + ele1SmearEP * ele1Random;
+              }else if(sigma==-1){
+                (vEle1) *= 1. + ele1SmearEM * ele1Random;
+              }
+        }
+
 	
 	//double ele1_pt = gRandom->Gaus(ele1->pt*getEleScaleCorr(ele1->scEta,0), getEleResCorr(ele1->scEta,0));
 
-	if(ele1->pt	     < PT_CUT && ele1->scEt < PT_CUT)	  continue;  // lepton pT cut
-        if(fabs(ele1->scEta) > ETA_CUT && fabs(ele1->eta) > ETA_CUT)	  continue;  // lepton |eta| cut
-        if(!passEleID(ele1,info->rhoIso)) continue;  // lepton selection
+//  	if(ele1->pt	     < PT_CUT && ele1->scEt < PT_CUT)	  continue;  // lepton pT cut
+//        if(fabs(ele1->scEta) > ETA_CUT && fabs(ele1->eta) > ETA_CUT)	  continue;  // lepton |eta| cut
+//        if(!passEleID(ele1,info->rhoIso)) continue;  // lepton selection
+        if(vEle1.Pt()           < PT_CUT)     continue;  // lepton pT cut
+        if(fabs(vEle1.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+        if(!passEleID(ele1, vEle1, info->rhoIso))     continue;  // lepton selection
+
+
 	//if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE)) continue;
 
-        TLorentzVector vEle1(0,0,0,0);
-	vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
-	Bool_t isB1 = (fabs(ele1->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
+        //TLorentzVector vEle1(0,0,0,0);
+	//vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
+	//Bool_t isB1 = (fabs(ele1->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
         for(Int_t i2=i1+1; i2<electronArr->GetEntriesFast(); i2++) {          
 	  const baconhep::TElectron *ele2 = (baconhep::TElectron*)((*electronArr)[i2]);
-	  
-	  // check ECAL gap
-	  if(fabs(ele2->scEta)>=ETA_BARREL && fabs(ele2->scEta)<=ETA_ENDCAP) continue;
-	  //double ele2_pt = gRandom->Gaus(ele2->scEt*getEleScaleCorr(ele2->scEta,0), getEleResCorr(ele2->scEta,0));
-	  if(ele1->q == ele2->q)	continue;
-          if(ele2->pt        < PT_CUT && ele2->scEt < PT_CUT)    continue;  // lepton pT cut
-          if(fabs(ele2->scEta) > ETA_CUT && fabs(ele2->eta) > ETA_CUT)   continue;  // lepton |eta| cut
-	  if(!passEleID(ele2,info->rhoIso)) continue;  // lepton selection
 
           TLorentzVector vEle2(0,0,0,0);
-	  vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
-          Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
+          vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS); 
+
+	  // check ECAL gap
+//	  if(fabs(ele2->scEta)>=ETA_BARREL && fabs(ele2->scEta)<=ETA_ENDCAP) continue;
+          if(fabs(vEle2.Eta())>=ETA_BARREL && fabs(vEle2.Eta())<=ETA_ENDCAP) continue;
+
+          if(doScaleCorr && (ele2->r9 < 1.)){
+            float ele2Smear = 0.;
+            float ele2Error = 0.;
+
+            float ele2AbsEta   = fabs(vEle2.Eta());
+            float ele2Et       = vEle2.E() / cosh(ele2AbsEta);
+            bool  ele2isBarrel = ele2AbsEta < 1.4442;
+
+              float ele2R9Prime = ele2->r9; // r9 corrections MC only
+              if(ele2isBarrel){
+                        ele2R9Prime = gR9EB->Eval(ele2->r9);}
+              else {
+                        ele2R9Prime = gR9EE->Eval(ele2->r9);
+              }
+
+	      double ele2Random = gRandom->Gaus(0,1);
+
+              ele2Smear = eleCorr.getSmearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, 0., 0.);
+              float ele2SmearEP = eleCorr.getSmearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, 1., 0.);
+              float ele2SmearEM = eleCorr.getSmearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, -1., 0.);
+
+              if(sigma==0){
+                (vEle2) *= 1. + ele2Smear * ele2Random;
+              }else if(sigma==1){
+                (vEle2) *= 1. + ele2SmearEP * ele2Random;
+              }else if(sigma==-1){
+                (vEle2) *= 1. + ele2SmearEM * ele2Random;
+              }
+	  }
+        
+	  //double ele2_pt = gRandom->Gaus(ele2->scEt*getEleScaleCorr(ele2->scEta,0), getEleResCorr(ele2->scEta,0));
+	  if(ele1->q == ele2->q)	continue;
+//          if(ele2->pt        < PT_CUT && ele2->scEt < PT_CUT)    continue;  // lepton pT cut
+//          if(fabs(ele2->scEta) > ETA_CUT && fabs(ele2->eta) > ETA_CUT)   continue;  // lepton |eta| cut
+//	  if(!passEleID(ele2,info->rhoIso)) continue;  // lepton selection
+          if(vEle2.Pt()           < PT_CUT)     continue;  // lepton pT cut
+          if(fabs(vEle2.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+          if(!passEleID(ele2, vEle2, info->rhoIso))     continue;  // lepton selection
+
+
+          //TLorentzVector vEle2(0,0,0,0);
+	  //vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
+          //Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
 	  if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE) && !isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE)) continue;
 	  
@@ -299,26 +397,26 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
           /******** We have a Z candidate! HURRAY! ********/
           Double_t effdata, effmc;
           //Double_t sceta1 = (fabs(ele1->scEta)<2.5) ? ele1->scEta : 0.99*(ele1->scEta);
-	  Double_t sceta1 = ele1->scEta;
+//	  Double_t sceta1 = ele1->scEta;
           //Double_t sceta2 = (fabs(ele2->scEta)<2.5) ? ele2->scEta : 0.99*(ele2->scEta);
-    	  Double_t sceta2 = ele2->scEta;
+//    	  Double_t sceta2 = ele2->scEta;
 
           Double_t corr=1;
 	  
 	  effdata=1; effmc=1;
           if(ele1->q>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(sceta1, ele1->scEt));
-            effmc   *= (1.-zeeHLTEff_pos.getEff(sceta1, ele1->scEt));
+            effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
           } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(sceta1, ele1->scEt)); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(sceta1, ele1->scEt)); 
+            effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
           }
           if(ele2->q>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff(sceta2, ele2->scEt)); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(sceta2, ele2->scEt));
+            effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
           } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(sceta2, ele2->scEt)); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(sceta2, ele2->scEt));
+            effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
           }
           effdata = 1.-effdata;
           effmc   = 1.-effmc;
@@ -326,53 +424,53 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 
 
           effdata=1; effmc=1;
-          if(ele1->q>0) {
-            effdata *= dataGsfSelEff_pos.getEff(sceta1, ele1->scEt) * ((std::abs(sceta1)<ETA_BARREL)? h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(sceta1), h_sys->GetYaxis()->FindBin(ele1->scEt)) : 1. );
-            effmc   *= zeeGsfSelEff_pos.getEff(sceta1, ele1->scEt);
+          if(ele1->q>0) { 
+            effdata *= dataGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle1.Eta()), h_sys->GetYaxis()->FindBin(vEle1.Pt())); 
+            effmc   *= zeeGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt()); 
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(sceta1, ele1->scEt) * ((std::abs(sceta1)<ETA_BARREL)? h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(sceta1), h_sys->GetYaxis()->FindBin(ele1->scEt)) : 1. );
-            effmc   *= zeeGsfSelEff_neg.getEff(sceta1, ele1->scEt);
+            effdata *= dataGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle1.Eta()), h_sys->GetYaxis()->FindBin(vEle1.Pt())); 
+            effmc   *= zeeGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt()); 
           }
           if(ele2->q>0) {
-            effdata *= dataGsfSelEff_pos.getEff(sceta2, ele2->scEt) * ((std::abs(sceta2)<ETA_BARREL)? h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(sceta2), h_sys->GetYaxis()->FindBin(ele2->scEt)) : 1. );
-            effmc   *= zeeGsfSelEff_pos.getEff(sceta2, ele2->scEt);
+            effdata *= dataGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle2.Eta()), h_sys->GetYaxis()->FindBin(vEle2.Pt()));
+            effmc   *= zeeGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(sceta2, ele2->scEt) * ((std::abs(sceta2)<ETA_BARREL)? h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(sceta2), h_sys->GetYaxis()->FindBin(ele2->scEt)) : 1. );
-            effmc   *= zeeGsfSelEff_neg.getEff(sceta2, ele2->scEt);
+            effdata *= dataGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle2.Eta()), h_sys->GetYaxis()->FindBin(vEle2.Pt())); 
+            effmc   *= zeeGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
           }
           corr *= effdata/effmc;
 	  
 	  // scale factor uncertainties
 	  if(ele1->q>0) {	    
-	    Double_t effdata = dataGsfSelEff_pos.getEff(sceta1, ele1->scEt);
-	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(sceta1, ele1->scEt), dataGsfSelEff_pos.getErrHigh(sceta1, ele1->scEt));
-            Double_t effmc   = zeeGsfSelEff_pos.getEff(sceta1, ele1->scEt); 
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(sceta1, ele1->scEt), zeeGsfSelEff_pos.getErrHigh(sceta1, ele1->scEt));
+	    Double_t effdata = dataGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt());
+	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(vEle1.Eta(), vEle1.Pt()), dataGsfSelEff_pos.getErrHigh(vEle1.Eta(), vEle1.Pt()));
+            Double_t effmc   = zeeGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt()); 
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(vEle1.Eta(), vEle1.Pt()), zeeGsfSelEff_pos.getErrHigh(vEle1.Eta(), vEle1.Pt()));
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    hGsfSelErr_pos->Fill(sceta1, ele1->scEt, errGsfSel);
+	    hGsfSelErr_pos->Fill(vEle1.Eta(), vEle1.Pt(), errGsfSel);
 	  } else {
-	    Double_t effdata = dataGsfSelEff_neg.getEff(sceta1, ele1->scEt);
-	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(sceta1, ele1->scEt), dataGsfSelEff_neg.getErrHigh(sceta1, ele1->scEt));
-            Double_t effmc   = zeeGsfSelEff_neg.getEff(sceta1, ele1->scEt); 
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(sceta1, ele1->scEt), zeeGsfSelEff_neg.getErrHigh(sceta1, ele1->scEt));
+	    Double_t effdata = dataGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt());
+	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(vEle1.Eta(), vEle1.Pt()), dataGsfSelEff_neg.getErrHigh(vEle1.Eta(), vEle1.Pt()));
+            Double_t effmc   = zeeGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt()); 
+	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(vEle1.Eta(), vEle1.Pt()), zeeGsfSelEff_neg.getErrHigh(vEle1.Eta(), vEle1.Pt()));
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    hGsfSelErr_neg->Fill(sceta1, ele1->scEt, errGsfSel);
+	    hGsfSelErr_neg->Fill(vEle1.Eta(), vEle1.Pt(), errGsfSel);
 	  }
 
 	  if(ele2->q>0) {	    
-	    Double_t effdata = dataHLTEff_pos.getEff(sceta2, ele2->scEt);
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(sceta2, ele2->scEt), dataHLTEff_pos.getErrHigh(sceta2, ele2->scEt));
-            Double_t effmc   = zeeHLTEff_pos.getEff(sceta2, ele2->scEt); 
-	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(sceta2, ele2->scEt), zeeHLTEff_pos.getErrHigh(sceta2, ele2->scEt));
+	    Double_t effdata = dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
+	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), dataHLTEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t effmc   = zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()); 
+	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeHLTEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
 	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    hHLTErr_pos->Fill(sceta2, ele2->scEt, errHLT);
+	    hHLTErr_pos->Fill(vEle2.Eta(), vEle2.Pt(), errHLT);
 	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(sceta2, ele2->scEt);
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(sceta2, ele2->scEt), dataHLTEff_neg.getErrHigh(sceta2, ele2->scEt));
-            Double_t effmc   = zeeHLTEff_neg.getEff(sceta2, ele2->scEt); 
-	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(sceta2, ele2->scEt), zeeHLTEff_neg.getErrHigh(sceta2, ele2->scEt));
+	    Double_t effdata = dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
+	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), dataHLTEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t effmc   = zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()); 
+	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeHLTEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
 	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    hHLTErr_neg->Fill(sceta2, ele2->scEt, errHLT);
+	    hHLTErr_neg->Fill(vEle2.Eta(), vEle2.Pt(), errHLT);
 	  }
 
 	  nSelv[ifile]+=weight;
