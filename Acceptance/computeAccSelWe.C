@@ -99,8 +99,10 @@ void computeAccSelWe(const TString conf,       // input file
   EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+//  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+//  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
