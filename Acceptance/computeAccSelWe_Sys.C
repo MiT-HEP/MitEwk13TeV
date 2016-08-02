@@ -24,6 +24,7 @@
 #include <sstream>                  // class for parsing strings
 #include "TLorentzVector.h"
 #include <TRandom3.h>
+#include "TGraph.h"
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -36,6 +37,7 @@
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
+#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
 
 // helper class to handle efficiency tables
 #include "CEffUser1D.hh"
@@ -43,18 +45,15 @@
 #endif
 
 
-// load pileup reweighting file
-TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
-TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelWe_Sys(const TString conf,       // input file
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
-                     const TString sysFile
-
+		     const Int_t   doScaleCorr,
+		     const Int_t   sigma,
+		     const TString sysFile
 ) {
   gBenchmark->Start("computeAccSelWe");
 
@@ -64,11 +63,16 @@ void computeAccSelWe_Sys(const TString conf,       // input file
 
   const Double_t PT_CUT     = 25;
   const Double_t ETA_CUT    = 2.5;
+  const Double_t ELE_MASS = 0.000511;
+
   const Double_t ETA_BARREL = 1.4442;
   const Double_t ETA_ENDCAP = 1.566;
 
   const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.5;
+
+  const Double_t ECAL_GAP_LOW  = 1.4442;
+  const Double_t ECAL_GAP_HIGH = 1.566;
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
@@ -93,6 +97,20 @@ void computeAccSelWe_Sys(const TString conf,       // input file
 
   TFile *f_sys = TFile::Open(sysFile);
   TH2D  *h_sys = (TH2D*) f_sys->Get("h");
+
+  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+
+  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+
+  // load pileup reweighting file
+//  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+//  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+
+  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
+  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
+  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
  
   //--------------------------------------------------------------------------------------------------------------
@@ -275,28 +293,68 @@ void computeAccSelWe_Sys(const TString conf,       // input file
       electronBr->GetEntry(ientry);
       Int_t nLooseLep=0;
       const baconhep::TElectron *goodEle=0;
+      TLorentzVector vEle(0,0,0,0);
+      TLorentzVector vElefinal(0,0,0,0);
       Bool_t passSel=kFALSE;
      
       for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
         const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
+	vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
 	
 	//double ele_pt = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0), getEleResCorr(ele->scEta,0));
         //double ele_pt = gRandom->Gaus(ele->scEt*getEleScaleCorr(ele->scEta,0), getEleResCorr(ele->scEta,0));
 
         // check ECAL gap
-        if(fabs(ele->scEta)>=ETA_BARREL && fabs(ele->scEta)<=ETA_ENDCAP) continue;
+//        if(fabs(ele->scEta)>=ETA_BARREL && fabs(ele->scEta)<=ETA_ENDCAP) continue;
+	if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;
+        if(doScaleCorr && (ele->r9 < 1.)){
+            float eleSmear = 0.;
+
+            float eleAbsEta   = fabs(vEle.Eta());
+            float eleEt       = vEle.E() / cosh(eleAbsEta);
+            bool  eleisBarrel = eleAbsEta < 1.4442;
+
+            float eleR9Prime = ele->r9; // r9 corrections MC only
+            if(eleisBarrel){
+                      eleR9Prime = gR9EB->Eval(ele->r9);}
+            else {
+                      eleR9Prime = gR9EE->Eval(ele->r9);
+            }
+
+            double eleRamdom = gRandom->Gaus(0,1);
+            eleSmear = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 0., 0.);
+            float eleSmearEP = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 1., 0.);
+            float eleSmearEM = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, -1., 0.);
+
+            if(sigma==0){
+              (vEle) *= 1. + eleSmear * eleRamdom;
+            }else if(sigma==1){
+              (vEle) *= 1. + eleSmearEP * eleRamdom;
+            }else if(sigma==-1){
+              (vEle) *= 1.  + eleSmearEM * eleRamdom;
+            }
+        }
+
         
-        if(fabs(ele->scEta) > VETO_ETA) continue;             // loose lepton |eta| cut
-        if(ele->scEt < VETO_PT)  continue;             // loose lepton pT cut
-        if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;     // loose lepton selection
+//        if(fabs(ele->scEta) > VETO_ETA) continue;             // loose lepton |eta| cut
+//        if(ele->scEt < VETO_PT)  continue;             // loose lepton pT cut
+//        if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;     // loose lepton selection
+        if(fabs(vEle.Eta())    > VETO_ETA) continue;
+        if(vEle.Pt()           < VETO_PT)  continue;
+        if(passEleLooseID(ele, vEle, info->rhoIso)) nLooseLep++;
+
         if(nLooseLep>1) {  // extra lepton veto
           passSel=kFALSE;
           break;
         }
 
-        if(fabs(ele->scEta) > ETA_CUT && fabs(ele->eta) > ETA_CUT)       continue;  // lepton |eta| cut
-        if(ele->pt < PT_CUT && ele->scEt < PT_CUT)  	     continue;  // lepton pT cut
-        if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
+//        if(fabs(ele->scEta) > ETA_CUT && fabs(ele->eta) > ETA_CUT)       continue;  // lepton |eta| cut
+//        if(ele->pt < PT_CUT && ele->scEt < PT_CUT)  	     continue;  // lepton pT cut
+//        if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
+        if(vEle.Pt()           < PT_CUT)     continue;  // lepton pT cut
+        if(fabs(vEle.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+        if(!passEleID(ele, vEle, info->rhoIso))     continue;  // lepton selection
+
 	if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, kFALSE)) continue;
         //if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
 
@@ -304,57 +362,47 @@ void computeAccSelWe_Sys(const TString conf,       // input file
         
 	passSel=kTRUE;
         goodEle = ele;  
+	vElefinal = vEle;
       }
       
       if(passSel) {
         
 	/******** We have a W candidate! HURRAY! ********/
-        
-	Bool_t isBarrel = (fabs(goodEle->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
-	
-	// data/MC scale factor corrections
+        Bool_t isBarrel = (fabs(vElefinal.Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+
         Double_t corr=1;
         if(dataHLTEffFile && zeeHLTEffFile) {
-	  Float_t sceta = goodEle->scEta;
-	  //if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
-          Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt);
-          Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt);
+          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
           corr *= effdata/effmc;
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
-	  Float_t sceta = goodEle->scEta;
-	  //Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
-	  Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(sceta), h_sys->GetYaxis()->FindBin(goodEle->scEt));
-          Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt);
+          Double_t effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vElefinal.Eta()), h_sys->GetYaxis()->FindBin(vElefinal.Pt()));
+          Double_t effmc   = zeeGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
           corr *= effdata/effmc;
         }
 
-	// scale factor uncertainties
         if(dataHLTEffFile && zeeHLTEffFile) {
-	  Float_t sceta = goodEle->scEta;
-	  //if(fabs(goodEle->scEta)>=2.5) sceta *= 0.99;
-          Double_t effdata = dataHLTEff.getEff(sceta, goodEle->scEt);
-          Double_t effmc   = zeeHLTEff.getEff(sceta, goodEle->scEt);
-	  Double_t errdata = TMath::Max(dataHLTEff.getErrLow(sceta, goodEle->scEt),dataHLTEff.getErrHigh(sceta, goodEle->scEt));
-	  Double_t errmc   = TMath::Max(zeeHLTEff.getErrLow(sceta, goodEle->scEt), zeeHLTEff.getErrHigh(sceta, goodEle->scEt));
-	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hHLTErr->Fill(sceta,goodEle->scEt,err);
-	  if(isBarrel) hHLTErrB->Fill(sceta,goodEle->scEt,err);
-	  else         hHLTErrE->Fill(sceta,goodEle->scEt,err);
+          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t errdata = TMath::Max(dataHLTEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()),dataHLTEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+          Double_t errmc   = TMath::Max(zeeHLTEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()), zeeHLTEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+          Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+          hHLTErr->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+          if(isBarrel) hHLTErrB->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+          else         hHLTErrE->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
-	  Float_t sceta = goodEle->scEta;;
-          //Float_t sceta = TMath::Min(fabs(goodEle->scEta),Float_t(2.499));
-	  Double_t effdata = dataGsfSelEff.getEff(sceta, goodEle->scEt);
-          Double_t effmc   = zeeGsfSelEff.getEff(sceta, goodEle->scEt);
-          Double_t errdata = TMath::Max(dataGsfSelEff.getErrLow(sceta, goodEle->scEt),dataGsfSelEff.getErrHigh(sceta, goodEle->scEt));
-	  Double_t errmc   = TMath::Max(zeeGsfSelEff.getErrLow(sceta, goodEle->scEt), zeeGsfSelEff.getErrHigh(sceta, goodEle->scEt));
-	  Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hGsfSelErr->Fill(sceta,goodEle->scEt,err);
-	  if(isBarrel) hGsfSelErrB->Fill(sceta,goodEle->scEt,err);
-	  else         hGsfSelErrE->Fill(sceta,goodEle->scEt,err);
+          Double_t effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t effmc   = zeeGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t errdata = TMath::Max(dataGsfSelEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()),dataGsfSelEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+          Double_t errmc   = TMath::Max(zeeGsfSelEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()), zeeGsfSelEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+          Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+          hGsfSelErr->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+          if(isBarrel) hGsfSelErrB->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+          else         hGsfSelErrE->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
         }
-
+        
 	nSelv[ifile]+=weight;
 	nSelCorrv[ifile]+=weight*corr;
 	nSelCorrVarv[ifile]+=weight*weight*corr*corr;
