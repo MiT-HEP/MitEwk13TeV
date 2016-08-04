@@ -50,7 +50,8 @@
 void selectZee(const TString conf="zee.conf", // input file
                const TString outputDir=".",   // output directory
 	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
-	       const Int_t   sigma=0
+	       const Int_t   sigma=0,
+	       const Bool_t  doPU=0
 ) {
   gBenchmark->Start("selectZee");
 
@@ -83,14 +84,20 @@ void selectZee(const TString conf="zee.conf", // input file
   EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+  //TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+
+  // for systematics we need 3
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
+  TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
 
   // for systematics we need 3
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
-  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
+  //TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  //TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
+  //TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
 
   if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
@@ -328,9 +335,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
 	  infoBr->GetEntry(ientry);
 	  genBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
 	  totalWeight+=gen->weight*puWeight;
 	  totalWeightUp+=gen->weight*puWeightUp;
 	  totalWeightDown+=gen->weight*puWeightDown;
@@ -338,9 +345,9 @@ void selectZee(const TString conf="zee.conf", // input file
       }
       else if (not isData){
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
 	  totalWeight+= 1.0*puWeight;
 	  totalWeightUp+= 1.0*puWeightUp;
 	  totalWeightDown+= 1.0*puWeightDown;
@@ -366,9 +373,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          puWeightDown = doPU ?h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
 	  weight*=gen->weight*puWeight;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
