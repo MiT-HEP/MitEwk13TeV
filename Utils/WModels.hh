@@ -35,7 +35,7 @@ class CPepeModel2
 {
 public:
   CPepeModel2():model(0){}
-  CPepeModel2(const char *name, RooRealVar &x);
+  CPepeModel2(const char *name, RooRealVar &x,RooRealVar *sigma1=0, RooRealVar *sigma0=0);
   ~CPepeModel2() {
     delete a1;
     delete a2;
@@ -69,8 +69,8 @@ CPepeModel0::CPepeModel0(const char *name, RooRealVar &x)
   // f(x) = x*exp[-x^2 / s^2]
   char formula[200];
   sprintf(formula,
-          "%s*exp(-%s*%s/%s/%s)",
-	  x.GetName(),
+          "(%s/%s/%s)*exp(-%s*%s/%s/%s)",
+	  x.GetName(),sigmaName,sigmaName,
 	  x.GetName(),x.GetName(),
 	  sigmaName,sigmaName);
   
@@ -120,13 +120,55 @@ CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1,Roo
 }
 
 //--------------------------------------------------------------------------------------------------
-CPepeModel2::CPepeModel2(const char *name, RooRealVar &x)
+/*CPepeModel2::CPepeModel2(const char *name, RooRealVar &x)
 {
   char a1Name[50]; sprintf(a1Name, "a1_%s", name); a1 = new RooRealVar(a1Name,a1Name,0.1,-1,1);
   //char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,10);
   //char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,400);
-  char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,8);
+  char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,20);
   char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,600);
+  
+  // f(x) = x*exp[-x^2 / a*x*x + b*x + c]
+  char formula[300];
+  sprintf(formula,
+          "%s*exp(-%s*%s/(%s*%s*%s + %s*%s + %s))",
+	  x.GetName(),
+	  x.GetName(),x.GetName(),
+	  a1Name,x.GetName(),x.GetName(),
+	  a2Name,x.GetName(),
+	  a3Name);
+  
+  char vname[50];
+  sprintf(vname,"pepe2Pdf_%s",name);  
+  model = new RooGenericPdf(vname,vname,formula,RooArgSet(x,*a1,*a2,*a3));
+}
+*/
+//--------------------------------------------------------------------------------------------------
+CPepeModel2::CPepeModel2(const char *name, RooRealVar &x,  RooRealVar *sigma1, RooRealVar *sigma0)
+{
+  char a1Name[50]; 
+  if(sigma1) {
+    sprintf(a1Name,"%s",sigma1->GetName());
+    a1 = sigma1;
+  } else {
+    sprintf(a1Name,"a1_%s",name);
+    a1 = new RooRealVar(a1Name,a1Name,0.04,-1,1);
+    //a1 = new RooRealVar(a1Name,a1Name,0.01,-1,1);
+  }
+  char a2Name[50];
+  if(sigma0) {
+    sprintf(a2Name,"%s",sigma0->GetName());
+    a2 = sigma1;
+  } else {
+    sprintf(a2Name,"a2_%s",name);
+    a2 = new RooRealVar(a2Name,a2Name,6.0,0.0,20);
+    //a1 = new RooRealVar(a1Name,a1Name,0.01,-1,1);
+  }
+  //char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,10);
+  //char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,100,70,400);
+  //char a2Name[50]; sprintf(a2Name, "a2_%s", name); a2 = new RooRealVar(a2Name,a2Name,1,0,20);
+  //char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,200,50,600);
+  char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,290,30,600);
   
   // f(x) = x*exp[-x^2 / a*x*x + b*x + c]
   char formula[300];

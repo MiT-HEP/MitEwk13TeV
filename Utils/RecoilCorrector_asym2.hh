@@ -29,10 +29,8 @@
 #include "RooWorkspace.h"
 #include <TFitResult.h>
 
-#include "TStopwatch.h"
-
 //
-// ** apply phil's recoil corrections **
+// ** apply recoil corrections **
 // 
 // usage: 
 //    double met=rawMetValue;
@@ -47,8 +45,6 @@
 using namespace std;
 using namespace RooFit;
 
-TStopwatch sw;
-
 class RecoilCorrector
 {
   
@@ -59,23 +55,17 @@ public:
   void loadRooWorkspacesMC(string iNameFile);
   void loadRooWorkspacesData(string iNameFile);
   
-  void CorrectAll(double &met, double &metphi, double iGenPt, double iGenPhi, double iLepPt, double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectType0(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectType2(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
-  void CorrectType2FromGraph(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectInvCdf(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectFromToys(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void addDataFile(std::string iNameDat);
   void addMCFile  (std::string iNameMC);
   void addFileWithGraph  (std::string iNameMC);
-  void addFileWithGraphAsym  (std::string iNameMC);
-  void addMCFileAsym(std::string iNameDat);
   Double_t dMean(const TF1 *fcn, const Double_t x, const TFitResult  *fs);
   Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResult *fs);
   TFitResult *fitresPFu1mean, *fitresPFu1sigma1, *fitresPFu1sigma2,  *fitresPFu1sigma0;
   TFitResult *fitresPFu2mean, *fitresPFu2sigma1, *fitresPFu2sigma2,  *fitresPFu2sigma0;
-  void MakeCDFs(Int_t nGaus = 2, bool fixedMeans = false, int nJets = 0);
-  void MakeCDFsU2(Int_t nGaus = 2, bool fixedMeans = false, int nJets = 0);
   
 protected:
   enum Recoil { 
@@ -111,13 +101,6 @@ protected:
           std::vector<TGraphErrors*> &iU2Fit,std::vector<TGraphErrors*> &iU2MRMSFit,std::vector<TGraphErrors*> &iU2RMS1Fit,std::vector<TGraphErrors*> &iU2RMS2Fit,
           std::string iFName,std::string iPrefix); 
           
-  void readRecoilMC3(std::vector<TGraphErrors*> &iU1Fit,std::vector<TGraphErrors*> &iU1Fit2,std::vector<TGraphErrors*> &iU1Fit3,
-                     std::vector<TGraphErrors*> &iU1MRMSFit,std::vector<TGraphErrors*> &iU1RMS1Fit,std::vector<TGraphErrors*> &iU1RMS2Fit,std::vector<TGraphErrors*> &iU1RMS3Fit, 
-                     std::vector<TGraphErrors*> &iU1Frac2Fit,  std::vector<TGraphErrors*> &iU1Frac3Fit,
-                     std::vector<TGraphErrors*> &iU2Fit,
-                     std::vector<TGraphErrors*> &iU2MRMSFit,std::vector<TGraphErrors*> &iU2RMS1Fit,std::vector<TGraphErrors*> &iU2RMS2Fit,std::vector<TGraphErrors*> &iU2RMS3Fit,
-                     std::vector<TGraphErrors*> &iU2Frac2Fit,  std::vector<TGraphErrors*> &iU2Frac3Fit,
-                     std::string iFName,std::string iPrefix); 
                 
   void metDistributionType0(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                 double iLepPt,double iLepPhi,
@@ -145,28 +128,14 @@ protected:
                 TF1 *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,      
                 TF1 *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit,      
                 double &iU1, double &iU2,double iFluc=0,double iScale=0);
-
-  void metDistributionType2FromGraph(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                double iLepPt,double iLepPhi,
-                TGraphErrors *iU1Default,TGraphErrors *iU1Default2,
-                TGraphErrors *iU1RZDatFit,  TGraphErrors *iU1RZMCFit,
-                TGraphErrors *iU1RZDatFit2,  TGraphErrors *iU1RZMCFit2,
-                TGraphErrors *iU1MSZDatFit, TGraphErrors *iU1MSZMCFit, 
-                TGraphErrors *iU1S1ZDatFit, TGraphErrors *iU1S1ZMCFit, 
-                TGraphErrors *iU1S2ZDatFit, TGraphErrors *iU1S2ZMCFit, 
-                TGraphErrors *iU2MSZDatFit, TGraphErrors *iU2MSZMCFit,
-                TGraphErrors *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,     
-                TGraphErrors *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit,     
-                double &iU1, double &iU2,double iFluc=0,double iScale=0);
                 
   void metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                 double iLepPt,double iLepPhi,
-                TGraphErrors *iU1Default,TGraphErrors *iU1Default2,
+                TGraphErrors *iU1Default,
                 double &iU1, double &iU2,double iFluc=0,double iScale=0);
   
   void metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                 double iLepPt,double iLepPhi,
-                TGraphErrors *iU1Default,TGraphErrors *iU1Default2,
                 double &iU1, double &iU2,double iFluc=0,double iScale=0);            
                 
                 
@@ -174,12 +143,9 @@ protected:
 
   double diGausPVal    (double iVal, double iFrac,double iSimga1,double iSigma2);
   double triGausPVal    (double iVal, double iFrac2,double iFrac3,double iSimga1,double iSigma2,double iSigma3);
-//   double diGausPValAsym(double iVal,double diff1, double iFrac,double iSimga1,double iSigma2);
   double diGausPInverse(double iPVal,double iFrac,double iSigma1,double iSigma2);
-  double triGausPInverse(double iPVal,double iFrac2,double iFrac3,double iSimga1,double iSigma2,double iSigma3);
-double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbsReal *pdfDATAcdf, RooAbsPdf *wMC, RooAbsPdf *wDATA, RooRealVar *varDat, RooRealVar *varMC, int bin,double max);
   
-  double prepCdfs(RooWorkspace *work[]);
+  double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbsReal *pdfDATAcdf, RooAbsPdf *wMC, RooAbsPdf *wDATA, RooRealVar *varDat, RooRealVar *varMC, int bin,double max);
   
   double calculate(int iMet,double iEPt,double iEPhi,double iWPhi,double iU1,double iU2);
   double getCorError2(double iVal,TF1 *iFit);
@@ -203,11 +169,7 @@ double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbs
   vector<TGraphErrors*> fF2U1Fit; vector<TGraphErrors*> fF2U1RMSSMFit; vector<TGraphErrors*> fF2U1RMS1Fit; vector<TGraphErrors*> fF2U1RMS2Fit; 
   vector<TGraphErrors*> fF2U2Fit; vector<TGraphErrors*> fF2U2RMSSMFit; vector<TGraphErrors*> fF2U2RMS1Fit; vector<TGraphErrors*> fF2U2RMS2Fit; 
   // means 2 and 3, sigma 3
-  vector<TGraphErrors*> fF1U1Fit2; vector<TGraphErrors*> fF1U1Fit3;
-  vector<TGraphErrors*> fF1U1RMS3Fit; 
-  vector<TGraphErrors*> fF1U1Frac2; vector<TGraphErrors*> fF1U1Frac3; 
-  vector<TGraphErrors*> fF1U2RMS3Fit; 
-  vector<TGraphErrors*> fF1U2Frac2; vector<TGraphErrors*> fF1U2Frac3;
+  vector<TGraphErrors*> fF1U1Fit2; 
 
   vector<TF1*> fD1U1Fit; vector<TF1*> fD1U1RMSSMFit; vector<TF1*> fD1U1RMS1Fit; vector<TF1*> fD1U1RMS2Fit; 
   vector<TF1*> fD1U2Fit; vector<TF1*> fD1U2RMSSMFit; vector<TF1*> fD1U2RMS1Fit; vector<TF1*> fD1U2RMS2Fit; 
@@ -228,12 +190,7 @@ double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbs
   vector<TGraphErrors*> fM1U1Fit; vector<TGraphErrors*> fM1U1RMSSMFit; vector<TGraphErrors*> fM1U1RMS1Fit; vector<TGraphErrors*> fM1U1RMS2Fit; 
   vector<TGraphErrors*> fM1U2Fit; vector<TGraphErrors*> fM1U2RMSSMFit; vector<TGraphErrors*> fM1U2RMS1Fit; vector<TGraphErrors*> fM1U2RMS2Fit; 
   // means 2 and 3, and sigma 3
-  vector<TGraphErrors*> fM1U1Fit2; vector<TGraphErrors*> fM1U1Fit3;
-  vector<TGraphErrors*> fM1U1RMS3Fit; 
-  vector<TGraphErrors*> fM1U1Frac2; vector<TGraphErrors*> fM1U1Frac3;
-  // sigma 3 and fracs for U2
-  vector<TGraphErrors*> fM1U2RMS3Fit; 
-  vector<TGraphErrors*> fM1U2Frac2; vector<TGraphErrors*> fM1U2Frac3;
+  vector<TGraphErrors*> fM1U1Fit2; 
   
   
   vector<TGraphErrors*> fM2U1Fit; vector<TGraphErrors*> fM2U1RMSSMFit; vector<TGraphErrors*> fM2U1RMS1Fit; vector<TGraphErrors*> fM2U1RMS2Fit; 
@@ -243,12 +200,7 @@ double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbs
   vector<TGraphErrors*> fMT1U2Fit; vector<TGraphErrors*> fMT1U2RMSSMFit; vector<TGraphErrors*> fMT1U2RMS1Fit; vector<TGraphErrors*> fMT1U2RMS2Fit; 
   vector<TGraphErrors*> fMT2U1Fit; vector<TGraphErrors*> fMT2U1RMSSMFit; vector<TGraphErrors*> fMT2U1RMS1Fit; vector<TGraphErrors*> fMT2U1RMS2Fit; 
   vector<TGraphErrors*> fMT2U2Fit; vector<TGraphErrors*> fMT2U2RMSSMFit; vector<TGraphErrors*> fMT2U2RMS1Fit; vector<TGraphErrors*> fMT2U2RMS2Fit;
-  // means 2 and 3
-  vector<TGraphErrors*> fMT1U1Fit2; vector<TGraphErrors*> fMT1U1Fit3;
-  vector<TGraphErrors*> fMT1U1RMS3Fit;
-  vector<TGraphErrors*> fMT1U1Frac2; vector<TGraphErrors*> fMT1U1Frac3;
-  vector<TGraphErrors*> fMT1U2RMS3Fit;
-  vector<TGraphErrors*> fMT1U2Frac2; vector<TGraphErrors*> fMT1U2Frac3;
+  vector<TGraphErrors*> fMT1U1Fit2; 
 
   vector<TGraphErrors*> fF1U1U2Corr;     vector<TGraphErrors*> fF2U1U2Corr;
   vector<TGraphErrors*> fF1F2U1Corr;     vector<TGraphErrors*> fF1F2U2Corr;
@@ -280,9 +232,7 @@ double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbs
 RecoilCorrector::RecoilCorrector(string iNameZDat,std::string iPrefix, int iSeed) {
 
   fRandom = new TRandom1(iSeed);
-//   readRecoilMC2(fF1U1Fit,fF1U1Fit2,fF1U1RMSSMFit,fF1U1RMS1Fit,fF1U1RMS2Fit,fF1U2Fit,fF1U2RMSSMFit,fF1U2RMS1Fit,fF1U2RMS2Fit,iNameZDat,iPrefix);
-  readRecoilMC3(fF1U1Fit,fF1U1Fit2,fF1U1Fit3,fF1U1RMSSMFit,fF1U1RMS1Fit,fF1U1RMS2Fit,fF1U1RMS3Fit,fF1U1Frac2,fF1U1Frac3,
-  fF1U2Fit,fF1U2RMSSMFit,fF1U2RMS1Fit,fF1U2RMS2Fit,fF1U2RMS3Fit,fF1U2Frac2,fF1U2Frac3,iNameZDat,iPrefix);
+  readRecoilMC2(fF1U1Fit,fF1U1Fit2,fF1U1RMSSMFit,fF1U1RMS1Fit,fF1U1RMS2Fit,fF1U2Fit,fF1U2RMSSMFit,fF1U2RMS1Fit,fF1U2RMS2Fit,iNameZDat,iPrefix);
   fId = 0; fJet = 0;
 }
 
@@ -299,20 +249,13 @@ RecoilCorrector::RecoilCorrector(string iNameZ, int iSeed) {
 void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
   vZPtBins ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
   
-//   std::cout << "n Bins = " << std::endl;
-
-//   vZPtBins ={0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-  
   TFile *lFile  = new TFile((iFName+"pdfsU1.root").c_str());
   rooWData[0] = (RooWorkspace*) lFile->Get("pdfsU1");
   lFile->Delete();
   TFile *lFile2  = new TFile((iFName+"pdfsU2.root").c_str());
   rooWData[1] = (RooWorkspace*) lFile2->Get("pdfsU2");
   lFile2->Delete();
-//   std::cout << "vZPtBins.size() = " << vZPtBins.size() << std::endl;
   for(uint i = 0; i < vZPtBins.size()-1; ++i){
-//     std::cout << "iBin = " << i << std::endl;
-//     std::cout << "lower,upper bound = [" << vZPtBins[i] << ", " << vZPtBins[i+1] << "]" << std::endl;
     std::stringstream name;
     name << "sig_" << i;
     RooAbsPdf* pdf1 = rooWData[0]->pdf(name.str().c_str());
@@ -324,15 +267,7 @@ void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
     rooWData[0]->import(*cdfU1, RooFit::Silence());
     RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
     rooWData[1]->import(*cdfU2, RooFit::Silence());
-    
-//     myX1->Print("v");
-    
-//     RooPlot* xframe = myX1->frame(); 
-//     pdf1->plotOn(xframe); 
-//     xframe->Draw(); 
-//     iC->SaveAs(("PDF_"+name.str()+".png").c_str());
   }
-//   rooWData[0]->Print();
 }
 void RecoilCorrector::loadRooWorkspacesMC(std::string iFName){
   TFile *lFile  = new TFile((iFName+"pdfsU1.root").c_str());
@@ -354,7 +289,6 @@ void RecoilCorrector::loadRooWorkspacesMC(std::string iFName){
     RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
     rooWMC[1]->import(*cdfU2, RooFit::Silence());
   }
-//   rooWMC[0]->Print();
 }
 
 void RecoilCorrector::addDataFile(std::string iNameData) {
@@ -365,25 +299,17 @@ void RecoilCorrector::addMCFile  (std::string iNameMC) {
   fId++;
   readRecoilMC(fM1U1Fit,fM1U1RMSSMFit,fM1U1RMS1Fit,fM1U1RMS2Fit,fM1U2Fit,fM1U2RMSSMFit,fM1U2RMS1Fit,fM1U2RMS2Fit,iNameMC,"fcnPF");
 }
-void RecoilCorrector::addMCFileAsym  (std::string iNameMC) {
-  fId++;
-//   readRecoilMC2(fM1U1Fit,fM1U1Fit2,fM1U1RMSSMFit,fM1U1RMS1Fit,fM1U1RMS2Fit,fM1U2Fit,fM1U2RMSSMFit,fM1U2RMS1Fit,fM1U2RMS2Fit,iNameMC,"fcnPF");
-  readRecoilMC3(fM1U1Fit,fM1U1Fit2,fM1U1Fit3,fM1U1RMSSMFit,fM1U1RMS1Fit,fM1U1RMS2Fit,fM1U1RMS3Fit,fM1U1Frac2,fM1U1Frac3,fM1U2Fit,fM1U2RMSSMFit,fM1U2RMS1Fit,fM1U2RMS2Fit,fM1U2RMS3Fit,fM1U2Frac2,fM1U2Frac3,iNameMC,"fcnPF");
-  
-
-  
-}
 
 void RecoilCorrector::addFileWithGraph  (std::string iNameMC) { 
   fId++;
   readRecoilMC(fMT1U1Fit,fMT1U1RMSSMFit,fMT1U1RMS1Fit,fMT1U1RMS2Fit,fMT1U2Fit,fMT1U2RMSSMFit,fMT1U2RMS1Fit,fMT1U2RMS2Fit,iNameMC,"fcnPF");
 }
 
-void RecoilCorrector::addFileWithGraphAsym  (std::string iNameMC) {
-  fId++;
-//   readRecoilMC2(fMT1U1Fit,fMT1U1Fit2,fMT1U1RMSSMFit,fMT1U1RMS1Fit,fMT1U1RMS2Fit,fMT1U2Fit,fMT1U2RMSSMFit,fMT1U2RMS1Fit,fMT1U2RMS2Fit,iNameMC,"fcnPF");
-  readRecoilMC3(fMT1U1Fit,fMT1U1Fit2,fMT1U1Fit3,fMT1U1RMSSMFit,fMT1U1RMS1Fit,fMT1U1RMS2Fit,fMT1U1RMS3Fit,fMT1U1Frac2,fMT1U1Frac3,fMT1U2Fit,fMT1U2RMSSMFit,fMT1U2RMS1Fit,fMT1U2RMS2Fit,fMT1U2RMS3Fit,fMT1U2Frac2,fMT1U2Frac3,iNameMC,"fcnPF");
-}
+// void RecoilCorrector::addFileWithGraphAsym  (std::string iNameMC) {
+//   fId++;
+// //   readRecoilMC2(fMT1U1Fit,fMT1U1Fit2,fMT1U1RMSSMFit,fMT1U1RMS1Fit,fMT1U1RMS2Fit,fMT1U2Fit,fMT1U2RMSSMFit,fMT1U2RMS1Fit,fMT1U2RMS2Fit,iNameMC,"fcnPF");
+//   readRecoilMC3(fMT1U1Fit,fMT1U1Fit2,fMT1U1Fit3,fMT1U1RMSSMFit,fMT1U1RMS1Fit,fMT1U1RMS2Fit,fMT1U1RMS3Fit,fMT1U1Frac2,fMT1U1Frac3,fMT1U2Fit,fMT1U2RMSSMFit,fMT1U2RMS1Fit,fMT1U2RMS2Fit,fMT1U2RMS3Fit,fMT1U2Frac2,fMT1U2Frac3,iNameMC,"fcnPF");
+// }
 
 
 
@@ -406,8 +332,6 @@ void RecoilCorrector::CorrectType0(double &met, double &metphi, double lGenPt, d
 void RecoilCorrector::CorrectType2(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
   fJet = njet; if(njet > 2) fJet = 2;
   if(fJet >= int(fF1U1Fit.size())) fJet = 0;
-//   std::cout << "hello" << std::endl;
-  
   
   metDistributionType2(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,fF1U1Fit[fJet],
                fD1U1Fit     [fJet],fM1U1Fit     [fJet],
@@ -420,31 +344,12 @@ void RecoilCorrector::CorrectType2(double &met, double &metphi, double lGenPt, d
                iU1,iU2,iFluc,iScale);
 }
 
-void RecoilCorrector::CorrectType2FromGraph(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
-  fJet = njet; if(njet > 2) fJet = 2;
-  if(fJet >= int(fF1U1Fit.size())) fJet = 0; 
-
-  metDistributionType2FromGraph(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,
-               fF1U1Fit[fJet],fF1U1Fit2[fJet],//fF1U1Fit3[fJet],
-               fMT1U1Fit     [fJet],fM1U1Fit     [fJet],
-               fMT1U1Fit2    [fJet],fM1U1Fit2    [fJet],
-//                fMT1U1Fit3    [fJet],fM1U1Fit3    [fJet],
-               fMT1U1RMSSMFit[fJet],fM1U1RMSSMFit[fJet],
-               fMT1U1RMS1Fit [fJet],fM1U1RMS1Fit [fJet],
-               fMT1U1RMS2Fit [fJet],fM1U1RMS2Fit [fJet],
-//                fMT1U1RMS3Fit [fJet],fM1U1RMS3Fit [fJet],
-               fMT1U2RMSSMFit[fJet],fM1U2RMSSMFit[fJet],
-               fMT1U2RMS1Fit [fJet],fM1U2RMS1Fit [fJet],
-               fMT1U2RMS2Fit [fJet],fM1U2RMS2Fit [fJet], 
-               iU1,iU2,iFluc,iScale);
-}
-
 void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
   fJet = njet; if(njet > 2) fJet = 2;
   if(fJet >= int(fF1U1Fit.size())) fJet = 0; 
 
   metDistributionInvCdf(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,
-               fF1U1Fit[fJet],fF1U1Fit2[fJet],
+               fF1U1Fit[fJet],
                iU1,iU2,iFluc,iScale);
 }
 
@@ -453,7 +358,6 @@ void RecoilCorrector::CorrectFromToys(double &met, double &metphi, double lGenPt
   if(fJet >= int(fF1U1Fit.size())) fJet = 0; 
 
   metDistributionFromToys(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,
-               fF1U1Fit[fJet],fF1U1Fit2[fJet],
                iU1,iU2,iFluc,iScale);
 }
 
@@ -590,47 +494,47 @@ void RecoilCorrector::readRecoilMC(std::vector<TGraphErrors*> &iU1Fit,std::vecto
 //   
 }
 
-void RecoilCorrector::readRecoilMC3(std::vector<TGraphErrors*> &iU1Fit,std::vector<TGraphErrors*> &iU1Fit2,std::vector<TGraphErrors*> &iU1Fit3,
-                     std::vector<TGraphErrors*> &iU1MRMSFit,std::vector<TGraphErrors*> &iU1RMS1Fit,std::vector<TGraphErrors*> &iU1RMS2Fit,std::vector<TGraphErrors*> &iU1RMS3Fit, 
-                     std::vector<TGraphErrors*> &iU1Frac2Fit,  std::vector<TGraphErrors*> &iU1Frac3Fit,
-                     std::vector<TGraphErrors*> &iU2Fit,
-                     std::vector<TGraphErrors*> &iU2MRMSFit,std::vector<TGraphErrors*> &iU2RMS1Fit,std::vector<TGraphErrors*> &iU2RMS2Fit,std::vector<TGraphErrors*> &iU2RMS3Fit, 
-                     std::vector<TGraphErrors*> &iU2Frac2Fit,  std::vector<TGraphErrors*> &iU2Frac3Fit,
-                     std::string iFName,std::string iPrefix) {
-  std::cout << "reading stuff..." << std::endl;
-  TFile *lFile  = new TFile(iFName.c_str());
-  int lNJet = 0;
-  std::stringstream lSS; //lSS << iPrefix;
-  iPrefix = "grPF"; 
-  lSS << iPrefix << "u1mean"; 
-  iU1Fit.push_back    ( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u1mean2"; 
-  iU1Fit2.push_back    ( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u1mean3"; 
-  iU1Fit3.push_back    ( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u1sigma0";
-  iU1MRMSFit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lSS << iPrefix << "u1sigma1"; 
-  iU1RMS1Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lSS << iPrefix << "u1sigma2"; iU1RMS2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lSS << iPrefix << "u1sigma3"; iU1RMS3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lSS << iPrefix << "u1frac2"; iU1Frac2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lSS << iPrefix << "u1frac3"; iU1Frac3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  
-  lSS << iPrefix << "u2mean"; iU2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u2sigma0"; 
-  iU2MRMSFit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u2sigma1"; iU2RMS1Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u2sigma2"; iU2RMS2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u2sigma3"; iU2RMS3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lSS << iPrefix << "u2frac2"; iU2Frac2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
-  lSS << iPrefix << "u2frac3"; iU2Frac3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
-  lFile->Close(); 
-  std::cout << "done reading " << std::endl;
-  
-  
-  
-}
+// void RecoilCorrector::readRecoilMC3(std::vector<TGraphErrors*> &iU1Fit,std::vector<TGraphErrors*> &iU1Fit2,std::vector<TGraphErrors*> &iU1Fit3,
+//                      std::vector<TGraphErrors*> &iU1MRMSFit,std::vector<TGraphErrors*> &iU1RMS1Fit,std::vector<TGraphErrors*> &iU1RMS2Fit,std::vector<TGraphErrors*> &iU1RMS3Fit, 
+//                      std::vector<TGraphErrors*> &iU1Frac2Fit,  std::vector<TGraphErrors*> &iU1Frac3Fit,
+//                      std::vector<TGraphErrors*> &iU2Fit,
+//                      std::vector<TGraphErrors*> &iU2MRMSFit,std::vector<TGraphErrors*> &iU2RMS1Fit,std::vector<TGraphErrors*> &iU2RMS2Fit,std::vector<TGraphErrors*> &iU2RMS3Fit, 
+//                      std::vector<TGraphErrors*> &iU2Frac2Fit,  std::vector<TGraphErrors*> &iU2Frac3Fit,
+//                      std::string iFName,std::string iPrefix) {
+//   std::cout << "reading stuff..." << std::endl;
+//   TFile *lFile  = new TFile(iFName.c_str());
+//   int lNJet = 0;
+//   std::stringstream lSS; //lSS << iPrefix;
+//   iPrefix = "grPF"; 
+//   lSS << iPrefix << "u1mean"; 
+//   iU1Fit.push_back    ( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u1mean2"; 
+//   iU1Fit2.push_back    ( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u1mean3"; 
+//   iU1Fit3.push_back    ( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u1sigma0";
+//   iU1MRMSFit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lSS << iPrefix << "u1sigma1"; 
+//   iU1RMS1Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lSS << iPrefix << "u1sigma2"; iU1RMS2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lSS << iPrefix << "u1sigma3"; iU1RMS3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lSS << iPrefix << "u1frac2"; iU1Frac2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lSS << iPrefix << "u1frac3"; iU1Frac3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   
+//   lSS << iPrefix << "u2mean"; iU2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u2sigma0"; 
+//   iU2MRMSFit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u2sigma1"; iU2RMS1Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u2sigma2"; iU2RMS2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u2sigma3"; iU2RMS3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lSS << iPrefix << "u2frac2"; iU2Frac2Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str("");
+//   lSS << iPrefix << "u2frac3"; iU2Frac3Fit.push_back( (TGraphErrors*) lFile->FindObjectAny(lSS.str().c_str())); lSS.str(""); 
+//   lFile->Close(); 
+//   std::cout << "done reading " << std::endl;
+//   
+//   
+//   
+// }
 
 
 void RecoilCorrector::readRecoilMC2(std::vector<TGraphErrors*> &iU1Fit,std::vector<TGraphErrors*> &iU1Fit2,std::vector<TGraphErrors*> &iU1MRMSFit,std::vector<TGraphErrors*> &iU1RMS1Fit,std::vector<TGraphErrors*> &iU1RMS2Fit,
@@ -705,29 +609,6 @@ double RecoilCorrector::diGausPInverse(double iPVal,double iFrac,double iSigma1,
   }
   return (lMin + (lId-0.5)*lDiff/lN2);
 }
-
-double RecoilCorrector::triGausPInverse(double iPVal,double iFrac2,double iFrac3,double iSigma1,double iSigma2,double iSigma3) {
-  double lVal = TMath::ErfInverse(iPVal);
-  double lMin = lVal*std::min(std::min(iSigma1,iSigma2),std::min(iSigma1,iSigma3));
-  double lMax = lVal*std::max(std::max(iSigma1,iSigma2),std::max(iSigma1,iSigma3));
-//   double lMin = lVal * ((iSigma1 < iSigma2) ? iSigma1 : iSigma2); // lVal * sigma1
-//   double lMax = lVal * ((iSigma1 < iSigma2) ? iSigma2 : iSigma1); // lVal * sigma2
-  double lDiff = (lMax-lMin); // lVal * (sigma2 - sigma1)
-  //Iterative procedure to invert a double gaussian given a PVal
-  int lId = 0; int lN1 = 4;  int lN2 = 10;  // Fewer toys
-  //   int lId = 0; int lN1 = 10;  int lN2 = 100;  // More toys - takes longer
-  for(int i0 = 0; i0 < lN1; i0++) {
-    if(i0 != 0) lMin = lMin + (lId-1)*lDiff/lN2;
-    if(i0 != 0) lDiff/=lN2;
-    for(int i1 = 0; i1 < lN2; i1++) { 
-      double pVal = lMin + lDiff/lN2*i1;
-      pVal = triGausPVal(pVal,iFrac2,iFrac3,iSigma1,iSigma2,iSigma3);
-      if(pVal > iPVal) {lId = i1; break;}
-    }
-  }
-  return (lMin + (lId-0.5)*lDiff/lN2);
-}
-
 
 void RecoilCorrector::metDistributionType0(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
         double iLepPt,double iLepPhi,
@@ -876,273 +757,12 @@ void RecoilCorrector::metDistributionType2(double &iMet,double &iMPhi,double iGe
   return;
 }
 
-void RecoilCorrector::metDistributionType2FromGraph(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                       double iLepPt,double iLepPhi,
-                       TGraphErrors *iU1Default, TGraphErrors *iU1Default2,//TGraphErrors *iU1Default3,
-                       TGraphErrors *iU1RZDatFit,  TGraphErrors *iU1RZMCFit,
-                       TGraphErrors *iU1R2ZDatFit, TGraphErrors *iU1R2ZMCFit,
-//                        TGraphErrors *iU1R3ZDatFit, TGraphErrors *iU1R3ZMCFit,
-                       TGraphErrors *iU1MSZDatFit, TGraphErrors *iU1MSZMCFit, 
-                       TGraphErrors *iU1S1ZDatFit, TGraphErrors *iU1S1ZMCFit, 
-                       TGraphErrors *iU1S2ZDatFit, TGraphErrors *iU1S2ZMCFit, 
-//                        TGraphErrors *iU1S3ZDatFit, TGraphErrors *iU1S3ZMCFit,
-                       TGraphErrors *iU2MSZDatFit, TGraphErrors *iU2MSZMCFit,
-                       TGraphErrors *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,                                             
-                       TGraphErrors *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit, 
-                       double &iU1,double &iU2,double iFluc,double iScale) {
-  
-  // std::cout << "hello" << std::endl;
-  double pDefU1    = iU1Default->Eval(iGenPt);
-  double pDefU1_2    = iU1Default2->Eval(iGenPt);
-//   std::cout << "pdfe1 " << pDefU1 << std::endl;
-//   std::cout << "pdef2 " << pDefU1_2 << std::endl;
-  double lRescale  = sqrt((TMath::Pi())/2.);             
-  double pDU1       = iU1RZDatFit ->Eval(iGenPt);
-
-  double pDFrac1    = iU1MSZDatFit->Eval(iGenPt);//*lRescale;
-  double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt);//*pDFrac1;
-  double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt);//*pDFrac1;
-//   double pDFrac2    = iU2MSZDatFit->Eval(iGenPt);//*lRescale;
-  double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt);//*pDFrac2;
-  double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt);//*pDFrac2;
-  
-  double pDSigma2_3 = fMT1U2RMS3Fit[0]->Eval(iGenPt);
-  double pDFrac2 = fMT1U2Frac2[0]->Eval(iGenPt);
-  double pDFrac3 = fMT1U2Frac3[0]->Eval(iGenPt);
-
-  double pMU1       = iU1RZMCFit  ->Eval(iGenPt);
-  double pMU2       = 0; 
-
-  double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt);//*lRescale;
-  double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt);//*pMFrac1;
-  double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt);//*pMFrac1;
-//   double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt);//*lRescale;
-  double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt);//*pMFrac2;
-  double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt);//*pMFrac2;
-  
-  double pMSigma2_3 = fM1U2RMS3Fit[0]->Eval(iGenPt);
-  double pMFrac2 = fM1U2Frac2[0]->Eval(iGenPt);
-  double pMFrac3 = fM1U2Frac3[0]->Eval(iGenPt);
-  
-  double iGenPt2 = 0;
-  Int_t nbinsPt = vZPtBins.size();
-  int iBin = 0;
-  for(int i = 0; i < nbinsPt-1; ++i){
-    if(iGenPt > vZPtBins[nbinsPt-1]){
-      iBin = nbinsPt-1;
-      iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
-      break;
-    }
-    if(vZPtBins[i+1] < iGenPt) continue;
-    if(vZPtBins[i] > iGenPt ) continue;
-    if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
-      iBin = i; 
-      iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
-      break;
-    }
-   // loop through Double_t vZPtBins[] to get bin of 
-  }
-  
-//   
-  if(iFluc != 0 || iScale != 0) {
-    
-    // get the bins for the tgraph
-    Double_t ptbins[] = {0,2.5,5.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
-//     Double_t ptbins[] ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
-    
-    Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
-    
-    double lEUR1    = 0;
-    double lEUS1_1  = 0;
-    double lEUS1_2  = 0;
-    double lEU1Frac = 0;
-    double lEUS2_1  = 0;
-    double lEUS2_2  = 0;
-    double lEU2Frac = 0;
-    
-//     iBin+=2*iFluc/fabs(iFluc);
-//     if(iBin < 0) iBin = 0;
-    
-    // lookup the bin which the iGenPt belongs in
-    // linear interpolate this bin and the next bin?
-    for(int jBin = 0; jBin < nbins; ++jBin){
-      if(iGenPt < ptbins[jBin]) continue; // skip if we are not in the right bin
-      if(iGenPt > ptbins[jBin+1]) continue;
-      if(iGenPt > ptbins[jBin] && iGenPt < ptbins[jBin+1]){
-        lEUR1    = calcErrorGraph(iU1RZDatFit, iGenPt, ptbins, jBin); 
-        lEUS1_1  = calcErrorGraph(iU1S1ZDatFit,iGenPt, ptbins, jBin); 
-        lEUS1_2  = calcErrorGraph(iU1S2ZDatFit,iGenPt, ptbins, jBin);
-        lEU1Frac = calcErrorGraph(iU1MSZDatFit,iGenPt, ptbins, jBin);
-        lEUS2_1  = calcErrorGraph(iU2S1ZDatFit,iGenPt, ptbins, jBin);
-        lEUS2_2  = calcErrorGraph(iU2S2ZDatFit,iGenPt, ptbins, jBin);
-        lEU2Frac = calcErrorGraph(iU2MSZDatFit,iGenPt, ptbins, jBin);
-        break; 
-      }
-    }
-       
-    pDU1       = pDU1       + iScale*lEUR1;             //Recoil
-    pDFrac1    = pDFrac1    + iFluc*(lEU1Frac);        //Mean RMS 
-    pDSigma1_1 = pDSigma1_1 + iFluc*lEUS1_1;//lEUS1_1*pDFrac1;    //Sigma 1 smalles sigma
-    pDSigma1_2 = pDSigma1_2 + iFluc*lEUS1_2;//lEUS1_2*pDFrac1;    //Sigma 2 (Maximal when oppsite sigma 1)
-    pDFrac2    = pDFrac2    + iFluc*(lEU2Frac);        //Mean RMS for U2
-    pDSigma2_1 = pDSigma2_1 + iFluc*lEUS2_1;//lEUS2_1*pDFrac2;    //Sigma 1 U2
-    pDSigma2_2 = pDSigma2_2 + iFluc*lEUS2_2;//(lEUS2_2)*pDFrac2;
-  }
-  
-  pDFrac1           = (pDFrac1-pDSigma1_2)/(pDSigma1_1-pDSigma1_2);
-//   pDFrac2           = (pDFrac2-pDSigma2_2)/(pDSigma2_1-pDSigma2_2);
-  pMFrac1           = (pMFrac1-pMSigma1_2)/(pMSigma1_1-pMSigma1_2);
-//   pMFrac2           = (pMFrac2-pMSigma2_2)/(pMSigma2_1-pMSigma2_2);
-
-// std::cout << "Met, Phi " << iMet << " " << iMPhi << std::endl;
-// std::cout << "Lep, Phi " << iLepPt << " " << iLepPhi << std::endl;
-//std::cout << 
-  
-// calculate u1 and u2 again
-  double pUX  = iMet*cos(iMPhi) + iLepPt*cos(iLepPhi);
-  double pUY  = iMet*sin(iMPhi) + iLepPt*sin(iLepPhi);
-  double pU   = sqrt(pUX*pUX+pUY*pUY);
-  double pCos = - (pUX*cos(iGenPhi) + pUY*sin(iGenPhi))/pU;
-  double pSin =   (pUX*sin(iGenPhi) - pUY*cos(iGenPhi))/pU;
-  double pU1   = pU*pCos; // U1 in data
-  double pU2   = pU*pSin; // U2 in data
-  double pU1Diff  = pU1-pDefU1; // subtract the mean1 from MC?
-  double pU1Diff2  = pU1-pDefU1_2; // subtract the mean2 also from MC?
-  double pU1MeanDiff = pDefU1-pDefU1_2;
-  double pU2Diff  = pU2; // don't care because expect mean to be ~0
-  double p1Charge        = pU1Diff/fabs(pU1Diff);
-  double p2Charge        = pU2Diff/fabs(pU2Diff);
-  double pTU1Diff        = pU1Diff;
-//   std::cout << "pU1 first = " << pU1 << std::endl;
-//   std::cout << "pU2 first = " << pU2 << std::endl;
-//   std::cout << "begin of inverting" << std::endl;
-//   double pU1ValM         = diGausPValAsym(pU1Diff,pDefU1_2,pMFrac1,pMSigma1_1,pMSigma1_2);  // diffs, f1_mc, sigma1 mc, sigma2 mc
-//   double pU2ValM         = diGausPVal(fabs(pU2Diff),pMFrac2,pMSigma2_1,pMSigma2_2);
-//   double pU2ValM         = triGausPVal(fabs(pU2Diff),pMFrac2,pMFrac3,pMSigma2_1,pMSigma2_2,pMSigma2_3);
-// //   double pU1ValD         = diGausPInverse(pU1ValM  ,pDFrac1,pDSigma1_1,pDSigma1_2); // pval, f1_data, sigma1 data, sigma2 data
-//   double pU1ValD         = diGausPInverseAsym(pU1ValM  ,pU1MeanDiff, pDFrac1,pDSigma1_1,pDSigma1_2); // pval, f1_data, sigma1 data, sigma2 data, sigma1 mean? sigma2 mean??
-//   double pU2ValD         = triGausPInverse(pU2ValM  ,pDFrac2,pDFrac3,pDSigma2_1,pDSigma2_2,pDSigma2_3);
-
-// iBin = 1; // test
-
-//   std::cout <<" hey hey hey" << iBin <<std::endl;
-//   std::stringstream name;
-//   name << "rooDatGausAdd_" << iBin;
-//   RooAbsPdf *thisPdfDataU1 = rooWksDataU1.pdf(name.str().c_str()); name.str("");
-// 
-//   name << "rooMCGausAdd_" << iBin;
-//   RooAbsPdf *thisPdfMCU1 = rooWksMCU1.pdf(name.str().c_str()); name.str("");
-// 
-// //   std::cout << "got the pdf MC" << std::endl;
-//   
-//   name << "rooDatGausAdd_" << iBin <<"_cdf_Int[rooU1_"<< iBin<< "_prime|CDF]_Norm[rooU1_"<< iBin<< "_prime]";
-//   RooAbsReal *thisCdfDataU1 = rooWksDataU1.function(name.str().c_str()); name.str("");
-//   
-//   name << "rooMCGausAdd_" << iBin <<"_cdf_Int[rooU1_"<< iBin<< "_prime|CDF]_Norm[rooU1_"<< iBin<< "_prime]";
-//   RooAbsReal *thisCdfMCU1 = rooWksMCU1.function(name.str().c_str()); name.str("");
-// //   std::cout << "did the U1s " << std::endl;
-//   name << "rooDatGausAdd_" << iBin;
-//   RooAbsPdf *thisPdfDataU2 = rooWksDataU2.pdf(name.str().c_str()); name.str("");
-// //   std::cout << "got the pdf data" << std::endl;
-// 
-//   name << "rooMCGausAdd_" << iBin;
-//   RooAbsPdf *thisPdfMCU2 = rooWksMCU2.pdf(name.str().c_str()); name.str("");
-//   
-//   name << "rooDatGausAdd_" << iBin <<"_cdf_Int[rooU1_"<< iBin<< "_prime|CDF]_Norm[rooU1_"<< iBin<< "_prime]";
-//   RooAbsReal *thisCdfDataU2 = rooWksDataU2.function(name.str().c_str()); name.str("");
-//   name << "rooMCGausAdd_" << iBin <<"_cdf_Int[rooU1_"<< iBin<< "_prime|CDF]_Norm[rooU1_"<< iBin<< "_prime]";
-//   RooAbsReal *thisCdfMCU2 = rooWksMCU2.function(name.str().c_str()); name.str("");
-//   
-//   std::stringstream varName; varName << "rooU1_"<<iBin; // not the memory leak
-// 
-//   RooRealVar* myXdU1 =  (RooRealVar*) rooWksDataU1.var(varName.str().c_str());
-//   RooRealVar* myXmU1 =  (RooRealVar*) rooWksMCU1.var(varName.str().c_str());
-// //   
-//   RooRealVar* myXdU2 =  (RooRealVar*) rooWksDataU2.var(varName.str().c_str());
-//   RooRealVar* myXmU2 =  (RooRealVar*) rooWksMCU2.var(varName.str().c_str());
-  
-//   myXdU1->setVal(pU1);
-//   std::cout <<  "data cdf graph1 = "  <<thisCdfDataU1->getVal() << std::endl;
-//   std::cout <<  "data pdf graph1 = "  <<thisPdfDataU1->getVal() << std::endl;
-//   myXdU2->setVal(pU2);
-//   std::cout <<  "data cdf graph2 = "  <<thisCdfDataU2->getVal() << std::endl;
-//   std::cout <<  "data pdf graph3 = "  <<thisPdfDataU2->getVal() << std::endl;
-//   myXmU1->setVal(pU1);
-//   std::cout <<  "MC cdf graph1 = "  <<thisCdfMCU1->getVal() << std::endl;
-//   std::cout <<  "MC pdf graph1 = "  <<thisPdfMCU1->getVal() << std::endl;
-//   myXmU2->setVal(pU2);
-//   std::cout <<  "MC cdf graph2 = "  <<thisCdfMCU2->getVal() << std::endl;
-//   std::cout <<  "MC pdf graph2 = "  <<thisPdfMCU2->getVal() << std::endl;
-//   
-//   RooPlot *rooFrame = myXdU1->frame(Title(TString("Plot of MC and Data: Double-Gaussians" )));
-//   thisPdfDataU1->plotOn(rooFrame,RooFit::LineColor(kRed));
-// //   thisCdfDataU1->plotOn(rooFrame,RooFit::LineColor(kGreen));
-//   iC->cd(); rooFrame->Draw();
-//   iC->SaveAs((varName.str()+"_g.png").c_str());
-//   
-  std::stringstream name;
-  name << "sig_" << iBin;
-  RooAbsPdf *thisPdfDataU1_2 = rooWData[0]->pdf(name.str().c_str()); name.str("");
-
-  name << "sig_" << iBin;
-  RooAbsPdf *thisPdfMCU1_2 = rooWMC[0]->pdf(name.str().c_str()); name.str("");
-
-//   std::cout << "got the pdf MC" << std::endl;
-  
-  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
-  RooAbsReal *thisCdfDataU1_2 = rooWData[0]->function(name.str().c_str()); name.str("");
-  
-  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
-  RooAbsReal *thisCdfMCU1_2 = rooWMC[0]->function(name.str().c_str()); name.str("");
-//   std::cout << "did the U1s " << std::endl;
-  name << "sig_" << iBin;
-  RooAbsPdf *thisPdfDataU2_2 = rooWData[1]->pdf(name.str().c_str()); name.str("");
-//   std::cout << "got the pdf data" << std::endl;
-
-  name << "sig_" << iBin;
-  RooAbsPdf *thisPdfMCU2_2 = rooWMC[1]->pdf(name.str().c_str()); name.str("");
-  
-  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
-  RooAbsReal *thisCdfDataU2_2 = rooWData[1]->function(name.str().c_str()); name.str("");
-  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
-  RooAbsReal *thisCdfMCU2_2 = rooWMC[1]->function(name.str().c_str()); name.str("");
-  
-  std::stringstream varName;
-  varName.str("");varName << "u_"<<iBin; // not the memory leak
-
-  RooRealVar* myXdU1_2 =  (RooRealVar*) rooWData[0]->var(varName.str().c_str());
-  RooRealVar* myXmU1_2 =  (RooRealVar*) rooWMC[0]->var(varName.str().c_str());
-//   
-  RooRealVar* myXdU2_2 =  (RooRealVar*) rooWData[1]->var(varName.str().c_str());
-  RooRealVar* myXmU2_2 =  (RooRealVar*) rooWMC[1]->var(varName.str().c_str());
-  
-  double pU1ValD = triGausInvGraphPDF(pU1,iGenPt,thisCdfMCU1_2,thisCdfDataU1_2,thisPdfMCU1_2,thisPdfDataU1_2,myXdU1_2,myXmU1_2,iBin,pDefU1);
-  double pU2ValD = triGausInvGraphPDF(pU2,iGenPt,thisCdfMCU2_2,thisCdfDataU2_2,thisPdfMCU2_2,thisPdfDataU2_2,myXdU2_2,myXmU2_2,iBin,0);
-  
-  
-  pDefU1 *= (pDU1/pMU1);
-  
-  pU1   = /*pDefU1             +*/ pU1ValD;
-  pU2   =                      pU2ValD;
-  iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  
-
-   iU1   = pU1; 
-  iU2   = pU2;
- 
-  return;
-}
-
 void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                        double iLepPt,double iLepPhi,
-                       TGraphErrors *iU1Default, TGraphErrors *iU1Default2,
+                       TGraphErrors *iU1Default,
                        double &iU1,double &iU2,double iFluc,double iScale) {
   
   double pDefU1    = iU1Default->Eval(iGenPt);
-  double pDefU1_2    = iU1Default2->Eval(iGenPt);
-//   std::cout << "---------------------------" << std::endl;
-//     std::cout << "original u1 = " << iU1 << std::endl;
 
   double iGenPt2 = 0;
   Int_t nbinsPt = vZPtBins.size()-1;
@@ -1171,8 +791,8 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   double pU1   = pU*pCos; // U1 in data
   double pU2   = pU*pSin; // U2 in data
   double pU1Diff  = pU1-pDefU1; // subtract the mean1 from MC?
-  double pU1Diff2  = pU1-pDefU1_2; // subtract the mean2 also from MC?
-  double pU1MeanDiff = pDefU1-pDefU1_2;
+//   double pU1Diff2  = pU1-pDefU1_2; // subtract the mean2 also from MC?
+//   double pU1MeanDiff = pDefU1-pDefU1_2;
   double pU2Diff  = pU2; // don't care because expect mean to be ~0
   double p1Charge        = pU1Diff/fabs(pU1Diff);
   double p2Charge        = pU2Diff/fabs(pU2Diff);
@@ -1205,19 +825,13 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   RooRealVar* myXdU2 =  (RooRealVar*) rooWData[1]->var(varName.str().c_str());
   RooRealVar* myXmU2 =  (RooRealVar*) rooWMC[1]->var(varName.str().c_str());
   
-//   sw.Start();
   double pU1ValD = triGausInvGraphPDF(pU1,iGenPt,thisCdfMCU1,thisCdfDataU1,thisPdfMCU1,thisPdfDataU1,myXdU1,myXmU1,iBin,pDefU1);
-//   sw.Stop();
-//   std::cout << "Real time, inversion = " << sw.RealTime() << std::endl;
-//   sw.Reset();
   double pU2ValD = triGausInvGraphPDF(pU2,iGenPt,thisCdfMCU2,thisCdfDataU2,thisPdfMCU2,thisPdfDataU2,myXdU2,myXmU2,iBin,0);
 
   pU1   = /*pDefU1             +*/ pU1ValD;
   pU2   =                      pU2ValD;
   iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
   iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-//   std::cout << "u1 = " << pU1 << std::endl;
-//   std::cout << "met  = " << iMet << std::endl;
   
   iU1   = pU1; 
   iU2   = pU2;
@@ -1227,12 +841,8 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
 
 void RecoilCorrector::metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                        double iLepPt,double iLepPhi,
-                       TGraphErrors *iU1Default, TGraphErrors *iU1Default2,
                        double &iU1,double &iU2,double iFluc,double iScale) {
   
-  double pDefU1    = iU1Default->Eval(iGenPt);
-  double pDefU1_2    = iU1Default2->Eval(iGenPt);
-
   double iGenPt2 = 0;
   Int_t nbinsPt = vZPtBins.size()-1;
   int iBin = 0;
