@@ -155,7 +155,7 @@ void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Doubl
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitRecoilZmm3(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
+void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
                   Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
                   Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
 	              Bool_t  sigOnly=1,     // signal event only?
