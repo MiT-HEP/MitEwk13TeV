@@ -150,7 +150,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
 //=== MAIN MACRO ================================================================================================= 
 
-void footprint_correct(TString infilename="/data/blue/Bacon/Run2/wz_flat_final_read/Wenu/ntuples/we_select.raw.root",  // input ntuple
+void footprint_correct(TString infilename="/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/we_select.root",  // input ntuple
 //void footprint_correct(TString infilename="/data/blue/jlawhorn/Wenu/ntuples/we_select.raw.root",  // input ntuple
 		       std::string uparName = "puppiU1",
 		       std::string uprpName = "puppiU2",
@@ -192,6 +192,7 @@ void footprint_correct(TString infilename="/data/blue/Bacon/Run2/wz_flat_final_r
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
   TLorentzVector *lep=0;
+  TLorentzVector *lep_raw=0;
   TLorentzVector *sc=0; 
   TLorentzVector *genLep=0;
   TLorentzVector *genPreLep=0;
@@ -245,6 +246,7 @@ void footprint_correct(TString infilename="/data/blue/Bacon/Run2/wz_flat_final_r
     intree->SetBranchAddress("puppiU2", &u2);  // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
+    intree->SetBranchAddress("lep_raw",      &lep_raw);       // lepton 4-vector
     intree->SetBranchAddress("genLep",   &genLep);    // lepton 4-vector
     intree->SetBranchAddress("genLep", &genPreLep);  // lepton 4-vector
     intree->SetBranchAddress("sc",       &sc);        // electron Supercluster 4-vector
@@ -256,14 +258,14 @@ void footprint_correct(TString infilename="/data/blue/Bacon/Run2/wz_flat_final_r
     //for(Int_t ientry=0; ientry<100; ientry++) {
       intree->GetEntry(ientry);
       
-      if(sc->Pt()        < PT_CUT)  continue;   
-      if(fabs(sc->Eta()) > ETA_CUT) continue;
+      if(lep->Pt()        < PT_CUT)  continue;   
       if(fabs(lep->Eta()) > ETA_CUT) continue;
-      if(lep->Pt()        < PT_CUT)  continue;
+      if(fabs(lep_raw->Eta()) > ETA_CUT) continue;
+      if(lep_raw->Pt()        < PT_CUT)  continue;
       
       TVector2 vMET;    vMET.Set(met*cos(metPhi), met*sin(metPhi));
       TVector2 vBoson;  vBoson.Set(genVPt*cos(genVPhi), genVPt*sin(genVPhi));
-      TVector2 vLep;    vLep.Set(lep->Pt()*cos(lep->Phi()),lep->Pt()*sin(lep->Phi()));
+      TVector2 vLep;    vLep.Set(lep_raw->Pt()*cos(lep_raw->Phi()),lep_raw->Pt()*sin(lep_raw->Phi()));
       TVector2 vGenLep; vGenLep.Set(genPreLep->Pt()*cos(genPreLep->Phi()),genPreLep->Pt()*sin(genPreLep->Phi()));
       TVector2 vReco = -1.0*(vMET+vLep);
 
@@ -275,8 +277,8 @@ void footprint_correct(TString infilename="/data/blue/Bacon/Run2/wz_flat_final_r
       //cout << sqrt(u1*u1+u2*u2) << ", " << sqrt(u1e*u1e+u2e*u2e) << ", " << vReco.Mod() << endl;
 
       for (Int_t i=0; i<nbins; i++) {
-	if( sc->Eta()>lower[i] && sc->Eta()<upper[i] ) {
-	  pBias[i]->Fill(cos(vLep.DeltaPhi(vBoson)),u1e/lep->Pt());
+	if( lep->Eta()>lower[i] && lep->Eta()<upper[i] ) {
+	  pBias[i]->Fill(cos(vLep.DeltaPhi(vBoson)),u1e/lep_raw->Pt());
 	}
       }
 
