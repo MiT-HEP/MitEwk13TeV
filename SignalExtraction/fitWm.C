@@ -838,7 +838,7 @@ void fitWm(const TString  outputDir,   // output directory
           weight *= scale1fbUp*lumi*corr;
           weight2 *= scale1fbUp*lumi2*corr;
         }
-        if(pileupUp) {
+        if(pileupDown){
           weight *= scale1fbDown*lumi*corr;
           weight2 *= scale1fbDown*lumi2*corr;
         }
@@ -869,9 +869,9 @@ void fitWm(const TString  outputDir,   // output directory
 //             hWmunuMet_PileupDown->Fill(corrMet,weightDown);
             if(q>0) {
               if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              if(doKeys){
+              else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              else if(doKeys){
                 if(fabs(genVy)<0.5)
                   recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
                 else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -903,9 +903,9 @@ void fitWm(const TString  outputDir,   // output directory
               corrMet=met, corrMetPhi=metPhi;
             } else {
               if(doInclusive) recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              if(doKeys){
+              else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              else if(doKeys){
                 if(fabs(genVy)<0.5)
                   recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
                 else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -970,9 +970,9 @@ void fitWm(const TString  outputDir,   // output directory
           if(q>0) {              
             pU1 = 0; pU2 = 0; 
             if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            if(doKeys){
+            else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(doKeys){
               if(fabs(genVy)<0.5)
                 recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
               else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -996,9 +996,9 @@ void fitWm(const TString  outputDir,   // output directory
           else {
             pU1 = 0; pU2 = 0; 
             if(doInclusive) recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            if(doKeys){
+            else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(doKeys){
               if(fabs(genVy)<0.5)
                 recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
               else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)

@@ -581,7 +581,7 @@ void fitWe(const TString  outputDir,   // output directory
           weight *= scale1fbUp*lumi*corr;
           weight2 *= scale1fbUp*lumi2*corr;
         }
-        if(pileupUp) {
+        if(pileupDown) {
           weight *= scale1fbDown*lumi*corr;
           weight2 *= scale1fbDown*lumi2*corr;
         }
@@ -618,9 +618,9 @@ void fitWe(const TString  outputDir,   // output directory
 	    hWenuMet_PileupDown->Fill(corrMet,weightDown);
 	    if(q>0) {
 	      if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-          if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-          if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-          if(doKeys){
+              else  if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+             else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+         else if(doKeys){
             if(fabs(genVy)<0.5)
               recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -654,9 +654,9 @@ void fitWe(const TString  outputDir,   // output directory
           }
 	    } else { 
 	      if(doInclusive)recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-          if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-          if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-	      if(doKeys){
+          else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+          else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+	      else if(doKeys){
             if(fabs(genVy)<0.5)
               recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -717,9 +717,9 @@ void fitWe(const TString  outputDir,   // output directory
 	      hAntiWenuMet->Fill(corrMet,weight2);
 	      if(q>0) {
             if(doInclusive)recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-            if(doKeys){
+            else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(doKeys){
               if(fabs(genVy)<0.5)
                 recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
               else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -741,9 +741,9 @@ void fitWe(const TString  outputDir,   // output directory
             corrMet=met, corrMetPhi=metPhi;
 	      } else {
             if(doInclusive)recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-            if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
-            if(doKeys){
+            else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0);
+            else if(doKeys){
               if(fabs(genVy)<0.5)
                 recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep_raw->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
               else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -771,8 +771,8 @@ void fitWe(const TString  outputDir,   // output directory
           TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
           Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
           hEWKMet->Fill(corrMetWithLepton,weight);
-          hEWKMet_PileupUp->Fill(corrMetWithLepton,weight);
-          hEWKMet_PileupDown->Fill(corrMetWithLepton,weight);
+          hEWKMet_PileupUp->Fill(corrMetWithLepton,weightUp);
+          hEWKMet_PileupDown->Fill(corrMetWithLepton,weightDown);
           if(q>0) {
             hEWKMetp->Fill(corrMetWithLepton,weight); 
             hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp); 
