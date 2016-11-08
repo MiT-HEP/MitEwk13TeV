@@ -179,39 +179,49 @@ void fitWm(const TString  outputDir,   // output directory
   const TString format("png"); 
 
 
+  // ===================== Recoil correction files ============================
 //   // for Puppi
-  RecoilCorrector *recoilCorr = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
-  recoilCorr->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05/");
-  recoilCorr->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
-  recoilCorr->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
-  //recoilCorr->loadRooWorkspacesMC("../Recoil/WmpMCPuppi/");
+  RecoilCorrector *recoilCorr = new  RecoilCorrector("","")
+  recoilCorr->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi/");
+  recoilCorr->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg/");
+  recoilCorr->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
   
-  RecoilCorrector *recoilCorrm = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
-  recoilCorrm->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05/");
-  recoilCorrm->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
-  recoilCorrm->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
-  //recoilCorrm->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_bkg/");
-  //recoilCorrm->loadRooWorkspacesMC("../Recoil/WmmMC_newBacon/");
+  RecoilCorrector *recoilCorrm = new  RecoilCorrector("",""); 
+  recoilCorrm->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi/");
+  recoilCorrm->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg/");
+  recoilCorrm->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
+  
+  // -------------------------- by eta bin -------------------------------------
+  RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","")
+  recoilCorr05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05/");
+  recoilCorr05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
+  recoilCorr05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
+  
+  RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("",""); 
+  recoilCorrm05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05/");
+  recoilCorrm05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
+  recoilCorrm05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
 
-  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("",""); 
   recoilCorr051->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05-1/");
   recoilCorr051->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05-1/");
   recoilCorr051->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05-1/");
 
-  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("",""); 
   recoilCorrm051->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05-1/");
   recoilCorrm051->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05-1/");
   recoilCorrm051->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05-1/");
 
-  RecoilCorrector *recoilCorr1 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
   recoilCorr1->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap1/");
   recoilCorr1->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap1/");
   recoilCorr1->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap1/");
 
-  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("",""); 
   recoilCorrm1->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap1/");
   recoilCorrm1->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap1/");
   recoilCorrm1->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap1/");  
+  // ==========================================================================
   
   // ----------------------------------------------------
   // Load the plots of relative difference, to create the up/down shapes
@@ -802,7 +812,7 @@ void fitWm(const TString  outputDir,   // output directory
             if(q>0) {
               //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               if(fabs(genVy)<0.5)
-                recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+                recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
                 recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               else
@@ -826,7 +836,7 @@ void fitWm(const TString  outputDir,   // output directory
             } else {
               //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               if(fabs(genVy)<0.5)
-                recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+                recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
                 recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
               else
@@ -884,7 +894,7 @@ void fitWm(const TString  outputDir,   // output directory
           if(q>0) {              
             pU1 = 0; pU2 = 0; 
             if(fabs(genVy)<0.5)
-              recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
               recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             else
@@ -898,7 +908,7 @@ void fitWm(const TString  outputDir,   // output directory
           else { 
             pU1 = 0; pU2 = 0; 
             if(fabs(genVy)<0.5)
-              recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
               recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             else
