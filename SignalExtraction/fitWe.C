@@ -147,39 +147,50 @@ void fitWe(const TString  outputDir,   // output directory
   // recoil correction
   //, (!) uncomment to perform corrections to recoil from W-MC/Z-MC
 
-  // for Puppi
-  RecoilCorrector *recoilCorr = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
-  recoilCorr->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05/");
-  recoilCorr->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
-  recoilCorr->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
-  //recoilCorr->loadRooWorkspacesMC("../Recoil/WmpMCPuppi/");
+  // ======================= Recoil Corrections ================================
+  // for Puppi, inclusive
+  RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
+  recoilCorr->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi/");
+  recoilCorr->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg/");
+  recoilCorr->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
   
-  RecoilCorrector *recoilCorrm = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
-  recoilCorrm->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05/");
-  recoilCorrm->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
-  recoilCorrm->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
-  //recoilCorrm->loadRooWorkspacesData("../Recoil/ZmmDataPuppi_bkg/");
-  //recoilCorrm->loadRooWorkspacesMC("../Recoil/WmmMC_newBacon/");
+  RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
+  recoilCorrm->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi/");
+  recoilCorrm->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg/");
+  recoilCorrm->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
 
-  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  // --------------------- Eta-binned recoil corrections -----------------------
+  RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
+  recoilCorr05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05/");
+  recoilCorr05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
+  recoilCorr05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
+  
+  RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
+  recoilCorrm05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05/");
+  recoilCorrm05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
+  recoilCorrm05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
+
+  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
   recoilCorr051->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05-1/");
   recoilCorr051->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05-1/");
   recoilCorr051->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05-1/");
 
-  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
   recoilCorrm051->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05-1/");
   recoilCorrm051->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05-1/");
   recoilCorrm051->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05-1/");
 
-  RecoilCorrector *recoilCorr1 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
   recoilCorr1->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap1/");
   recoilCorr1->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap1/");
   recoilCorr1->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap1/");
 
-  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("",""); // get tgraph from here? what i guess its mean so it doesn't matter?
+  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
   recoilCorrm1->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap1/");
   recoilCorrm1->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap1/");
   recoilCorrm1->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap1/"); 
+  
+  // ===========================================================================
   
   TFile *_rdWmp = new TFile("shapeDiff/Wep_relDiff.root");
   TFile *_rdWmm = new TFile("shapeDiff/Wem_relDiff.root");
@@ -420,17 +431,21 @@ void fitWe(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep_raw",      &lep_raw);       // lepton 4-vector
 //     intree->SetBranchAddress("sc",       &sc);        // electron Supercluster 4-vector
   
+
+  
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
+      
+      // 2d Vectors to correct MET for lepton scaling/smearing
+      TVector2 vLepRaw((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));
+      TVector2 vLepCor((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
     
       double pU1         = 0;  //--
       double pU2         = 0;  //--
-
-
 
       Double_t effdata, effmc;
       Double_t corr=1;
@@ -485,19 +500,21 @@ void fitWe(const TString  outputDir,   // output directory
       
       if(typev[ifile]==eData) {
         if(lep->Pt()        < PT_CUT)  continue;
-        hDataMet->Fill(met+lep_raw->Pt()-lep->Pt()); // FIX: need to be vector sum instead of scalar sum
-	if(met+lep_raw->Pt()-lep->Pt() < 0) // also fix this part when we change to vector sum
-	  met = 0;
-	else
-	  met = met+lep_raw->Pt()-lep->Pt();
-        if(q>0) { hDataMetp->Fill(met); } 
-        else    { hDataMetm->Fill(met); }
+        // Correct MET to use raw lepton
+        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
+        hDataMet->Fill(corrMetWithLepton); 
+        if(q>0) { hDataMetp->Fill(corrMetWithLepton); } 
+        else    { hDataMetm->Fill(corrMetWithLepton); }
       }
-      else if(typev[ifile]==eAntiData) { // fix met definition/sum here also
-	if(lep->Pt()        < PT_CUT)  continue;
-	hAntiDataMet->Fill(met);
-        if(q>0) { hAntiDataMetp->Fill(met); } 
-        else    { hAntiDataMetm->Fill(met); }
+      else if(typev[ifile]==eAntiData) {
+        if(lep->Pt()        < PT_CUT)  continue;
+        // Correct MET to use raw lepton
+        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
+        hAntiDataMet->Fill(corrMetWithLepton);
+        if(q>0) { hAntiDataMetp->Fill(corrMetWithLepton); } 
+        else    { hAntiDataMetm->Fill(corrMetWithLepton); }
       }
       else {
         Double_t weight = 1;Double_t weightUp = 1;Double_t weightDown = 1;
@@ -519,8 +536,7 @@ void fitWe(const TString  outputDir,   // output directory
         //lepPt = lepPt + eleCorr*lepPt;
         Double_t lepPtup = lep->Pt();
         Double_t lepPtdown = lep->Pt();
-        TVector2 vLepRaw((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));
-        TVector2 vLepCor((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
+
         //std::cout << "hey hey " << typev[ifile] << " " << eAntiWenu << " " << eWenu << std::endl;
         if(typev[ifile]==eWenu || typev[ifile]==eBKG) {
         //if(typev[ifile]==eWenu) {
@@ -659,7 +675,7 @@ void fitWe(const TString  outputDir,   // output directory
             hAntiWenuMetp->Fill(corrMetWithLepton,weight2); // *w2 
             corrMet=met, corrMetPhi=metPhi;
 	      } else { 
-            recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
 //             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
 //             Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
             Double_t corrMetWithLepton = met;
@@ -668,11 +684,10 @@ void fitWe(const TString  outputDir,   // output directory
 	      }
 	    }
 	  }
-        if(typev[ifile]==eEWK) { //FIX to have electron correction with MET
+        if(typev[ifile]==eEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
-//           TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-//           Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
-          Double_t corrMetWithLepton = met;
+          TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+          Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
           hEWKMet->Fill(corrMetWithLepton,weight);
           hEWKMet_PileupUp->Fill(corrMetWithLepton,weight);
           hEWKMet_PileupDown->Fill(corrMetWithLepton,weight);
