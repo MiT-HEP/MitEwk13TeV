@@ -160,12 +160,12 @@ void fitWe(const TString  outputDir,   // output directory
   recoilCorrm->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
 
   // --------------------- Eta-binned recoil corrections -----------------------
-  RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
+  RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
   recoilCorr05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05/");
   recoilCorr05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
   recoilCorr05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
   
-  RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
+  RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
   recoilCorrm05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05/");
   recoilCorrm05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
   recoilCorrm05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
@@ -297,15 +297,8 @@ void fitWe(const TString  outputDir,   // output directory
   TH1D *hAntiEWKMet    = new TH1D("hAntiEWKMet", "",  NBINS,0,METMAX); hAntiEWKMet->Sumw2();
   TH1D *hAntiEWKMetp   = new TH1D("hAntiEWKMetp", "", NBINS,0,METMAX); hAntiEWKMetp->Sumw2();
   TH1D *hAntiEWKMetm   = new TH1D("hAntiEWKMetm", "", NBINS,0,METMAX); hAntiEWKMetm->Sumw2();
-  
 
-  TH1D *hQCDMet   = new TH1D("hQCDMet",  "",NBINS,0,METMAX); hQCDMet->Sumw2();
-  TH1D *hQCDMetp  = new TH1D("hQCDMetp", "",NBINS,0,METMAX); hQCDMetp->Sumw2();
-  TH1D *hQCDMetm  = new TH1D("hQCDMetm", "",NBINS,0,METMAX); hQCDMetm->Sumw2();
-
-
-
- cout << "Loading trigger efficiencies..." << endl;
+  cout << "Loading trigger efficiencies..." << endl;
 
   TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   CEffUser2D dataHLTEff_pos;
@@ -702,7 +695,7 @@ void fitWe(const TString  outputDir,   // output directory
             hEWKMetm_PileupDown->Fill(corrMetWithLepton,weightDown); 
           }
         }
-	if(typev[ifile]==eAntiEWK) { 
+        if(typev[ifile]==eAntiEWK) { 
           if(lep->Pt()        < PT_CUT)  continue;
           // don't have raw lepton info in ntuple at the moment
 //           TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
@@ -711,12 +704,6 @@ void fitWe(const TString  outputDir,   // output directory
           hAntiEWKMet->Fill(corrMetWithLepton,weight2);
           if(q>0) { hAntiEWKMetp->Fill(corrMetWithLepton,weight2); }
           else    { hAntiEWKMetm->Fill(corrMetWithLepton,weight2); }
-        }
-        if(typev[ifile]==eBKG) { // ?
-          if(lep->Pt() < PT_CUT) continue;
-          hQCDMet->Fill(met,weight);
-          if(q>0) { hQCDMetp->Fill(met,weight); }
-          else    { hQCDMetm->Fill(met,weight); }
         }
       }
     }
