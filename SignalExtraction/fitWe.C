@@ -661,14 +661,26 @@ void fitWe(const TString  outputDir,   // output directory
 	    if(lepPt        > PT_CUT) {
 	      hAntiWenuMet->Fill(corrMet,weight2);
 	      if(q>0) {
-            recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//             recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            if(fabs(genVy)<0.5)
+              recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+              recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else
+              recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
 //             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
 //             Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
             Double_t corrMetWithLepton = met;
             hAntiWenuMetp->Fill(corrMetWithLepton,weight2); // *w2 
             corrMet=met, corrMetPhi=metPhi;
 	      } else { 
-            recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+//             recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            if(fabs(genVy)<0.5)
+              recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+              recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else
+              recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
 //             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
 //             Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
             Double_t corrMetWithLepton = met;
