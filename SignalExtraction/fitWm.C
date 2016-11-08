@@ -92,6 +92,13 @@ void fitWm(const TString  outputDir,   // output directory
   // Settings 
   //==============================================================================================================   
   
+  // some flags to handle Recoil corrections
+  bool doKeys = false;
+  bool doInclusive = false;
+  // some flags to handle the pileup Up/Down systematics
+  bool pileupUp = false;
+  bool pileupDown = false;
+  
   // MET histogram binning and range
   const Int_t    NBINS   = 75;
   const Double_t METMAX  = 150;
@@ -105,47 +112,47 @@ void fitWm(const TString  outputDir,   // output directory
     // efficiency files
  
   const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
-  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CT/eff.root";
+  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
+  const TString dataSelEffName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
+  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
+  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
+  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = baseDir + "MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = baseDir + "MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = baseDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = baseDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CTnegative/eff.root";
 
   // efficiency files 2Bins
 
-  const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/MG/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/MG/eff.root";
-  const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/CT/eff.root";
-  const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/CT/eff.root";
+  const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
+  const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
+  const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEff2BinName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataTrkEff2BinName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmTrkEff2BinName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmTrkEff2BinName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataTrkEff2BinName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
+  const TString dataTrkEff2BinName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
+  const TString zmmTrkEff2BinName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEff2BinName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/MG/eff.root";
-  const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/MG/eff.root";
-  const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/CT/eff.root";
-  const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/CT/eff.root";
+  const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/CTnegative/eff.root";
 
   TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
   TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
@@ -180,47 +187,101 @@ void fitWm(const TString  outputDir,   // output directory
 
 
   // ===================== Recoil correction files ============================
-//   // for Puppi
-  RecoilCorrector *recoilCorr = new  RecoilCorrector("","")
-  recoilCorr->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi/");
-  recoilCorr->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg/");
-  recoilCorr->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7");
+  // for Puppi, inclusive
+  RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
+  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
-  RecoilCorrector *recoilCorrm = new  RecoilCorrector("",""); 
-  recoilCorrm->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi/");
-  recoilCorrm->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg/");
-  recoilCorrm->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi/");
+  RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
+  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
-  // -------------------------- by eta bin -------------------------------------
-  RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","")
-  recoilCorr05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05/");
-  recoilCorr05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
-  recoilCorr05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
+  // placeholders until recoil files are fixed
+  RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
+  recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
+  recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
-  RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("",""); 
-  recoilCorrm05->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05/");
-  recoilCorrm05->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05/");
-  recoilCorrm05->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05/");
+  RecoilCorrector *recoilCorrPuUpm = new  RecoilCorrector("","");
+  recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  
+  RecoilCorrector *recoilCorrPuDown = new  RecoilCorrector("","");
+  recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
+  recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  
+  RecoilCorrector *recoilCorrPuDownm = new  RecoilCorrector("","");
+  recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
 
-  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("",""); 
-  recoilCorr051->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap05-1/");
-  recoilCorr051->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05-1/");
-  recoilCorr051->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05-1/");
+  // --------------------- Eta-binned recoil corrections -----------------------
+  RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
+  recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory.Data()));
+  recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  
+  RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
+  recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory.Data()));
+  recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
 
-  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("",""); 
-  recoilCorrm051->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap05-1/");
-  recoilCorrm051->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap05-1/");
-  recoilCorrm051->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap05-1/");
+  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
+  recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory.Data()));
+  recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+
+  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
+  recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory.Data()));
+  recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
-  recoilCorr1->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmpMCPuppi_rap1/");
-  recoilCorr1->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap1/");
-  recoilCorr1->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap1/");
+  recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory.Data()));
+  recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
 
-  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("",""); 
-  recoilCorrm1->loadRooWorkspacesMCtoCorrect("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/WmmMCPuppi_rap1/");
-  recoilCorrm1->loadRooWorkspacesData("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmDataPuppi_bkg_rap1/");
-  recoilCorrm1->loadRooWorkspacesMC("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7/ZmmMCPuppi_rap1/");  
+  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
+  recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory.Data()));
+  recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
+  
+  // ---------------------- KEYS -------------
+  RecoilCorrector *recoilCorrKeys05 = new  RecoilCorrector("","");
+  recoilCorrKeys05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_keys_rap05/",directory.Data()));
+  recoilCorrKeys05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  recoilCorrKeys05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  
+  RecoilCorrector *recoilCorrKeysm05 = new  RecoilCorrector("","");
+  recoilCorrKeysm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_keys_rap05/",directory.Data()));
+  recoilCorrKeysm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  recoilCorrKeysm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+
+  RecoilCorrector *recoilCorrKeys051 = new  RecoilCorrector("","");
+  recoilCorrKeys051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_keys_rap05-1/",directory.Data()));
+  recoilCorrKeys051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  recoilCorrKeys051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+
+  RecoilCorrector *recoilCorrKeysm051 = new  RecoilCorrector("","");
+  recoilCorrKeysm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_keys_rap05-1/",directory.Data()));
+  recoilCorrKeysm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  recoilCorrKeysm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+
+  RecoilCorrector *recoilCorrKeys1 = new  RecoilCorrector("","");
+  recoilCorrKeys1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_keys_rap1/",directory.Data()));
+  recoilCorrKeys1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  recoilCorrKeys1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+
+  RecoilCorrector *recoilCorrKeysm1 = new  RecoilCorrector("","");
+  recoilCorrKeysm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_keys_rap1/",directory.Data()));
+  recoilCorrKeysm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  recoilCorrKeysm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
+  
   // ==========================================================================
   
   // ----------------------------------------------------
@@ -756,8 +817,8 @@ void fitWm(const TString  outputDir,   // output directory
         // corrected (smear/scale) lepton for MET correction
         TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
         // calculate the corrected MET
-        TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
         if(typev[ifile]==eData) {
           hDataMet->Fill(corrMetWithLepton);
           if(q>0) { hDataMetp->Fill(corrMetWithLepton); }
@@ -773,8 +834,14 @@ void fitWm(const TString  outputDir,   // output directory
         //corr = 1.0;
         weight2*=scale1fb*lumi2*corr;
         weight *= scale1fb*lumi*corr;
-        weightUp *= scale1fbUp*lumi*corr;
-        weightDown *= scale1fbDown*lumi*corr;
+        if(pileupUp) {
+          weight *= scale1fbUp*lumi*corr;
+          weight2 *= scale1fbUp*lumi2*corr;
+        }
+        if(pileupUp) {
+          weight *= scale1fbDown*lumi*corr;
+          weight2 *= scale1fbDown*lumi2*corr;
+        }
         
         // Prepare 2-d Vector for raw Muon
 
@@ -798,56 +865,74 @@ void fitWm(const TString  outputDir,   // output directory
             
             corrMet=met, corrMetPhi=metPhi;
             hWmunuMet->Fill(corrMet,weight);
-            hWmunuMet_PileupUp->Fill(corrMet,weightUp);
-            hWmunuMet_PileupDown->Fill(corrMet,weightDown);
+//             hWmunuMet_PileupUp->Fill(corrMet,weightUp);
+//             hWmunuMet_PileupDown->Fill(corrMet,weightDown);
             if(q>0) {
-              //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              if(fabs(genVy)<0.5)
-                recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else
-                recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0); 
+              if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              if(doKeys){
+                if(fabs(genVy)<0.5)
+                  recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  recoilCorrKeys051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else
+                  recoilCorrKeys1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              } else {
+                if(fabs(genVy)<0.5)
+                  recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else
+                  recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              }
               // Compute the corrected MET value
               TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-              Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+              Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
               if(typev[ifile]==eWmunu)
               {
-                hWmunuMetp->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi;
+                hWmunuMetp->Fill(corrMetWithLepton,weight);
+//                 hWmunuMetp_PileupUp->Fill(corrMetWithLepton,weightUp);
+//                 hWmunuMetp_PileupDown->Fill(corrMetWithLepton,weightDown);
               }
               else
               {
-                hEWKMetp->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi; 
+                hEWKMetp->Fill(corrMetWithLepton,weight);
               }
-              //recoilCorrUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetp_PileupUp->Fill(corrMetWithLepton,weightUp); corrMet=met, corrMetPhi=metPhi;
-              //recoilCorrDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetp_PileupDown->Fill(corrMetWithLepton,weightDown);
+
               corrMet=met, corrMetPhi=metPhi;
             } else {
-              //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              if(fabs(genVy)<0.5)
-                recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else
-                recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0); 
-              //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,genLepPt,genLepPhi,pU1,pU2,0);
+              if(doInclusive) recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              if(doKeys){
+                if(fabs(genVy)<0.5)
+                  recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  recoilCorrKeysm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else
+                  recoilCorrKeysm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              } else {
+                if(fabs(genVy)<0.5)
+                  recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                else
+                  recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              }
               // Compute the corrected MET value
               TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-              Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+              Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
               if(typev[ifile]==eWmunu)
               {
-                hWmunuMetm->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi;
+                hWmunuMetm->Fill(corrMetWithLepton,weight);
+//                 hWmunuMetm_PileupUp->Fill(corrMetWithLepton,weightUp);
+//                 hWmunuMetm_PileupDown->Fill(corrMetWithLepton,weightDown);
               }
               else
               {
-                hEWKMetm->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi; 
+                hEWKMetm->Fill(corrMetWithLepton,weight);
               }
-              //recoilCorrmUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetm_PileupUp->Fill(corrMetWithLepton,weightUp);corrMet=met, corrMetPhi=metPhi;
-              //recoilCorrmDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-              hWmunuMetm_PileupDown->Fill(corrMetWithLepton,weightDown);corrMet=met, corrMetPhi=metPhi;
               corrMet=met, corrMetPhi=metPhi;
             }
             corrMet=met, corrMetPhi=metPhi;
@@ -879,60 +964,85 @@ void fitWm(const TString  outputDir,   // output directory
           if(lep->Pt()        < PT_CUT)  continue;
           Double_t corrMet=met, corrMetPhi=metPhi;
 //           TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-//           Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+//           Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
 //        this histogram isn't actually used in any results / fits
           hAntiWmunuMet->Fill(corrMet,weight2);
           if(q>0) {              
             pU1 = 0; pU2 = 0; 
-            if(fabs(genVy)<0.5)
-              recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-              recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else
-              recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0); 
+            if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            if(doKeys){
+              if(fabs(genVy)<0.5)
+                recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                recoilCorrKeys051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else
+                recoilCorrKeys1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            } else {
+              if(fabs(genVy)<0.5)
+                recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else
+                recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            }
             //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-            Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+            Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
             hAntiWmunuMetp->Fill(corrMetWithLepton,weight2); 
             corrMet = met; corrMetPhi = metPhi;
           } 
-          else { 
+          else {
             pU1 = 0; pU2 = 0; 
-            if(fabs(genVy)<0.5)
-              recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-              recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else
-              recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0); 
+            if(doInclusive) recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            if(doKeys){
+              if(fabs(genVy)<0.5)
+                recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                recoilCorrKeysm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else
+                recoilCorrKeysm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            } else {
+              if(fabs(genVy)<0.5)
+                recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              else
+                recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            }
             //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-            Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+            Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
             hAntiWmunuMetm->Fill(corrMetWithLepton,weight2);
             corrMet = met; corrMetPhi = metPhi; 
           }
         }
         if(typev[ifile]==eEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
-          TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-          Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+          TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+          Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
           hEWKMet->Fill(corrMetWithLepton,weight);
-          hEWKMet_PileupUp->Fill(corrMetWithLepton,weight);
-          hEWKMet_PileupDown->Fill(corrMetWithLepton,weight);
+//           hEWKMet_PileupUp->Fill(corrMetWithLepton,weightUp);
+//           hEWKMet_PileupDown->Fill(corrMetWithLepton,weightDown);
           if(q>0) {
             hEWKMetp->Fill(corrMetWithLepton,weight); 
-            hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp); 
-            hEWKMetp_PileupDown->Fill(corrMetWithLepton,weightDown); 
+            // RooFit doesn't see these histograms, only for combine, I will remove completely later
+//             hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp); 
+//             hEWKMetp_PileupDown->Fill(corrMetWithLepton,weightDown); 
           }
           else { 
             hEWKMetm->Fill(corrMetWithLepton,weight); 
-            hEWKMetm_PileupUp->Fill(corrMetWithLepton,weightUp); 
-            hEWKMetm_PileupDown->Fill(corrMetWithLepton,weightDown); 
+//             hEWKMetm_PileupUp->Fill(corrMetWithLepton,weightUp); 
+//             hEWKMetm_PileupDown->Fill(corrMetWithLepton,weightDown); 
           }
         }
         if(typev[ifile]==eAntiEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
-          TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
-          Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+          TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+          Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
           hAntiEWKMet->Fill(corrMetWithLepton,weight2);
           if(q>0) { hAntiEWKMetp->Fill(corrMetWithLepton,weight2); }
           else    { hAntiEWKMetm->Fill(corrMetWithLepton,weight2); }
