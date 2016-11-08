@@ -239,15 +239,15 @@ void fitWm(const TString  outputDir,   // output directory
    
   //
   // input ntuple file names
-  //
-  enum { eData, eWmunu, eEWK, eQCD, eAntiData, eAntiWmunu, eAntiEWK };  // data type enum
+  //                           V  fix to be eBKG like in fitWe
+  enum { eData, eWmunu, eEWK, eBKG, eAntiData, eAntiWmunu, eAntiEWK };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
   
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/boson_select.raw.root");  typev.push_back(eQCD);
+  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/boson_select.raw.root");  typev.push_back(eBKG);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/ewk_select1.root");  typev.push_back(eEWK);
 
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
@@ -542,6 +542,9 @@ void fitWm(const TString  outputDir,   // output directory
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
 
+      // vector containing raw lepton info for correcting MET
+      TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
+
       double pU1         = 0;  //--
       double pU2         = 0;  //--
 
@@ -733,18 +736,21 @@ void fitWm(const TString  outputDir,   // output directory
             eff2Bindata *= dataTrkEff2Bin_neg.getEff((lep->Eta()), lep->Pt()); 
             eff2Binmc   *= zmmTrkEff2Bin_neg.getEff((lep->Eta()), lep->Pt()); 
           }
-//       std::cout << "made it!" << std::endl;
       if(typev[ifile]==eData) {
-          
         // Apply the Rochester Corrections to data
         TLorentzVector mu1;
         mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
         float qter1=1.0;
         rmcor->momcor_data(mu1,q,0,qter1);
         if(mu1.Pt()        < PT_CUT)  continue;
-        hDataMet->Fill(met);
-        if(q>0) { hDataMetp->Fill(met); }
-        else    { hDataMetm->Fill(met); }
+        // corrected (smear/scale) lepton for MET correction
+        TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
+        // calculate the corrected MET
+        TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+        hDataMet->Fill(corrMetWithLepton);
+        if(q>0) { hDataMetp->Fill(corrMetWithLepton); }
+        else    { hDataMetm->Fill(corrMetWithLepton); }
       } else if(typev[ifile]==eAntiData) {
         // Apply the Rochester Corrections to data (anti-isolation)
         TLorentzVector mu1;
@@ -752,28 +758,35 @@ void fitWm(const TString  outputDir,   // output directory
         float qter1=1.0;
         rmcor->momcor_data(mu1,q,0,qter1);
         if(mu1.Pt()        < PT_CUT)  continue;
-        
-        hAntiDataMet->Fill(met);
-        if(q>0) { hAntiDataMetp->Fill(met); } 
-        else    { hAntiDataMetm->Fill(met); }   
+        // corrected (smear/scale) lepton for MET correction
+        TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
+        // calculate the corrected MET
+        TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+        hAntiDataMet->Fill(corrMetWithLepton);
+        if(q>0) { hAntiDataMetp->Fill(corrMetWithLepton); } 
+        else    { hAntiDataMetm->Fill(corrMetWithLepton); }   
       } else {
         Double_t weight = 1;Double_t weightUp = 1;Double_t weightDown = 1;
         Double_t weight2 =1;
-	//corr = 1.0;
+        //corr = 1.0;
         weight2*=scale1fb*lumi2*corr;
         weight *= scale1fb*lumi*corr;
         weightUp *= scale1fbUp*lumi*corr;
         weightDown *= scale1fbDown*lumi*corr;
         
+        // Prepare 2-d Vector for raw Muon
+
         // Do some Rochester corrections for MC
         TLorentzVector mu1;
         mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
         float qter1=1.0;
-
         rmcor->momcor_mc(mu1,q,0,qter1);
+        // corrected (smear/scale) lepton for MET correction
+        TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
         Double_t lepPt = mu1.Pt();
-        
-        if(typev[ifile]==eWmunu || typev[ifile]==eQCD) {
+        // change to have rochester corrected muon and raw lepton with MET corrected same way as electron channel 
+        if(typev[ifile]==eWmunu || typev[ifile]==eBKG) {
           Double_t corrMet=met, corrMetPhi=metPhi;
           if(lepPt        > PT_CUT) {
             double bin = 0;
@@ -782,118 +795,146 @@ void fitWm(const TString  outputDir,   // output directory
             }
             double w2 = 1.0;//hh_diff->GetBinContent(bin);
             
-	    corrMet=met, corrMetPhi=metPhi;
-	    hWmunuMet->Fill(corrMet,weight);
-	    hWmunuMet_PileupUp->Fill(corrMet,weightUp);
-	    hWmunuMet_PileupDown->Fill(corrMet,weightDown);
-	    if(q>0) {
-	      //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      if(fabs(genVy)<0.5)
-		recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-	      	recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      else
-		recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
-	      if(typev[ifile]==eWmunu)
-		{
-		  hWmunuMetp->Fill(corrMet,weight); corrMet=met, corrMetPhi=metPhi;
-		}
-	      else
-		{
-		  hEWKMetp->Fill(corrMet,weight); corrMet=met, corrMetPhi=metPhi; 
-		}
-	      //recoilCorrUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      hWmunuMetp_PileupUp->Fill(corrMet,weightUp);corrMet=met, corrMetPhi=metPhi;
-	      //recoilCorrDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      hWmunuMetp_PileupDown->Fill(corrMet,weightDown);
-	      corrMet=met, corrMetPhi=metPhi;
-	    } else { 
-	      //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      if(fabs(genVy)<0.5)
-	      	recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-	      	recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      else
-		recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
-	      //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,genLepPt,genLepPhi,pU1,pU2,0);
-	      if(typev[ifile]==eWmunu)
-		{
-		  hWmunuMetm->Fill(corrMet,weight); corrMet=met, corrMetPhi=metPhi;
-		}
-	      else
-		{
-		  hEWKMetm->Fill(corrMet,weight); corrMet=met, corrMetPhi=metPhi; 
-		}
-	      //recoilCorrmUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      hWmunuMetm_PileupUp->Fill(corrMet,weightUp);corrMet=met, corrMetPhi=metPhi;
-	      //recoilCorrmDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-	      hWmunuMetm_PileupDown->Fill(corrMet,weightDown);corrMet=met, corrMetPhi=metPhi;
-	      corrMet=met, corrMetPhi=metPhi;
-	    }
-	    corrMet=met, corrMetPhi=metPhi;
-	  }
-	  //             recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
-	  hWmunuMet_RecoilUp->Fill(corrMet,weight);
-	  if(q>0) {
-	    pU1 = 0; pU2 = 0; 
-	    hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
-	    corrMet=met, corrMetPhi=metPhi;
-	  } else { 
-	    pU1 = 0; pU2 = 0; 
-	    hWmunuMetm_RecoilUp->Fill(corrMet,weight);
-	    corrMet=met, corrMetPhi=metPhi;
-	  }
-	  hWmunuMet_RecoilDown->Fill(corrMet,weight);
-	  if(q>0) {
-	    pU1 = 0; pU2 = 0; 
-	    hWmunuMetp_RecoilDown->Fill(corrMet,weight);
-	    corrMet=met, corrMetPhi=metPhi;
-	  } else {
-              pU1 = 0; pU2 = 0; 
-              hWmunuMetm_RecoilDown->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+            hWmunuMet->Fill(corrMet,weight);
+            hWmunuMet_PileupUp->Fill(corrMet,weightUp);
+            hWmunuMet_PileupDown->Fill(corrMet,weightDown);
+            if(q>0) {
+              //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              if(fabs(genVy)<0.5)
+                recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              else
+                recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
+              // Compute the corrected MET value
+              TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+              Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+              if(typev[ifile]==eWmunu)
+              {
+                hWmunuMetp->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi;
+              }
+              else
+              {
+                hEWKMetp->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi; 
+              }
+              //recoilCorrUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetp_PileupUp->Fill(corrMetWithLepton,weightUp); corrMet=met, corrMetPhi=metPhi;
+              //recoilCorrDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetp_PileupDown->Fill(corrMetWithLepton,weightDown);
               corrMet=met, corrMetPhi=metPhi;
-	  }
-	}
+            } else {
+              //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              if(fabs(genVy)<0.5)
+                recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              else
+                recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
+              //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,genLepPt,genLepPhi,pU1,pU2,0);
+              // Compute the corrected MET value
+              TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+              Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCorr).Mod();
+              if(typev[ifile]==eWmunu)
+              {
+                hWmunuMetm->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi;
+              }
+              else
+              {
+                hEWKMetm->Fill(corrMetWithLepton,weight); corrMet=met, corrMetPhi=metPhi; 
+              }
+              //recoilCorrmUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetm_PileupUp->Fill(corrMetWithLepton,weightUp);corrMet=met, corrMetPhi=metPhi;
+              //recoilCorrmDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+              hWmunuMetm_PileupDown->Fill(corrMetWithLepton,weightDown);corrMet=met, corrMetPhi=metPhi;
+              corrMet=met, corrMetPhi=metPhi;
+            }
+            corrMet=met, corrMetPhi=metPhi;
+          }
+          //             recoilCorr.Correct(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),1,q);
+          // unused?
+          hWmunuMet_RecoilUp->Fill(corrMet,weight);
+          if(q>0) {
+            pU1 = 0; pU2 = 0; 
+            hWmunuMetp_RecoilUp->Fill(corrMet,weight); 
+            corrMet=met, corrMetPhi=metPhi;
+          } else { 
+            pU1 = 0; pU2 = 0; 
+            hWmunuMetm_RecoilUp->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+          }
+          hWmunuMet_RecoilDown->Fill(corrMet,weight);
+          if(q>0) {
+            pU1 = 0; pU2 = 0; 
+            hWmunuMetp_RecoilDown->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+          } else {
+            pU1 = 0; pU2 = 0; 
+            hWmunuMetm_RecoilDown->Fill(corrMet,weight);
+            corrMet=met, corrMetPhi=metPhi;
+          }
+        }
         if(typev[ifile]==eAntiWmunu) {
           if(lep->Pt()        < PT_CUT)  continue;
           Double_t corrMet=met, corrMetPhi=metPhi;
-          // apply recoil corrections to W MC
-          // old leptoon scale thing
+//           TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+//           Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+//        this histogram isn't actually used in any results / fits
           hAntiWmunuMet->Fill(corrMet,weight2);
-          if(q>0) {               
+          if(q>0) {              
             pU1 = 0; pU2 = 0; 
+            if(fabs(genVy)<0.5)
+              recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+              recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else
+              recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
             //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
-            hAntiWmunuMetp->Fill(corrMet,weight2); 
+            TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+            Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+            hAntiWmunuMetp->Fill(corrMetWithLepton,weight2); 
             corrMet = met; corrMetPhi = metPhi;
           } 
           else { 
             pU1 = 0; pU2 = 0; 
+            if(fabs(genVy)<0.5)
+              recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+              recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            else
+              recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0); 
             //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
+            TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+            Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
             hAntiWmunuMetm->Fill(corrMet,weight2);
             corrMet = met; corrMetPhi = metPhi; 
           }
         }
         if(typev[ifile]==eEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
-          hEWKMet->Fill(met,weight);
-          hEWKMet_PileupUp->Fill(met,weight);
-          hEWKMet_PileupDown->Fill(met,weight);
+          TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+          Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+          hEWKMet->Fill(corrMetWithLepton,weight);
+          hEWKMet_PileupUp->Fill(corrMetWithLepton,weight);
+          hEWKMet_PileupDown->Fill(corrMetWithLepton,weight);
           if(q>0) {
-            hEWKMetp->Fill(met,weight); 
-            hEWKMetp_PileupUp->Fill(met,weightUp); 
-            hEWKMetp_PileupDown->Fill(met,weightDown); 
+            hEWKMetp->Fill(corrMetWithLepton,weight); 
+            hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp); 
+            hEWKMetp_PileupDown->Fill(corrMetWithLepton,weightDown); 
           }
           else { 
-            hEWKMetm->Fill(met,weight); 
-            hEWKMetm_PileupUp->Fill(met,weightUp); 
-            hEWKMetm_PileupDown->Fill(met,weightDown); 
+            hEWKMetm->Fill(corrMetWithLepton,weight); 
+            hEWKMetm_PileupUp->Fill(corrMetWithLepton,weightUp); 
+            hEWKMetm_PileupDown->Fill(corrMetWithLepton,weightDown); 
           }
         }
         if(typev[ifile]==eAntiEWK) {
           if(lep->Pt()        < PT_CUT)  continue;
-          hAntiEWKMet->Fill(met,weight2);
-          if(q>0) { hAntiEWKMetp->Fill(met,weight2); }
-          else    { hAntiEWKMetm->Fill(met,weight2); }
+          TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+          Double_t corrMetWithLepton = (vMetCorr + vMuRaw - vMuCorr).Mod();
+          hAntiEWKMet->Fill(corrMetWithLepton,weight2);
+          if(q>0) { hAntiEWKMetp->Fill(corrMetWithLepton,weight2); }
+          else    { hAntiEWKMetm->Fill(corrMetWithLepton,weight2); }
         }
       }
     }
