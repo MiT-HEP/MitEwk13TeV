@@ -503,8 +503,9 @@ void fitWe(const TString  outputDir,   // output directory
       else if(typev[ifile]==eAntiData) {
         if(lep->Pt()        < PT_CUT)  continue;
         // Correct MET to use raw lepton
-        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-        Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
+//         TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+//         Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
+        Double_t corrMetWithLepton = met;
         hAntiDataMet->Fill(corrMetWithLepton);
         if(q>0) { hAntiDataMetp->Fill(corrMetWithLepton); } 
         else    { hAntiDataMetm->Fill(corrMetWithLepton); }
