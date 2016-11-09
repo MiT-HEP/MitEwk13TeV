@@ -42,7 +42,7 @@ def ProduceRel(a,b):
 		   r[ch][w]=abs(a[ch][w]-b[ch][w])/b[ch][w]
 	return r
 
-def ProduceDiff(a,b,c):
+def ProduceDiffRel(a,b,c):
 	r={}
 	for ch in ["Wmunu","Wenu"]:
 	   r[ch]={}
@@ -51,6 +51,44 @@ def ProduceDiff(a,b,c):
 		   try:
 			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
 			else: r[ch][w]=max(abs(a[ch][w]-c[ch][w])/(c[ch][w]), abs(b[ch][w]-c[ch][w])/(c[ch][w]))
+		   except KeyError: 
+			   print "Ch",ch,"w=",w,"not in dictionary"
+	return r
+
+def ProduceDiff(a,b):
+	r={}
+	for ch in ["Wmunu","Wenu"]:
+	   r[ch]={}
+	   for w in ["Wp","Wm","Wtot","Wratio"]:
+		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
+		   try:
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			else: r[ch][w]=(a[ch][w]-b[ch][w])
+		   except KeyError: 
+			   print "Ch",ch,"w=",w,"not in dictionary"
+	return r
+def ProduceProd(a,b):
+	r={}
+	for ch in ["Wmunu","Wenu"]:
+	   r[ch]={}
+	   for w in ["Wp","Wm","Wtot","Wratio"]:
+		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
+		   try:
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			else: r[ch][w]=(a[ch][w]*b[ch][w])
+		   except KeyError: 
+			   print "Ch",ch,"w=",w,"not in dictionary"
+	return r
+
+def ProduceRatio(a,b):
+	r={}
+	for ch in ["Wmunu","Wenu"]:
+	   r[ch]={}
+	   for w in ["Wp","Wm","Wtot","Wratio"]:
+		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
+		   try:
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			else: r[ch][w]=(a[ch][w]/b[ch][w])
 		   except KeyError: 
 			   print "Ch",ch,"w=",w,"not in dictionary"
 	return r
@@ -163,17 +201,26 @@ EffErr=ReadEffXAcc("ChargeDependentEff",True)
 #
 EffPuUp=ReadEffXAcc("PileupUp")
 EffPuDown=ReadEffXAcc("PileupDown")
-EffPileup=ProduceDiff(EffPuUp,EffPuDown,Efficiency)
+EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
 
+Yields={}
 Systematics={}
 for s in opts.s1.split(","):
 	tmp=ReadDict(s)
+	Yields[s]=tmp
 	Systematics[s] = ProduceRel(tmp,Central)
 
 for s in opts.s2.split(","):
 	tmpU=ReadDict(s+"_Up")
 	tmpD=ReadDict(s+"_Down")
-	Systematics[s] = ProduceDiff(tmpU,tmpD,Central)
+	if s=="Pileup":
+		Systematics[s] = ProduceDiffRel(tmpU,tmpD,Yields["Recoil_Inclusive"])
+		TmpUp=ProduceRatio(tmpU,EffPuUp)
+		TmpDown=ProduceRatio(tmpD,EffPuDown)
+		TmpYield=ProduceRatio(Yields["Recoil_Inclusive"],Efficiency)
+		TotPuCorr = ProduceDiffRel(TmpUp,TmpDown,TmpYield)
+	else:
+		Systematics[s] = ProduceDiffRel(tmpU,tmpD,Central)
 
 def PrintLine(info,d,form="",extra=""):
 	print info,
@@ -213,4 +260,7 @@ PrintLine(AddSpace("effxacc pu",20),EffPileup,"%10.4f","x")
 for s in Systematics:
 	toprint=AddSpace(s,20)
 	PrintLine(toprint,Systematics[s],"%10.4f")
+
+print '# -----------------'
+PrintLine(AddSpace("tot pu corr",20),TotPuCorr,"%10.4f","x")
 	
