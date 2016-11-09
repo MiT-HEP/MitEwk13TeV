@@ -50,8 +50,7 @@
 void selectZee(const TString conf="zee.conf", // input file
                const TString outputDir=".",   // output directory
 	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
-	       const Int_t   sigma=0,
-	       const Bool_t  doPU=0
+	       const Int_t   sigma=0
 ) {
   gBenchmark->Start("selectZee");
 
@@ -84,20 +83,14 @@ void selectZee(const TString conf="zee.conf", // input file
   EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-  //TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
-
-  // for systematics we need 3
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
-  TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
-  TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
 
   // for systematics we need 3
-  //TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-  //TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
-  //TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
+  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
+  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
 
   if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
@@ -145,7 +138,7 @@ void selectZee(const TString conf="zee.conf", // input file
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0;
   ///// electron specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
   Float_t pfChIso1, pfGamIso1, pfNeuIso1, pfCombIso1, pfChIso2, pfGamIso2, pfNeuIso2, pfCombIso2;
@@ -243,6 +236,8 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
     outTree->Branch("lep1",       "TLorentzVector",  &lep1);     // tag lepton 4-vector
     outTree->Branch("lep2",       "TLorentzVector",  &lep2);     // probe lepton 4-vector
+    outTree->Branch("lep1_raw",       "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
+    outTree->Branch("lep2_raw",       "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
     ///// electron specific /////
     outTree->Branch("trkIso1",    &trkIso1,    "trkIso1/F");     // track isolation of tag lepton
     outTree->Branch("trkIso2",    &trkIso2,    "trkIso2/F");     // track isolation of probe lepton
@@ -335,9 +330,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
 	  infoBr->GetEntry(ientry);
 	  genBr->GetEntry(ientry);
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
 	  totalWeight+=gen->weight*puWeight;
 	  totalWeightUp+=gen->weight*puWeightUp;
 	  totalWeightDown+=gen->weight*puWeightDown;
@@ -345,9 +340,9 @@ void selectZee(const TString conf="zee.conf", // input file
       }
       else if (not isData){
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
 	  totalWeight+= 1.0*puWeight;
 	  totalWeightUp+= 1.0*puWeightUp;
 	  totalWeightDown+= 1.0*puWeightDown;
@@ -362,7 +357,6 @@ void selectZee(const TString conf="zee.conf", // input file
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
         infoBr->GetEntry(ientry);
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-
         Double_t weight=1;
 	Double_t weightUp=1;
 	Double_t weightDown=1;
@@ -373,9 +367,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ?h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
 	  weight*=gen->weight*puWeight;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
@@ -401,6 +395,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	scBr->GetEntry(ientry);
 
 	TLorentzVector vTag(0,0,0,0);
+        TLorentzVector vTag_raw(0,0,0,0);
 	TLorentzVector vTagfinal(0,0,0,0);
 	TLorentzVector vTagSC(0,0,0,0);
 	Double_t tagPt=0;
@@ -470,7 +465,6 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    }
 	  }
-//	  std::cout<<vTag.Pt()<<", "<<vTag.Eta()<<", "<<vTag.Phi()<<", "<<vTag.E()<<std::endl;
 	  //assert(false); 
 
           // apply scale and resolution corrections to MC
@@ -513,6 +507,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  tagscID=tag->scID;
 
 	  vTagfinal = vTag;
+          vTag_raw.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
 	  // apply scale and resolution corrections to MC
 //          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
 //            vTag.SetPtEtaPhiM(El_Pt, tag->eta, tag->phi, ELE_MASS);
@@ -551,7 +546,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	if(tagPt<Pt2) continue;
 
 	TLorentzVector vProbe(0,0,0,0); TLorentzVector vProbeSC(0,0,0,0);
-	TLorentzVector vProbefinal(0,0,0,0);
+	TLorentzVector vProbefinal(0,0,0,0), vProbe_raw(0,0,0,0);
 	float probeErrorfinal;
 	float probeSCErrorfinal; 
 	Double_t probePt=0;
@@ -570,7 +565,7 @@ void selectZee(const TString conf="zee.conf", // input file
 
           // check ECAL gap
 //        if(fabs(scProbe->eta)>=ECAL_GAP_LOW && fabs(scProbe->eta)<=ECAL_GAP_HIGH) continue;
-          if(fabs(vProbe.Eta())>=ECAL_GAP_LOW && fabs(vProbe.Eta())<=ECAL_GAP_HIGH) continue;
+          //if(fabs(vProbe.Eta())>=ECAL_GAP_LOW && fabs(vProbe.Eta())<=ECAL_GAP_HIGH) continue;
 
           float probeError = 0.;
           if(doScaleCorr && (scProbe->r9 < 1.)){
@@ -635,7 +630,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  for(Int_t i2=0; i2<electronArr->GetEntriesFast(); i2++) {
 	    if(itag==i2) continue;
 	    const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i2]);
-	    if(!(ele->typeBits & baconhep::EEleType::kEcalDriven)) continue;
+	    //if(!(ele->typeBits & baconhep::EEleType::kEcalDriven)) continue;
 	    if(scProbe->scID==ele->scID) { 
 	      eleProbe = ele; 
 	      iprobe   = i2;
@@ -648,7 +643,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  if(eleProbe){
 	    vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
 	    vEleProbeSC.SetPtEtaPhiM(eleProbe->scEt, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
-
+            if(fabs(vEleProbe.Eta())>=ECAL_GAP_LOW && fabs(vEleProbe.Eta())<=ECAL_GAP_HIGH) continue;
 //	    if(vEleProbe.Pt()           < PT_CUT)  continue;
 
             float eleProbeError = 0.;
@@ -731,6 +726,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  }else{
 	    //El_Pt=scProbept_corr;
 	    El_Pt = vProbe.Pt();
+            if(fabs(vProbe.Eta())>=ECAL_GAP_LOW && fabs(vProbe.Eta())<=ECAL_GAP_HIGH) continue;
 	    probeErrorfinal = probeError;
 	    probeSCErrorfinal = probeError;
 	  }
@@ -746,6 +742,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  probePt=El_Pt;
 
 	  vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
+          if(eleProbe) vProbe_raw.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
 	  vProbeSC = (eleProbe) ? vEleProbeSC : vProbe ;
 
 //	  vProbeSC.SetPtEtaPhiM(((eleProbe) ? vEleProbeSC.Pt() : vProbe.Pt()), vProbe.Eta(), vProbe.Phi(), ELE_MASS);
@@ -935,6 +932,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	puppiSumEt = 0;
 	lep1     = &vTagfinal;
 	lep2     = &vProbefinal;
+        lep1_raw = &vTag_raw;
+        lep2_raw = &vProbe_raw;
 	dilep    = &vDilep;
 	sc1        = &vTagSC;
 	sc2        = &vProbeSC;
@@ -942,8 +941,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
 	TVector2 vU = -1.0*(vMet+vZPt);
 	u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-	u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-	
+	u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
 	TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
 	TVector2 vTkU = -1.0*(vTkMet+vZPt);
 	tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
@@ -958,10 +956,9 @@ void selectZee(const TString conf="zee.conf", // input file
 	TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
 	puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-
 	outTree->Fill();
 	delete genV;
-	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0;
+	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0, lep1_raw=0, lep2_raw=0;
       }
       delete infile;
       infile=0, eventTree=0;    

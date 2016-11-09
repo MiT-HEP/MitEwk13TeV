@@ -73,7 +73,9 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
   TLorentzVector *preLepPos=0, *preLepNeg=0;
   for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
     const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
-    if (genloop->status==23 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11)) {
+    if(fabs(genloop->pdgId)==22) continue;
+    //std::cout << i << " " << genloop->pdgId << " " << genloop->status << " " << genloop->parent << " " << genloop->pt << " " << genloop->mass << std::endl;
+    if (genloop->status==44 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11)) {
       if (genloop->pdgId<0 && lepPos==0) {
 	lepPos=new TLorentzVector(0,0,0,0);
 	lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
@@ -89,7 +91,7 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 	iv2=i;
       }
     }
-    else if ((absM==0 && genloop->pdgId==vid && (genloop->status==3||genloop->status==62)) || (absM==1 && fabs(genloop->pdgId)==fabs(vid) && (genloop->status==3||genloop->status==62))) {
+    else if ((absM==0 && genloop->pdgId==vid && (genloop->status==3||genloop->status==22)) || (absM==1 && fabs(genloop->pdgId)==fabs(vid) && (genloop->status==3||genloop->status==62))) {
       vec=new TLorentzVector(0,0,0,0);
       vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
       iv=i;
@@ -126,9 +128,11 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
     }
   }
 
-  if (vec==0 && preLepNeg && preLepPos) {
+  if (iv==-1 && preLepNeg && preLepPos) {
     TLorentzVector temp = *preLepNeg + *preLepPos;
     vec->SetPtEtaPhiM(temp.Pt(), temp.Eta(), temp.Phi(), temp.M());
+    //vec->SetPtEtaPhiM(0,0,0,temp.M());
+    //std::cout << "No Boson " << preLepNeg->Pt() << " " << preLepPos->Pt() << " " << temp.M() << " " << temp.Pt() << " " << temp.Eta() << " " << temp.Phi() << " " <<  vec->M() << std::endl;
   }
 
   if (lepPos && lepNeg) {
@@ -155,7 +159,7 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
       lep1->SetPtEtaPhiM(lepNeg->Pt(), lepNeg->Eta(), lepNeg->Phi(), lepNeg->M());
       *lep1q=-1;
     }
-
+  //std::cout << "Vector boson " << vec->Pt() << " " << vec->Eta() << std::endl;
   delete preLepNeg;
   delete preLepPos;
   delete lepNeg;

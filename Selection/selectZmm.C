@@ -69,16 +69,16 @@ void selectZmm(const TString conf="zmm.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file                                                                                       
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read"); 
-  
-  // for systematics we need 3
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
-  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
 
-  if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
-  if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
-  if (h_rw_down==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
+  TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
+
+
+  if (h_rw==NULL) cout<<"WARNING h_rw == NULL"<<endl;
+  if (h_rw_up==NULL) cout<<"WARNING h_rw == NULL"<<endl;
+  if (h_rw_down==NULL) cout<<"WARNING h_rw == NULL"<<endl;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -656,8 +656,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
 	puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-
-	outTree->Fill();
+	
+        outTree->Fill();
 	delete genV;
 	genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
       }

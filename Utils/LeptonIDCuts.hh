@@ -257,8 +257,8 @@ Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBi
 
 //--------------------------------------------------------------------------------------------------
 Double_t getEffAreaEl(const Double_t eta) {
-  if      (fabs(eta) < 0.8) return 0.1752;
-  else if (fabs(eta) < 1.1479)  return 0.1862;
+  if      (fabs(eta) < 1.0) return 0.1752;
+  else if (fabs(eta) < 1.479)  return 0.1862;
   else if (fabs(eta) < 2.0)  return 0.1411;
   else if (fabs(eta) < 2.2)  return 0.1534;
   else if (fabs(eta) < 2.3)  return 0.1903;
