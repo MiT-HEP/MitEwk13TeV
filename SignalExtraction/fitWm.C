@@ -99,6 +99,7 @@ void fitWm(const TString  outputDir,   // output directory
   bool pileupUp = false;
   bool pileupDown = false;
   
+  
   // MET histogram binning and range
   const Int_t    NBINS   = 75;
   const Double_t METMAX  = 150;
@@ -201,24 +202,24 @@ void fitWm(const TString  outputDir,   // output directory
   
   // placeholders until recoil files are fixed
   RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
-  recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
-  recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
-  recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupUp/",directory.Data()));
+  recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory.Data()));
+  recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory.Data()));
   
   RecoilCorrector *recoilCorrPuUpm = new  RecoilCorrector("","");
-  recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
-  recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
-  recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupUp/",directory.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory.Data()));
   
   RecoilCorrector *recoilCorrPuDown = new  RecoilCorrector("","");
-  recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
-  recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
-  recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupDown/",directory.Data()));
+  recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory.Data()));
+  recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory.Data()));
   
   RecoilCorrector *recoilCorrPuDownm = new  RecoilCorrector("","");
-  recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
-  recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
-  recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupDown/",directory.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory.Data()));
 
   // --------------------- Eta-binned recoil corrections -----------------------
   RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
@@ -253,32 +254,32 @@ void fitWm(const TString  outputDir,   // output directory
   
   // ---------------------- KEYS -------------
   RecoilCorrector *recoilCorrKeys05 = new  RecoilCorrector("","");
-  recoilCorrKeys05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_keys_rap05/",directory.Data()));
+  recoilCorrKeys05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05/",directory.Data()));
   recoilCorrKeys05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
   recoilCorrKeys05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
   
   RecoilCorrector *recoilCorrKeysm05 = new  RecoilCorrector("","");
-  recoilCorrKeysm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_keys_rap05/",directory.Data()));
+  recoilCorrKeysm05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05/",directory.Data()));
   recoilCorrKeysm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
   recoilCorrKeysm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
 
   RecoilCorrector *recoilCorrKeys051 = new  RecoilCorrector("","");
-  recoilCorrKeys051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_keys_rap05-1/",directory.Data()));
+  recoilCorrKeys051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05-1/",directory.Data()));
   recoilCorrKeys051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
   recoilCorrKeys051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorrKeysm051 = new  RecoilCorrector("","");
-  recoilCorrKeysm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_keys_rap05-1/",directory.Data()));
+  recoilCorrKeysm051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05-1/",directory.Data()));
   recoilCorrKeysm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
   recoilCorrKeysm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorrKeys1 = new  RecoilCorrector("","");
-  recoilCorrKeys1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_keys_rap1/",directory.Data()));
+  recoilCorrKeys1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap1/",directory.Data()));
   recoilCorrKeys1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
   recoilCorrKeys1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
 
   RecoilCorrector *recoilCorrKeysm1 = new  RecoilCorrector("","");
-  recoilCorrKeysm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_keys_rap1/",directory.Data()));
+  recoilCorrKeysm1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap1/",directory.Data()));
   recoilCorrKeysm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
   recoilCorrKeysm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
   
@@ -832,16 +833,18 @@ void fitWm(const TString  outputDir,   // output directory
         Double_t weight = 1;Double_t weightUp = 1;Double_t weightDown = 1;
         Double_t weight2 =1;
         //corr = 1.0;
-        weight2*=scale1fb*lumi2*corr;
-        weight *= scale1fb*lumi*corr;
+
         if(pileupUp) {
           weight *= scale1fbUp*lumi*corr;
           weight2 *= scale1fbUp*lumi2*corr;
-        }
-        if(pileupDown){
+        } else if(pileupDown){
           weight *= scale1fbDown*lumi*corr;
           weight2 *= scale1fbDown*lumi2*corr;
+        } else {
+          weight2*=scale1fb*lumi2*corr;
+          weight *= scale1fb*lumi*corr;
         }
+        
         
         // Prepare 2-d Vector for raw Muon
 
