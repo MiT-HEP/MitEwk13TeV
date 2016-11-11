@@ -951,12 +951,12 @@ void fitWe(const TString  outputDir,   // output directory
    CPepeModel2 qcdp("qcdp",pfmet);
    CPepeModel2 qcdm("qcdm",pfmet);
 
-   //CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
-   //CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
-   //CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
-   CPepeModel2 aqcd("aqcd",pfmet);
-   CPepeModel2 aqcdp("aqcdp",pfmet,qcdp.a1);
-   CPepeModel2 aqcdm("aqcdm",pfmet,qcdm.a1);
+   CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
+   CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
+   CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
+//    CPepeModel2 aqcd("aqcd",pfmet);
+//    CPepeModel2 aqcdp("aqcdp",pfmet);
+//    CPepeModel2 aqcdm("aqcdm",pfmet);
 
    //CPepeModel1 aqcdp("aqcdp",pfmet,qcdp.a1,qcdp.sigma);
    //CPepeModel1 aqcdm("aqcdm",pfmet,qcdm.a1,qcdm.sigma);
@@ -1141,16 +1141,18 @@ void fitWe(const TString  outputDir,   // output directory
   combine_workspace.writeToFile("Wenu_pdfTemplates.root");
 
   RooFitResult *fitRes = pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE)); 
-  //RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
   RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),Save(kTRUE));
-  //RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
-  //RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
   RooDataHist dataTotal("dataTotal,","dataTotal,", RooArgList(pfmet), Index(rooCat),Import("Selectm", dataMetm),Import("Selectp",   antiMetm));
   
   //RooFitResult *fitResm = pdfTotal.fitTo(dataTotal,Extended(),Minos(kTRUE),Save(kTRUE));
   RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),Save(kTRUE));
-  //RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
+//   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
     
   //
   // Use histogram version of fitted PDFs to make ratio plots
