@@ -9,16 +9,11 @@ from optparse import OptionParser
 parser=OptionParser()
 parser.add_option("-d","--directory",type="string",help="scouting directory [%default]",default="/afs/cern.ch/work/s/sabrandt/public/SM/Differential/CMSSW_7_6_3_patch2/src/MitEwk13TeV/SignalExtraction")
 parser.add_option("-c","--central",type="string",help="central value [%default]",default="Central_Charge")
-#parser.add_option("","--s1",type="string",help="systematics one band [%default]",default="Ewk_Free,QCD_Free,Recoil_RooKeys,Recoil_Inclusive")
-parser.add_option("","--s1",type="string",help="systematics one band [%default]",default="QCD_?ree,Ewk_Free,Recoil_RooKeys,Recoil_Inclusive")
-parser.add_option("","--s2",type="string",help="systematics two band [%default]",default="Pileup")
-#parser.add_option("-e","--efficiency",type="string",help="scouting directory [%default]",default="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/%s/ChargeDependentEff/binned.txt")
 
 opts,args=parser.parse_args()
 
 ###########################
 
-#cmd="cat /afs/cern.ch/work/s/sabrandt/public/SM/Differential/CMSSW_7_6_3_patch2/src/MitEwk13TeV/SignalExtraction/Wmunu_Central_noCharge/fitresWmm*txt| grep Signal | head -n 1"
 def AddSpace(s,n=20):
 	toprint=s[:]
 	l=len(s)
@@ -26,8 +21,8 @@ def AddSpace(s,n=20):
 		toprint+=" "
 	return toprint
 
-
 def ProduceTot(d):
+	'''Handle and complete dictionaries'''
 	d["Wenu"]["Wtot"] = d["Wenu"]["Wp"]+d["Wenu"]["Wm"]
 	d["Wmunu"]["Wtot"] = d["Wmunu"]["Wp"]+d["Wmunu"]["Wm"]
 	# ratio
@@ -35,6 +30,7 @@ def ProduceTot(d):
 	d["Wmunu"]["Wratio"] = d["Wmunu"]["Wp"]/d["Wmunu"]["Wm"]
 
 def ProduceRel(a,b):
+	'''Handle and complete dictionaries'''
 	r={}
 	for ch in ["Wmunu","Wenu"]:
 	   r[ch]={}
@@ -43,6 +39,7 @@ def ProduceRel(a,b):
 	return r
 
 def ProduceDiffRel(a,b,c):
+	'''Handle and complete dictionaries'''
 	r={}
 	for ch in ["Wmunu","Wenu"]:
 	   r[ch]={}
@@ -56,6 +53,7 @@ def ProduceDiffRel(a,b,c):
 	return r
 
 def ProduceDiff(a,b):
+	'''Handle and complete dictionaries'''
 	r={}
 	for ch in ["Wmunu","Wenu"]:
 	   r[ch]={}
@@ -67,7 +65,9 @@ def ProduceDiff(a,b):
 		   except KeyError: 
 			   print "Ch",ch,"w=",w,"not in dictionary"
 	return r
+
 def ProduceProd(a,b):
+	'''Handle and complete dictionaries'''
 	r={}
 	for ch in ["Wmunu","Wenu"]:
 	   r[ch]={}
@@ -81,6 +81,7 @@ def ProduceProd(a,b):
 	return r
 
 def ProduceRatio(a,b):
+	'''Handle and complete dictionaries'''
 	r={}
 	for ch in ["Wmunu","Wenu"]:
 	   r[ch]={}
@@ -89,6 +90,34 @@ def ProduceRatio(a,b):
 		   try:
 			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
 			else: r[ch][w]=(a[ch][w]/b[ch][w])
+		   except KeyError: 
+			   print "Ch",ch,"w=",w,"not in dictionary"
+	return r
+
+def SqrtSum(a,b):
+	'''Handle and complete dictionaries'''
+	r={}
+	for ch in ["Wmunu","Wenu"]:
+	   r[ch]={}
+	   for w in ["Wp","Wm","Wtot","Wratio"]:
+		   try:
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			else: r[ch][w]=math.sqrt(a[ch][w]**2+b[ch][w]**2)
+		   except KeyError: 
+			   print "Ch",ch,"w=",w,"not in dictionary"
+	return r
+
+def SqrtSumL(l):
+	'''Handle and complete dictionaries'''
+	r={}
+	for a in l:
+	  for ch in ["Wmunu","Wenu"]:
+	   if ch not in r : r[ch]={}
+	   for w in ["Wp","Wm","Wtot","Wratio"]:
+		   if w not in r[ch] : r[ch][w]=0.;
+		   try:
+			if a[ch][w]<-99. or r[ch][w]<-99: r[ch][w]=-999.
+			else: r[ch][w]=math.sqrt(a[ch][w]**2+r[ch][w]**2)
 		   except KeyError: 
 			   print "Ch",ch,"w=",w,"not in dictionary"
 	return r
@@ -174,20 +203,15 @@ def ReadEffXAcc(directory="ChargeDependentEff",error=False):
 					d[ch][w] = float (valString.split()[0])
 	return d
 
+### Read Central value for W
+Yields={}
+Systematics={}
 
 Central=ReadDict(opts.central)
 CentralError=ReadDict(opts.central,True)
-#CentralError={}
-#for ch in Central:
-#	CentralError[ch]={}
-#	for w in Central[ch]: 
-#		if w=="Wratio":
-#			pass
-#		else:
-#			CentralError[ch][w] = math.sqrt(Central[ch][w])
-#	if "Wratio" in Central[ch]:
-#		w="Wratio"
-#		CentralError[ch][w] = Central[ch][w]* math.sqrt(1./ Central[ch]["Wp"] + 1./ Central[ch]["Wm"] )
+Yields["Central"]= Central
+
+## Compute Wtot and errors
 for ch in Central:
 	if "Wtot" in Central[ch]:
 		w="Wtot"
@@ -196,21 +220,30 @@ for ch in Central:
 		w="Wratio"
 		CentralError[ch][w] = Central[ch][w]* math.sqrt( (CentralError[ch]["Wp"]/ Central[ch]["Wp"])**2 + (CentralError[ch]["Wm"]/ Central[ch]["Wm"])**2 )
 
+## read Efficiencies 
+SystematicsEff={}
+
 Efficiency=ReadEffXAcc("ChargeDependentEff")
 EffErr=ReadEffXAcc("ChargeDependentEff",True)
-#
+#systematics are done wrt to this value
+EfficiencyNoCh=ReadEffXAcc("Final")
+
+#read efficiency systematics
 EffPuUp=ReadEffXAcc("PileupUp")
 EffPuDown=ReadEffXAcc("PileupDown")
-EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
+EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,EfficiencyNoCh)
+SystematicsEff["Pileup"]=EffPileup
 
-Yields={}
-Systematics={}
-for s in opts.s1.split(","):
+#### read systematics for W
+
+syst1=["QCD_?ree","Ewk_Fix","Recoil_RooKeys","Recoil_Inclusive"]
+for s in syst1:
 	tmp=ReadDict(s)
 	Yields[s]=tmp
 	Systematics[s] = ProduceRel(tmp,Central)
 
-for s in opts.s2.split(","):
+syst2=["Pileup"]
+for s in syst2:
 	tmpU=ReadDict(s+"_Up")
 	tmpD=ReadDict(s+"_Down")
 	if s=="Pileup":
@@ -222,23 +255,74 @@ for s in opts.s2.split(","):
 	else:
 		Systematics[s] = ProduceDiffRel(tmpU,tmpD,Central)
 
-def PrintLine(info,d,form="",extra=""):
+######################################## Z ##################################################
+
+# collect zmm and zee yields
+#/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt
+#/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt
+YieldsZ={}
+
+YieldsZ["ee_reco"]       = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'Zee event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["ee_reco_error"] = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'Zee event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["ee_ewk"]        = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'EWK' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["ee_ewk_error"]  = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'EWK' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["ee_top"]        = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'Top' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["ee_top_error"]  = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'Top' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["ee_mc"]           = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'Zee expected event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["ee_mc_error"]     = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zeeyield.txt | sed 's:\.$::'| grep 'Zee expected event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["mumu_reco"]       = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'Zmm event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["mumu_reco_error"] = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'Zmm event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["mumu_ewk"]        = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'EWK' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["mumu_ewk_error"]  = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'EWK' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["mumu_top"]        = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'Top' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["mumu_top_error"]  = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'Top' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+YieldsZ["mumu_mc"]         = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'Zmm expected event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[0])
+YieldsZ["mumu_mc_error"]   = float(check_output("cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/zmmyield.txt | sed 's:\.$::'| grep 'Zmm expected event yield' | sed 's:^.*is ::' | sed 's:+/-::'",shell=True).split()[1])
+
+#### Z yields and error propagation
+YieldsZ["Zee"] = YieldsZ["ee_reco"] - YieldsZ["ee_ewk"] - YieldsZ["ee_top"]
+YieldsZ["Zee_error"] = math.sqrt( YieldsZ["ee_reco_error"]**2 + YieldsZ["ee_ewk_error"]**2 + YieldsZ["ee_top_error"]**2)
+
+YieldsZ["Zmumu"] = YieldsZ["mumu_reco"] - YieldsZ["mumu_ewk"] - YieldsZ["mumu_top"]
+YieldsZ["Zmumu_error"] = math.sqrt( YieldsZ["mumu_reco_error"]**2 + YieldsZ["mumu_ewk_error"]**2 + YieldsZ["mumu_top_error"]**2)
+
+
+######################################## PRINT ###############################################
+def PrintLine(info,d,form="",extra="",scale=1):
 	print info,
 	for ch in ["Wmunu","Wenu"]:
 	   for w in ["Wp","Wm","Wtot","Wratio"]:
 		   if form=="":
 			if d[ch][w]<-99.: print "   ---------",
-			else :  print "  ",d[ch][w],
+			else :  print "  ",d[ch][w]*scale,
 		   else:
 			if extra !="" and extra != "x" and w=="Wratio": 
-				print "  ",extra%d[ch][w],
+				print "  ",extra%(d[ch][w]*scale),
 			elif extra !="" and extra == "x" and w=="Wratio": 
+				print "   ---------",
+			elif w not in d[ch]:
 				print "   ---------",
 			elif d[ch][w]<-99.:
 				print "   ---------",
-			else: print "  ",form%d[ch][w],
+			else: print "  ",form%(d[ch][w]*scale),
 	print  ##EOL
 	return	
+
+print '#'
+print '# Lumi (/fb)  Error (relative)'
+print '#'
+print '2.3055         0.027'
+print '#'
+print "      ",'\t'.join(["Zmumu","Zee"])
+print "Yields",'\t'.join(["%.0f"%YieldsZ["Zmumu"],"%.0f"%YieldsZ["Zee"]])
+print "Errors",'\t'.join(["%.0f"%YieldsZ["Zmumu_error"],"%.0f"%YieldsZ["Zee_error"]])
 
 
 
@@ -257,10 +341,47 @@ print '#'
 PrintLine(AddSpace("#Systematics",20),Info)
 print '#'
 PrintLine(AddSpace("effxacc pu",20),EffPileup,"%10.4f","x")
+#PrintLine(AddSpace("effxacc scale",20),EffScale,"%10.4f","x")
+#for i in ["Bin","BkgUp","Ori","SigUp"]:
+#	PrintLine(AddSpace("effxacc "+i ,20),SystematicsEff[i],"%10.4f","x")
+
 for s in Systematics:
 	toprint=AddSpace(s,20)
 	PrintLine(toprint,Systematics[s],"%10.4f")
 
 print '# -----------------'
 PrintLine(AddSpace("tot pu corr",20),TotPuCorr,"%10.4f","x")
+
+## collapse
+print 
+print 
+print 
+print '-----------------------------------'
+print '-----------------------------------'
+print 
+
+
+Recoil=SqrtSum(Systematics["Recoil_RooKeys"],Systematics["Recoil_Inclusive"])
+Bkg = SqrtSum(Systematics["QCD_?ree"], Systematics["Ewk_Fix"])
+Tot=SqrtSumL( [Recoil,Bkg,TotPuCorr,EffErr])
+
+PrintLine(AddSpace("#Quantity",20),Info)
+PrintLine(AddSpace("Recoil"),Recoil,"%10.4f","",100.)
+PrintLine(AddSpace("Bkg"),Bkg,"%10.4f","",100.)
+#PrintLine(AddSpace("Pileup"),Systematics["Pileup"],"%10.4f","",100.)
+PrintLine(AddSpace("Pileup"),TotPuCorr,"%10.4f","",100.)
+PrintLine(AddSpace("EffErr"),EffErr,"%10.4f","",100.)
+print '-----------------------------------'
+PrintLine(AddSpace("Tot"),Tot,"%10.4f","",100.)
+
+print '-----------------------------------'
+print '-----------------------------------'
+
+print "what: Central Value"
+print Central
+for what in Yields:
+	print '-----------------------------------'
+	print "what:",what
+	print Yields[what]
+
 	
