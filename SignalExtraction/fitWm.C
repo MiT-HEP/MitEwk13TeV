@@ -93,7 +93,7 @@ void fitWm(const TString  outputDir,   // output directory
   //==============================================================================================================   
   
   // some flags to handle Recoil corrections
-  bool doKeys = false;
+  bool doKeys = true;
   bool doInclusive = false;
   // some flags to handle the pileup Up/Down systematics
   bool pileupUp = false;
@@ -1080,13 +1080,13 @@ void fitWm(const TString  outputDir,   // output directory
   RooRealVar nQCD("nQCD","nQCD",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
   RooRealVar cewk("cewk","cewk",0.1,0,5) ;
   cewk.setVal(hEWKMet->Integral()/hWmunuMet->Integral());
-  cewk.setConstant(kTRUE);
+//   cewk.setConstant(kTRUE);
   RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
   RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiWmunuMet->Integral()*0.9,0,hAntiDataMet->Integral());
   RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hDataMet->Integral()),0,hDataMet->Integral());
   RooRealVar dewk("dewk","dewk",0.1,0,5) ;
   dewk.setVal(hAntiEWKMet->Integral()/hAntiWmunuMet->Integral());
-  dewk.setConstant(kTRUE);
+//   dewk.setConstant(kTRUE);
   RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
   
   RooRealVar nSigp("nSigp","nSigp",1.0*(hWmunuMetp->Integral()),0,hDataMetp->Integral());
@@ -1096,13 +1096,13 @@ void fitWm(const TString  outputDir,   // output directory
   RooRealVar nQCDp("nQCDp","nQCDp",hDataMetp->Integral()*0.3,0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.1,0,5) ;
   cewkp.setVal(hEWKMetp->Integral()/hWmunuMetp->Integral());
-  cewkp.setConstant(kTRUE);
+//   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
   //RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWmunuMetp->Integral()*1.0,0,hAntiDataMetp->Integral());
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.9*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
   RooRealVar dewkp("dewkp","dewkp",0.1,0,5) ;
   dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWmunuMetp->Integral());
-  dewkp.setConstant(kTRUE);
+//   dewkp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
   
   RooRealVar nSigm("nSigm","nSigm",1.0*(hWmunuMetm->Integral()),0,hDataMetm->Integral());
@@ -1111,13 +1111,13 @@ void fitWm(const TString  outputDir,   // output directory
   RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.3,0,hDataMetm->Integral());
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
   cewkm.setVal(hEWKMetm->Integral()/hWmunuMetm->Integral());
-  cewkm.setConstant(kTRUE);
+//   cewkm.setConstant(kTRUE);
   RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
   RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiWmunuMetm->Integral()*1.0,0,hAntiDataMetm->Integral());
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.9*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
   dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWmunuMetm->Integral());
-  dewkm.setConstant(kTRUE);
+//   dewkm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
   
   //

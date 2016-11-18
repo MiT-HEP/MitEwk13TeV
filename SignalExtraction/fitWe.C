@@ -286,6 +286,8 @@ void fitWe(const TString  outputDir,   // output directory
 
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/public/SM/FlatNtuples_scaledown/Wenu/ntuples/data_select.root"); typev.push_back(eData);
+// //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/public/SM/FlatNtuples_scaledown/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/ewk_select1.root");  typev.push_back(eEWK);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/boson_select.root");  typev.push_back(eBKG);
   //fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
@@ -497,8 +499,9 @@ void fitWe(const TString  outputDir,   // output directory
       
       // 2d Vectors to correct MET for lepton scaling/smearing
       TVector2 vLepRaw((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));
+//       TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
       TVector2 vLepCor((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
-    
+      
       double pU1         = 0;  //--
       double pU2         = 0;  //--
 
@@ -556,10 +559,11 @@ void fitWe(const TString  outputDir,   // output directory
       if(typev[ifile]==eData) {
         if(lep->Pt()        < PT_CUT)  continue;
         // Correct MET to use raw lepton
+//         std::cout << "met X " << met << " met Y " << vMetCorr.Y() << std::endl;
         TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
         Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
         hDataMet->Fill(corrMetWithLepton); 
-        if(q>0) { hDataMetp->Fill(corrMetWithLepton); } 
+        if(q>0) { hDataMetp->Fill(corrMetWithLepton); }
         else    { hDataMetm->Fill(corrMetWithLepton); }
       }
       else if(typev[ifile]==eAntiData) {
@@ -831,33 +835,33 @@ void fitWe(const TString  outputDir,   // output directory
   RooRealVar cewk("cewk","cewk",0.1,0,5) ;
   //RooRealVar cewk("cewk","cewk",0.1,0,5) ;
   cewk.setVal(hEWKMet->Integral()/hWenuMet->Integral());
-  cewk.setConstant(kTRUE);
+//   cewk.setConstant(kTRUE);
   RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
   
   RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiWenuMet->Integral()*0.9,0,hAntiDataMet->Integral());
   RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
   RooRealVar dewk("dewk","dewk",0.1,0,5) ;
   dewk.setVal(hAntiEWKMet->Integral()/hAntiWenuMet->Integral());
-  dewk.setConstant(kTRUE);
+//   dewk.setConstant(kTRUE);
   //   nAntiSig.setConstant(kTRUE);
   RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
 
   //hWenuMetp->Scale(6.7446e+06/hWenuMetp->Integral());
   //RooRealVar nSigp("nSigp","nSigp",hDataMetp->Integral()*0.8,0,hDataMetp->Integral());
-  RooRealVar nSigp("nSigp","nSigp",1.0*hWenuMetp->Integral(),0,hDataMetp->Integral());
+  RooRealVar nSigp("nSigp","nSigp",0.75*hDataMetp->Integral(),0,hDataMetp->Integral());
   //nSigp.setConstant(kTRUE);
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nQCDp("nQCDp","nQCDp",0.2*hDataMetp->Integral(),0,hDataMetp->Integral());
-  RooRealVar cewkp("cewkp","cewkp",0.1,0,5);
+  RooRealVar cewkp("cewkp","cewkp",0.1,0,1.0);
   cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
-  cewkp.setConstant(kTRUE);
+//   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
-  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWenuMetp->Integral(),0,hAntiDataMetp->Integral());
+  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",0.1*hAntiDataMetp->Integral(),0,0.5*hAntiDataMetp->Integral());
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.95*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
-  RooRealVar dewkp("dewkp","dewkp",0.1,0,5) ;
+  RooRealVar dewkp("dewkp","dewkp",0.1,0,1.0) ;
   dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
   //std::cout << "TTTT " << hAntiEWKMetp->Integral() << " "<< hAntiWenuMetp->Integral() << std::endl;
-  dewkp.setConstant(kTRUE);
+//   dewkp.setConstant(kTRUE);
 //   nAntiSigp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
 
@@ -869,13 +873,13 @@ void fitWe(const TString  outputDir,   // output directory
   RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.2,0,hDataMetm->Integral());
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
   cewkm.setVal(hEWKMetm->Integral()/hWenuMetm->Integral());
-  cewkm.setConstant(kTRUE);
+//   cewkm.setConstant(kTRUE);
   RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
    RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiWenuMetm->Integral()*1.0,0,hAntiDataMetm->Integral());
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.95*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
   dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
-  dewkm.setConstant(kTRUE);
+//   dewkm.setConstant(kTRUE);
 //   nAntiSigm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
 
@@ -1142,7 +1146,7 @@ void fitWe(const TString  outputDir,   // output directory
 
   RooFitResult *fitRes = pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE)); 
 //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),RooFit::Strategy(2),Save(kTRUE));
 //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
