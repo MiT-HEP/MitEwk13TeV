@@ -41,11 +41,13 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
+void computeAccSelWm_Inclusive_Sys(const TString conf,       // input file
 		     const TString inputDir,
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
-		     const Int_t   doPU
+		     const Int_t   doPU,
+		     const TString sysFile3,
+		     const TString sysFile1
 ) {
   gBenchmark->Start("computeAccSelWm");
 
@@ -65,30 +67,34 @@ void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/1MGpositive/eff.root";
-  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/1MGnegative/eff.root";
-  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/1CTpositive/eff.root";
-  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/1CTnegative/eff.root";
+  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = inputDir + "MuSITEff/1MGpositive/eff.root";
-  const TString dataSelEffName_neg = inputDir + "MuSITEff/1MGnegative/eff.root";
-  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/1CTpositive/eff.root";
-  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/1CTnegative/eff.root";
+  const TString dataSelEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataSelEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = inputDir + "MuSITEff/1MGpositive/eff.root";
-  const TString dataTrkEffName_neg = inputDir + "MuSITEff/1MGnegative/eff.root";
-  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/1CTpositive/eff.root";
-  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/1CTnegative/eff.root";
+  const TString dataTrkEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataTrkEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = inputDir + "MuStaEff/1MGpositive/eff.root";
-  const TString dataStaEffName_neg = inputDir + "MuStaEff/1MGnegative/eff.root";
-  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/1CTpositive/eff.root";
-  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/1CTnegative/eff.root";
+  const TString dataStaEffName_pos = inputDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = inputDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/CTnegative/eff.root";
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
 
+  TFile *f_sys3 = TFile::Open(sysFile3);
+  TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
+  TFile *f_sys1 = TFile::Open(sysFile1);
+  TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -390,20 +396,20 @@ void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
 
          effdata=1; effmc=1;
          if(goodMuon->q>0) {
-           effdata *= dataSelEff_pos.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataSelEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmSelEff_pos.getEff(goodMuon->eta, goodMuon->pt);
          } else {
-           effdata *= dataSelEff_neg.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataSelEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));;
            effmc   *= zmmSelEff_neg.getEff(goodMuon->eta, goodMuon->pt);
          }
          corr *= effdata/effmc;
 
          effdata=1; effmc=1;
          if(goodMuon->q>0) {
-           effdata *= dataStaEff_pos.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataStaEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmStaEff_pos.getEff(goodMuon->eta, goodMuon->pt);
          } else {
-           effdata *= dataStaEff_neg.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataStaEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmStaEff_neg.getEff(goodMuon->eta, goodMuon->pt);
          }
          corr *= effdata/effmc;

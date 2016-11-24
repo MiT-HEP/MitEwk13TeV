@@ -43,6 +43,7 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelZmmBinned_Sys(const TString conf,      // input file
+			    const TString inputDir,
                             const TString outputDir,  // output directory
 			    const Int_t   doPU,
 			    const TString sysFile3,
@@ -64,25 +65,25 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root";
+  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataSelEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataTrkEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = inputDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = inputDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/CTnegative/eff.root";
 
   // uncertainty files
   TFile *f_sys3 = TFile::Open(sysFile3);
@@ -91,8 +92,8 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h"); 
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
