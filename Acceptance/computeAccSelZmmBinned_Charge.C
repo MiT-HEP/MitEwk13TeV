@@ -42,8 +42,9 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelZmmBinned_Bin(const TString conf,      // input file
-                            const TString outputDir,  // output directory
+void computeAccSelZmmBinned_Charge(const TString conf,      // input file
+			    const TString inputDir,  // input directory
+                            const TString outputDir, // output directory
 			    const Int_t   doPU
 ) {
   gBenchmark->Start("computeAccSelZmmBinned");
@@ -62,25 +63,25 @@ void computeAccSelZmmBinned_Bin(const TString conf,      // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1MGpositive/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1MGnegative/eff.root";
-  const TString zmmHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1CTpositive/eff.root";
-  const TString zmmHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/1CTnegative/eff.root";
+  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MGpositive/eff.root";
-  const TString dataSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MGnegative/eff.root";
-  const TString zmmSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CTpositive/eff.root";
-  const TString zmmSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CTnegative/eff.root";
+  const TString dataSelEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataSelEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MGpositive/eff.root";
-  const TString dataTrkEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1MGnegative/eff.root";
-  const TString zmmTrkEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CTpositive/eff.root";
-  const TString zmmTrkEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/1CTnegative/eff.root";
+  const TString dataTrkEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataTrkEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MGpositive/eff.root";
-  const TString dataStaEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1MGnegative/eff.root";
-  const TString zmmStaEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CTpositive/eff.root";
-  const TString zmmStaEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/1CTnegative/eff.root";
+  const TString dataStaEffName_pos = inputDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = inputDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/CTnegative/eff.root";
   
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
