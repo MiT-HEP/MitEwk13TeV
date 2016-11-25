@@ -96,8 +96,8 @@ void computeAccSelWm_Sys(const TString conf,       // input file
   }
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
 
   TFile *f_sys3 = TFile::Open(sysFile3);
   TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");

@@ -46,8 +46,11 @@ void computeAccSelWm_Inclusive_Sys(const TString conf,       // input file
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
-		     const TString sysFile3,
-		     const TString sysFile1
+                     const TString sysFileSITposi,
+                     const TString sysFileSITnega,
+                     const TString sysFileStaposi,
+                     const TString sysFileStanega
+
 ) {
   gBenchmark->Start("computeAccSelWm");
 
@@ -91,10 +94,15 @@ void computeAccSelWm_Inclusive_Sys(const TString conf,       // input file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
 
-  TFile *f_sys3 = TFile::Open(sysFile3);
-  TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
-  TFile *f_sys1 = TFile::Open(sysFile1);
-  TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h");
+  TFile *f_sys_SIT_posi = TFile::Open(sysFileSITposi);
+  TFile *f_sys_SIT_nega = TFile::Open(sysFileSITnega);
+  TFile *f_sys_Sta_posi = TFile::Open(sysFileStaposi);
+  TFile *f_sys_Sta_nega = TFile::Open(sysFileStanega);
+
+  TH2D  *h_sys_SIT_posi = (TH2D*) f_sys_SIT_posi->Get("h");
+  TH2D  *h_sys_SIT_nega = (TH2D*) f_sys_SIT_nega->Get("h");
+  TH2D  *h_sys_Sta_posi = (TH2D*) f_sys_Sta_posi->Get("h");
+  TH2D  *h_sys_Sta_nega = (TH2D*) f_sys_Sta_nega->Get("h");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -396,20 +404,20 @@ void computeAccSelWm_Inclusive_Sys(const TString conf,       // input file
 
          effdata=1; effmc=1;
          if(goodMuon->q>0) {
-           effdata *= dataSelEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));
+           effdata *= dataSelEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys_SIT_posi->GetBinContent(h_sys_SIT_posi->GetXaxis()->FindBin(goodMuon->eta), h_sys_SIT_posi->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmSelEff_pos.getEff(goodMuon->eta, goodMuon->pt);
          } else {
-           effdata *= dataSelEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));;
+           effdata *= dataSelEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys_SIT_nega->GetBinContent(h_sys_SIT_nega->GetXaxis()->FindBin(goodMuon->eta), h_sys_SIT_nega->GetYaxis()->FindBin(goodMuon->pt));;
            effmc   *= zmmSelEff_neg.getEff(goodMuon->eta, goodMuon->pt);
          }
          corr *= effdata/effmc;
 
          effdata=1; effmc=1;
          if(goodMuon->q>0) {
-           effdata *= dataStaEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
+           effdata *= dataStaEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys_Sta_posi->GetBinContent(h_sys_Sta_posi->GetXaxis()->FindBin(goodMuon->eta), h_sys_Sta_posi->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmStaEff_pos.getEff(goodMuon->eta, goodMuon->pt);
          } else {
-           effdata *= dataStaEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
+           effdata *= dataStaEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys_Sta_nega->GetBinContent(h_sys_Sta_nega->GetXaxis()->FindBin(goodMuon->eta), h_sys_Sta_nega->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmStaEff_neg.getEff(goodMuon->eta, goodMuon->pt);
          }
          corr *= effdata/effmc;
@@ -610,7 +618,16 @@ void computeAccSelWm_Inclusive_Sys(const TString conf,       // input file
   delete info;
   delete gen;
   delete muonArr;
-  
+
+  delete h_sys_SIT_posi;
+  delete h_sys_SIT_nega;
+  delete h_sys_Sta_posi;
+  delete h_sys_Sta_nega;
+
+  delete f_sys_SIT_posi;
+  delete f_sys_SIT_nega;
+  delete f_sys_Sta_posi;
+  delete f_sys_Sta_nega; 
     
   //--------------------------------------------------------------------------------------------------------------
   // Output
