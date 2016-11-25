@@ -41,11 +41,16 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
+void computeAccSelWm_Inclusive_Sys(const TString conf,       // input file
 		     const TString inputDir,
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
-		     const Int_t   doPU
+		     const Int_t   doPU,
+                     const TString sysFileSITposi,
+                     const TString sysFileSITnega,
+                     const TString sysFileStaposi,
+                     const TString sysFileStanega
+
 ) {
   gBenchmark->Start("computeAccSelWm");
 
@@ -65,30 +70,39 @@ void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/1MGpositive/eff.root";
-  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/1MGnegative/eff.root";
-  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/1CTpositive/eff.root";
-  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/1CTnegative/eff.root";
+  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = inputDir + "MuSITEff/1MGpositive/eff.root";
-  const TString dataSelEffName_neg = inputDir + "MuSITEff/1MGnegative/eff.root";
-  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/1CTpositive/eff.root";
-  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/1CTnegative/eff.root";
+  const TString dataSelEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataSelEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = inputDir + "MuSITEff/1MGpositive/eff.root";
-  const TString dataTrkEffName_neg = inputDir + "MuSITEff/1MGnegative/eff.root";
-  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/1CTpositive/eff.root";
-  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/1CTnegative/eff.root";
+  const TString dataTrkEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataTrkEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = inputDir + "MuStaEff/1MGpositive/eff.root";
-  const TString dataStaEffName_neg = inputDir + "MuStaEff/1MGnegative/eff.root";
-  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/1CTpositive/eff.root";
-  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/1CTnegative/eff.root";
+  const TString dataStaEffName_pos = inputDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = inputDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/CTnegative/eff.root";
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
 
+  TFile *f_sys_SIT_posi = TFile::Open(sysFileSITposi);
+  TFile *f_sys_SIT_nega = TFile::Open(sysFileSITnega);
+  TFile *f_sys_Sta_posi = TFile::Open(sysFileStaposi);
+  TFile *f_sys_Sta_nega = TFile::Open(sysFileStanega);
+
+  TH2D  *h_sys_SIT_posi = (TH2D*) f_sys_SIT_posi->Get("h");
+  TH2D  *h_sys_SIT_nega = (TH2D*) f_sys_SIT_nega->Get("h");
+  TH2D  *h_sys_Sta_posi = (TH2D*) f_sys_Sta_posi->Get("h");
+  TH2D  *h_sys_Sta_nega = (TH2D*) f_sys_Sta_nega->Get("h");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -390,20 +404,20 @@ void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
 
          effdata=1; effmc=1;
          if(goodMuon->q>0) {
-           effdata *= dataSelEff_pos.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataSelEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys_SIT_posi->GetBinContent(h_sys_SIT_posi->GetXaxis()->FindBin(goodMuon->eta), h_sys_SIT_posi->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmSelEff_pos.getEff(goodMuon->eta, goodMuon->pt);
          } else {
-           effdata *= dataSelEff_neg.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataSelEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys_SIT_nega->GetBinContent(h_sys_SIT_nega->GetXaxis()->FindBin(goodMuon->eta), h_sys_SIT_nega->GetYaxis()->FindBin(goodMuon->pt));;
            effmc   *= zmmSelEff_neg.getEff(goodMuon->eta, goodMuon->pt);
          }
          corr *= effdata/effmc;
 
          effdata=1; effmc=1;
          if(goodMuon->q>0) {
-           effdata *= dataStaEff_pos.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataStaEff_pos.getEff(goodMuon->eta, goodMuon->pt) * h_sys_Sta_posi->GetBinContent(h_sys_Sta_posi->GetXaxis()->FindBin(goodMuon->eta), h_sys_Sta_posi->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmStaEff_pos.getEff(goodMuon->eta, goodMuon->pt);
          } else {
-           effdata *= dataStaEff_neg.getEff(goodMuon->eta, goodMuon->pt);
+           effdata *= dataStaEff_neg.getEff(goodMuon->eta, goodMuon->pt) * h_sys_Sta_nega->GetBinContent(h_sys_Sta_nega->GetXaxis()->FindBin(goodMuon->eta), h_sys_Sta_nega->GetYaxis()->FindBin(goodMuon->pt));
            effmc   *= zmmStaEff_neg.getEff(goodMuon->eta, goodMuon->pt);
          }
          corr *= effdata/effmc;
@@ -604,7 +618,16 @@ void computeAccSelWm_Inclusive_Bin(const TString conf,       // input file
   delete info;
   delete gen;
   delete muonArr;
-  
+
+  delete h_sys_SIT_posi;
+  delete h_sys_SIT_nega;
+  delete h_sys_Sta_posi;
+  delete h_sys_Sta_nega;
+
+  delete f_sys_SIT_posi;
+  delete f_sys_SIT_nega;
+  delete f_sys_Sta_posi;
+  delete f_sys_Sta_nega; 
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

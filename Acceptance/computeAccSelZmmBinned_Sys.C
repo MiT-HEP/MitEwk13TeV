@@ -43,10 +43,13 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelZmmBinned_Sys(const TString conf,      // input file
+			    const TString inputDir,
                             const TString outputDir,  // output directory
 			    const Int_t   doPU,
-			    const TString sysFile3,
-			    const TString sysFile1
+			    const TString sysFileSITposi,
+			    const TString sysFileSITnega,
+			    const TString sysFileStaposi,
+			    const TString sysFileStanega
 ) {
   gBenchmark->Start("computeAccSelZmmBinned");
 
@@ -64,35 +67,40 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   const Int_t LEPTON_ID = 13;
   
   // efficiency files
-  const TString dataHLTEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root";
+  const TString dataHLTEffName_pos = inputDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataSelEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = inputDir + "MuSITEff/MGpositive_FineBin/eff.root";
+  const TString dataTrkEffName_neg = inputDir + "MuSITEff/MGnegative_FineBin/eff.root";
+  const TString zmmTrkEffName_pos  = inputDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = inputDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = inputDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = inputDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MuStaEff/CTnegative/eff.root";
 
   // uncertainty files
-  TFile *f_sys3 = TFile::Open(sysFile3);
-  TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
-  TFile *f_sys1 = TFile::Open(sysFile1);
-  TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h"); 
+  TFile *f_sys_SIT_posi = TFile::Open(sysFileSITposi);
+  TFile *f_sys_SIT_nega = TFile::Open(sysFileSITnega);
+  TFile *f_sys_Sta_posi = TFile::Open(sysFileStaposi);
+  TFile *f_sys_Sta_nega = TFile::Open(sysFileStanega);
+
+  TH2D  *h_sys_SIT_posi = (TH2D*) f_sys_SIT_posi->Get("h");
+  TH2D  *h_sys_SIT_nega = (TH2D*) f_sys_SIT_nega->Get("h"); 
+  TH2D  *h_sys_Sta_posi = (TH2D*) f_sys_Sta_posi->Get("h");
+  TH2D  *h_sys_Sta_nega = (TH2D*) f_sys_Sta_nega->Get("h");
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -367,34 +375,34 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     
           effdata=1; effmc=1;
           if(mu1->q>0) {
-            effdata *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(mu1->eta), h_sys3->GetYaxis()->FindBin(mu1->pt));
+            effdata *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * h_sys_SIT_posi->GetBinContent(h_sys_SIT_posi->GetXaxis()->FindBin(mu1->eta), h_sys_SIT_posi->GetYaxis()->FindBin(mu1->pt));
             effmc   *= zmmSelEff_pos.getEff(mu1->eta, mu1->pt);
           } else {
-            effdata *= dataSelEff_neg.getEff(mu1->eta, mu1->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(mu1->eta), h_sys3->GetYaxis()->FindBin(mu1->pt));
+            effdata *= dataSelEff_neg.getEff(mu1->eta, mu1->pt) * h_sys_SIT_nega->GetBinContent(h_sys_SIT_nega->GetXaxis()->FindBin(mu1->eta), h_sys_SIT_nega->GetYaxis()->FindBin(mu1->pt));
             effmc   *= zmmSelEff_neg.getEff(mu1->eta, mu1->pt);
           }
           if(mu2->q>0) {
-            effdata *= dataSelEff_pos.getEff(mu2->eta, mu2->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(mu2->eta), h_sys3->GetYaxis()->FindBin(mu2->pt));
+            effdata *= dataSelEff_pos.getEff(mu2->eta, mu2->pt) * h_sys_SIT_posi->GetBinContent(h_sys_SIT_posi->GetXaxis()->FindBin(mu2->eta), h_sys_SIT_posi->GetYaxis()->FindBin(mu2->pt));
             effmc   *= zmmSelEff_pos.getEff(mu2->eta, mu2->pt);
           } else {
-            effdata *= dataSelEff_neg.getEff(mu2->eta, mu2->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(mu2->eta), h_sys3->GetYaxis()->FindBin(mu2->pt));
+            effdata *= dataSelEff_neg.getEff(mu2->eta, mu2->pt) * h_sys_SIT_nega->GetBinContent(h_sys_SIT_nega->GetXaxis()->FindBin(mu2->eta), h_sys_SIT_nega->GetYaxis()->FindBin(mu2->pt));
             effmc   *= zmmSelEff_neg.getEff(mu2->eta, mu2->pt);
           }
           corr *= effdata/effmc;
     
           effdata=1; effmc=1;
           if(mu1->q>0) {
-            effdata *= dataStaEff_pos.getEff(mu1->eta, mu1->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(mu1->eta), h_sys1->GetYaxis()->FindBin(mu1->pt));
+            effdata *= dataStaEff_pos.getEff(mu1->eta, mu1->pt) * h_sys_Sta_posi->GetBinContent(h_sys_Sta_posi->GetXaxis()->FindBin(mu1->eta), h_sys_Sta_posi->GetYaxis()->FindBin(mu1->pt));
             effmc   *= zmmStaEff_pos.getEff(mu1->eta, mu1->pt);
           } else {
-            effdata *= dataStaEff_neg.getEff(mu1->eta, mu1->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(mu1->eta), h_sys1->GetYaxis()->FindBin(mu1->pt));
+            effdata *= dataStaEff_neg.getEff(mu1->eta, mu1->pt) * h_sys_Sta_nega->GetBinContent(h_sys_Sta_nega->GetXaxis()->FindBin(mu1->eta), h_sys_Sta_nega->GetYaxis()->FindBin(mu1->pt));
             effmc   *= zmmStaEff_neg.getEff(mu1->eta, mu1->pt);
           }
           if(mu2->q>0) {
-            effdata *= dataStaEff_pos.getEff(mu2->eta, mu2->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(mu2->eta), h_sys1->GetYaxis()->FindBin(mu2->pt));
+            effdata *= dataStaEff_pos.getEff(mu2->eta, mu2->pt) * h_sys_Sta_posi->GetBinContent(h_sys_Sta_posi->GetXaxis()->FindBin(mu2->eta), h_sys_Sta_posi->GetYaxis()->FindBin(mu2->pt));
             effmc   *= zmmStaEff_pos.getEff(mu2->eta, mu2->pt);
           } else {
-            effdata *= dataStaEff_neg.getEff(mu2->eta, mu2->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(mu2->eta), h_sys1->GetYaxis()->FindBin(mu2->pt));
+            effdata *= dataStaEff_neg.getEff(mu2->eta, mu2->pt) * h_sys_Sta_nega->GetBinContent(h_sys_Sta_nega->GetXaxis()->FindBin(mu2->eta), h_sys_Sta_nega->GetYaxis()->FindBin(mu2->pt));
             effmc   *= zmmStaEff_neg.getEff(mu2->eta, mu2->pt);
           }
           corr *= effdata/effmc;
@@ -627,6 +635,16 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   delete info;
   delete gen;
   delete muonArr;
+
+  delete h_sys_SIT_posi;
+  delete h_sys_SIT_nega;
+  delete h_sys_Sta_posi;
+  delete h_sys_Sta_nega;
+
+  delete f_sys_SIT_posi;
+  delete f_sys_SIT_nega;
+  delete f_sys_Sta_posi;
+  delete f_sys_Sta_nega;
 
     
   //--------------------------------------------------------------------------------------------------------------
