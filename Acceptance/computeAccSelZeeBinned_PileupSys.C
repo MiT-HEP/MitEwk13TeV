@@ -48,12 +48,13 @@
 #endif
 
 //=== MAIN MACRO ================================================================================================= 
-void computeAccSelZeeBinned_Bin(const TString conf,            // input file
+void computeAccSelZeeBinned_PileupSys(const TString conf,            // input file
 			    const TString inputDir,
                             const TString outputDir,        // output directory
 			    const Int_t   doPU,
 			    const Int_t   doScaleCorr,
-			    const Int_t   sigma
+			    const Int_t   sigma,
+			    const TString PUtype
 ) {
   gBenchmark->Start("computeAccSelZeeBinned");
 
@@ -75,20 +76,20 @@ void computeAccSelZeeBinned_Bin(const TString conf,            // input file
   
   // efficiency files
   const TString dataHLTEffName     = inputDir+"EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/1MGpositive/eff.root";
-  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/1MGnegative/eff.root";
+  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MGnegative/eff.root";
 
   const TString zeeHLTEffName      = inputDir+"EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/1CTpositive/eff.root";
-  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/1CTnegative/eff.root";
+  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CTpositive/eff.root";
+  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CTnegative/eff.root";
   
   const TString dataGsfSelEffName     = inputDir+"EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/1MGpositive/eff.root";
-  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/1MGnegative/eff.root";
+  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MGpositive_FineBin/eff.root";
+  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MGnegative_FineBin/eff.root";
 
   const TString zeeGsfSelEffName      = inputDir+"EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/1CTpositive/eff.root";
-  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/1CTnegative/eff.root";
+  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CTpositive/eff.root";
+  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CTnegative/eff.root";
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
@@ -97,7 +98,7 @@ void computeAccSelZeeBinned_Bin(const TString conf,            // input file
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw = (TH1D*) f_rw->Get(PUtype.Data());
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");

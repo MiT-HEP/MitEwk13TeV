@@ -48,12 +48,13 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWe_Bin(const TString conf,       // input file
+void computeAccSelWe_PileupSys(const TString conf,       // input file
                      const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
 		     const Int_t   doScaleCorr,
-		     const Int_t   sigma
+		     const Int_t   sigma,
+		     const TString PUtype
 ) {
   gBenchmark->Start("computeAccSelWe");
 
@@ -83,16 +84,16 @@ void computeAccSelWe_Bin(const TString conf,       // input file
   TString dataGsfSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root");
   TString zeeGsfSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1MGpositive/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1CTpositive/eff.root"; 
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1MGpositive/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1CTpositive/eff.root"; 
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGpositive/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTpositive/eff.root"; 
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGpositive_FineBin/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTpositive/eff.root"; 
   }
   if(charge==-1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1MGnegative/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1CTnegative/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1MGnegative/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1CTnegative/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGnegative/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTnegative/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGnegative_FineBin/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTnegative/eff.root";
   }
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
@@ -101,7 +102,7 @@ void computeAccSelWe_Bin(const TString conf,       // input file
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw = (TH1D*) f_rw->Get(PUtype.Data());
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
