@@ -25,6 +25,7 @@
 #include "TLorentzVector.h"         // 4-vector class
 #include <TRandom3.h>
 #include "TGraph.h"
+#include "TF1.h"
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -47,14 +48,14 @@
 #endif
 
 //=== MAIN MACRO ================================================================================================= 
-
 void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 			    const TString inputDir,
                             const TString outputDir,        // output directory
 			    const Int_t   doPU,
 			    const Int_t   doScaleCorr,
 			    const Int_t   sigma,
-			    const TString sysFile
+                            const TString sysFileGsfSelposi,
+                            const TString sysFileGsfSelnega
 ) {
   gBenchmark->Start("computeAccSelZeeBinned");
 
@@ -76,20 +77,20 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   
   // efficiency files
   const TString dataHLTEffName     = inputDir+"EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MG/eff.root";
+  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MGnegative/eff.root";
 
   const TString zeeHLTEffName      = inputDir+"EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CT/eff.root";
+  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CTpositive/eff.root";
+  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CTnegative/eff.root";
   
   const TString dataGsfSelEffName     = inputDir+"EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MG/eff.root";
+  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MGpositive_FineBin/eff.root";
+  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MGnegative_FineBin/eff.root";
 
   const TString zeeGsfSelEffName      = inputDir+"EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CT/eff.root";
+  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CTpositive/eff.root";
+  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CTnegative/eff.root";
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
@@ -97,18 +98,23 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-//  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
-//  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");                                                 
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
   TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
-  TFile *f_sys = TFile::Open(sysFile);
-  TH2D  *h_sys = (TH2D*) f_sys->Get("h");
+  TFile *f_hlt_data_posi = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
+  TFile *f_hlt_data_nega = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
+  TFile *f_hlt_mc_posi   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
+  TFile *f_hlt_mc_nega   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
 
+  TFile *f_sys_GsfSel_posi = TFile::Open(sysFileGsfSelposi);
+  TFile *f_sys_GsfSel_nega = TFile::Open(sysFileGsfSelnega);
+
+  TH2D  *h_sys_GsfSel_posi = (TH2D*) f_sys_GsfSel_posi->Get("h");
+  TH2D  *h_sys_GsfSel_nega = (TH2D*) f_sys_GsfSel_nega->Get("h");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -173,9 +179,6 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
                                                  h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
   
-  //
-  // Selection efficiency
-  //
   cout << "Loading GSF+selection efficiencies..." << endl;
   
   TFile *dataGsfSelEffFile_pos = new TFile(dataGsfSelEffName_pos);
@@ -199,6 +202,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
                                                        h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
   TH2D *hGsfSelErr_neg = new TH2D("hGsfSelErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
                                                        h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo   *info = new baconhep::TEventInfo();
@@ -404,19 +408,48 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
           Double_t corr=1;
 	  
 	  effdata=1; effmc=1;
+          char funcname1[20];
+  	  char funcname2[20];
+          sprintf(funcname1, "fitfcn_%d", getEtaBinLabel(vEle1.Eta()));
+	  sprintf(funcname2, "fitfcn_%d", getEtaBinLabel(vEle2.Eta()));
+
           if(ele1->q>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
-            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+	    TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname1);
+	    TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname1);
+	    effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
+	    effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+	    delete fdt;
+	    delete fmc;
+            //effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+            //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
           } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname1);
+            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname1);
+            effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
+            effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+            delete fdt;
+            delete fmc;
+            //effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+            //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
           }
           if(ele2->q>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
+            TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname2);
+            TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname2);
+            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            delete fdt;
+            delete fmc;
+            //effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
+            //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
           } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
+            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname2);
+            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname2);
+            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            delete fdt;
+            delete fmc;
+            //effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
+            //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
           }
           effdata = 1.-effdata;
           effmc   = 1.-effmc;
@@ -424,23 +457,56 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 
 
           effdata=1; effmc=1;
-          if(ele1->q>0) { 
-            effdata *= dataGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle1.Eta()), h_sys->GetYaxis()->FindBin(vEle1.Pt())); 
-            effmc   *= zeeGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt()); 
+          if(ele1->q>0) {
+            effdata *= dataGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt()) * h_sys_GsfSel_posi->GetBinContent(h_sys_GsfSel_posi->GetXaxis()->FindBin(vEle1.Eta()), h_sys_GsfSel_posi->GetYaxis()->FindBin(vEle1.Pt()));
+            effmc   *= zeeGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt());
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle1.Eta()), h_sys->GetYaxis()->FindBin(vEle1.Pt())); 
-            effmc   *= zeeGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt()); 
+            effdata *= dataGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt()) * h_sys_GsfSel_nega->GetBinContent(h_sys_GsfSel_nega->GetXaxis()->FindBin(vEle1.Eta()), h_sys_GsfSel_nega->GetYaxis()->FindBin(vEle1.Pt()));
+            effmc   *= zeeGsfSelEff_neg.getEff(vEle1.Eta(), vEle1.Pt());
           }
           if(ele2->q>0) {
-            effdata *= dataGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle2.Eta()), h_sys->GetYaxis()->FindBin(vEle2.Pt()));
+            effdata *= dataGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt()) * h_sys_GsfSel_posi->GetBinContent(h_sys_GsfSel_posi->GetXaxis()->FindBin(vEle2.Eta()), h_sys_GsfSel_posi->GetYaxis()->FindBin(vEle2.Pt()));
             effmc   *= zeeGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
           } else {
-            effdata *= dataGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vEle2.Eta()), h_sys->GetYaxis()->FindBin(vEle2.Pt())); 
+            effdata *= dataGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt()) * h_sys_GsfSel_nega->GetBinContent(h_sys_GsfSel_nega->GetXaxis()->FindBin(vEle2.Eta()), h_sys_GsfSel_nega->GetYaxis()->FindBin(vEle2.Pt()));
             effmc   *= zeeGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
           }
           corr *= effdata/effmc;
 	  
 	  // scale factor uncertainties
+	  // HLT
+          if(ele1->q>0) {
+            Double_t effdata = dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt());
+            Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(vEle1.Eta(), vEle1.Pt()), dataHLTEff_pos.getErrHigh(vEle1.Eta(), vEle1.Pt()));
+            Double_t effmc   = zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt());
+            Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(vEle1.Eta(), vEle1.Pt()), zeeHLTEff_pos.getErrHigh(vEle1.Eta(), vEle1.Pt()));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_pos->Fill(vEle1.Eta(), vEle1.Pt(), errHLT);
+          } else {
+            Double_t effdata = dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt());
+            Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(vEle1.Eta(), vEle1.Pt()), dataHLTEff_neg.getErrHigh(vEle1.Eta(), vEle1.Pt()));
+            Double_t effmc   = zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt());
+            Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(vEle1.Eta(), vEle1.Pt()), zeeHLTEff_neg.getErrHigh(vEle1.Eta(), vEle1.Pt()));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_neg->Fill(vEle1.Eta(), vEle1.Pt(), errHLT);
+          }
+          if(ele2->q>0) {
+            Double_t effdata = dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), dataHLTEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t effmc   = zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeHLTEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_pos->Fill(vEle2.Eta(), vEle2.Pt(), errHLT);
+          } else {
+            Double_t effdata = dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), dataHLTEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t effmc   = zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeHLTEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hHLTErr_neg->Fill(vEle2.Eta(), vEle2.Pt(), errHLT);
+          }
+
+	  // GsfSel
 	  if(ele1->q>0) {	    
 	    Double_t effdata = dataGsfSelEff_pos.getEff(vEle1.Eta(), vEle1.Pt());
 	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(vEle1.Eta(), vEle1.Pt()), dataGsfSelEff_pos.getErrHigh(vEle1.Eta(), vEle1.Pt()));
@@ -456,22 +522,21 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
 	    hGsfSelErr_neg->Fill(vEle1.Eta(), vEle1.Pt(), errGsfSel);
 	  }
-
-	  if(ele2->q>0) {	    
-	    Double_t effdata = dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), dataHLTEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
-            Double_t effmc   = zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()); 
-	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeHLTEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    hHLTErr_pos->Fill(vEle2.Eta(), vEle2.Pt(), errHLT);
-	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), dataHLTEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
-            Double_t effmc   = zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()); 
-	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeHLTEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    hHLTErr_neg->Fill(vEle2.Eta(), vEle2.Pt(), errHLT);
-	  }
+          if(ele2->q>0) {
+            Double_t effdata = dataGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), dataGsfSelEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t effmc   = zeeGsfSelEff_pos.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeGsfSelEff_pos.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hGsfSelErr_pos->Fill(vEle2.Eta(), vEle2.Pt(), errGsfSel);
+          } else {
+            Double_t effdata = dataGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), dataGsfSelEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t effmc   = zeeGsfSelEff_neg.getEff(vEle2.Eta(), vEle2.Pt());
+            Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(vEle2.Eta(), vEle2.Pt()), zeeGsfSelEff_neg.getErrHigh(vEle2.Eta(), vEle2.Pt()));
+            Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+            hGsfSelErr_neg->Fill(vEle2.Eta(), vEle2.Pt(), errGsfSel);
+          }
 
 	  nSelv[ifile]+=weight;
 	  nSelCorrv[ifile]+=weight*corr;
@@ -493,7 +558,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 	var+=err*err;
       }
     }
-    cout << "var1: " << var << endl;
+//    cout << "var1: " << var << endl;
     for(Int_t iy=0; iy<=hGsfSelErr_pos->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hGsfSelErr_pos->GetNbinsX(); ix++) {
 	Double_t err=hGsfSelErr_pos->GetBinContent(ix,iy);
@@ -506,7 +571,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 	var+=err*err;
       }
     }
-    cout << "var2: " << var << endl;
+//    cout << "var2: " << var << endl;
 
     nSelCorrVarv[ifile]+=var;
 
@@ -521,6 +586,12 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   delete info;
   delete gen;
   delete electronArr;  
+
+  delete h_sys_GsfSel_posi;
+  delete h_sys_GsfSel_nega;
+
+  delete f_sys_GsfSel_posi;
+  delete f_sys_GsfSel_nega;
     
   //--------------------------------------------------------------------------------------------------------------
   // Output

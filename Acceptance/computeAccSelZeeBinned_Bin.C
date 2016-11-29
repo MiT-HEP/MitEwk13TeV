@@ -75,20 +75,20 @@ void computeAccSelZeeBinned_Bin(const TString conf,            // input file
   
   // efficiency files
   const TString dataHLTEffName     = inputDir+"EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/1MGpositive/eff.root";
-  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/1MGnegative/eff.root";
+  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MGnegative/eff.root";
 
   const TString zeeHLTEffName      = inputDir+"EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/1CTpositive/eff.root";
-  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/1CTnegative/eff.root";
+  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CTpositive/eff.root";
+  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CTnegative/eff.root";
   
   const TString dataGsfSelEffName     = inputDir+"EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/1MGpositive/eff.root";
-  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/1MGnegative/eff.root";
+  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MGpositive/eff.root";
+  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MGnegative/eff.root";
 
   const TString zeeGsfSelEffName      = inputDir+"EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/1CTpositive/eff.root";
-  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/1CTnegative/eff.root";
+  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CTpositive/eff.root";
+  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CTnegative/eff.root";
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
@@ -407,34 +407,34 @@ void computeAccSelZeeBinned_Bin(const TString conf,            // input file
 	  sprintf(funcname2, "fitfcn_%d", getEtaBinLabel(vEle2.Eta()));
 
           if(ele1->q>0) { 
-	    TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname1);
-	    TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname1);
-	    effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
-	    effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
-            //effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
-            //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+//	    TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname1);
+//	    TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname1);
+//	    effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
+//	    effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+            effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
           } else {
-            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname1);
-            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname1);
-            effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
-            effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
-            //effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
-            //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+//            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname1);
+//            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname1);
+//            effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
+//            effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+            effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
           }
           if(ele2->q>0) {
-            TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname2);
-            TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname2);
-            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            //effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
-            //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
+//            TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname2);
+//            TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname2);
+//            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
+//            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
           } else {
-            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname2);
-            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname2);
-            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            //effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
-            //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
+//            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname2);
+//            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname2);
+//            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
+//            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
           }
           effdata = 1.-effdata;
           effmc   = 1.-effmc;
