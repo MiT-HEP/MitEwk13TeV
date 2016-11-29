@@ -222,8 +222,8 @@ Systematics={}
 ######################################## W ##################################################
 ### Read Central value for W
 
-Central=ReadDict(opts.central)
-CentralError=ReadDict(opts.central,True)
+Central=ReadDict("Central")
+CentralError=ReadDict("Central",True)
 Yields["Central"]= Central
 Yields["CentralError"]= CentralError
 
@@ -306,40 +306,40 @@ for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 ## and compute systematics with respect to that
 SystematicsEff={}
 
-Efficiency=ReadEffXAcc("ChargeDependentEff")
-EffErr=ProduceRatio(ReadEffXAcc("ChargeDependentEff",True),Efficiency)
+Efficiency=ReadEffXAcc("Central")
+EffErr=ProduceRatio(ReadEffXAcc("Central",True),Efficiency)
 #systematics are done wrt to this value
-EfficiencyNoCh=ReadEffXAcc("Final")
+#EfficiencyNoCh=ReadEffXAcc("Final")
 
 #read efficiency systematics
 EffPuUp=ReadEffXAcc("PileupUp")
 EffPuDown=ReadEffXAcc("PileupDown")
-EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,EfficiencyNoCh)
+EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
 SystematicsEff["Pileup"]=EffPileup
 
 # read bin efficiency
 EffBin=ReadEffXAcc("Bin")
-SystematicsEff["Bin"]=ProduceRel(EffBin,EfficiencyNoCh)
+SystematicsEff["Bin"]=ProduceRel(EffBin,Efficiency)
 ###
-EffOri=ReadEffXAcc("Ori")
+#EffOri=ReadEffXAcc("Ori")
 ###
 EffSig=ReadEffXAcc("SigUp")
-SystematicsEff["Sig"]=ProduceRel(EffSig,EffOri)
+SystematicsEff["Sig"]=ProduceRel(EffSig,Efficiency)
 EffBkg=ReadEffXAcc("BkgUp")
-SystematicsEff["Bkg"]=ProduceRel(EffBkg,EffOri)
+SystematicsEff["Bkg"]=ProduceRel(EffBkg,Efficiency)
 
-EffMisId=ReadEffXAcc("ChargeMisID",doOnly=[("Wenu","Wp"),("Wenu","Wm")])
-#SystematicsEff["ChargeMisID"] = ProduceRel(EffMisId,Efficiency)
-SystematicsEff["ChargeMisID"] = ProduceRel(EffMisId,EffOri)
+EffMisId=ReadEffXAcc("CMI",doOnly=[("Wenu","Wp"),("Wenu","Wm")])
+#SystematicsEff["CMI"] = ProduceRel(EffMisId,Efficiency)
+SystematicsEff["CMI"] = ProduceRel(EffMisId,Efficiency)
 
 for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 	if 'Z' in ch: l = [""]
 	if "W" in ch: l = ["Wp","Wm","Wtot"]
 	for w in l:
 		if (ch,w) not in [("Wenu","Wp"),("Wenu","Wm")]:
-			SystematicsEff["ChargeMisID"][ch][w] =0.000
+			SystematicsEff["CMI"][ch][w] =0.000
 
-#SystematicsEff["ChargeMisID"] = ProduceRel(EffMisId,EfficiencyNoCh)
+#SystematicsEff["CMI"] = ProduceRel(EffMisId,EfficiencyNoCh)
 
 ######################################## SYST W ##################################################
 #### read systematics for W
@@ -374,7 +374,7 @@ for s in syst2:
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Recoil_Inclusive"])
 		CrossSectionUp=ProduceRatio(yieldU,EffPuUp)
 		CrossSectionDown=ProduceRatio(yieldD,EffPuDown)
-		CrossSectionYield=ProduceRatio(Yields["Recoil_Inclusive"],EfficiencyNoCh)
+		CrossSectionYield=ProduceRatio(Yields["Recoil_Inclusive"],Efficiency)
 		#print "XXX","CrossSectionUp=",CrossSectionUp["Zmumu"][""]
 		#print "XXX","CrossSectionDn=",CrossSectionDown["Zmumu"][""]
 		#print "XXX","CrossSection=",CrossSectionYield["Zmumu"][""]
@@ -457,7 +457,7 @@ PrintLine(AddSpace("effxacc pu",20),SystematicsEff["Pileup"],"%10.4f")
 PrintLine(AddSpace("effxacc bin",20),SystematicsEff["Bin"],"%10.4f")
 PrintLine(AddSpace("effxacc Sig",20),SystematicsEff["Sig"],"%10.4f")
 PrintLine(AddSpace("effxacc Bkg",20),SystematicsEff["Bkg"],"%10.4f")
-PrintLine(AddSpace("effxacc chmisid",20),SystematicsEff["ChargeMisID"],"%10.4f")
+PrintLine(AddSpace("effxacc chmisid",20),SystematicsEff["CMI"],"%10.4f")
 
 #PrintLine(AddSpace("effxacc scale",20),EffScale,"%10.4f","x")
 #for i in ["Bin","BkgUp","Ori","SigUp"]:
@@ -480,36 +480,40 @@ print
 
 
 PrintLine(AddSpace("#Quantity",20),Info)
-Recoil=SqrtSum(Systematics["Recoil_RooKeys"],Systematics["Recoil_Inclusive"])
-#Bkg = SqrtSumL([Systematics["QCD_?ree"], SystematicsEff["Sig"],SystematicsEff["Bkg"]])
 
-PrintLine(AddSpace("eff_stat",20),EffErr,"%10.4f")
-PrintLine(AddSpace("lepton_eff",20),SqrtSumL([SystematicsEff["Sig"],SystematicsEff["Bkg"]]),"%10.4f")
-PrintLine(AddSpace("binning_eff",20),SystematicsEff["Bin"],"%10.4f")
-PrintLine(AddSpace("charge_mis",20),SystematicsEff["ChargeMisID"],"%10.4f")
-PrintLine(AddSpace("bkg_model"),SqrtSum(Systematics["QCD_?ree"], Systematics["Zbkg_yield"]),"%10.4f")
-PrintLine(AddSpace("ewk_norm"),Systematics["Ewk_Fix"],"%10.4f")
+#PrintLine(AddSpace("eff_stat",20),EffErr,"%10.4f")
+#PrintLine(AddSpace("lepton_eff",20),SqrtSumL([SystematicsEff["Sig"],SystematicsEff["Bkg"]]),"%10.4f")
+#PrintLine(AddSpace("binning_eff",20),SystematicsEff["Bin"],"%10.4f")
+#PrintLine(AddSpace("charge_mis",20),SystematicsEff["CMI"],"%10.4f")
+#PrintLine(AddSpace("bkg_model"),SqrtSum(Systematics["QCD_?ree"], Systematics["Zbkg_yield"]),"%10.4f")
+#PrintLine(AddSpace("ewk_norm"),Systematics["Ewk_Fix"],"%10.4f")
 PrintLine(AddSpace("pu_model"),TotPuCorr,"%10.4f","")
-PrintLine(AddSpace("met_model"),Systematics["Recoil_Inclusive"],"%10.4f","")
-PrintLine(AddSpace("recoil_model"),Systematics["Recoil_RooKeys"],"%10.4f","")
+#PrintLine(AddSpace("met_model"),Systematics["Recoil_Inclusive"],"%10.4f","")
+#PrintLine(AddSpace("recoil_model"),Systematics["Recoil_RooKeys"],"%10.4f","")
 
 
 
-#Tot=SqrtSumL( [Recoil,Bkg,TotPuCorr,EffErr])
-#PrintLine(AddSpace("Pileup"),Systematics["Pileup"],"%10.4f","",100.)
-#PrintLine(AddSpace("effxacc Sig",20),SystematicsEff["Sig"],"%10.4f","x")
-#PrintLine(AddSpace("effxacc Bkg",20),SystematicsEff["Bkg"],"%10.4f","x")
+
+print 
+print 
+print 
 print '-----------------------------------'
-#PrintLine(AddSpace("Tot"),Tot,"%10.4f","",100.)
-
+print '|  going to print table for latex |'
+print '|              %                  |'
 print '-----------------------------------'
-print '-----------------------------------'
+print 
+Recoil=SqrtSum(Systematics["Recoil_RooKeys"],Systematics["Recoil_Inclusive"])
+Bkg = SqrtSumL([Systematics["QCD_?ree"], Systematics["Ewk_Fix"],Systematics["Zbkg_yield"]])
+Eff = SqrtSumL( [EffErr,SystematicsEff["Sig"],SystematicsEff["Bkg"],SystematicsEff["Bin"],SystematicsEff["CMI"] ]) 
+Tot = SqrtSumL( [ Recoil,Bkg,Eff,TotPuCorr ] ) 
 
-##### print "what: Central Value"
-##### print Central
-##### for what in Yields:
-##### 	print '-----------------------------------'
-##### 	print "what:",what
-##### 	print Yields[what]
+PrintLine(AddSpace("effxacc"),Eff,"%10.4f","",100)
+PrintLine(AddSpace("bkg_model"),Bkg,"%10.4f","",100)
+PrintLine(AddSpace("recoil"),Recoil,"%10.4f","",100)
+PrintLine(AddSpace("pu_model"),TotPuCorr,"%10.4f","",100)
+print '-----------------------------------'
+PrintLine(AddSpace("tot"),Tot,"%10.4f","",100)
 
 	
+print '-----------------------------------'
+print '-----------------------------------'
