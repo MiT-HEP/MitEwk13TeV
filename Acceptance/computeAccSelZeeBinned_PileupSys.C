@@ -412,6 +412,8 @@ void computeAccSelZeeBinned_PileupSys(const TString conf,            // input fi
 	    TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname1);
 	    effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
 	    effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+	    delete fdt;
+	    delete fmc;
             //effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
             //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
           } else {
@@ -419,6 +421,8 @@ void computeAccSelZeeBinned_PileupSys(const TString conf,            // input fi
             TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname1);
             effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
             effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+	    delete fdt;
+	    delete fmc;
             //effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
             //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
           }
@@ -427,6 +431,8 @@ void computeAccSelZeeBinned_PileupSys(const TString conf,            // input fi
             TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname2);
             effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
             effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            delete fdt;
+            delete fmc;
             //effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
             //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
           } else {
@@ -434,6 +440,8 @@ void computeAccSelZeeBinned_PileupSys(const TString conf,            // input fi
             TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname2);
             effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
             effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+            delete fdt;
+            delete fmc;
             //effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
             //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
           }

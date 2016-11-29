@@ -83,16 +83,16 @@ void computeAccSelWe_Bin(const TString conf,       // input file
   TString dataGsfSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root");
   TString zeeGsfSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1MGpositive/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1CTpositive/eff.root"; 
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1MGpositive/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1CTpositive/eff.root"; 
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGpositive/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTpositive/eff.root"; 
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGpositive/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTpositive/eff.root"; 
   }
   if(charge==-1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1MGnegative/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/1CTnegative/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1MGnegative/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/1CTnegative/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGnegative/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTnegative/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGnegative/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTnegative/eff.root";
   }
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
@@ -379,17 +379,17 @@ void computeAccSelWe_Bin(const TString conf,       // input file
 
         Double_t corr=1;
         if(dataHLTEffFile && zeeHLTEffFile) {
-//          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-//          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
 
-	  char funcname[20];
-	  sprintf(funcname, "fitfcn_%d", getEtaBinLabel(vElefinal.Eta()));
-	  TF1 *fdt = (TF1*)f_hlt_data->Get(funcname);
-	  TF1 *fmc = (TF1*)f_hlt_mc  ->Get(funcname);
-	  Double_t effdata = fdt->Eval(TMath::Min(vElefinal.Pt(),119.0));
-	  Double_t effmc   = fmc->Eval(TMath::Min(vElefinal.Pt(),119.0));
-	  delete fdt;
-	  delete fmc;
+//	  char funcname[20];
+//	  sprintf(funcname, "fitfcn_%d", getEtaBinLabel(vElefinal.Eta()));
+//	  TF1 *fdt = (TF1*)f_hlt_data->Get(funcname);
+//	  TF1 *fmc = (TF1*)f_hlt_mc  ->Get(funcname);
+//	  Double_t effdata = fdt->Eval(TMath::Min(vElefinal.Pt(),119.0));
+//	  Double_t effmc   = fmc->Eval(TMath::Min(vElefinal.Pt(),119.0));
+//	  delete fdt;
+//	  delete fmc;
 
 	  corr *= effdata/effmc;
         }

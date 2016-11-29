@@ -25,6 +25,7 @@
 #include "TLorentzVector.h"
 #include <TRandom3.h>
 #include "TGraph.h"
+#include "TF1.h"
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -83,28 +84,23 @@ void computeAccSelWe_Sys(const TString conf,       // input file
   TString dataGsfSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root");
   TString zeeGsfSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root");
   if(charge==1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root"; 
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root"; 
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGpositive/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTpositive/eff.root"; 
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGpositive_FineBin/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTpositive/eff.root"; 
   }
   if(charge==-1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root";
+    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGnegative/eff.root";
+    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTnegative/eff.root";
+    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGnegative_FineBin/eff.root";
+    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTnegative/eff.root";
   }
-
-  TFile *f_sys = TFile::Open(sysFile);
-  TH2D  *h_sys = (TH2D*) f_sys->Get("h");
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
   EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-//  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
-//  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
 
@@ -112,6 +108,20 @@ void computeAccSelWe_Sys(const TString conf,       // input file
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
   TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
+  TFile *f_hlt_data;
+  TFile *f_hlt_mc;
+
+  if(charge==1){
+    f_hlt_data = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
+    f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
+  }
+  if(charge==-1){
+    f_hlt_data = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
+    f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
+  }
+
+  TFile *f_sys = TFile::Open(sysFile);
+  TH2D  *h_sys = (TH2D*) f_sys->Get("h");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -267,6 +277,7 @@ void computeAccSelWe_Sys(const TString conf,       // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+//      if(ientry==10000) break;
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
@@ -372,9 +383,19 @@ void computeAccSelWe_Sys(const TString conf,       // input file
 
         Double_t corr=1;
         if(dataHLTEffFile && zeeHLTEffFile) {
-          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          corr *= effdata/effmc;
+//          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+//          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+
+	  char funcname[20];
+	  sprintf(funcname, "fitfcn_%d", getEtaBinLabel(vElefinal.Eta()));
+	  TF1 *fdt = (TF1*)f_hlt_data->Get(funcname);
+	  TF1 *fmc = (TF1*)f_hlt_mc  ->Get(funcname);
+	  Double_t effdata = fdt->Eval(TMath::Min(vElefinal.Pt(),119.0));
+	  Double_t effmc   = fmc->Eval(TMath::Min(vElefinal.Pt(),119.0));
+	  delete fdt;
+	  delete fmc;
+
+	  corr *= effdata/effmc;
         }
         if(dataGsfSelEffFile && zeeGsfSelEffFile) {
           Double_t effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vElefinal.Eta()), h_sys->GetYaxis()->FindBin(vElefinal.Pt()));
