@@ -129,8 +129,8 @@ void fitWe(const TString  outputDir,   // output directory
   const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CTpositive/eff.root";
   const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CTnegative/eff.root";
   
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative/eff.root";
+  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive_FineBin/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative_FineBin/eff.root";
   const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CTpositive/eff.root";
   const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CTnegative/eff.root";
 
@@ -203,7 +203,7 @@ void fitWe(const TString  outputDir,   // output directory
 
 
   // ======================= Recoil Corrections ================================
-  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7");
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
   // for Puppi, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
@@ -550,6 +550,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+//     for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.1); ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
       
@@ -906,14 +907,14 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooRealVar cewk("cewk","cewk",0.1,0,5) ;
   //RooRealVar cewk("cewk","cewk",0.1,0,5) ;
   cewk.setVal(hEWKMet->Integral()/hWenuMet->Integral());
-  cewk.setConstant(kTRUE);
+//   cewk.setConstant(kTRUE);
   RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
   
   RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiWenuMet->Integral()*0.9,0,hAntiDataMet->Integral());
   RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
   RooRealVar dewk("dewk","dewk",0.1,0,5) ;
   dewk.setVal(hAntiEWKMet->Integral()/hAntiWenuMet->Integral());
-  dewk.setConstant(kTRUE);
+//   dewk.setConstant(kTRUE);
   //   nAntiSig.setConstant(kTRUE);
   RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
 
@@ -932,7 +933,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooRealVar dewkp("dewkp","dewkp",0.1,0,1.0) ;
   dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
   //std::cout << "TTTT " << hAntiEWKMetp->Integral() << " "<< hAntiWenuMetp->Integral() << std::endl;
-  dewkp.setConstant(kTRUE);
+//   dewkp.setConstant(kTRUE);
 //   nAntiSigp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
 
@@ -950,7 +951,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.95*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
   dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
-  dewkm.setConstant(kTRUE);
+//   dewkm.setConstant(kTRUE);
 //   nAntiSigm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
 
@@ -1029,6 +1030,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
    CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
    CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
    CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
+   
 //    CPepeModel2 aqcd("aqcd",pfmet);
 //    CPepeModel2 aqcdp("aqcdp",pfmet);
 //    CPepeModel2 aqcdm("aqcdm",pfmet);
@@ -1052,8 +1054,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
    //RooGaussian constp("constp","constp",*qcdp.a1,RooConst(0.015826),RooConst(0.0001)) ;
 //    RooGaussian constm("constm","constm",nAntiSigm,RooConst(hAntiWenuMetm->Integral()),RooConst(0.05*hAntiWenuMetm->Integral()));
 //    RooGaussian constp("constp","constp",nAntiSigp,RooConst(hAntiWenuMetp->Integral()),RooConst(0.05*hAntiWenuMetp->Integral()));
-    RooGaussian constm("constm","constm",nEWKm,RooConst(hAntiWenuMetm->Integral()),RooConst(0.05*hAntiWenuMetm->Integral()));
-    RooGaussian constp("constp","constp",nEWKp,RooConst(hAntiWenuMetp->Integral()),RooConst(0.05*hAntiWenuMetp->Integral()));
+    RooGaussian constm("constm","constm",nEWKm,RooConst(hEWKMetm->Integral()),RooConst(0.15*hEWKMetm->Integral()));
+    RooGaussian constp("constp","constp",nEWKp,RooConst(hEWKMetp->Integral()),RooConst(0.15*hEWKMetp->Integral()));
    //RooGaussian constp("constp","constp",*qcdp.a1,RooConst(0.015826),RooConst(0.0003)) ;
    
 
@@ -1137,19 +1139,21 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   cout << "Selected: " << hAntiDataMetm->Integral() << endl;
   cout << "   sig: " << hAntiWenuMetm->Integral() << endl;
   cout << "   EWK: " << hAntiEWKMetm->Integral() << endl;
+/*
+  RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+  RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
 
-//   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-//   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+  RooRealVar pepe1Pdf_aqcdp_norm("pepe1Pdf_aqcdp_norm","pepe1Pdf_aqcdp_norm",0.9*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
+  RooRealVar pepe1Pdf_aqcdm_norm("pepe1Pdf_aqcdm_norm","pepe1Pdf_aqcdm_norm",0.9*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());*/
 
-  RooRealVar pepe2Pdf_qcdp_norm("pepe2Pdf_qcdp_norm","pepe2Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-  RooRealVar pepe2Pdf_qcdm_norm("pepe2Pdf_qcdm_norm","pepe2Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+  RooRealVar pepe2Pdf_qcdp_norm("pepe2Pdf_qcdp_norm","pepe2Pdf_qcdp_norm",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+  RooRealVar pepe2Pdf_qcdm_norm("pepe2Pdf_qcdm_norm","pepe2Pdf_qcdm_norm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
   
-  RooRealVar pepe2Pdf_aqcdp_norm("pepe2Pdf_aqcdp_norm","pepe2Pdf_aqcdp_norm",0.3*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
-  RooRealVar pepe2Pdf_aqcdm_norm("pepe2Pdf_aqcdm_norm","pepe2Pdf_aqcdm_norm",0.3*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
+  RooRealVar pepe2Pdf_aqcdp_norm("pepe2Pdf_aqcdp_norm","pepe2Pdf_aqcdp_norm",0.9*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
+  RooRealVar pepe2Pdf_aqcdm_norm("pepe2Pdf_aqcdm_norm","pepe2Pdf_aqcdm_norm",0.9*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   
   
-//   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",40000,0,100000);
-//   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",40000,0,100000);
+
 
   RooWorkspace combine_workspace("combine_workspace");
   combine_workspace.import(dataMet);
@@ -1221,14 +1225,14 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 
   RooFitResult *fitRes = pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE)); 
 //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE)/*,Minimizer("Minuit2","minimize")*/,RooFit::Strategy(2),Save(kTRUE));
+  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),ExternalConstraints(constp),RooFit::Strategy(2),Save(kTRUE));
 //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
   RooDataHist dataTotal("dataTotal,","dataTotal,", RooArgList(pfmet), Index(rooCat),Import("Selectm", dataMetm),Import("Selectp",   antiMetm));
   
   //RooFitResult *fitResm = pdfTotal.fitTo(dataTotal,Extended(),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE)/*,Minimizer("Minuit2","minimize")*/,RooFit::Strategy(2),Save(kTRUE));
+  RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),ExternalConstraints(constm),RooFit::Strategy(2),Save(kTRUE));
 //   RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
