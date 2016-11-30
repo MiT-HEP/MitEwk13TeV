@@ -374,9 +374,9 @@ EffPuDown=ReadEffXAcc("PileupDown")
 EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
 SystematicsEff["Pileup"]=EffPileup
 
-EffPuUp=ReadEffXAcc("ScaleUp")
-EffPuDown=ReadEffXAcc("ScaleDown")
-EffScale=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
+EffScaleUp=ReadEffXAcc("ScaleUp")
+EffScaleDown=ReadEffXAcc("ScaleDown")
+EffScale=ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
 SystematicsEff["Scale"]=EffScale
 
 # read bin efficiency
@@ -438,14 +438,32 @@ for s in syst2:
 		#print "XXX","yieldDn=",yieldD["Zmumu"][""],"effDn",EffPuDown["Zmumu"][""]
 		#print "XXX","yield=",Yields["Central"]["Zmumu"][""],"eff",EfficiencyNoCh["Zmumu"][""]
 
-		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Recoil_Inclusive"])
+		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Central"])
 		CrossSectionUp=ProduceRatio(yieldU,EffPuUp)
 		CrossSectionDown=ProduceRatio(yieldD,EffPuDown)
-		CrossSectionYield=ProduceRatio(Yields["Recoil_Inclusive"],Efficiency)
+		CrossSectionYield=ProduceRatio(Yields["Central"],Efficiency)
 		#print "XXX","CrossSectionUp=",CrossSectionUp["Zmumu"][""]
 		#print "XXX","CrossSectionDn=",CrossSectionDown["Zmumu"][""]
 		#print "XXX","CrossSection=",CrossSectionYield["Zmumu"][""]
 		TotPuCorr = ProduceDiffRel(CrossSectionUp,CrossSectionDown,CrossSectionYield)
+
+		Wtmp = ProduceDiffRel(yieldU,yieldD,Central)
+		for ch in ["Wmunu","Wenu"]:
+			if "W" in ch: l = ["Wp","Wm","Wtot"]
+			for w in l:
+				TotPuCorr[ch][w]=Wtmp[ch][w]
+	elif s=="Scale":
+
+		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Central"])
+		CrossSectionUp=ProduceRatio(yieldU,EffScaleUp)
+		CrossSectionDown=ProduceRatio(yieldD,EffScaleDown)
+		CrossSectionYield=ProduceRatio(Yields["Central"],Efficiency)
+		TotScaleCorr = ProduceDiffRel(CrossSectionUp,CrossSectionDown,CrossSectionYield)
+		TotScaleCorr["Zee"]={}
+		Ztmp= ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
+		TotScaleCorr["Zee"][""] = Ztmp["Zee"][""]
+
+
 	else:
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Central)
 
@@ -556,6 +574,7 @@ PrintLine(AddSpace("#Quantity",20),Info)
 #PrintLine(AddSpace("bkg_model"),SqrtSum(Systematics["QCD_?ree"], Systematics["Zbkg_yield"]),"%10.4f")
 #PrintLine(AddSpace("ewk_norm"),Systematics["Ewk_Fix"],"%10.4f")
 PrintLine(AddSpace("pu_model"),TotPuCorr,"%10.4f","")
+PrintLine(AddSpace("scale_electron"),TotScaleCorr,"%10.4f","")
 #PrintLine(AddSpace("met_model"),Systematics["Recoil_Inclusive"],"%10.4f","")
 #PrintLine(AddSpace("recoil_model"),Systematics["Recoil_RooKeys"],"%10.4f","")
 
@@ -579,6 +598,7 @@ PrintLine(AddSpace("effxacc"),Eff,"%10.4f","",100)
 PrintLine(AddSpace("bkg_model"),Bkg,"%10.4f","",100)
 PrintLine(AddSpace("recoil"),Recoil,"%10.4f","",100)
 PrintLine(AddSpace("pu_model"),TotPuCorr,"%10.4f","",100)
+PrintLine(AddSpace("scale_electron"),TotScaleCorr,"%10.4f","",100)
 print '-----------------------------------'
 PrintLine(AddSpace("tot"),Tot,"%10.4f","",100)
 
