@@ -592,7 +592,7 @@ print
 Recoil=SqrtSum(Systematics["Recoil_RooKeys"],Systematics["Recoil_Inclusive"])
 Bkg = SqrtSumL([Systematics["QCD_?ree"], Systematics["Ewk_Fix"],Systematics["Zbkg_yield"]])
 Eff = SqrtSumL( [EffErr,SystematicsEff["Sig"],SystematicsEff["Bkg"],SystematicsEff["Bin"],SystematicsEff["CMI"] ]) 
-Tot = SqrtSumL( [ Recoil,Bkg,Eff,TotPuCorr ] ) 
+Tot = SqrtSumL( [ Recoil,Bkg,Eff,TotPuCorr ,TotScaleCorr] ) 
 
 PrintLine(AddSpace("effxacc"),Eff,"%10.4f","",100)
 PrintLine(AddSpace("bkg_model"),Bkg,"%10.4f","",100)
