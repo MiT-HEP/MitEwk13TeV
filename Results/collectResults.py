@@ -21,10 +21,12 @@ def AddSpace(s,n=20):
 		toprint+=" "
 	return toprint
 
-def ProduceTot(d):
+def ProduceTot(d,ratioOnly=False):
 	'''Handle and complete dictionaries'''
-	d["Wenu"]["Wtot"] = d["Wenu"]["Wp"]+d["Wenu"]["Wm"]
-	d["Wmunu"]["Wtot"] = d["Wmunu"]["Wp"]+d["Wmunu"]["Wm"]
+	#sum
+	if not ratioOnly:
+		d["Wenu"]["Wtot"] = d["Wenu"]["Wp"]+d["Wenu"]["Wm"]
+		d["Wmunu"]["Wtot"] = d["Wmunu"]["Wp"]+d["Wmunu"]["Wm"]
 	# ratio
 	try:
 		d["Wenu"]["Wratio"] = d["Wenu"]["Wp"]/d["Wenu"]["Wm"]
@@ -33,6 +35,30 @@ def ProduceTot(d):
 	try:
 		d["Wmunu"]["Wratio"] = d["Wmunu"]["Wp"]/d["Wmunu"]["Wm"]
 	except ZeroDivisionError:
+		d["Wmunu"]["Wratio"] = float(-999)
+
+def ProduceRatioAsSqrtSum(d):
+	'''Handle and complete dictionaries'''
+	# ratio
+	try:
+		d["Wenu"]["Wratio"] = math.sqrt( d["Wenu"]["Wp"]**2 + d["Wenu"]["Wm"]**2)
+	except KeyError:
+		d["Wenu"]["Wratio"] = float(-999)
+	try:
+		d["Wmunu"]["Wratio"] = math.sqrt(d["Wmunu"]["Wp"]**2 + d["Wmunu"]["Wm"]**2 )
+	except KeyError:
+		d["Wmunu"]["Wratio"] = float(-999)
+
+def ProduceRatioAsDiff(d):
+	'''Handle and complete dictionaries'''
+	# ratio
+	try:
+		d["Wenu"]["Wratio"]  = d["Wenu"]["Wp"] - d["Wenu"]["Wm"]
+	except KeyError:
+		d["Wenu"]["Wratio"] = float(-999)
+	try:
+		d["Wmunu"]["Wratio"] = d["Wmunu"]["Wp"] - d["Wmunu"]["Wm"]
+	except KeyError:
 		d["Wmunu"]["Wratio"] = float(-999)
 
 def ProduceRel(a,b):
@@ -218,7 +244,8 @@ def ReadEffXAcc(directory="ChargeDependentEff",error=False,doOnly=None):
 				else : pass
 				cmd="cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/"+dirName+"/"+directory+"/sel.txt | grep 'eff corr' | grep total| sed 's/^.*==>//'"
 
-			if dirName == "Wm" or dirName== "We":
+			#if dirName == "Wm" or dirName== "We":
+			if dirName== "We": ###FIXME
 				print "FIXME",ch,w
 				d[ch][w] = -999.
 			else:
@@ -235,6 +262,55 @@ def ReadEffXAcc(directory="ChargeDependentEff",error=False,doOnly=None):
 					print "->ERROR. Try to ignore?"
 					raw_input("ok?")
 					d[ch][w] = float ( -999)
+	return d
+
+def ReadEffXAccForTot(d,directory="ChargeDependentEff",error=False,doOnly=None):
+	'''Xinmei
+	-> add the tot eff x acc for W, using W+ and W-
+	'''
+	for ch in ["Wmunu","Wenu"]:
+		if "W" in ch: l = ["Wtot"]
+		if ch not in d: d[ch]={}
+		for w in l:
+			if doOnly != None and (ch,w) not in doOnly : 
+				#d[ch][w] = 0.000
+				continue
+
+			dirName=""
+
+			if 'mu' in ch : dirName = "Wm"
+			else: dirName="We"
+
+			cmd="cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/"+dirName+"p/"+directory+"/sel.txt | grep 'eff corr' | grep total| sed 's/^.*==>//'"
+			eff1s=check_output(cmd,shell=True)
+
+			cmd="cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/"+dirName+"m/"+directory+"/sel.txt | grep 'eff corr' | grep total| sed 's/^.*==>//'"
+			eff2s=check_output(cmd,shell=True)
+
+			print>>sys.stderr, "DEBUG: cmd='"+cmd+"'"
+			print>>sys.stderr, "DEBUG: valString='"+eff1s+"'", "valString='"+eff2s+"'"
+
+			cmd="cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/"+dirName+"p/"+directory+"/sel.txt | grep 'eff corr' | grep total| sed 's/^.*:\ *//g'"
+			all1s=check_output(cmd,shell=True)
+			cmd="cat /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Results/"+dirName+"m/"+directory+"/sel.txt | grep 'eff corr' | grep total| sed 's/^.*:\ *//g'"
+			all2s=check_output(cmd,shell=True)
+
+
+			try:
+				all1 = float (all1s.split()[2])
+				all2 = float (all2s.split()[2])
+				if error:
+					eff1 = float (eff1s.split()[2])
+					eff2 = float (eff2s.split()[2])
+				else:
+					eff1 = float (eff1s.split()[0])
+					eff2 = float (eff2s.split()[0])
+				d[ch][w] = (eff1*all1+eff2*all2)/(all1+all2)
+			except IndexError:
+				print "->ERROR. Try to ignore?"
+				raw_input("ok?")
+				d[ch][w] = float ( -999)
+				return 
 	return d
 
 Yields={}
@@ -364,35 +440,45 @@ for ch in ["Wmunu"]:
 SystematicsEff={}
 
 Efficiency=ReadEffXAcc("Central")
-EffErr=ProduceRatio(ReadEffXAcc("Central",True),Efficiency)
+ReadEffXAccForTot(Efficiency,"Central",error=False,doOnly=[("Wenu","Wtot")]) ## compute effxacc for Wtot enu, starting form W+ and W-
+ProduceTot(Efficiency,True) ## ratio only
+BareEffErr=ReadEffXAcc("Central",True)
+ReadEffXAccForTot(BareEffErr,"Central",error=True,doOnly=[("Wenu","Wtot")]) ## compute effxacc for Wtot enu, starting form W+ and W-
+EffErr=ProduceRatio(BareEffErr,Efficiency)
 #systematics are done wrt to this value
-#EfficiencyNoCh=ReadEffXAcc("Final")
+ProduceRatioAsSqrtSum(EffErr)
 
 #read efficiency systematics
 EffPuUp=ReadEffXAcc("PileupUp")
 EffPuDown=ReadEffXAcc("PileupDown")
 EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
+ProduceRatioAsDiff(EffPileup)
 SystematicsEff["Pileup"]=EffPileup
 
 EffScaleUp=ReadEffXAcc("ScaleUp")
 EffScaleDown=ReadEffXAcc("ScaleDown")
 EffScale=ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
+ProduceRatioAsDiff(EffScale)
 SystematicsEff["Scale"]=EffScale
 
 # read bin efficiency
 EffBin=ReadEffXAcc("Bin")
 SystematicsEff["Bin"]=ProduceRel(EffBin,Efficiency)
+ProduceRatioAsDiff(SystematicsEff["Bin"])
 ###
 #EffOri=ReadEffXAcc("Ori")
 ###
 EffSig=ReadEffXAcc("SigUp")
 SystematicsEff["Sig"]=ProduceRel(EffSig,Efficiency)
+ProduceRatioAsDiff(SystematicsEff["Sig"])
 EffBkg=ReadEffXAcc("BkgUp")
 SystematicsEff["Bkg"]=ProduceRel(EffBkg,Efficiency)
+ProduceRatioAsDiff(SystematicsEff["Bkg"])
 
 EffMisId=ReadEffXAcc("CMI",doOnly=[("Wenu","Wp"),("Wenu","Wm")])
 #SystematicsEff["CMI"] = ProduceRel(EffMisId,Efficiency)
 SystematicsEff["CMI"] = ProduceRel(EffMisId,Efficiency)
+ProduceRatioAsDiff(SystematicsEff["CMI"])
 
 for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 	if 'Z' in ch: l = [""]
@@ -411,6 +497,7 @@ for s in syst1:
 	tmp=ReadDict(s)
 	Yields[s]=tmp
 	Systematics[s] = ProduceRel(tmp,Central)
+	ProduceRatioAsDiff(Systematics[s])
 
 syst2=["Pileup","Scale"]
 for s in syst2:
@@ -462,10 +549,12 @@ for s in syst2:
 		TotScaleCorr["Zee"]={}
 		Ztmp= ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
 		TotScaleCorr["Zee"][""] = Ztmp["Zee"][""]
+		ProduceRatioAsDiff(TotScaleCorr)
 
 
 	else:
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Central)
+		ProduceRatioAsDiff(Systematics[s])
 
 
 for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
@@ -477,16 +566,17 @@ for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 
 ######################################## PRINT ###############################################
 def PrintLine(info,d,form="",extra="",scale=1):
+	## Systematic   W+(mu)   W-(mu)    W(mu)    Z(mu)  W+/W-(mu) W/Z(mu)  W+(e)    W-(e)    W(e)     Z(e)     W+/W-(e) W/Z(e)  W+/Z(e)  W-/Z(e) W+/Z(mu)  W-/Z(mu) 
 	print info,
 	totList=[ 
 		("Wmunu","Wp"), ("Wmunu","Wm"),
-		#("Wmunu","Wtot"),
+		("Wmunu","Wtot"),
 		("Zmumu",""),
-		#("Wmunu","Wratio"),
+		("Wmunu","Wratio"),
 		("Wenu","Wp"), ("Wenu","Wm"),
-		#("Wenu","Wtot"),
+		("Wenu","Wtot"),
 		("Zee",""),
-		#("Wenu","Wratio"),
+		("Wenu","Wratio"),
 		]
 	#for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 	#   wList=["Wp","Wm","Wtot","Wratio"]
@@ -511,17 +601,9 @@ def PrintLine(info,d,form="",extra="",scale=1):
 	print  ##EOL
 	return	
 
-############ print '#'
-############ print '# Lumi (/fb)  Error (relative)'
-############ print '#'
-############ print '2.3055         0.027'
-############ print '#'
-############ print "      ",'\t'.join(["Zmumu","Zee"])
-############ print "Yields",'\t'.join(["%.1f"%Yields["Central"]["Zmumu"][""],"%.1f"%Yields["Central"]["Zee"][""]])
-############ print "Errors",'\t'.join(["%.1f"%Yields["CentralError"]["Zmumu"][""],"%.1f"%Yields["CentralError"]["Zee"][""]])
-############ print "EffXAc",'\t'.join(["%.4f"%Efficiency["Zmumu"][""],"%.4f"%Efficiency["Zee"][""]])
-############ print "EffErr",'\t'.join(["%.4f"%EffErr["Zmumu"][""],"%.4f"%EffErr["Zee"][""]])
 
+## PRODUCE RATIOS
+#def ProduceTot(d,ratioOnly=False):
 
 
 print '#'

@@ -31,6 +31,6 @@
 #root -l -q computeAccGenZee.C+\(\"zee.conf\",\"Zee\"\)
 #root -l -q computeAccSCZee.C+\(\"zee.conf\",\"Zee\"\)
 #root -l -q computeAccSelZee.C+\(\"zee.conf\",\"Zee\"\)
-root -l -q computeAccSelZeeBinned.C+\(\"zee.conf\",\"Zee\"\)
+root -l -q computeAccSelZeeBinned.C+\(\"zee.conf\",\"Zee\",\"Zee\",1,1,0\)
 
 rm *.so *.d
