@@ -277,6 +277,23 @@ Double_t getEffAreaMu(const Double_t eta) {
   else if (fabs(eta) < 2.5)  return 0.1177;
   else return -1; // This should never happen, a cut on |eta|<2.4 is applied in selection.
 }
+//---------------------------------------------------------------------------------------------------
+Int_t getEtaBinLabel(const Double_t eta) {
+
+  int ieta = -1;
+  if(eta<-2.0)              return 0;
+  else if(eta<-1.566)       return 1;
+  else if(eta<-1.4442)      return 2;
+  else if(eta<-1.0)         return 3;
+  else if(eta<-0.5)         return 4;
+  else if(eta< 0.0)         return 5;
+  else if(eta< 0.5)         return 6;
+  else if(eta< 1.0)         return 7;
+  else if(eta< 1.4442)      return 8;
+  else if(eta< 1.566)       return 9;
+  else if(eta< 2.0)         return 10;
+  else                      return 11;
+}
 
 #endif
 

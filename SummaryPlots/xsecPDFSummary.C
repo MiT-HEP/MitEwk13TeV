@@ -6,8 +6,15 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 #include "MitStyleRemix.hh"         // style settings for drawing
-
+#include "TMath.h"
+#include "TStyle.h"
+#include "TPaveText.h"
+#include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
 // root -q -L xsecPDFSummary.C
 void roundXsec(Double_t &x, Double_t &y, Double_t &z)
 {
@@ -23,10 +30,10 @@ void roundXsec(Double_t &x, Double_t &y, Double_t &z)
   z = TMath::Nint(z/Double_t(iPres))*iPres;
 }
 
-void xsecPDFSummary()
+void xsecPDFSummary(int itype = 1)
 {   
   //-------------------------------------------------------------------------------------------------------------
-  const int itype = 6;  // defined which measurement to plot
+  //const int itype = 3;  // defined which measurement to plot
   bool lumi     = false;
   bool electron = false;
   bool muon     = false;
@@ -39,7 +46,7 @@ void xsecPDFSummary()
 
   Double_t plot_xsec[4];
 
-  // total cross sections
+/*  // total cross sections
   xsec[0] = 11297;   xsec_stat[0] = 8;     xsec_sys[0] = 191;     xsec_lumi[0] = 305;  // wp - 0
   xsec[1] = 8279;    xsec_stat[1] = 8;     xsec_sys[1] = 122;     xsec_lumi[1] = 224;  // wm - 1
   xsec[2] = 19638;   xsec_stat[2] = 11;     xsec_sys[2] = 267;     xsec_lumi[2] = 530;  // w  - 2
@@ -48,8 +55,41 @@ void xsecPDFSummary()
   xsec[5] = 5.960;   xsec_stat[5] = 0.006;  xsec_sys[5] = 0.098;   xsec_lumi[5] = 0;     // wpr- 5
   xsec[6] = 4.366;   xsec_stat[6] = 0.005;  xsec_sys[6] = 0.068;   xsec_lumi[6] = 0;     // wmr- 6
   xsec[7] = 10.335;  xsec_stat[7] = 0.009;  xsec_sys[7] = 0.147;   xsec_lumi[7] = 0;     // wz - 7
+*/
 
-  // fiducial muon cross sections
+
+xsec[0]   = 11356.357;  xsec_stat[0] =   9.186;  xsec_sys[0] = 197.279;   xsec_lumi[0] = 306.622;
+xsec[1]   =  8284.005;  xsec_stat[1] =   7.887;  xsec_sys[1] = 123.894;   xsec_lumi[1] = 223.668; 
+xsec[2]   = 19708.254;  xsec_stat[2] =  11.055;  xsec_sys[2] = 265.308;   xsec_lumi[2] = 532.123; 
+xsec[3]   =  1904.184;  xsec_stat[3] =   1.301;  xsec_sys[3] =  30.401;   xsec_lumi[3] =  51.413; 
+xsec[4]   =     1.372;  xsec_stat[4] =   0.002;  xsec_sys[4] =   0.022;   xsec_lumi[4] =   0.000; 
+xsec[5]   =     5.966;  xsec_stat[5] =   0.006;  xsec_sys[5] =   0.100;   xsec_lumi[5] =   0.000; 
+xsec[6]   =     4.351;  xsec_stat[6] =   0.005;  xsec_sys[6] =   0.069;   xsec_lumi[6] =   0.000; 
+xsec[7]   =    10.330;  xsec_stat[7] =   0.009;  xsec_sys[7] =   0.147;   xsec_lumi[7] =   0.000; 
+
+// preapproval
+// // fiducial muon
+xsec[8]   =  5097.780;   xsec_stat[8]  =   3.451;   xsec_sys[8]  =  47.816;   xsec_lumi[8]  =  137.640;
+xsec[9]   =  3865.767;   xsec_stat[9]  =   3.936;   xsec_sys[9]  =  37.902;   xsec_lumi[9]  =  104.376;
+xsec[10]  =  8963.546;   xsec_stat[10] =   5.243;   xsec_sys[10] =  80.152;   xsec_lumi[10] =  242.016; 
+xsec[11]  =   690.960;   xsec_stat[11] =   0.599;   xsec_sys[11] =   8.748;   xsec_lumi[11] =   18.656;
+xsec[12]  =     1.319;   xsec_stat[12] =   0.002;   xsec_sys[12] =   0.009;   xsec_lumi[12] =      0.0;
+xsec[13]  =     7.378;   xsec_stat[13] =   0.008;   xsec_sys[13] =   0.052;   xsec_lumi[13] =      0.0;
+xsec[14]  =     5.595;   xsec_stat[14] =   0.007;   xsec_sys[14] =   0.043;   xsec_lumi[14] =      0.0;
+xsec[15]  =    12.973;   xsec_stat[15] =   0.014;   xsec_sys[15] =   0.085;   xsec_lumi[15] =      0.0;
+//fiducial electron
+xsec[16]  =  4803.922;   xsec_stat[16] =   8.733;   xsec_sys[16] = 113.877;   xsec_lumi[16] = 129.706;
+xsec[17]  =  3563.283;   xsec_stat[17] =   6.477;   xsec_sys[17] =  68.823;   xsec_lumi[17] =  96.209;
+xsec[18]  =  8367.205;   xsec_stat[18] =  10.858;   xsec_sys[18] = 176.191;   xsec_lumi[18] = 225.915;
+xsec[19]  =   634.777;   xsec_stat[19] =   0.702;   xsec_sys[19] =  13.744;   xsec_lumi[19] =  17.139;
+xsec[20]  =     1.348;   xsec_stat[20] =   0.003;   xsec_sys[20] =   0.016;   xsec_lumi[20] =     0.0;
+xsec[21]  =     7.568;   xsec_stat[21] =   0.016;   xsec_sys[21] =   0.151;   xsec_lumi[21] =     0.0;
+xsec[22]  =     5.613;   xsec_stat[22] =   0.012;   xsec_sys[22] =   0.092;   xsec_lumi[22] =     0.0;
+xsec[23]  =    13.181;   xsec_stat[23] =   0.022;   xsec_sys[23] =   0.232;   xsec_lumi[23] =     0.0;
+
+
+// from xinmei's update
+/*  // fiducial muon cross sections
   xsec[8]  = 5086;   xsec_stat[8] = 4;     xsec_sys[8] = 53;      xsec_lumi[8] = 137; // wp - 8
   xsec[9]  = 3861;   xsec_stat[9] = 4;    xsec_sys[9] = 39 ;      xsec_lumi[9] = 104; // wm - 9
   xsec[10] = 8948;  xsec_stat[10] = 5;   xsec_sys[10] = 92;      xsec_lumi[10] = 242; // w  - 10
@@ -68,7 +108,7 @@ void xsecPDFSummary()
   xsec[21] = 7.570;  xsec_stat[21] = 0.013;  xsec_sys[21] = 0.127;   xsec_lumi[21] = 0;     // wpr- 13
   xsec[22] = 5.662;  xsec_stat[22] = 0.012; xsec_sys[22] = 0.083;   xsec_lumi[22] = 0;     // wmr- 14
   xsec[23] = 13.232;  xsec_stat[23] = 0.02; xsec_sys[23] = 0.205;   xsec_lumi[23] = 0;     // wz - 15
-
+*/
   plot_xsec[0] = xsec[itype];
   plot_xsec[1] = xsec_stat[itype];
   plot_xsec[2] = xsec_sys[itype];
