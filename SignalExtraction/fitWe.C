@@ -560,7 +560,6 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
       TVector2 vLepRaw((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));
 //       TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
       TVector2 vLepCor((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
-      
       double pU1         = 0;  //--
       double pU2         = 0;  //--
 
@@ -631,7 +630,6 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
       if(typev[ifile]==eData) {
         if(lep->Pt()        < PT_CUT)  continue;
         // Correct MET to use raw lepton
-//         std::cout << "met X " << met << " met Y " << vMetCorr.Y() << std::endl;
         TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
         Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
         hDataMet->Fill(corrMetWithLepton); 

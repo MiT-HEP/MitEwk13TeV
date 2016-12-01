@@ -93,7 +93,7 @@ void fitWm(const TString  outputDir,   // output directory
   //==============================================================================================================   
   
   // some flags to handle Recoil corrections
-  bool doKeys = true;
+  bool doKeys = false;
   bool doInclusive = false;
   // some flags to handle the pileup Up/Down systematics
   bool pileupUp = false;
