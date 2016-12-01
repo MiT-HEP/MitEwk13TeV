@@ -137,7 +137,7 @@ def ProduceRel(a,b):
 		   	r[ch][w]=0.000
 	return r
 
-def ProduceDiffRel(a,b,c):
+def ProduceDiffRel(a,b,c,centralException=False):
 	'''Handle and complete dictionaries''' # ready for Z
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
@@ -150,8 +150,10 @@ def ProduceDiffRel(a,b,c):
 		   except KeyError: 
 			   pass
 		   except ZeroDivisionError:
-		   	r[ch][w]=0.000
-			   #print "Ch",ch,"w=",w,"not in dictionary"
+			if centralException:
+		   		r[ch][w]=c[ch][w]
+			else:
+		   		r[ch][w]=0.000
 	return r
 
 def ProduceDiff(a,b):
@@ -196,6 +198,8 @@ def ProduceRatio(a,b):
 			else: r[ch][w]=(a[ch][w]/b[ch][w])
 		   except KeyError: 
 			   pass
+		   except ZeroDivisionError:
+			r[ch][w]=0.00
 			   #print "Ch",ch,"w=",w,"not in dictionary"
 	return r
 
@@ -627,13 +631,21 @@ for s in syst2:
 
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Central"])
 
-		for ch in ["Wmunu"]:
+		for ch in ["Wmunu","Zee","Zmumu"]:
 			if "W" in ch: l = ["Wp","Wm","Wtot","Wratio","WpOverZ","WmOverZ","WOverZ"]
+			if "Z" in ch: l = [""]
 			for w in l:
 				Systematics[s][ch][w]=0.
-		for ch in ["Zee","Zmumu"]:
-			for w in [""]:
-				Systematics[s][ch][w]=0.
+			if "W" in ch: l = ["Wp","Wm","Wtot"]
+			for w in l: ## for the ratios
+				yieldU = Yields["Central"]
+				yieldD = Yields["Central"]
+
+		ProduceTotAsSum(yieldU)
+		ProduceTotAsSum(yieldD)
+		ProduceRatioAsRatio(yieldU)
+		ProduceRatioAsRatio(yieldD)
+
 
 		CrossSectionUp=ProduceRatio(yieldU,EffScaleUp)
 		CrossSectionDown=ProduceRatio(yieldD,EffScaleDown)
@@ -642,9 +654,17 @@ for s in syst2:
 		TotScaleCorr["Zee"]={}
 		#Ztmp= ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
 		TotScaleCorr["Zee"][""] = SystematicsEff["Scale"]["Zee"][""]
+		TotScaleCorr["Wenu"]["Wtot"] = max( SystematicsEff["Scale"]["Wenu"]["Wtot"],Systematics["Scale"]["Wenu"]["Wtot"]) ## FIXME
 		ProduceRatioAsDiff(TotScaleCorr)
 		ZeroNotPresent(TotScaleCorr)
 		ZeroNotPresent(Systematics[s])
+
+		## make sure for mu is 0
+		for ch in ["Wmunu","Zmumu"]:
+			if "W" in ch: l = ["Wp","Wm","Wtot","Wratio","WpOverZ","WmOverZ","WOverZ"]
+			if "Z" in ch: l= [""]
+			for w in l:
+				TotScaleCorr[ch][w]=0.
 	else:
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Central)
 		ProduceRatioAsDiff(Systematics[s])
