@@ -14,63 +14,127 @@ opts,args=parser.parse_args()
 
 ###########################
 
-def AddSpace(s,n=20):
+def AddSpace(s,n=20,begin=False):
 	toprint=s[:]
 	l=len(s)
+	toadd=""
 	for i in range(l,n):
-		toprint+=" "
+	    toadd += " "
+
+	if begin: toprint = toadd + toprint
+	else : toprint = toprint + toadd
+
 	return toprint
 
-def ProduceTot(d,ratioOnly=False):
+def Produce(d, what, check, func):
+	''' standard set of checks'''
+	mych,myw= what
+	if mych not in d : d[mych]={}
+	r=0.0
+	tofill=True
+	for ch,w in check:
+		if   ch not in d or \
+			w not in d[ch] or\
+			d[ch][w]<-99:
+			tofill=False
+			break
+	if tofill:
+		try:
+			r= func(d)
+		except KeyError, ZeroDivisionError:
+			r=0.0
+	d[mych][myw]=r
+
+############ SINGLE OPERATIONS ##################
+
+def ProduceTotAsAverage(d):
 	'''Handle and complete dictionaries'''
-	#sum
-	if not ratioOnly:
-		d["Wenu"]["Wtot"] = d["Wenu"]["Wp"]+d["Wenu"]["Wm"]
-		d["Wmunu"]["Wtot"] = d["Wmunu"]["Wp"]+d["Wmunu"]["Wm"]
+	Produce(d, ("Wenu","Wtot"), [("Wenu","Wp"),("Wenu","Wm")],lambda d: (d["Wenu"]["Wp"]+d["Wenu"]["Wm"])/2.)
+	Produce(d, ("Wmunu","Wtot"), [("Wmunu","Wp"),("Wmunu","Wm")],lambda d: (d["Wmunu"]["Wp"]+d["Wmunu"]["Wm"])/2.)
+
+def ProduceTotAsSum(d):
+	Produce(d, ("Wenu","Wtot"), [("Wenu","Wp"),("Wenu","Wm")] ,lambda d: d["Wenu"]["Wp"]+d["Wenu"]["Wm"])
+	Produce(d, ("Wmunu","Wtot"), [("Wmunu","Wp"),("Wmunu","Wm")] ,lambda d: d["Wmunu"]["Wp"]+d["Wmunu"]["Wm"])
+
+def ProduceRatioAsRatio(d):
+	'''Handle and complete dictionaries'''
 	# ratio
-	try:
-		d["Wenu"]["Wratio"] = d["Wenu"]["Wp"]/d["Wenu"]["Wm"]
-	except ZeroDivisionError:
-		d["Wenu"]["Wratio"] = float(-999)
-	try:
-		d["Wmunu"]["Wratio"] = d["Wmunu"]["Wp"]/d["Wmunu"]["Wm"]
-	except ZeroDivisionError:
-		d["Wmunu"]["Wratio"] = float(-999)
+	Produce(d, ("Wenu","Wratio"), [("Wenu","Wp"),("Wenu","Wm")] ,lambda d: d["Wenu"]["Wp"]/d["Wenu"]["Wm"])
+	Produce(d, ("Wmunu","Wratio"), [("Wmunu","Wp"),("Wmunu","Wm")] ,lambda d: d["Wmunu"]["Wp"]/d["Wmunu"]["Wm"])
+
+	for ch in ["e","mu"]:
+	   if "W"+ch+"nu" not in  d :  d["W"+ch+"nu"]={}
+	   for w in ["Wp","Wm","W"]:
+		w2=w
+		if w=="W": w2="Wtot"
+		Produce( d, ( "W"+ch+"nu",w+"OverZ"), [("W"+ch+"nu",w2),("Z"+ch+ch,"")],
+				lambda d: d["W"+ch+"nu"][w2]/d["Z"+ch+ch][""]
+				)
 
 def ProduceRatioAsSqrtSum(d):
 	'''Handle and complete dictionaries'''
 	# ratio
-	try:
-		d["Wenu"]["Wratio"] = math.sqrt( d["Wenu"]["Wp"]**2 + d["Wenu"]["Wm"]**2)
-	except KeyError:
-		d["Wenu"]["Wratio"] = float(-999)
-	try:
-		d["Wmunu"]["Wratio"] = math.sqrt(d["Wmunu"]["Wp"]**2 + d["Wmunu"]["Wm"]**2 )
-	except KeyError:
-		d["Wmunu"]["Wratio"] = float(-999)
+	Produce(d, ("Wenu","Wratio"), [("Wenu","Wp"),("Wenu","Wm")] ,lambda d: math.sqrt(d["Wenu"]["Wp"]**2 + d["Wenu"]["Wm"]**2))
+	Produce(d, ("Wmunu","Wratio"), [("Wmunu","Wp"),("Wmunu","Wm")] ,lambda d: math.sqrt(d["Wmunu"]["Wp"]**2+d["Wmunu"]["Wm"]**2))
+	for ch in ["e","mu"]:
+	   if "W"+ch+"nu" not in  d :  d["W"+ch+"nu"]={}
+	   for w in ["Wp","Wm","W"]:
+		w2=w
+		if w=="W": w2="Wtot"
+		Produce( d, ( "W"+ch+"nu",w+"OverZ"), [("W"+ch+"nu",w2),("Z"+ch+ch,"")],
+				lambda d: math.sqrt(d["W"+ch+"nu"][w2]**2 + d["Z"+ch+ch][""]**2)
+				)
+
+def ProduceRatioAsSum(d):
+	'''Handle and complete dictionaries'''
+	# ratio
+	Produce(d, ("Wenu","Wratio"), [("Wenu","Wp"),("Wenu","Wm")] ,lambda d: abs(d["Wenu"]["Wp"] + d["Wenu"]["Wm"]))
+	Produce(d, ("Wmunu","Wratio"), [("Wmunu","Wp"),("Wmunu","Wm")] ,lambda d: abs(d["Wmunu"]["Wp"] + d["Wmunu"]["Wm"]))
+
+	for ch in ["e","mu"]:
+	   if "W"+ch+"nu" not in  d :  d["W"+ch+"nu"]={}
+	   for w in ["Wp","Wm","W"]:
+		w2=w
+		if w=="W": w2="Wtot"
+		Produce( d, ( "W"+ch+"nu",w+"OverZ"), [("W"+ch+"nu",w2),("Z"+ch+ch,"")],
+				lambda d: d["W"+ch+"nu"][w2] + d["Z"+ch+ch][""]
+				)
 
 def ProduceRatioAsDiff(d):
 	'''Handle and complete dictionaries'''
 	# ratio
-	try:
-		d["Wenu"]["Wratio"]  = d["Wenu"]["Wp"] - d["Wenu"]["Wm"]
-	except KeyError:
-		d["Wenu"]["Wratio"] = float(-999)
-	try:
-		d["Wmunu"]["Wratio"] = d["Wmunu"]["Wp"] - d["Wmunu"]["Wm"]
-	except KeyError:
-		d["Wmunu"]["Wratio"] = float(-999)
+	Produce(d, ("Wenu","Wratio"), [("Wenu","Wp"),("Wenu","Wm")] ,lambda d: abs(d["Wenu"]["Wp"] - d["Wenu"]["Wm"]))
+	Produce(d, ("Wmunu","Wratio"), [("Wmunu","Wp"),("Wmunu","Wm")] ,lambda d: abs(d["Wmunu"]["Wp"] -d["Wmunu"]["Wm"]))
+
+	for ch in ["e","mu"]:
+	   if "W"+ch+"nu" not in  d :  d["W"+ch+"nu"]={}
+	   for w in ["Wp","Wm","W"]:
+		w2=w
+		if w=="W": w2="Wtot"
+		Produce( d, ( "W"+ch+"nu",w+"OverZ"), [("W"+ch+"nu",w2),("Z"+ch+ch,"")],
+				lambda d: abs(d["W"+ch+"nu"][w2]-d["Z"+ch+ch][""])
+				)
+def ZeroNotPresent(d):
+	for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
+		if 'Z' in ch: l = [""]
+		if "W" in ch: l = ["Wp","Wm","Wtot","Wratio","WOverZ","WpOverZ","WmOverZ"]
+		if ch not in d: d[ch]={}
+		for w in l:
+			if w not in d[ch]: d[ch][w]=0.0
+############ BINARY OPERATIONS #################
 
 def ProduceRel(a,b):
 	'''Handle and complete dictionaries''' # ready for Z
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   try:
 		   	r[ch][w]=abs(a[ch][w]-b[ch][w])/b[ch][w]
 		   except KeyError:
 			   pass
+		   except ZeroDivisionError:
+		   	r[ch][w]=0.000
 	return r
 
 def ProduceDiffRel(a,b,c):
@@ -78,13 +142,15 @@ def ProduceDiffRel(a,b,c):
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
 		   try:
-			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=0.00
 			else: r[ch][w]=max(abs(a[ch][w]-c[ch][w])/(c[ch][w]), abs(b[ch][w]-c[ch][w])/(c[ch][w]))
 		   except KeyError: 
 			   pass
+		   except ZeroDivisionError:
+		   	r[ch][w]=0.000
 			   #print "Ch",ch,"w=",w,"not in dictionary"
 	return r
 
@@ -93,10 +159,10 @@ def ProduceDiff(a,b):
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
 		   try:
-			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=0.00
 			else: r[ch][w]=(a[ch][w]-b[ch][w])
 		   except KeyError: 
 			   pass
@@ -108,10 +174,10 @@ def ProduceProd(a,b):
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
 		   try:
-			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=0.00
 			else: r[ch][w]=(a[ch][w]*b[ch][w])
 		   except KeyError: 
 			   pass
@@ -123,10 +189,10 @@ def ProduceRatio(a,b):
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   #r[ch][w]=abs(a[ch][w]-b[ch][w])/(c[ch][w]*2.)
 		   try:
-			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=0.00
 			else: r[ch][w]=(a[ch][w]/b[ch][w])
 		   except KeyError: 
 			   pass
@@ -138,9 +204,9 @@ def SqrtSum(a,b):
 	r={}
 	for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   try:
-			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=-999.
+			if a[ch][w]<-99. or b[ch][w]<-99: r[ch][w]=0.00
 			else: r[ch][w]=math.sqrt(a[ch][w]**2+b[ch][w]**2)
 		   except KeyError: 
 			   pass
@@ -153,10 +219,10 @@ def SqrtSumL(l):
 	for a in l:
 	  for ch in ["Wmunu","Wenu","Zee","Zmumu"]:
 	   if ch not in r : r[ch]={}
-	   for w in ["Wp","Wm","Wtot","Wratio",""]:
+	   for w in ["Wp","Wm","Wtot","Wratio","","WpOverZ","WmOverZ","WOverZ"]:
 		   if w not in r[ch] : r[ch][w]=0.;
 		   try:
-			if a[ch][w]<-99. or r[ch][w]<-99: r[ch][w]=-999.
+			if a[ch][w]<-99. or r[ch][w]<-99: r[ch][w]=0.00
 			else: r[ch][w]=math.sqrt(a[ch][w]**2+r[ch][w]**2)
 		   except KeyError: 
 			   pass
@@ -167,11 +233,11 @@ def SqrtSumL(l):
 
 # Central is here as reference structure, it will be overwritten
 Central={"Wmunu":{"Wp":-1,"Wm":-1,"Wtot":-1},"Wenu":{"Wp":-1,"Wm":-1,"Wtot":-1},"Zmumu":{"":-1},"Zee":{"":-1}}
-Info= {"Wmunu":{"Wp":"W+(mu)","Wm":"W-(mu)","Wtot":"W(mu)","Wratio":"W+/W-(mu)"},"Wenu":{"Wp":"W+(e)","Wm":"W-(e)","Wtot":"W(e)","Wratio":"W+/W-(e)"},"Zmumu":{"":"Zmm"},"Zee":{"":"Zee"}}
+Info= {"Wmunu":{"Wp":"W+(mu)","Wm":"W-(mu)","Wtot":"W(mu)","Wratio":"W+/W-(mu)","WpOverZ":"W+/Z(mu)","WmOverZ":"W-/Z(mu)","WOverZ":"W/Z(mu)"},"Wenu":{"Wp":"W+(e)","Wm":"W-(e)","Wtot":"W(e)","Wratio":"W+/W-(e)","WpOverZ":"W+/Z(e)","WmOverZ":"W-/Z(e)","WOverZ":"W/Z(e)"},"Zmumu":{"":"Zmm"},"Zee":{"":"Zee"}}
 
-for ch in Info:
-	for w in Info[ch]:
-		Info[ch][w]=AddSpace(Info[ch][w],10)
+#for ch in Info:
+#	for w in Info[ch]:
+#		Info[ch][w]=AddSpace(Info[ch][w],10)
 
 def ReadDict(select,error=False):
 	'''Stephanie'''
@@ -212,7 +278,9 @@ def ReadDict(select,error=False):
 			raw_input("ok?")
 			d[ch][w] = float ( -999)
 
-	ProduceTot(d) ## from FIT part2/comment
+	ProduceTotAsSum(d) ## from FIT part2/comment
+	ProduceRatioAsRatio(d)
+
 	return d
 
 def ReadEffXAcc(directory="ChargeDependentEff",error=False,doOnly=None):
@@ -414,13 +482,17 @@ for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 	for w in l:
 		if ch == "Wmunu" or ch== "Wenu":
 			Systematics["Zbkg_yield"][ch][w] =0.000
+ZeroNotPresent(Systematics["Zbkg_yield"])
 
 for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 	if 'Zmumu' in ch: continue
 	if 'Z' in ch: l = [""]
-	if "W" in ch: l = ["Wp","Wm","Wtot"]
+	if "W" in ch: l = ["Wp","Wm","Wtot","Wratio"]
 	for w in l:
 		Systematics["Zroch_yield"][ch][w] =0.000
+	if "W" in ch: l = ["WOverZ","WmOverZ","WpOverZ"]
+	for w in l:
+		Systematics["Zroch_yield"][ch][w]=Systematics["Zroch_yield"]["Zmumu"][""]
 
 Systematics["Roch"]={}
 
@@ -433,6 +505,7 @@ for ch in ["Wmunu"]:
 		varString=check_output("cat /afs/cern.ch/user/s/sabrandt/work/public/SM/Differential/Results/RochCorrToys/2016_11_30_mu/Pull/minus.txt | grep mean",shell=True).split()[2]
 		Systematics["Roch"][ch][w]=float(varString)
 
+ZeroNotPresent(Systematics["Roch"])
 ######################################## SYST EFF ##################################################
 
 ## read Efficiencies 
@@ -441,7 +514,8 @@ SystematicsEff={}
 
 Efficiency=ReadEffXAcc("Central")
 ReadEffXAccForTot(Efficiency,"Central",error=False,doOnly=[("Wenu","Wtot")]) ## compute effxacc for Wtot enu, starting form W+ and W-
-ProduceTot(Efficiency,True) ## ratio only
+ProduceRatioAsRatio(Efficiency) ## ratio only
+
 BareEffErr=ReadEffXAcc("Central",True)
 ReadEffXAccForTot(BareEffErr,"Central",error=True,doOnly=[("Wenu","Wtot")]) ## compute effxacc for Wtot enu, starting form W+ and W-
 EffErr=ProduceRatio(BareEffErr,Efficiency)
@@ -452,39 +526,51 @@ ProduceRatioAsSqrtSum(EffErr)
 EffPuUp=ReadEffXAcc("PileupUp")
 EffPuDown=ReadEffXAcc("PileupDown")
 EffPileup=ProduceDiffRel(EffPuUp,EffPuDown,Efficiency)
+ProduceTotAsAverage(EffPileup)
 ProduceRatioAsDiff(EffPileup)
 SystematicsEff["Pileup"]=EffPileup
 
 EffScaleUp=ReadEffXAcc("ScaleUp")
 EffScaleDown=ReadEffXAcc("ScaleDown")
 EffScale=ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
+ProduceTotAsAverage(EffScale)
 ProduceRatioAsDiff(EffScale)
 SystematicsEff["Scale"]=EffScale
+
+for ch in ["Wmunu","Zmumu"]:
+	if 'Z' in ch: l = [""]
+	if "W" in ch: l = ["Wp","Wm","Wtot","Wratio","WpOverZ","WmOverZ","WOverZ"]
+	for w in l:
+		SystematicsEff["Scale"][ch][w] =0.000
 
 # read bin efficiency
 EffBin=ReadEffXAcc("Bin")
 SystematicsEff["Bin"]=ProduceRel(EffBin,Efficiency)
+ProduceTotAsAverage(SystematicsEff["Bin"]) ##FIXME ???
 ProduceRatioAsDiff(SystematicsEff["Bin"])
 ###
 #EffOri=ReadEffXAcc("Ori")
 ###
 EffSig=ReadEffXAcc("SigUp")
 SystematicsEff["Sig"]=ProduceRel(EffSig,Efficiency)
+ProduceTotAsAverage(SystematicsEff["Sig"])
 ProduceRatioAsDiff(SystematicsEff["Sig"])
+## bkg
 EffBkg=ReadEffXAcc("BkgUp")
 SystematicsEff["Bkg"]=ProduceRel(EffBkg,Efficiency)
+ProduceTotAsAverage(SystematicsEff["Bkg"])
 ProduceRatioAsDiff(SystematicsEff["Bkg"])
 
 EffMisId=ReadEffXAcc("CMI",doOnly=[("Wenu","Wp"),("Wenu","Wm")])
 #SystematicsEff["CMI"] = ProduceRel(EffMisId,Efficiency)
 SystematicsEff["CMI"] = ProduceRel(EffMisId,Efficiency)
-ProduceRatioAsDiff(SystematicsEff["CMI"])
+ProduceRatioAsSum(SystematicsEff["CMI"])
 
 for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 	if 'Z' in ch: l = [""]
-	if "W" in ch: l = ["Wp","Wm","Wtot"]
+	if "W" in ch: l = ["Wp","Wm","Wtot","Wratio"]
 	for w in l:
-		if (ch,w) not in [("Wenu","Wp"),("Wenu","Wm")]:
+		if (ch,w) not in [("Wenu","Wp"),("Wenu","Wm"),("Wenu","Wratio")]:
 			SystematicsEff["CMI"][ch][w] =0.000
 
 #SystematicsEff["CMI"] = ProduceRel(EffMisId,EfficiencyNoCh)
@@ -498,6 +584,7 @@ for s in syst1:
 	Yields[s]=tmp
 	Systematics[s] = ProduceRel(tmp,Central)
 	ProduceRatioAsDiff(Systematics[s])
+	ZeroNotPresent(Systematics[s])
 
 syst2=["Pileup","Scale"]
 for s in syst2:
@@ -521,17 +608,12 @@ for s in syst2:
 					Yields["Recoil_Inclusive"][ch]={}
 					Yields["Recoil_Inclusive"][ch][w]=Yields["Central"][ch][w]
 
-		#print "XXX","yieldUp=",yieldU["Zmumu"][""],"effUp",EffPuUp["Zmumu"][""]
-		#print "XXX","yieldDn=",yieldD["Zmumu"][""],"effDn",EffPuDown["Zmumu"][""]
-		#print "XXX","yield=",Yields["Central"]["Zmumu"][""],"eff",EfficiencyNoCh["Zmumu"][""]
 
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Central"])
 		CrossSectionUp=ProduceRatio(yieldU,EffPuUp)
 		CrossSectionDown=ProduceRatio(yieldD,EffPuDown)
 		CrossSectionYield=ProduceRatio(Yields["Central"],Efficiency)
-		#print "XXX","CrossSectionUp=",CrossSectionUp["Zmumu"][""]
-		#print "XXX","CrossSectionDn=",CrossSectionDown["Zmumu"][""]
-		#print "XXX","CrossSection=",CrossSectionYield["Zmumu"][""]
+
 		TotPuCorr = ProduceDiffRel(CrossSectionUp,CrossSectionDown,CrossSectionYield)
 
 		Wtmp = ProduceDiffRel(yieldU,yieldD,Central)
@@ -539,22 +621,34 @@ for s in syst2:
 			if "W" in ch: l = ["Wp","Wm","Wtot"]
 			for w in l:
 				TotPuCorr[ch][w]=Wtmp[ch][w]
+		ZeroNotPresent(Systematics[s])
+		ZeroNotPresent(TotPuCorr)
 	elif s=="Scale":
 
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Yields["Central"])
+
+		for ch in ["Wmunu"]:
+			if "W" in ch: l = ["Wp","Wm","Wtot","Wratio","WpOverZ","WmOverZ","WOverZ"]
+			for w in l:
+				Systematics[s][ch][w]=0.
+		for ch in ["Zee","Zmumu"]:
+			for w in [""]:
+				Systematics[s][ch][w]=0.
+
 		CrossSectionUp=ProduceRatio(yieldU,EffScaleUp)
 		CrossSectionDown=ProduceRatio(yieldD,EffScaleDown)
 		CrossSectionYield=ProduceRatio(Yields["Central"],Efficiency)
 		TotScaleCorr = ProduceDiffRel(CrossSectionUp,CrossSectionDown,CrossSectionYield)
 		TotScaleCorr["Zee"]={}
-		Ztmp= ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
-		TotScaleCorr["Zee"][""] = Ztmp["Zee"][""]
+		#Ztmp= ProduceDiffRel(EffScaleUp,EffScaleDown,Efficiency)
+		TotScaleCorr["Zee"][""] = SystematicsEff["Scale"]["Zee"][""]
 		ProduceRatioAsDiff(TotScaleCorr)
-
-
+		ZeroNotPresent(TotScaleCorr)
+		ZeroNotPresent(Systematics[s])
 	else:
 		Systematics[s] = ProduceDiffRel(yieldU,yieldD,Central)
 		ProduceRatioAsDiff(Systematics[s])
+		ZeroNotPresent(Systematics[s])
 
 
 for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
@@ -565,45 +659,56 @@ for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
 			Systematics["QCD_?ree"][ch][w] =0.000
 
 ######################################## PRINT ###############################################
-def PrintLine(info,d,form="",extra="",scale=1):
-	## Systematic   W+(mu)   W-(mu)    W(mu)    Z(mu)  W+/W-(mu) W/Z(mu)  W+(e)    W-(e)    W(e)     Z(e)     W+/W-(e) W/Z(e)  W+/Z(e)  W-/Z(e) W+/Z(mu)  W-/Z(mu) 
+def PrintLine(info,d,scale=1,bigNumbers=False):
 	print info,
-	totList=[ 
+
+	if bigNumbers:
+		totList=[ 
+		("Wmunu","Wp"), ("Wmunu","Wm"),
+		("Wmunu","Wtot"),
+		("Zmumu",""),
+		("Wenu","Wp"), ("Wenu","Wm"),
+		("Wenu","Wtot"),
+		("Zee",""),
+		]
+	else:
+		totList=[ 
 		("Wmunu","Wp"), ("Wmunu","Wm"),
 		("Wmunu","Wtot"),
 		("Zmumu",""),
 		("Wmunu","Wratio"),
+		("Wmunu","WOverZ"),
 		("Wenu","Wp"), ("Wenu","Wm"),
 		("Wenu","Wtot"),
 		("Zee",""),
 		("Wenu","Wratio"),
+		("Wenu","WOverZ"),
+		("Wenu","WpOverZ"),
+		("Wenu","WmOverZ"),
+		("Wmunu","WpOverZ"),
+		("Wmunu","WmOverZ"),
 		]
-	#for ch in ["Wmunu","Wenu","Zmumu","Zee"]:
-	#   wList=["Wp","Wm","Wtot","Wratio"]
-	#   if 'Z' in ch: wList=[""]
-	#   for w in wList:
+	if bigNumbers:
+		form="%10.4f"
+		n=10
+	else: 
+		form="%6.4f"
+		n=6
+
+	#extra="%10.8f"
+	blank=AddSpace("----",n,True)
 	for ch,w in totList:
-		   if form=="":
-			if d[ch][w]<-99.: print "   ---------",
-			else :  print "  ",d[ch][w]*scale,
-		   else:
-			if extra !="" and extra != "x" and w=="Wratio": 
-				print "  ",extra%(d[ch][w]*scale),
-			#elif extra !="" and extra == "x" and w=="Wratio": 
-			#	print "   ---------",
-			elif ch not in d:
-				print "   ---------",
-			elif w not in d[ch]:
-				print "   ---------",
-			elif d[ch][w]<-99.:
-				print "   ---------",
-			else: print "  ",form%(d[ch][w]*scale),
+		if ch not in d: print blank,
+		elif w not in d[ch]:  print blank,
+		elif d[ch][w]<-99.: print blank,
+		elif isinstance(d[ch][w], basestring): 
+			print AddSpace(d[ch][w],n,True),
+		else: print form%(d[ch][w]*scale),
 	print  ##EOL
 	return	
 
 
 ## PRODUCE RATIOS
-#def ProduceTot(d,ratioOnly=False):
 
 
 print '#'
@@ -611,29 +716,26 @@ print '# Lumi (/fb)  Error (relative)'
 print '#'
 print '2.3055         0.027'
 print '#'
-PrintLine(AddSpace("#Quantity",20),Info)
+PrintLine(AddSpace("#Quantity",20),Info,1.,True)
 print '#'
-PrintLine(AddSpace("yield",20),Central,"%10.1f","%10.8f")
-PrintLine(AddSpace("yield_err",20),CentralError,"%10.1f","%10.8f")
-PrintLine(AddSpace("effxacc",20),Efficiency,"%10.4f")
-PrintLine(AddSpace("effxacc err",20),EffErr,"%10.4f")
+PrintLine(AddSpace("yield",20),Central,1,True)
+PrintLine(AddSpace("yield_err",20),CentralError,1.,True)
+PrintLine(AddSpace("effxacc",20),Efficiency,1.,True)
+PrintLine(AddSpace("effxacc err",20),EffErr,1.,True)
 print '#'
 PrintLine(AddSpace("#Systematics",20),Info)
 print '#'
-PrintLine(AddSpace("effxacc pu",20),SystematicsEff["Pileup"],"%10.4f")
-PrintLine(AddSpace("effxacc bin",20),SystematicsEff["Bin"],"%10.4f")
-PrintLine(AddSpace("effxacc Sig",20),SystematicsEff["Sig"],"%10.4f")
-PrintLine(AddSpace("effxacc Bkg",20),SystematicsEff["Bkg"],"%10.4f")
-PrintLine(AddSpace("effxacc chmisid",20),SystematicsEff["CMI"],"%10.4f")
-PrintLine(AddSpace("effxacc scale",20),SystematicsEff["Scale"],"%10.4f")
+PrintLine(AddSpace("effxacc pu",20),SystematicsEff["Pileup"])
+PrintLine(AddSpace("effxacc bin",20),SystematicsEff["Bin"])
+PrintLine(AddSpace("effxacc Sig",20),SystematicsEff["Sig"])
+PrintLine(AddSpace("effxacc Bkg",20),SystematicsEff["Bkg"])
+PrintLine(AddSpace("effxacc chmisid",20),SystematicsEff["CMI"])
+PrintLine(AddSpace("effxacc scale",20),SystematicsEff["Scale"])
 
-#PrintLine(AddSpace("effxacc scale",20),EffScale,"%10.4f","x")
-#for i in ["Bin","BkgUp","Ori","SigUp"]:
-#	PrintLine(AddSpace("effxacc "+i ,20),SystematicsEff[i],"%10.4f","x")
 
 for s in Systematics:
 	toprint=AddSpace(s,20)
-	PrintLine(toprint,Systematics[s],"%10.4f")
+	PrintLine(toprint,Systematics[s])
 
 
 ## collapse
@@ -649,17 +751,8 @@ print
 
 PrintLine(AddSpace("#Quantity",20),Info)
 
-#PrintLine(AddSpace("eff_stat",20),EffErr,"%10.4f")
-#PrintLine(AddSpace("lepton_eff",20),SqrtSumL([SystematicsEff["Sig"],SystematicsEff["Bkg"]]),"%10.4f")
-#PrintLine(AddSpace("binning_eff",20),SystematicsEff["Bin"],"%10.4f")
-#PrintLine(AddSpace("charge_mis",20),SystematicsEff["CMI"],"%10.4f")
-#PrintLine(AddSpace("bkg_model"),SqrtSum(Systematics["QCD_?ree"], Systematics["Zbkg_yield"]),"%10.4f")
-#PrintLine(AddSpace("ewk_norm"),Systematics["Ewk_Fix"],"%10.4f")
-PrintLine(AddSpace("pu_model"),TotPuCorr,"%10.4f","")
-PrintLine(AddSpace("scale_electron"),TotScaleCorr,"%10.4f","")
-#PrintLine(AddSpace("met_model"),Systematics["Recoil_Inclusive"],"%10.4f","")
-#PrintLine(AddSpace("recoil_model"),Systematics["Recoil_RooKeys"],"%10.4f","")
-
+PrintLine(AddSpace("pu_model"),TotPuCorr)
+PrintLine(AddSpace("scale_electron"),TotScaleCorr)
 
 
 
@@ -676,13 +769,13 @@ Bkg = SqrtSumL([Systematics["QCD_?ree"], Systematics["Ewk_Fix"],Systematics["Zbk
 Eff = SqrtSumL( [EffErr,SystematicsEff["Sig"],SystematicsEff["Bkg"],SystematicsEff["Bin"],SystematicsEff["CMI"] ]) 
 Tot = SqrtSumL( [ Recoil,Bkg,Eff,TotPuCorr ,TotScaleCorr] ) 
 
-PrintLine(AddSpace("effxacc"),Eff,"%10.4f","",100)
-PrintLine(AddSpace("bkg_model"),Bkg,"%10.4f","",100)
-PrintLine(AddSpace("recoil"),Recoil,"%10.4f","",100)
-PrintLine(AddSpace("pu_model"),TotPuCorr,"%10.4f","",100)
-PrintLine(AddSpace("scale_electron"),TotScaleCorr,"%10.4f","",100)
+PrintLine(AddSpace("effxacc"),Eff,100)
+PrintLine(AddSpace("bkg_model"),Bkg,100)
+PrintLine(AddSpace("recoil"),Recoil,100)
+PrintLine(AddSpace("pu_model"),TotPuCorr,100)
+PrintLine(AddSpace("scale_electron"),TotScaleCorr,100)
 print '-----------------------------------'
-PrintLine(AddSpace("tot"),Tot,"%10.4f","",100)
+PrintLine(AddSpace("tot"),Tot,100)
 
 	
 print '-----------------------------------'
