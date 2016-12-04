@@ -36,12 +36,13 @@
 #include "RooRealIntegral.h"
 #include "Math/MinimizerOptions.h"
 #include "Math/Minimizer.h"
+#include "RooConstVar.h"
 #endif
 
 using namespace RooFit;
 using namespace std;
 
-bool do_keys=true;
+bool do_keys=false;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -704,7 +705,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 
     
     grPFu2frac2 = new TGraphErrors(nbins,xval,pfu2Frac2, xerr,pfu2Frac2Err);
-    grPFu1frac2->GetYaxis()->SetRangeUser(0., 1.);
+    grPFu2frac2->GetYaxis()->SetRangeUser(0., 1.);
     grPFu2frac2->SetName("grPFu2frac2");
     fcnPFu2frac2->SetParameter(0,fcnPFu2sigma0->GetParameter(0));
     fcnPFu2frac2->SetParameter(1,fcnPFu2sigma0->GetParameter(1));
@@ -1133,6 +1134,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 		int etaBinCategory
 ) {
   char pname[50];
+  char lumi[50];
   char ylabel[50];
   char binlabel[50];
   char binYlabel[50];
@@ -1206,7 +1208,10 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "gauss3_" << ibin;
     RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean3,sigma3);name.str("");
     
-    
+    RooGaussian constGauss1("constGauss1","constGauss1",mean1,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss2("constGauss2","constGauss2",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss3("constGauss3","constGauss3",mean3,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+
 //     if( ibin == 0){
 //       mean1.setVal(hv[ibin]->GetMean());
 //       mean2.setVal(hv[ibin]->GetMean());
@@ -1363,23 +1368,25 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     fitResult = modelpdf.fitTo(dataHist,
 			       NumCPU(4),
 			       Minimizer("Minuit2","minimize"),
+			       ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
                                //RooFit::Minos(),
 			       RooFit::Strategy(2),
 	                       RooFit::Save());
 
 
 
-    if(fitResult->status()>1) {
+    if(fitResult->status()>0) {
 
       fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
 				 Minimizer("Minuit2","scan"),
+				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
     }
 
     c->SetFillColor(kWhite);
-    if(fitResult->status()>1) c->SetFillColor(kYellow);
+    if(fitResult->status()>0) c->SetFillColor(kYellow);
 
     std::cout << "frac 2 v1 = " << frac2.getVal() << std::endl;
     std::cout << "frac 3 v1 = " << frac3.getVal() << std::endl;
@@ -1482,9 +1489,12 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     }
 
+    sprintf(lumi,"CMS                               2.3 fb^{-1} (13 TeV)");
     sprintf(pname,"%sfit_%i",plabel,ibin);
     sprintf(ylabel,"Events / %.1f GeV",hv[ibin]->GetBinWidth(1));
-    sprintf(binlabel,"%i < p_{T}(W) < %i",(Int_t)ptbins[ibin],(Int_t)ptbins[ibin+1]);
+    //    sprintf(binlabel,"%i < p_{T}(W) < %i",(Int_t)ptbins[ibin],(Int_t)ptbins[ibin+1]);
+    sprintf(binlabel,"p_{T}(W) = %.1f - %.1f GeV ",ptbins[ibin],ptbins[ibin+1]);
+
     if(etaBinCategory==1) sprintf(binYlabel,"|y| < 0.5");
     if(etaBinCategory==2) sprintf(binYlabel,"0.5 < |y| < 1");
     if(etaBinCategory==3) sprintf(binYlabel,"|y| > 1");
@@ -1508,6 +1518,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     }
     
     CPlot plot(pname,frame,"",xlabel,ylabel);
+    plot.AddTextBox(lumi,0.05,0.92,0.95,0.97,0,kBlack,-1);
     plot.AddTextBox(binlabel,0.21,0.80,0.51,0.85,0,kBlack,-1);
     if(etaBinCategory!=0) plot.AddTextBox(binYlabel,0.21,0.85,0.51,0.9,0,kBlack,-1);
     if(sigOnly) plot.AddTextBox(nsigtext,0.21,0.78,0.51,0.73,0,kBlack,-1);
@@ -1544,6 +1555,8 @@ void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Doubl
         Double_t *frac3Arr,  Double_t *frac3ErrArr,
         RooWorkspace *wksp
 ) {
+
+  char lumi[50];
   char pname[50];
   char ylabel[50];
   char binlabel[50];
