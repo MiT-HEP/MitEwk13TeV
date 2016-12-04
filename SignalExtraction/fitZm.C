@@ -161,7 +161,7 @@ void fitZm(const TString  outputDir,   // output directory
   const TString format("png"); 
   rochcor2015 *rmcor = new rochcor2015();
 
-  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7");
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
 
 //////// Puppi Corrections
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
@@ -213,26 +213,26 @@ void fitZm(const TString  outputDir,   // output directory
   hh_diff->Scale(1/hh_diff->Integral()); // normalize
   hh_diff->Divide(hh_mc);
 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldMuStore/25ns76X_SMP15011/"; 
-  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CT/eff.root";
+  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
+  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MGnegative/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CTpositive/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
+  const TString dataSelEffName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
+  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
+  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
+  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
+  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
 
-  const TString dataStaEffName_pos = baseDir + "MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = baseDir + "MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CT/eff.root";
+  const TString dataStaEffName_pos = baseDir + "MuStaEff/MGpositive/eff.root";
+  const TString dataStaEffName_neg = baseDir + "MuStaEff/MGnegative/eff.root";
+  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CTpositive/eff.root";
+  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CTnegative/eff.root";
 
   //
   // input ntuple file names
@@ -613,10 +613,12 @@ void fitZm(const TString  outputDir,   // output directory
         double lMX = -tl1Pt*cos(tl1Phi) - u1*cos(tl1Phi) + u2*sin(tl1Phi);
         double lMY = -tl1Pt*sin(tl1Phi) - u1*sin(tl1Phi) - u2*cos(tl1Phi);
         met= sqrt(lMX*lMX + lMY*lMY);*/
-        
+
         if(typev[ifile]==eWmunu || typev[ifile]==eQCD) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-	  
+
+	  // m1,m2,dilep  are raw
+	  // lp1,lp2,dl are corrected
           Double_t lp1 = mu1.Pt();
           Double_t lp2 = mu2.Pt();
           TLorentzVector l1, l2, dl;
@@ -675,7 +677,12 @@ void fitZm(const TString  outputDir,   // output directory
               
 	      if(typev[ifile]==eWmunu)
 		{
-		  if(!doRecoilplot) hWmunuMetp->Fill(corrMet,weight*w2);
+		  TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+		  TVector2 dilepCorr((dl.Pt())*cos(dl.Phi()),(dl.Pt())*sin(dl.Phi()));
+		  TVector2 dilepRaw((dilep->Pt())*cos(dilep->Phi()),(dilep->Pt())*sin(dilep->Phi()));
+
+		  Double_t corrMetWithLepton = (vMetCorr + dilepRaw - dilepCorr).Mod();
+		  if(!doRecoilplot) hWmunuMetp->Fill(corrMetWithLepton,weight*w2);
 		  if(doRecoilplot) hWmunuMetp->Fill(pU,weight*w2);
 		  corrMet=met, corrMetPhi=metPhi;
 		}
