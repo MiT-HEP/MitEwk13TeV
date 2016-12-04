@@ -166,6 +166,9 @@ void fitZe(const TString  outputDir,   // output directory
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi/",directory.Data()));
   recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
   recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZeeMCPuppi/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkg/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
 
   RecoilCorrector *recoilCorr_c = new  RecoilCorrector("","");
   recoilCorr_c->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
@@ -568,7 +571,7 @@ void fitZe(const TString  outputDir,   // output directory
 	    if(fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<=1 ) recoilCorr_t->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
 	    if(fabs(dilep->Eta())>1) recoilCorr_f->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
 
-	    //	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
+	    //	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
 	    //      recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
 	    //      recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
 	      double pUX  = corrMet*cos(corrMetPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
