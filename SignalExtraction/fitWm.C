@@ -189,6 +189,7 @@ void fitWm(const TString  outputDir,   // output directory
 
   // ===================== Recoil correction files ============================
   const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
+  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
   // for Puppi, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
@@ -224,32 +225,38 @@ void fitWm(const TString  outputDir,   // output directory
   // --------------------- Eta-binned recoil corrections -----------------------
   RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
   recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory.Data()));
-  recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+//   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
+   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
   recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
   
   RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
   recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory.Data()));
+//   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
   recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
 
   RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
   recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory.Data()));
   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+//   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
   recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
   recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory.Data()));
   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+//   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
   recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
   recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory.Data()));
   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+//   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
   recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
 
   RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
   recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory.Data()));
   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+//   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
   recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
   
   // ---------------------- KEYS -------------
@@ -591,8 +598,6 @@ void fitWm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("puppiMet",      &met);       // MET
     intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
-//     intree->SetBranchAddress("mvaMet",      &met);       // MET
-//     intree->SetBranchAddress("mvaMetPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress("puppiU1",       &u1);        // parallel component of recoil
@@ -1072,6 +1077,7 @@ void fitWm(const TString  outputDir,   // output directory
 //   hWmunuMetm_ScaleUp->Add(corrM,hWmunuMetm,-1);
 //   hWmunuMetm_ScaleDown->Add(corrM,hWmunuMetm,1);
   
+
   //
   // Declare fit parameters for signal and background yields
   // Note: W signal and EWK+top PDFs are constrained to the ratio described in MC
@@ -1176,21 +1182,6 @@ void fitWm(const TString  outputDir,   // output directory
   CPepeModel2 qcd("qcd",pfmet);
   CPepeModel2 qcdp("qcdp",pfmet);
   CPepeModel2 qcdm("qcdm",pfmet);
-  //CPepeModel2 qcdm("qcdm",pfmet);
-  //CPepeModel1 qcdm("qcdm",pfmet);
-//  qcdp.a1->setConstant(kTRUE);
-//   qcdp.a1->setVal(0.24);
-//    qcdm.a1->setVal(0.24);
-
-//   RooRealVar a1ConstMeanP("a1ConstMeanP","a1ConstMeanP",0.18);
-//   RooRealVar a1ConstSigmaP("a1ConstSigmaP","a1ConstSigmaP",0.003);
-// //   RooRealVar a1ConstMeanM("a1ConstMeanM","a1ConstMeanM",0.215);
-// //   RooRealVar a1ConstSigmaM("a1ConstSigmaM","a1ConstSigmaM",0.007);
-// 
-//   RooRealVar sigConstMeanP("sigConstMeanP","sigConstMeanP",17.6);
-//   RooRealVar sigConstSigmaP("sigConstSigmaP","sigConstSigmaP",0.2);
-//   RooRealVar sigConstMeanM("sigConstMeanM","sigConstMeanM",16.9);
-//   RooRealVar sigConstSigmaM("sigConstSigmaM","sigConstSigmaM",0.5);
 //   
 // // RooRealVar f("f","f",0.5,0.,1.) ;
 //   RooGaussian fconsta1p("fconsta1p","fconsta1p",*(qcdp.a1),a1ConstMeanP,a1ConstSigmaP);
@@ -1418,7 +1409,7 @@ RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraint
   TH1D *hMetDiff = makeDiffHist(hDataMet,hPdfMet,"hMetDiff");
   hMetDiff->SetMarkerStyle(kFullCircle);
   hMetDiff->SetMarkerSize(0.9);
-   
+  
   TH1D *hPdfMetp = (TH1D*)(pdfMetp.createHistogram("hPdfMetp", pfmet));
   for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWmunuMetp->GetBinError(ibin));}
   hPdfMetp->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp->Integral());
@@ -1797,6 +1788,8 @@ RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraint
   
   fitResp->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
+//   fitResAntip->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  txtfile << endl;
   printCorrelations(txtfile, fitResp);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
@@ -1826,6 +1819,8 @@ RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraint
 
   fitResm->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
+//   fitResAntim->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  txtfile << endl;
   printCorrelations(txtfile, fitResm);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
@@ -1851,8 +1846,13 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     
     Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     Double_t diff = diff0/hData->GetBinContent(ibin);
+    if(hData->GetBinContent(ibin) == 0) diff = 0;
+    std::cout << "bin " << ibin << std::endl;
+    std::cout << "data " << hData->GetBinContent(ibin) << std::endl;
+    std::cout << "fits " << hFit->GetBinContent(ibin) << std::endl;
 //     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    if(hData->GetBinContent(ibin) == 0) err = 0;
     //Double_t err = sqrt(hData->GetBinContent(ibin));
     //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
     //if(err>0) hDiff->SetBinContent(ibin,diff/err);
@@ -1861,6 +1861,9 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     hDiff->SetBinContent(ibin,diff);
     hDiff->SetBinError(ibin,err);   
   }
+  std::cout << "bin " << hData->GetNbinsX() + 1 << std::endl;
+  std::cout << "data " << hData->GetBinContent(hData->GetNbinsX() + 1) << std::endl;
+  std::cout << "fits " << hFit->GetBinContent(hData->GetNbinsX() + 1) << std::endl;
   
   hDiff->GetYaxis()->SetTitleOffset(0.42);
   hDiff->GetYaxis()->SetTitleSize(0.13);
