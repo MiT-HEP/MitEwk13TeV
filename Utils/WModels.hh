@@ -37,7 +37,7 @@ public:
   CPepeModel2():model(0){}
   CPepeModel2(const char *name, RooRealVar &x,RooRealVar *sigma1=0, RooRealVar *sigma0=0);
   ~CPepeModel2() {
-    delete a1;
+//     delete a1; // temporary fix to prevent segfault when using simultaneous fit
     delete a2;
     delete a3;
     delete model;
