@@ -204,6 +204,7 @@ void fitWe(const TString  outputDir,   // output directory
 
   // ======================= Recoil Corrections ================================
   const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
+//   const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
   // for Puppi, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
@@ -240,31 +241,37 @@ void fitWe(const TString  outputDir,   // output directory
   RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
   recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory.Data()));
   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+//   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
   recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
   
   RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
   recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory.Data()));
   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+//   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
   recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
 
   RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
   recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory.Data()));
   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+//   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
   recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
   recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory.Data()));
   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+//   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
   recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
 
   RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
   recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory.Data()));
   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+//   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
   recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
 
   RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
   recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory.Data()));
   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+//   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
   recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
   
   // ---------------------- KEYS -------------
@@ -345,6 +352,17 @@ void fitWe(const TString  outputDir,   // output directory
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWenu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWenu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
 
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/data_select.root"); typev.push_back(eAntiData);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
+// // //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleID_etaphi/AntiWenu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
+// // //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleID_etaphi/AntiWenu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
+// // 
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
+//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIso_Cap/AntiWenu/ntuples/top_select.root"); typev.push_back(eAntiEWK);
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -554,11 +572,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
       
-//       if(npv<=10)continue;
-      
       // 2d Vectors to correct MET for lepton scaling/smearing
       TVector2 vLepRaw((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));
-//       TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
       TVector2 vLepCor((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
       double pU1         = 0;  //--
       double pU2         = 0;  //--
@@ -598,15 +613,19 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
           if(q>0){
             effdata = fdt_p[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
             effmc   = fmc_p[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
+            
           } else {
             effdata = fdt_n[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
             effmc   = fmc_n[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
             if((int) getEtaBinLabel(lep->Eta())==0) effmc   = fmc_n_b0[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
           }
 
+//   if(effdata==1 || effmc==1 || (effdata/effmc>1.5) || (effdata/effmc<0.5)) {
+//     cout << " HLT (binned)=" << effdata/effmc  << " effdata=" << effdata << " effmc=" << effmc <<  endl;
+//     std::cout << "q > 0. lepton eta = " << lep->Eta() << "  getEtaBinLabel=" << getEtaBinLabel(lep->Eta()) << " effdata =" << effdata << " effmc=" << effmc << std::endl;
+//   }
           corr *= effdata/effmc;
         }
-
   
       effdata=1; effmc=1;
       effSigShapedata=1;
@@ -626,6 +645,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
       corrSigShape *= effSigShapedata/effmc;
       corrBkgShape *= effBkgShapedata/effmc;
       //corr=1;
+      
+//       if(corr < 0.5) std::cout << "corr  " << corr <<  "  lep eta " << lep->Eta() << std::endl;
       
       if(typev[ifile]==eData) {
         if(lep->Pt()        < PT_CUT)  continue;
@@ -912,33 +933,29 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
   RooRealVar dewk("dewk","dewk",0.1,0,5) ;
   dewk.setVal(hAntiEWKMet->Integral()/hAntiWenuMet->Integral());
-//   dewk.setConstant(kTRUE);
+  dewk.setConstant(kTRUE);
   //   nAntiSig.setConstant(kTRUE);
   RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
 
   //hWenuMetp->Scale(6.7446e+06/hWenuMetp->Integral());
   //RooRealVar nSigp("nSigp","nSigp",hDataMetp->Integral()*0.8,0,hDataMetp->Integral());
   RooRealVar nSigp("nSigp","nSigp",0.75*hDataMetp->Integral(),0,hDataMetp->Integral());
-  //nSigp.setConstant(kTRUE);
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nQCDp("nQCDp","nQCDp",0.2*hDataMetp->Integral(),0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.1,0,1.0);
   cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
 //   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
-  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",0.1*hAntiDataMetp->Integral(),0,0.5*hAntiDataMetp->Integral());
+  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWenuMetm->Integral(),0,0.5*hAntiDataMetp->Integral());
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.95*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
   RooRealVar dewkp("dewkp","dewkp",0.1,0,1.0) ;
   dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
-  //std::cout << "TTTT " << hAntiEWKMetp->Integral() << " "<< hAntiWenuMetp->Integral() << std::endl;
 //   dewkp.setConstant(kTRUE);
-//   nAntiSigp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
 
   //hWenuMetm->Scale(5.2551e+06/hWenuMetm->Integral());
   RooRealVar nSigm("nSigm","nSigm",1.0*hWenuMetm->Integral(),0,hDataMetm->Integral());
   //RooRealVar nSigm("nSigm","nSigm",hDataMetm->Integral()*0.8,0,hDataMetm->Integral());
-  //nSigm.setConstant(kTRUE);
   //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
   RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.2,0,hDataMetm->Integral());
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
@@ -950,7 +967,6 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
   dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
 //   dewkm.setConstant(kTRUE);
-//   nAntiSigm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
 
   //
@@ -1031,30 +1047,10 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
    
 //    CPepeModel2 aqcd("aqcd",pfmet);
 //    CPepeModel2 aqcdp("aqcdp",pfmet);
-//    CPepeModel2 aqcdm("aqcdm",pfmet);
-
-   //CPepeModel1 aqcdp("aqcdp",pfmet,qcdp.a1,qcdp.sigma);
-   //CPepeModel1 aqcdm("aqcdm",pfmet,qcdm.a1,qcdm.sigma);
-
-   //qcdp.a1 = qcdm.a1;
-   
-//    CPepeModel2 aqcd("aqcd",pfmet);
-//    CPepeModel2 aqcdp("aqcdp",pfmet);
 //    CPepeModel2 aqcdm("aqcdm",pfmet);  
    
-   //RooRealVar mm("mm","mm",0.0185,-1,1) ;
-   //RooRealVar sm("sm","sm",0.0006,0.0,10) ;
-   //RooRealVar mp("mp","mp",0.015826,-1,1) ;
-   //RooRealVar sp("sp","sp",0.0003,0.0,10) ;
-   //RooGaussian gaussm("gaussm","gauss(xm,mm,sm)",qcdm.a1,mm,sm) ;
-   //RooGaussian gaussp("gaussp","gauss(xp,mp,sp)",qcdp.a1,mp,sp) ;
-   //RooGaussian constm("constm","constm",*qcdm.a1,RooConst(0.0185),RooConst(0.0003)) ;
-   //RooGaussian constp("constp","constp",*qcdp.a1,RooConst(0.015826),RooConst(0.0001)) ;
-//    RooGaussian constm("constm","constm",nAntiSigm,RooConst(hAntiWenuMetm->Integral()),RooConst(0.05*hAntiWenuMetm->Integral()));
-//    RooGaussian constp("constp","constp",nAntiSigp,RooConst(hAntiWenuMetp->Integral()),RooConst(0.05*hAntiWenuMetp->Integral()));
     RooGaussian constm("constm","constm",nEWKm,RooConst(hEWKMetm->Integral()),RooConst(0.15*hEWKMetm->Integral()));
     RooGaussian constp("constp","constp",nEWKp,RooConst(hEWKMetp->Integral()),RooConst(0.15*hEWKMetp->Integral()));
-   //RooGaussian constp("constp","constp",*qcdp.a1,RooConst(0.015826),RooConst(0.0003)) ;
    
 
   RooCategory rooCat("rooCat","rooCat");
@@ -1102,6 +1098,11 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooDataHist antiMetp("antiMetp", "antiMetp", RooArgSet(pfmet), hAntiDataMetp);
   RooDataHist antiMetm("antiMetm", "antiMetm", RooArgSet(pfmet), hAntiDataMetm);
 
+               
+//   RooDataHist dataTotal("dataTotal,","dataTotal,", RooArgList(pfmet), Index(rooCat),
+//              Import("Selectm", dataMetm),
+//              Import("Selectp",   antiMetm));
+  
   RooDataHist dataTotalp("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat),
 			 Import("Select", dataMetp),
 			 Import("Anti",   antiMetp));
@@ -1110,6 +1111,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 			 Import("Select", dataMetm),
 			 Import("Anti", antiMetm));
   
+
+             
   cout << "Starting values for Wenu yields: " << endl;
   cout << "Selected: " << hDataMet->Integral() << endl;
   cout << "   sig: " << hWenuMet->Integral() << endl;
@@ -1227,7 +1230,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
-  RooDataHist dataTotal("dataTotal,","dataTotal,", RooArgList(pfmet), Index(rooCat),Import("Selectm", dataMetm),Import("Selectp",   antiMetm));
+
   
   //RooFitResult *fitResm = pdfTotal.fitTo(dataTotal,Extended(),Minos(kTRUE),Save(kTRUE));
   RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),ExternalConstraints(constm),RooFit::Strategy(2),Save(kTRUE));
@@ -1429,7 +1432,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   
   plotMetp.SetName("wenu_fitmetplog");
   plotMetp.SetLogy();
-  plotMetp.SetYRange(1e-3*(hDataMetp->GetMaximum()),10*(hDataMetp->GetMaximum()));
+  plotMetp.SetYRange(1e-5*(hDataMetp->GetMaximum()),10*(hDataMetp->GetMaximum()));
   plotMetp.Draw(c,kTRUE,format,1);
   plotMetp.Draw(c,kTRUE,"pdf",1);
   
@@ -1471,7 +1474,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   
   plotAntiMetp.SetName("wenu_fitantimetplog");
   plotAntiMetp.SetLogy();
-  plotAntiMetp.SetYRange(1e-3*(hAntiDataMetp->GetMaximum()),10*(hAntiDataMetp->GetMaximum()));
+  plotAntiMetp.SetYRange(1e-5*(hAntiDataMetp->GetMaximum()),10*(hAntiDataMetp->GetMaximum()));
   plotAntiMetp.Draw(c,kTRUE,format,1);
   plotAntiMetp.Draw(c,kTRUE,"pdf",1);
   
@@ -1515,7 +1518,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   
   plotMetm.SetName("wenu_fitmetmlog");
   plotMetm.SetLogy();
-  plotMetm.SetYRange(1e-3*(hDataMetm->GetMaximum()),10*(hDataMetm->GetMaximum()));
+  plotMetm.SetYRange(1e-5*(hDataMetm->GetMaximum()),10*(hDataMetm->GetMaximum()));
   plotMetm.Draw(c,kTRUE,format,1);
   plotMetm.Draw(c,kTRUE,"pdf",1);
   
@@ -1558,7 +1561,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   
   plotAntiMetm.SetName("wenu_fitantimetmlog");
   plotAntiMetm.SetLogy();
-  plotAntiMetm.SetYRange(1e-3*(hAntiDataMetm->GetMaximum()),10*(hAntiDataMetm->GetMaximum()));
+  plotAntiMetm.SetYRange(1e-5*(hAntiDataMetm->GetMaximum()),10*(hAntiDataMetm->GetMaximum()));
   plotAntiMetm.Draw(c,kTRUE,format,1);
   plotAntiMetm.Draw(c,kTRUE,"pdf",1);
     
@@ -1630,6 +1633,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   
   fitResp->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
+//   fitResAntip->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+//   txtfile << endl;
   printCorrelations(txtfile, fitResp);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
@@ -1660,6 +1665,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   
   fitResm->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
+//   fitResAntim->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+//   txtfile << endl;
   printCorrelations(txtfile, fitResm);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
@@ -1712,14 +1719,12 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     
     Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     Double_t diff = diff0/hData->GetBinContent(ibin);
-    std::cout << "bin # " << ibin << std::endl;
-    std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
-    std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
-    std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
-    std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
-    std::cout << "diff =  " << diff << std::endl;
+    if(hData->GetBinContent(ibin) == 0) diff = 0;
+    std::cout << "data " << hData->GetBinContent(ibin) << std::endl;
+    std::cout << "fits " << hFit->GetBinContent(ibin) << std::endl;
 //     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+    if(hData->GetBinContent(ibin) == 0) err = 0;
     //Double_t err = sqrt(hData->GetBinContent(ibin));
     //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
     //if(err>0) hDiff->SetBinContent(ibin,diff/err);
