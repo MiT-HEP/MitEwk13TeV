@@ -551,8 +551,6 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("puppiMet",      &met);       // MET
     intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
-//     intree->SetBranchAddress("mvaMet",      &met);       // MET
-//     intree->SetBranchAddress("mvaMetPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress("puppiU1",       &u1);        // parallel component of recoil
