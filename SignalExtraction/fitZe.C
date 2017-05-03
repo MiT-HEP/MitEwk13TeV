@@ -133,7 +133,7 @@ void fitZe(const TString  outputDir,   // output directory
 ) {
   gBenchmark->Start("fitZe");
 
-  bool doRecoilplot=false;
+  bool doRecoilplot=true;
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
@@ -159,13 +159,16 @@ void fitZe(const TString  outputDir,   // output directory
   const TString format("png"); 
   //  rochcor2015 *rmcor = new rochcor2015();
 
-  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7");
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
 
   // Puppi Corrections
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi/",directory.Data()));
   recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
   recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZeeMCPuppi/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkg/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
 
   RecoilCorrector *recoilCorr_c = new  RecoilCorrector("","");
   recoilCorr_c->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
@@ -195,16 +198,15 @@ void fitZe(const TString  outputDir,   // output directory
   hh_diff->Divide(hh_mc);
 
   const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
-  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MG/eff.root";
-  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CT/eff.root";
+  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MGnegative/eff.root";
+  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CTpositive/eff.root";
+  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CTnegative/eff.root";
   
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CT/eff.root";
-
+  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive_FineBin/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative_FineBin/eff.root";
+  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CTpositive/eff.root";
+  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CTnegative/eff.root";
 
   //
   // input ntuple file names
@@ -213,13 +215,23 @@ void fitZe(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
+   // those contains the raw
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/zee_select.root"); typev.push_back(eWmunu);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/zxx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/wx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/zz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/wz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/ww_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/ZeeForFootprint/top_select.root"); typev.push_back(eEWK);
+
+   /*
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/zee_select.root");   typev.push_back(eWmunu);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/boson_select.root");  typev.push_back(eQCD);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/ewk_select1.root");  typev.push_back(eEWK);
+   */
 //   fnamev.push_back("/data/smptuples/sabrandt/top_select.raw.root");  typev.push_back(eEWK);
-
-
   
 
   //--------------------------------------------------------------------------------------------------------------
@@ -340,7 +352,7 @@ void fitZe(const TString  outputDir,   // output directory
   Int_t   q1, q2;
   UInt_t  category;
   //TLorentzVector *lep=0;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0;
     
   TFile *infile=0;
   TTree *intree=0;
@@ -376,7 +388,8 @@ void fitZe(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep2",        &lep2);        // probe lepton 4-vector
     intree->SetBranchAddress("dilep",       &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("category",    &category);    // dilepton category
-    
+    intree->SetBranchAddress("lep1_raw",    &lep1_raw);       // tag lepton 4-vector
+    intree->SetBranchAddress("lep2_raw",    &lep2_raw);       // probe lepton 4-vector
     
     Double_t mt=-999;
 
@@ -547,18 +560,24 @@ void fitZe(const TString  outputDir,   // output directory
 
 	    double w2 = 1.0;//hh_diff->GetBinContent(bin);
 
+	    TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
+	    TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
+	    TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+	    TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
+	    TVector2 dilepRaw=vLepRaw1+vLepRaw2;
+
 	    //MARIA: to use the eta binned recoil
-	    if(fabs(dilep->Eta())<0.5) recoilCorr_c->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
-	    if(fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<=1 ) recoilCorr_t->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
-	    if(fabs(dilep->Eta())>1) recoilCorr_f->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
+	    if(fabs(dilep->Eta())<0.5) recoilCorr_c->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    if(fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<=1 ) recoilCorr_t->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    if(fabs(dilep->Eta())>1) recoilCorr_f->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
 
-	    //	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
-
-	      //     recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
-//               recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
-              double pUX  = corrMet*cos(corrMetPhi) + dilep->Pt()*cos(dilep->Phi());
-              double pUY  = corrMet*sin(corrMetPhi) + dilep->Pt()*sin(dilep->Phi());
+	    //	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    //      recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
+	    //      recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+	      double pUX  = corrMet*cos(corrMetPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
+              double pUY  = corrMet*sin(corrMetPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
               double pU   = sqrt(pUX*pUX+pUY*pUY);
+	      // projection along the corrected Z
               double pCos = - (pUX*cos(dilep->Phi()) + pUY*sin(dilep->Phi()))/pU;
               double pSin =   (pUX*sin(dilep->Phi()) - pUY*cos(dilep->Phi()))/pU;
               pU1   = pU*pCos; // U1 in data
@@ -573,8 +592,12 @@ void fitZe(const TString  outputDir,   // output directory
               hU2vsZpt_MC->Fill(dilep->Pt(),pU2,weight);
 	      if(typev[ifile]==eWmunu)
 		{
+                  TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+		  Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
+		  Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
+
 		  if(doRecoilplot) hWmunuMetp->Fill(pU,weight*w2);
-		  if(!doRecoilplot) hWmunuMetp->Fill(corrMet,weight*w2);
+		  if(!doRecoilplot) hWmunuMetp->Fill(corrMetWithLepton,weight*w2);
 		  corrMet=met, corrMetPhi=metPhi;
 		}
 	      else

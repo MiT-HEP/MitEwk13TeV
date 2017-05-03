@@ -37,13 +37,14 @@
 #include "RooRealIntegral.h"
 #include "Math/MinimizerOptions.h"
 #include "Math/Minimizer.h"
+#include "RooConstVar.h"
 
 #endif
 
 using namespace RooFit;
 using namespace std;
 
-bool do_keys=true;
+bool do_keys=false;
 
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -362,8 +363,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	hPFu1Bkgv[ipt]->Fill(u1,scale1fb*lumi);
 	hPFu2Bkgv[ipt]->Fill(u2,scale1fb*lumi);
 
-	//        hPFu1Bkgv[ipt]->Fill(u1,scale1fbUp*lumi);
-	//        hPFu2Bkgv[ipt]->Fill(u2,scale1fbUp*lumi);
+	//	hPFu1Bkgv[ipt]->Fill(u1,scale1fbUp*lumi);
+	//	hPFu2Bkgv[ipt]->Fill(u2,scale1fbUp*lumi);
 
 	//	hPFu1Bkgv[ipt]->Fill(u1,scale1fbDown*lumi);
 	//	hPFu2Bkgv[ipt]->Fill(u2,scale1fbDown*lumi);
@@ -658,7 +659,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 
     
     grPFu2frac2 = new TGraphErrors(nbins,xval,pfu2Frac2, xerr,pfu2Frac2Err);
-    grPFu1frac2->GetYaxis()->SetRangeUser(0., 1.);
+    grPFu2frac2->GetYaxis()->SetRangeUser(0., 1.);
     grPFu2frac2->SetName("grPFu2frac2");
     CPlot plotPFu2frac2("pfu2frac2","","p_{T}(ll) [GeV/c]","f_{2}");
     plotPFu2frac2.AddGraph(grPFu2frac2,"",kBlack,kOpenCircle);
@@ -1007,6 +1008,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 		RooWorkspace *wksp,
 		int etaBinCategory
 ) {
+  char lumi[50];
   char pname[50];
   char ylabel[50];
   char binlabel[50];
@@ -1110,6 +1112,11 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "gauss3_" << ibin;
     RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean3,sigma3);name.str("");
     
+    RooGaussian constGauss1("constGauss1","constGauss1",mean1,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss2("constGauss2","constGauss2",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss3("constGauss3","constGauss3",mean3,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+
+
 /*    // Works for Zmm Data no bkg-sub to get all U1 set
     if(ibin>0) {
       mean1.setVal(hv[ibin]->GetMean());
@@ -1307,20 +1314,22 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     fitResult = modelpdf.fitTo(dataHist,
 			       NumCPU(4),
 			       Minimizer("Minuit2","minimize"),
+			       ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 			       RooFit::Strategy(2),
 	                       RooFit::Save());
 
-    if(fitResult->status()>1) {
+    if(fitResult->status()>0) {
 
       fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
 				 Minimizer("Minuit2","scan"),
+				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
     }
 
     c->SetFillColor(kWhite);
-    if(fitResult->status()>1) c->SetFillColor(kYellow);
+    if(fitResult->status()>0) c->SetFillColor(kYellow);
 
     //    if(frac2.getVal() + frac3.getVal() > 1.0) std::cout << "WRONG NORMALIZATION??? " << std::endl;
     //    if(frac2.getVal() + frac3.getVal() > 1.0) std::cout << "WRONG NORMALIZATION??? " << std::endl;
@@ -1424,9 +1433,10 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     if(chi2Arr[ibin] > 10) { chi2Arr[ibin]=0; chi2ErrArr[ibin]=200; } // just a larger number so that is easy to notice on the plot
     //    cout << " chi2Arr[ibin]=" << chi2Arr[ibin] << " chi2ErrArr[ibin]=" << chi2ErrArr[ibin] << endl;
 
+    sprintf(lumi,"CMS                               2.3 fb^{-1} (13 TeV)");
     sprintf(pname,"%sfit_%i",plabel,ibin);
     sprintf(ylabel,"Events / %.1f GeV",hv[ibin]->GetBinWidth(1));
-    sprintf(binlabel,"%i < p_{T} < %i",(Int_t)ptbins[ibin],(Int_t)ptbins[ibin+1]);    
+    sprintf(binlabel,"p_{T}(Z) = %.1f - %.1f GeV ",ptbins[ibin],ptbins[ibin+1]);
 
     if(etaBinCategory==1) sprintf(binYlabel,"|y| < 0.5");
     if(etaBinCategory==2) sprintf(binYlabel,"0.5 < |y| < 1");
@@ -1455,6 +1465,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     
     CPlot plot(pname,frame,"",xlabel,ylabel);
     //    pad1->cd();
+    plot.AddTextBox(lumi,0.1,0.92,0.95,0.97,0,kBlack,-1);
     plot.AddTextBox(binlabel,0.21,0.80,0.51,0.85,0,kBlack,-1);
     if(etaBinCategory!=0) plot.AddTextBox(binYlabel,0.21,0.85,0.51,0.9,0,kBlack,-1);
     if(sigOnly) plot.AddTextBox(nsigtext,0.21,0.78,0.51,0.73,0,kBlack,-1);
