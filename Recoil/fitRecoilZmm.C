@@ -1263,11 +1263,11 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "gauss2_" << ibin;
     RooGaussian gauss2(name.str().c_str(),name.str().c_str(),u,mean2,sigma2);name.str(""); 
     name.str(""); name << "gauss3_" << ibin;
-    RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean3,sigma3);name.str("");
+    RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean2,sigma3);name.str("");
     
     RooGaussian constGauss1("constGauss1","constGauss1",mean1,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
     RooGaussian constGauss2("constGauss2","constGauss2",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
-    RooGaussian constGauss3("constGauss3","constGauss3",mean3,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss3("constGauss3","constGauss3",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
 
 
 /*    // Works for Zmm Data no bkg-sub to get all U1 set
