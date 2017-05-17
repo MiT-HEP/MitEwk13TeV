@@ -47,7 +47,7 @@ using namespace std;
 
 bool do_keys=false;
 bool do_5TeV=false;
-bool doLog=false;
+bool doLog=true;
 bool doElectron=false;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -1239,7 +1239,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     //    RooFormulaVar * mean3= new RooFormulaVar("meanFrac","@0 * @1",RooArgSet(mean1,mean3f));
 
     name.str(""); name << "sigma1_" << ibin;
-    RooRealVar sigma1(name.str().c_str(),name.str().c_str(),0.3*(hv[ibin]->GetRMS()),0,2.3*(hv[ibin]->GetRMS()));
+    RooRealVar sigma1(name.str().c_str(),name.str().c_str(),0.3*(hv[ibin]->GetRMS()),0,2.5*(hv[ibin]->GetRMS()));
     name.str(""); name << "sigma2_" << ibin;
     RooRealVar sigma2(name.str().c_str(),name.str().c_str(),1.0*(hv[ibin]->GetRMS()),0.,4.5*(hv[ibin]->GetRMS()));
     name.str(""); name << "sigma3_" << ibin;
