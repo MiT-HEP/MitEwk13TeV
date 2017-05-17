@@ -30,6 +30,7 @@
 #include "RooHistPdf.h"
 #include "RooKeysPdf.h"
 #include "RooPlot.h"
+#include "RooHist.h"
 #include "RooFitResult.h"
 #include "RooDataHist.h"
 #include "RooWorkspace.h"
@@ -1242,7 +1243,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "sigma2_" << ibin;
     RooRealVar sigma2(name.str().c_str(),name.str().c_str(),1.0*(hv[ibin]->GetRMS()),0.,4.5*(hv[ibin]->GetRMS()));
     name.str(""); name << "sigma3_" << ibin;
-    RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),0,9*hv[ibin]->GetRMS());
+    RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),0.,9*hv[ibin]->GetRMS());
     //    RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),10 ,std::min(int(9*hv[ibin]->GetRMS()),100));
     name.str(""); name << "frac2_" << ibin;
     RooRealVar frac2(name.str().c_str(),name.str().c_str(),0.5,0.15,0.85);
@@ -1468,6 +1469,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 				    NumCPU(4),
 				    Minimizer("Minuit2","minimize"),
 				    ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				    //				    ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				    RooFit::Strategy(2),
 				    RooFit::Save());
     }
@@ -1477,6 +1479,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 			       NumCPU(4),
 			       Minimizer("Minuit2","minimize"),
 			       ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+			       //			       ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 			       RooFit::Strategy(2),
 	                       RooFit::Save());
 
@@ -1486,6 +1489,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 				 NumCPU(4),
 				 Minimizer("Minuit2","scan"),
 				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
     }
@@ -1579,7 +1583,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     }
 
-
     int sizeParam=0;
     if(string(plabel)==string("pfu1")) sizeParam=8; // 3 means + 3 sigma + 2 frac
     if(string(plabel)==string("pfu2")) sizeParam=5; // 0 means + 3 sigma + 2 frac
@@ -1590,6 +1593,30 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     */
     TString nameRooHist=Form("h_%s",dataHist.GetName());
     TString nameRooCurve=Form("sig_%d_Norm[u_%d]",ibin,ibin);
+
+    RooHist* hist = frame->getHist(nameRooHist.Data());
+    RooCurve* fitCurve = frame->getCurve(nameRooCurve.Data());
+
+    RooHist* hist_pull = hist->makePullHist(*fitCurve);
+    hist_pull->SetTitle("");
+    hist_pull->GetYaxis()->SetTitle("pull");
+    hist_pull->GetYaxis()->SetRangeUser(-5.,5.);
+    hist_pull->SetMarkerColor(kAzure);
+    hist_pull->SetLineColor(kAzure);
+    hist_pull->SetFillColor(kAzure);
+    //    hist_pull->GetYaxis()->SetTitleFont(42);
+    //    hist_pull->GetXaxis()->SetTitleFont(42);
+    hist_pull->GetYaxis()->SetTitleSize  (0.055);
+    hist_pull->GetYaxis()->SetTitleOffset(1.600);
+    hist_pull->GetYaxis()->SetLabelOffset(0.014);
+    hist_pull->GetYaxis()->SetLabelSize  (0.050);
+    hist_pull->GetYaxis()->SetLabelFont  (42);
+    hist_pull->GetXaxis()->SetTitleSize  (0.055);
+    hist_pull->GetXaxis()->SetTitleOffset(1.300);
+    hist_pull->GetXaxis()->SetLabelOffset(0.014);
+    hist_pull->GetXaxis()->SetLabelSize  (0.050);
+    hist_pull->GetXaxis()->SetLabelFont  (42);
+
     chi2Arr[ibin]  = frame->chiSquare(nameRooCurve.Data(),nameRooHist.Data(),sizeParam);
     chi2ErrArr[ibin]  = 0 ;
     if(chi2Arr[ibin] > 10) { chi2Arr[ibin]=0; chi2ErrArr[ibin]=200; } // just a larger number so that is easy to notice on the plot
@@ -1626,6 +1653,29 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
       sprintf(sig3text,"#sigma_{3} = %.1f #pm %.1f",sigma3Arr[ibin],sigma3ErrArr[ibin]);
     }
     
+    ///////////
+    /////////// Draw Linear
+    ///////////
+    ///////////
+
+    TCanvas *cLin = MakeCanvas("cLin","cLin",800,800);
+    cLin->Divide(1,2,0,0);
+    cLin->cd(1)->SetPad(0,0.3,1.0,1.0);
+    cLin->cd(1)->SetTopMargin(0.1);
+    cLin->cd(1)->SetBottomMargin(0.01);
+    cLin->cd(1)->SetLeftMargin(0.15);
+    cLin->cd(1)->SetRightMargin(0.07);
+    cLin->cd(1)->SetTickx(1);
+    cLin->cd(1)->SetTicky(1);
+    cLin->cd(2)->SetPad(0,0,1.0,0.3);
+    cLin->cd(2)->SetTopMargin(0.05);
+    cLin->cd(2)->SetBottomMargin(0.45);
+    cLin->cd(2)->SetLeftMargin(0.15);
+    cLin->cd(2)->SetRightMargin(0.07);
+    cLin->cd(2)->SetTickx(1);
+    cLin->cd(2)->SetTicky(1);
+
+
     CPlot plot(pname,frame,"",xlabel,ylabel);
     //    pad1->cd();
     plot.AddTextBox(lumi,0.1,0.92,0.95,0.97,0,kBlack,-1);
@@ -1638,25 +1688,72 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     else if(model==2) plot.AddTextBox(0.70,0.90,0.95,0.70,0,kBlack,-1,5,mean1text,mean2text,sig0text,sig1text,sig2text);
     //    else if(model==3) plot.AddTextBox(0.70,0.90,0.95,0.65,0,kBlack,-1,7,mean1text,mean2text,mean3text,sig0text,sig1text,sig2text,sig3text);
     else if(model==3) plot.AddTextBox(0.70,0.90,0.95,0.65,0,kBlack,-1,6,mean1text,mean2text,mean3text,sig1text,sig2text,sig3text);
-    plot.Draw(c,kTRUE,"png");
+    //    plot.Draw(cLin,kTRUE,"png");
+    plot.Draw(cLin,kFALSE,"png",1);
 
-    /*
-    pad2->cd();
-    RooHist* hist = frame->getHist(histo.Data());
-    RooHist* hist_pull = hist->makePullHist(*modelpdf);
-    hist_pull->SetTitle("");
-    hist_pull->SetMarkerColor(kAzure);
-    hist_pull->SetLineColor(kAzure);
-    hist_pull->SetFillColor(kAzure);
+    cLin->cd(2);
     hist_pull->Draw("A3 L ");
-    */
+    TLine *lineZero = new TLine(hv[ibin]->GetXaxis()->GetXmin(), 0,  hv[ibin]->GetXaxis()->GetXmax(), 0);
+    lineZero->SetLineColor(kBlack);
+    lineZero->Draw("same");
+    TLine *lineZero1SigmaM = new TLine(hv[ibin]->GetXaxis()->GetXmin(), 0,  hv[ibin]->GetXaxis()->GetXmax(), 0);
+    lineZero1SigmaM->SetLineColor(11);
+    lineZero1SigmaM->Draw("same");
+    TLine *lineZero1SigmaP = new TLine(hv[ibin]->GetXaxis()->GetXmin(), 0,  hv[ibin]->GetXaxis()->GetXmax(), 0);
+    lineZero1SigmaP->SetLineColor(11);
+    lineZero1SigmaP->Draw("same");
 
-    
+
+    plot.Draw(cLin,kTRUE,"png",1);
+
+    /////////// Draw log
+    ///////////
+    ///////////
+    ///////////
+    ///////////
+
+    TCanvas *c1 = MakeCanvas("c1","c1",800,800);
+    c1->Divide(1,2,0,0);
+    c1->cd(1)->SetPad(0,0.3,1.0,1.0);
+    c1->cd(1)->SetTopMargin(0.1);
+    c1->cd(1)->SetBottomMargin(0.01);
+    c1->cd(1)->SetLeftMargin(0.15);
+    c1->cd(1)->SetRightMargin(0.07);
+    c1->cd(1)->SetTickx(1);
+    c1->cd(1)->SetTicky(1);
+    c1->cd(2)->SetPad(0,0,1.0,0.3);
+    c1->cd(2)->SetTopMargin(0.05);
+    c1->cd(2)->SetBottomMargin(0.45);
+    c1->cd(2)->SetLeftMargin(0.15);
+    c1->cd(2)->SetRightMargin(0.07);
+    c1->cd(2)->SetTickx(1);
+    c1->cd(2)->SetTicky(1);
+
     sprintf(pname,"%sfitlog_%i",plabel,ibin);
     plot.SetYRange(0.1,10*hv[ibin]->GetMaximum());
     plot.SetName(pname);
     plot.SetLogy();
-    plot.Draw(c,kTRUE,"png");        
+    plot.Draw(c1,kFALSE,"png",1);
+
+    c1->cd(2);
+    hist_pull->SetTitle("");
+    hist_pull->GetYaxis()->SetTitle("pull");
+    hist_pull->GetYaxis()->SetRangeUser(-5.,5.);
+    hist_pull->SetMarkerColor(kAzure);
+    hist_pull->SetLineColor(kAzure);
+    hist_pull->SetFillColor(kAzure);
+    hist_pull->Draw("A3 L ");
+    //    TLine *lineZero = new TLine(-100., 0,  100., 0);
+    lineZero->SetLineColor(kBlack);
+    lineZero->Draw("same");
+    //    TLine *lineZero1SigmaM = new TLine(-100., -1,  100., -1);
+    lineZero1SigmaM->SetLineColor(11);
+    lineZero1SigmaM->Draw("same");
+    //    TLine *lineZero1SigmaP = new TLine(-100., 1,  100., 1);
+    lineZero1SigmaP->SetLineColor(11);
+    lineZero1SigmaP->Draw("same");
+
+    plot.Draw(c1,kTRUE,"png",1);
 
     // reset color canvas
     c->SetFillColor(kWhite);
