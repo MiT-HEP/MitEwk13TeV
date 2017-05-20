@@ -134,7 +134,7 @@ void fitZe(const TString  outputDir,   // output directory
 ) {
   gBenchmark->Start("fitZe");
 
-  bool doRecoilplot=false;
+  bool doRecoilplot=true;
   bool doZpt=false;
 
   //--------------------------------------------------------------------------------------------------------------
@@ -471,6 +471,17 @@ void fitZe(const TString  outputDir,   // output directory
 //       if(lep->Pt()        < PT_CUT)  continue;	
       if(fabs(lep1->Eta()) > ETA_CUT) continue;
       if(fabs(lep2->Eta()) > ETA_CUT) continue;
+
+      if(lep1->Pt()        < PT_CUT)  continue;
+      if(lep2->Pt()        < PT_CUT)  continue;
+      if(dilep->M()        < MASS_LOW)  continue;
+      if(dilep->M()        > MASS_HIGH) continue;
+
+      TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
+      TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
+      TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+      TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
+      TVector2 dilepRaw=vLepRaw1+vLepRaw2;
       
 //       if(nJets30 <2) continue;
 //       if(dilep->Pt() > 10) continue;// || dilep->Pt() < 40) continue;
@@ -523,25 +534,7 @@ void fitZe(const TString  outputDir,   // output directory
       corr *= effdata/effmc;
       //corr=1;
 
-
-      
       if(typev[ifile]==eData) {
-        
-        //TLorentzVector mu1;
-        //TLorentzVector mu2;
-        //mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
-        //mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-        //float qter1=1.0;
-        //float qter2=1.0;
-        //rmcor->momcor_data(mu1,q1,0,qter1);
-        //rmcor->momcor_data(mu2,q2,0,qter2);
-        //if(mu1.Pt()        < PT_CUT)  continue;
-        //if(mu2.Pt()        < PT_CUT)  continue;
-	if(lep1->Pt()        < PT_CUT)  continue;
-	if(lep2->Pt()        < PT_CUT)  continue;
-        if(dilep->M()        < MASS_LOW)  continue;
-        if(dilep->M()        > MASS_HIGH) continue;
-        
         
         // For making W-like met spectrum
 //       if(q1 > 0) {tl1Pt = mu1.Pt(); tl1Phi = mu1.Phi();}
@@ -552,8 +545,9 @@ void fitZe(const TString  outputDir,   // output directory
       
         hDataMet->Fill(met);
         if(q1*q2<0) {
-	  double pUX  = met*cos(metPhi) + dilep->Pt()*cos(dilep->Phi());
-          double pUY  = met*sin(metPhi) + dilep->Pt()*sin(dilep->Phi());
+	  // met and dilepRaw do not have scale correction
+	  double pUX  = met*cos(metPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
+          double pUY  = met*sin(metPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
           double pU   = sqrt(pUX*pUX+pUY*pUY);
 	  if(doRecoilplot) hDataMetp->Fill(pU);
 	  if(!doRecoilplot && !doZpt) hDataMetp->Fill(met);
@@ -600,12 +594,6 @@ void fitZe(const TString  outputDir,   // output directory
           //dl=l1+l2;
           //double mll=dl.M();
         
-          if(lep1->Pt()        < PT_CUT)  continue;
-          if(lep2->Pt()        < PT_CUT)  continue;
-          if(dilep->M()        < MASS_LOW)  continue;
-          if(dilep->M()        > MASS_HIGH) continue;
-
-//           
           hWmunuMet->Fill(corrMet,weight);
           if(q1*q2<0) {
 	    pU1 = 0; pU2 = 0;
@@ -617,11 +605,6 @@ void fitZe(const TString  outputDir,   // output directory
 
 	    double w2 = 1.0;//hh_diff->GetBinContent(bin);
 
-	    TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
-	    TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
-	    TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
-	    TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
-	    TVector2 dilepRaw=vLepRaw1+vLepRaw2;
 
 	    /*
 	    //MARIA: to use the eta binned recoil
@@ -633,6 +616,7 @@ void fitZe(const TString  outputDir,   // output directory
 	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
 	    //      recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
 	    //      recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+	    // met and dilepRaw do not have scale correction
 	      double pUX  = corrMet*cos(corrMetPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
               double pUY  = corrMet*sin(corrMetPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
               double pU   = sqrt(pUX*pUX+pUY*pUY);
@@ -707,12 +691,10 @@ void fitZe(const TString  outputDir,   // output directory
           else    { hAntiWmunuMetm->Fill(corrMet,weight); }
         }
         if(typev[ifile]==eEWK) {
-          if(lep1->Pt()        < PT_CUT)  continue;
-          if(lep2->Pt()        < PT_CUT)  continue;
-          if(dilep->M()        < MASS_LOW)  continue;
-          if(dilep->M()        > MASS_HIGH) continue;
-	  double pUX  = met*cos(metPhi) + dilep->Pt()*cos(dilep->Phi());
-	  double pUY  = met*sin(metPhi) + dilep->Pt()*sin(dilep->Phi());
+
+	  // met and dilepRaw do not have scale correction
+	  double pUX  = met*cos(metPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
+	  double pUY  = met*sin(metPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
 	  double pU   = sqrt(pUX*pUX+pUY*pUY);
 
 	  //	  TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
