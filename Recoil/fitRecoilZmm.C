@@ -21,6 +21,11 @@
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
+#include "../SignalExtraction/rochcor2015r.cc"
+#include "../SignalExtraction/rochcor2015r.h"
+#include "../SignalExtraction/muresolution_run2r.h"
+#include "../SignalExtraction/muresolution_run2r.cc"
+
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -47,7 +52,7 @@ using namespace std;
 
 bool do_keys=false;
 bool do_5TeV=false;
-bool doLog=true;
+bool doLog=false; // true for data; false for MC
 bool doElectron=false;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -238,7 +243,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
-     
+  const Double_t mu_MASS = 0.1057;
+
+  rochcor2015 *rmcor = new rochcor2015();
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -280,6 +287,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 
     RooRealVar u1Var(name.str().c_str(),name.str().c_str(), 0, -range-ptbins[ibin], range-ptbins[ibin]);
     RooRealVar u2Var(name.str().c_str(),name.str().c_str(), 0, -range, range);
+    u1Var.setBins(100);
+    u2Var.setBins(100);
 
     vu1Var.push_back(u1Var);
     vu2Var.push_back(u2Var);
@@ -370,12 +379,45 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
     
+      //
+      TLorentzVector mu1;
+      TLorentzVector mu2;
+      mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+      mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+      float qter1=1.0;
+      float qter2=1.0;
+      if(infilename.Contains("data_")) {
+	rmcor->momcor_data(mu1,q1,0,qter1);
+	rmcor->momcor_data(mu2,q2,0,qter2);
+      } else {
+        rmcor->momcor_mc(mu1,q1,0,qter1);
+        rmcor->momcor_mc(mu2,q2,0,qter2);
+      }
+
+      TLorentzVector l1, l2, dl;
+      l1.SetPtEtaPhiM(mu1.Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+      l2.SetPtEtaPhiM(mu2.Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+      dl=l1+l2;
+      double mll=dl.M();
+      double etall=dl.Eta();
+      double ptll=dl.Pt();
+      if(doElectron) {
+	mll=dilep->M();
+	etall=dilep->Eta();
+	ptll=dilep->Pt();
+      }
+
+
       // need to gain stat on the ttbar BKG
       if(!isBkgv[ifile]) {
 	if(category!=1 && category!=2 && category != 3)                continue;
-	if(dilep->M() < MASS_LOW || dilep->M() > MASS_HIGH)            continue;
+	if(mll < MASS_LOW || mll > MASS_HIGH)            continue;
       }
-      if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
+      if(doElectron) {
+	if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
+      } else {
+	if(l1.Pt()          < PT_CUT  || l2.Pt()          < PT_CUT)  continue;
+      }
       if(fabs(lep1->Eta()) > ETA_CUT || fabs(lep2->Eta()) > ETA_CUT) continue;
 
       // need to gain stat on the ttbar BKG
@@ -385,26 +427,21 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	  if(etaBinCategory==2 && (fabs(genVy)<=0.5 || fabs(genVy)>=1 )) continue;
 	  if(etaBinCategory==3 && fabs(genVy)<1) continue;
 	} else {
-	  if(etaBinCategory==1 && fabs(dilep->Eta())>0.5) continue;
-	  if(etaBinCategory==2 && (fabs(dilep->Eta())<=0.5 || fabs(dilep->Eta())>=1 )) continue;
-	  if(etaBinCategory==3 && fabs(dilep->Eta())<1) continue;
+	  if(etaBinCategory==1 && fabs(etall)>0.5) continue;
+	  if(etaBinCategory==2 && (fabs(etall)<=0.5 || fabs(etall)>=1 )) continue;
+	  if(etaBinCategory==3 && fabs(etall)<1) continue;
 	}
       }
 
       Int_t ipt=-1;
       for(Int_t ibin=0; ibin<nbins; ibin++) {
-        if(dilep->Pt() > ptbins[ibin] && dilep->Pt() <= ptbins[ibin+1])
+        if(ptll > ptbins[ibin] && ptll <= ptbins[ibin+1])
           ipt = ibin;
       }
       if(ipt<0) continue;
     
-      vu1Var[ipt].setVal(u1);
-      vu2Var[ipt].setVal(u2);
-      lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
-      lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
-
       /////////
-      /// RECO filling the Zee
+      /// RECO filling the Zee or the Zmm
       //
       double pU1=u1;
       double pU2=u2;
@@ -424,6 +461,23 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	double pU   = sqrt(pUX*pUX+pUY*pUY);
 	double pCos = - (pUX*cos(dilep->Phi()) + pUY*sin(dilep->Phi()))/pU;
 	double pSin =   (pUX*sin(dilep->Phi()) - pUY*cos(dilep->Phi()))/pU;
+	pU1   = pU*pCos; // U1 in data
+	pU2   = pU*pSin; // U2 in data
+      } else {
+	TVector2 vLepRaw1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+	TVector2 vLepRaw2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
+
+	TVector2 vLepCor1((l1.Pt())*cos(l1.Phi()),(l1.Pt())*sin(l1.Phi()));
+	TVector2 vLepCor2((l2.Pt())*cos(l2.Phi()),(l2.Pt())*sin(l2.Phi()));
+
+	TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+	Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
+	Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
+	double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dl.Pt()*cos(dl.Phi());
+	double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dl.Pt()*sin(dl.Phi());
+	double pU   = sqrt(pUX*pUX+pUY*pUY);
+	double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
+	double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
 	pU1   = pU*pCos; // U1 in data
 	pU2   = pU*pSin; // U2 in data
       }
@@ -452,11 +506,42 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	//	hPFu2v[ipt]->Fill(u2,scale1fbDown*lumi);
 
       }
+
+      // this is the dataset for the RooKey
+      vu1Var[ipt].setVal(pU1);
+      vu2Var[ipt].setVal(pU2);
+      lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
+      lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
+
     }
-    
+
+    /*
+    for(Int_t ipt=0; ipt<nbins; ipt++) {
+
+      Int_t nBinXU1= hPFu1v[ipt]->GetXaxis()->GetNbins();
+
+      // overFlow
+      hPFu1v[ipt]->SetBinContent(nBinXU1,hPFu1v[ipt]->GetBinContent(nBinXU1)+hPFu1v[ipt]->GetBinContent(nBinXU1+1));
+      hPFu1v[ipt]->SetBinContent(nBinXU1+1,0);
+      // underFlow
+      hPFu1v[ipt]->SetBinContent(1,hPFu1v[ipt]->GetBinContent(0)+hPFu1v[ipt]->GetBinContent(1));
+      hPFu1v[ipt]->SetBinContent(0,0);
+
+      Int_t nBinXU2= hPFu2v[ipt]->GetXaxis()->GetNbins();
+
+      // overFlow
+      hPFu2v[ipt]->SetBinContent(nBinXU2,hPFu2v[ipt]->GetBinContent(nBinXU2)+hPFu2v[ipt]->GetBinContent(nBinXU2+1));
+      hPFu2v[ipt]->SetBinContent(nBinXU2+1,0);
+      // underFlow
+      hPFu2v[ipt]->SetBinContent(1,hPFu2v[ipt]->GetBinContent(0)+hPFu2v[ipt]->GetBinContent(1));
+      hPFu2v[ipt]->SetBinContent(0,0);
+
+    }
+    */
+
     delete infile;
     infile=0, intree=0;   
-  }  
+  }
   
   Double_t xval[nbins], xerr[nbins];
   for(Int_t ibin=0; ibin<nbins; ibin++) {
@@ -726,7 +811,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   grPFu1chi2 = new TGraphErrors(nbins,xval,pfu1chi2,xerr,pfu1chi2Err);
   grPFu1chi2 ->GetYaxis()->SetRangeUser(0., 10.);
   grPFu1chi2 ->SetName("grPFu1chi2");
-  CPlot plotPFu1chi2("pfu1chi2","","p_{T}(ll) [GeV/c]","#chi^{2}(u_{#parallel}) [GeV]");
+  CPlot plotPFu1chi2("pfu1chi2","","p_{T}(ll) [GeV/c]","#chi^{2}(u_{#parallel})");
   plotPFu1chi2.AddGraph(grPFu1chi2,"",kBlack,kOpenCircle);
   latexLabel.DrawLatex(0.20, 0.8, label);
   plotPFu1chi2.Draw(c,kTRUE,"png");
@@ -737,7 +822,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   grPFu2mean = new TGraphErrors(nbins,xval,pfu2Mean,xerr,pfu2MeanErr);
   grPFu2mean->GetYaxis()->SetRangeUser(-20, 20.);
   grPFu2mean->SetName("grPFu2mean");
-  CPlot plotPFu2mean("pfu2mean","","p_{T}(ll) [GeV/c]","#mu(u_{#perp}) [GeV]");
+  CPlot plotPFu2mean("pfu2mean","","p_{T}(ll) [GeV/c]","#mu(u_{#perp})");
   plotPFu2mean.AddGraph(grPFu2mean,"",kBlack,kOpenCircle);
   //  plotPFu2mean.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
   plotPFu2mean.Draw(c,kTRUE,"png");
@@ -1557,15 +1642,17 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     if(do_keys) {
 
+
+
       //      lDataSet[ibin].Print();
       name.str(""); name << "key_" << ibin;
       //      RooKeysPdf * pdf_keys = new RooKeysPdf(name.str().c_str(),name.str().c_str(), u, dataHist, RooKeysPdf::NoMirror, 2);
       RooKeysPdf pdf_keys(name.str().c_str(),name.str().c_str(),lVar[ibin], lDataSet[ibin], RooKeysPdf::NoMirror, 2);
 
+      RooPlot* xframe  = lVar[ibin].frame(Title(Form("%s Zp_{T}=%.1f - %.1f GeV/c ",plabel,ptbins[ibin],ptbins[ibin+1])));
 
-      RooPlot* xframe  = lVar[ibin].frame(Title(Form("%s Zp_{T}=%d",plabel,ibin))) ;
       lDataSet[ibin].plotOn(xframe) ;
-      TCanvas* c = new TCanvas("validatePDF","validatePDF",800,400) ;
+      TCanvas* c = new TCanvas("validatePDF","validatePDF",800,800) ;
       c->cd();
       pdf_keys.plotOn(xframe,LineColor(kBlue)) ;
       xframe->Draw() ;
@@ -1623,7 +1710,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     //    cout << " chi2Arr[ibin]=" << chi2Arr[ibin] << " chi2ErrArr[ibin]=" << chi2ErrArr[ibin] << endl;
 
     if(do_5TeV) sprintf(lumi,"CMS                               27.4 pb^{-1} (5 TeV)");
-    if(!do_5TeV) sprintf(lumi,"CMS                               2.3 fb^{-1} (13 TeV)");
+    if(!do_5TeV) sprintf(lumi,"CMS                               2.2 fb^{-1} (13 TeV)");
     sprintf(pname,"%sfit_%i",plabel,ibin);
     sprintf(ylabel,"Events / %.1f GeV",hv[ibin]->GetBinWidth(1));
     sprintf(binlabel,"p_{T}(Z) = %.1f - %.1f GeV/c",ptbins[ibin],ptbins[ibin+1]);
@@ -1688,7 +1775,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     else if(model==2) plot.AddTextBox(0.70,0.90,0.95,0.70,0,kBlack,-1,5,mean1text,mean2text,sig0text,sig1text,sig2text);
     //    else if(model==3) plot.AddTextBox(0.70,0.90,0.95,0.65,0,kBlack,-1,7,mean1text,mean2text,mean3text,sig0text,sig1text,sig2text,sig3text);
     else if(model==3) plot.AddTextBox(0.70,0.90,0.95,0.65,0,kBlack,-1,6,mean1text,mean2text,mean3text,sig1text,sig2text,sig3text);
-    //    plot.Draw(cLin,kTRUE,"png");
     plot.Draw(cLin,kFALSE,"png",1);
 
     cLin->cd(2);
@@ -1702,7 +1788,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     TLine *lineZero1SigmaP = new TLine(hv[ibin]->GetXaxis()->GetXmin(), 0,  hv[ibin]->GetXaxis()->GetXmax(), 0);
     lineZero1SigmaP->SetLineColor(11);
     lineZero1SigmaP->Draw("same");
-
 
     plot.Draw(cLin,kTRUE,"png",1);
 
