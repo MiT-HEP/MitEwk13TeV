@@ -200,7 +200,10 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   // oct2 binning below
   //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
   // oct7 binning below
-  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
+  //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
+
+  // may22 binning
+  Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
 
   // nov5 5TeV
   //  Double_t ptbins[] = {0,2.0,4.0,5.0,6.0,8.0,10.0,12.5,15,17.5,20,25,30,40,50,60,75,100,150};
@@ -439,7 +442,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
           ipt = ibin;
       }
       if(ipt<0) continue;
-    
+
       /////////
       /// RECO filling the Zee or the Zmm
       //
@@ -496,6 +499,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
       } else {
 
 	if(infilename.Contains("data_")) lumi=1;
+
 	hPFu1v[ipt]->Fill(pU1,scale1fb*lumi);
 	hPFu2v[ipt]->Fill(pU2,scale1fb*lumi);
 
@@ -505,13 +509,24 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	//	hPFu1v[ipt]->Fill(u1,scale1fbDown*lumi);
 	//	hPFu2v[ipt]->Fill(u2,scale1fbDown*lumi);
 
-      }
+	// this is the dataset for the RooKey
+	// clean the under/overflow
+	int range=100;
+	if(ptbins[ipt]>80) range=125;
+	if(ptbins[ipt]>150) range=150;
 
-      // this is the dataset for the RooKey
-      vu1Var[ipt].setVal(pU1);
-      vu2Var[ipt].setVal(pU2);
-      lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
-      lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
+	if(pU1<(-range-ptbins[ipt])) continue;
+	if(pU1>(range-ptbins[ipt])) continue;
+	if(pU2<(-range)) continue;
+	if(pU2>(range)) continue;
+
+	vu1Var[ipt].setVal(pU1);
+	vu2Var[ipt].setVal(pU2);
+
+	lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
+	lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
+
+      }
 
     }
 
@@ -1642,8 +1657,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     if(do_keys) {
 
-
-
       //      lDataSet[ibin].Print();
       name.str(""); name << "key_" << ibin;
       //      RooKeysPdf * pdf_keys = new RooKeysPdf(name.str().c_str(),name.str().c_str(), u, dataHist, RooKeysPdf::NoMirror, 2);
@@ -1652,9 +1665,9 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
       RooPlot* xframe  = lVar[ibin].frame(Title(Form("%s Zp_{T}=%.1f - %.1f GeV/c ",plabel,ptbins[ibin],ptbins[ibin+1])));
 
       lDataSet[ibin].plotOn(xframe) ;
-      TCanvas* c = new TCanvas("validatePDF","validatePDF",800,800) ;
+      TCanvas* c = new TCanvas("validatePDF","validatePDF",800,800);
       c->cd();
-      pdf_keys.plotOn(xframe,LineColor(kBlue)) ;
+      pdf_keys.plotOn(xframe,LineColor(kBlue));
       xframe->Draw() ;
 
       c->SaveAs(Form("%s_%d_dataset.png",plabel,ibin));
