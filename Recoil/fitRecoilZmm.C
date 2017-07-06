@@ -86,7 +86,7 @@ Double_t sigmaFunc(Double_t *x, Double_t *par) {
   Double_t d  = par[3];
     
   return a*x[0]*x[0] + b*x[0] + c;
-}
+  }
 
 //--------------------------------------------------------------------------------------------------
 // function to describe relative fraction in a double Gaussian based on 
@@ -278,12 +278,12 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     //    if(ptbins[ibin]>80) range=150;
     //    if(ptbins[ibin]>150) range=175;
     sprintf(hname,"hPFu1_%i",ibin);    hPFu1v.push_back(new TH1D(hname,"",100,-range-ptbins[ibin],range-ptbins[ibin]));    hPFu1v[ibin]->Sumw2();
-    sprintf(hname,"hPFu1Bkg_%i",ibin); hPFu1Bkgv.push_back(new TH1D(hname,"",50,-range-ptbins[ibin],range-ptbins[ibin]));  hPFu1Bkgv[ibin]->Sumw2();
+    sprintf(hname,"hPFu1Bkg_%i",ibin); hPFu1Bkgv.push_back(new TH1D(hname,"",100,-range-ptbins[ibin],range-ptbins[ibin]));  hPFu1Bkgv[ibin]->Sumw2();
     
     //    sprintf(hname,"hPFu2_%i",ibin);    hPFu2v.push_back(new TH1D(hname,"",100,-range,range));    hPFu2v[ibin]->Sumw2();
     //    sprintf(hname,"hPFu2Bkg_%i",ibin); hPFu2Bkgv.push_back(new TH1D(hname,"",100,-range,range)); hPFu2Bkgv[ibin]->Sumw2();
     sprintf(hname,"hPFu2_%i",ibin);    hPFu2v.push_back(new TH1D(hname,"",100,-range,range));    hPFu2v[ibin]->Sumw2();
-    sprintf(hname,"hPFu2Bkg_%i",ibin); hPFu2Bkgv.push_back(new TH1D(hname,"",50,-range,range));  hPFu2Bkgv[ibin]->Sumw2();
+    sprintf(hname,"hPFu2Bkg_%i",ibin); hPFu2Bkgv.push_back(new TH1D(hname,"",100,-range,range));  hPFu2Bkgv[ibin]->Sumw2();
 
     std::stringstream name;
     name << "u_" << ibin;
@@ -1280,17 +1280,37 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
   */
 
 
+  double frac2_ini=0;
+  double frac3_ini=0;
+
+  double sigma1_ini=0;
+  double sigma2_ini=0;
+  double sigma3_ini=0;
+
   for(Int_t ibin=0; ibin<nbins; ibin++) {
     
     TH1D* hvLOG= (TH1D*) hv[ibin]->Clone();
     for(Int_t i=0; i<hv[ibin]->GetNbinsX()+1; i++) {
-      hvLOG->SetBinContent(i,TMath::Log10(hv[ibin]->GetBinContent(i)));
+      if(hv[ibin]->GetBinContent(i)==0) {
+	hvLOG->SetBinContent(i,0);
+	hvLOG->SetBinError(i,0);
+      } else {
+	hvLOG->SetBinContent(i,TMath::Log10(hv[ibin]->GetBinContent(i)));
+	hvLOG->SetBinError(i,0);
+      }
     }
 
     TH1D* hbkgvLOG= (TH1D*) hbkgv[ibin]->Clone();
     for(Int_t i=0; i<hbkgv[ibin]->GetNbinsX()+1; i++) {
-      hbkgvLOG->SetBinContent(i,TMath::Log10(hbkgv[ibin]->GetBinContent(i)));
+      if(hbkgv[ibin]->GetBinContent(i)==0) {
+	hbkgvLOG->SetBinContent(i,0);
+	hbkgvLOG->SetBinError(i,0);
+      } else {
+	hbkgvLOG->SetBinContent(i,TMath::Log10(hbkgv[ibin]->GetBinContent(i)) );
+	hbkgvLOG->SetBinError(i,0 );
+      }
     }
+
 
     std::stringstream name;
     // unfortunately have to give each variable individual names for each bin
@@ -1345,17 +1365,69 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "sigma3_" << ibin;
     RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),0.,9*hv[ibin]->GetRMS());
     //    RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),10 ,std::min(int(9*hv[ibin]->GetRMS()),100));
+
+    /*
+    if(doLog) {
+      mean1.setVal(hvLOG->GetMean());
+      mean2.setVal(hvLOG->GetMean());
+      mean3.setVal(hvLOG->GetMean());
+
+      sigma1.setVal(0.3*hvLOG->GetRMS());
+      sigma2.setVal(1.0*hvLOG->GetRMS());
+      sigma3.setVal(2.0*hvLOG->GetRMS());
+      sigma1.setRange(0,2.5*(hvLOG[ibin]->GetRMS()));
+      sigma2.setRange(0,4.5*(hvLOG[ibin]->GetRMS()));
+      sigma3.setRange(0,9*hv[ibin]->GetRMS());
+    }
+    */
+
+    // fraction
     name.str(""); name << "frac2_" << ibin;
     RooRealVar frac2(name.str().c_str(),name.str().c_str(),0.5,0.15,0.85);
     name.str(""); name << "frac3_" << ibin;
     RooRealVar frac3(name.str().c_str(),name.str().c_str(),0.05,0,0.15);
 
-    if(string(plabel)==string("pfu2")) {
+    if(model==2) {
+      frac2.setVal(0.5);
+      frac2.setRange(0.,1.);
+    }
 
+    /*
+    if(model>2) {
+      if(ibin==0) {
+	frac2_ini=0.5;
+	frac3_ini=0.2;
+
+	sigma1_ini = 0.3*hv[ibin]->GetRMS();
+	sigma2_ini = 1.0*hv[ibin]->GetRMS();
+	sigma3_ini = 2.0*hv[ibin]->GetRMS();
+      }
+
+      //      frac2.setVal(0.5);
+      //      frac2.setRange(0.15,0.85);
+      //      frac3.setVal(0.05);
+      //      frac3.setRange(0.0,0.15);
+      frac2.setVal(frac2_ini);
+      frac2.setRange(0.,1.);
+      frac3.setVal(frac3_ini);
+      frac3.setRange(0.,1.);
+
+      sigma1.setVal(sigma1_ini);
+      sigma1.setRange(0.,3*sigma1_ini);
+
+      sigma2.setVal(sigma2_ini);
+      sigma2.setRange(0.,3*sigma2_ini);
+
+      sigma3.setVal(sigma3_ini);
+      sigma3.setRange(0.,3*sigma3_ini);
+
+    }
+    */
+
+    if(string(plabel)==string("pfu2")) {
       mean1.setVal(0); mean1.setConstant(kTRUE);
       mean2.setVal(0); mean2.setConstant(kTRUE);
       mean3.setVal(0); mean3.setConstant(kTRUE);
-
     }
 
     name.str(""); name << "gauss1_" << ibin;
@@ -1363,11 +1435,11 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "gauss2_" << ibin;
     RooGaussian gauss2(name.str().c_str(),name.str().c_str(),u,mean2,sigma2);name.str(""); 
     name.str(""); name << "gauss3_" << ibin;
-    RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean2,sigma3);name.str("");
+    RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean3,sigma3);name.str("");
     
     RooGaussian constGauss1("constGauss1","constGauss1",mean1,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
     RooGaussian constGauss2("constGauss2","constGauss2",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
-    RooGaussian constGauss3("constGauss3","constGauss3",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss3("constGauss3","constGauss3",mean3,RooConst(0.85*hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
 
 
 /*    // Works for Zmm Data no bkg-sub to get all U1 set
@@ -1496,7 +1568,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
       params.add(sigma2);
       params.add(sigma3);
     }
-*/
+    */
     RooFormulaVar sigma0("sigma0",formula,params);
     
     std::cout << "blah" << std::endl;
@@ -1518,9 +1590,9 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     
     RooArgList parts;
     parts.add(sig);
-    if(!sigOnly) parts.add(bkg);
-    //    if(!sigOnly && !doLog) parts.add(bkg);
-    //    if(!sigOnly && doLog) parts.add(bkgLog);
+    //    if(!sigOnly) parts.add(bkg);
+    if(!sigOnly && !doLog) parts.add(bkg);
+    if(!sigOnly && doLog) parts.add(bkgLog);
 
     RooArgList yields;
 
@@ -1584,7 +1656,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 	                       RooFit::Save());
 
     if(fitResult->status()>0) {
-
       fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
 				 Minimizer("Minuit2","scan"),
@@ -1603,8 +1674,16 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     wksp->import(u);
     wksp->import(modelpdf);
     wksp->import(sig);
-    wksp->import(bkg);
-    
+    if(!doLog) wksp->import(bkg);
+    if(doLog) wksp->import(bkgLog);
+
+    frac2_ini=frac2.getVal();
+    frac3_ini=frac3.getVal();
+    sigma1_ini=sigma1.getVal();
+    sigma2_ini=sigma2.getVal();
+    sigma3_ini=sigma3.getVal();
+
+
     mean1Arr[ibin]      = mean1.getVal();
     mean1ErrArr[ibin]   = mean1.getError();
     sigma1Arr[ibin]    = sigma1.getVal();
@@ -1634,9 +1713,12 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     //
     RooPlot *frame = u.frame(Bins(100));
     dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
+    //    if(doLog) dataHistLog.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
+    //    if(!doLog) dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
     modelpdf.plotOn(frame);
 
-    name.str(""); name << "bkg_" << ibin ;
+    if(!doLog) name.str(""); name << "bkg_" << ibin ;
+    if(doLog) name.str(""); name << "bkgLog_" << ibin ;
     if(!sigOnly) modelpdf.plotOn(frame,Components(bkg),FillColor(kRed), DrawOption("F"));
     name.str(""); name << "gauss1_" << ibin ;
     if(model>=2) sig.plotOn(frame,Components(name.str().c_str()),LineStyle(kDashed),LineColor(kRed));
@@ -1644,7 +1726,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     if(model>=2) sig.plotOn(frame,Components(name.str().c_str()),LineStyle(kDashed),LineColor(kMagenta));
     name.str(""); name << "gauss3_" << ibin ;
     if(model>=3) sig.plotOn(frame,Components(name.str().c_str()),LineStyle(kDashed),LineColor(kGreen+2));
-    name.str(""); name << "bkg_" << ibin ;
+    if(!doLog) name.str(""); name << "bkg_" << ibin ;
+    if(doLog) name.str(""); name << "bkgLog_" << ibin ;
 
     // draw the curve
     if(!sigOnly) modelpdf.plotOn(frame,FillColor(kGray),VisualizeError(*fitResult,1),RooFit::Components(modelpdf)); // 1 sigma band
@@ -1654,6 +1737,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     
     // redraw the data
     dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
+    //    if(!doLog) dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
+    //    if(doLog) dataHistLog.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
 
     if(do_keys) {
 
@@ -1691,6 +1776,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     frame_u_11_674e5e0[u_11] = (RooHist::h_dataHist,RooCurve::modelpdf_11
     _Norm[u_11],RooCurve::sig_11_Norm[u_11]_Comp[gauss1_11],RooCurve::sig_11_Norm[u_11]_Comp[gauss2_11],RooCurve::sig_11_Norm[u_11]_Comp[gauss3_11],RooCurve::sig_11_Norm[u_11]_errorband_Comp[sig_11],RooCurve::sig_11_Norm[u_11],RooHist::h_dataHist)
     */
+
     TString nameRooHist=Form("h_%s",dataHist.GetName());
     TString nameRooCurve=Form("sig_%d_Norm[u_%d]",ibin,ibin);
 
@@ -1829,6 +1915,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     sprintf(pname,"%sfitlog_%i",plabel,ibin);
     plot.SetYRange(0.1,10*hv[ibin]->GetMaximum());
+    //    if(!doLog) plot.SetYRange(0.1,10*hv[ibin]->GetMaximum());
+    //    if(doLog) plot.SetYRange(0.1,10*hvLOG->GetMaximum());
     plot.SetName(pname);
     plot.SetLogy();
     plot.Draw(c1,kFALSE,"png",1);
@@ -1850,7 +1938,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     //    TLine *lineZero1SigmaP = new TLine(-100., 1,  100., 1);
     lineZero1SigmaP->SetLineColor(11);
     lineZero1SigmaP->Draw("same");
-
     plot.Draw(c1,kTRUE,"png",1);
 
     // reset color canvas
