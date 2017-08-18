@@ -90,7 +90,8 @@ void fitWe(const TString  outputDir,   // output directory
   
   // some flags to handle Recoil corrections
   bool doKeys = false;
-  bool doInclusive = false;
+  bool doInclusive = true;
+  bool doEffFromFit = false;
   // some flags to handle the pileup Up/Down systematics
   bool pileupUp = false;
   bool pileupDown = false;
@@ -130,7 +131,7 @@ void fitWe(const TString  outputDir,   // output directory
    
 
   // MET histogram binning and range
-  const Int_t    NBINS  = 75;
+  const Int_t    NBINS  = 75*4;
   const Double_t METMAX = 150;
 
   const Double_t PT_CUT  = 25;
@@ -147,8 +148,8 @@ void fitWe(const TString  outputDir,   // output directory
   const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CTpositive/eff.root";
   const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CTnegative/eff.root";
   
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive_FineBin/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative_FineBin/eff.root";
+  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative/eff.root";
   const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CTpositive/eff.root";
   const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CTnegative/eff.root";
 
@@ -180,37 +181,38 @@ void fitWe(const TString  outputDir,   // output directory
   TFile *f_hlt_mc_neg;
   TFile *f_hlt_mc_neg_b0;
 
-  f_hlt_data_pos = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
-  f_hlt_mc_pos   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
-  f_hlt_data_neg = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
-  f_hlt_mc_neg   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
-  f_hlt_mc_neg_b0= TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Erf/EleTriggerTF1_MC_Negative.root");
-
-//   sprintf(funcname, "fitfcn_%d", getEtaBinLabel(lep->Eta()));
-  
-//   TF1 *fdt = (TF1*)f_hlt_data_pos->Get(funcname);
-//   TF1 *fmc = (TF1*)f_hlt_mc_pos  ->Get(funcname);
-//   effdata = fdt->Eval(TMath::Min(lep->Pt(),119.0));
-//   effmc   = fmc->Eval(TMath::Min(lep->Pt(),119.0));
-  
   // make an array of TF1 pointers?
   TF1 **fdt_n    = new TF1*[12];
   TF1 **fmc_n    = new TF1*[12];
   TF1 **fdt_p    = new TF1*[12];
   TF1 **fmc_p    = new TF1*[12];
   TF1 **fmc_n_b0 = new TF1*[12];
-  
-  
-  for(int i = 0; i < 12; ++i){
-    char funcname[20];
-    sprintf(funcname, "fitfcn_%i", i);
-    fdt_n[i]    = (TF1*)f_hlt_data_neg ->Get(funcname);
-    fmc_n[i]    = (TF1*)f_hlt_mc_neg   ->Get(funcname);
-    fdt_p[i]    = (TF1*)f_hlt_data_pos ->Get(funcname);
-    fmc_p[i]    = (TF1*)f_hlt_mc_pos   ->Get(funcname);
-    fmc_n_b0[i] = (TF1*)f_hlt_mc_neg_b0->Get(funcname);
-  }
     
+  if(doEffFromFit) {
+
+    f_hlt_data_pos = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
+    f_hlt_mc_pos   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
+    f_hlt_data_neg = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
+    f_hlt_mc_neg   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
+    f_hlt_mc_neg_b0= TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Erf/EleTriggerTF1_MC_Negative.root");
+
+    //    sprintf(funcname, "fitfcn_%d", getEtaBinLabel(lep->Eta()));
+
+    //    TF1 *fdt = (TF1*)f_hlt_data_pos->Get(funcname);
+    //    TF1 *fmc = (TF1*)f_hlt_mc_pos  ->Get(funcname);
+    //    effdata = fdt->Eval(TMath::Min(lep->Pt(),119.0));
+    //    effmc   = fmc->Eval(TMath::Min(lep->Pt(),119.0));
+
+    for(int i = 0; i < 12; ++i){
+      char funcname[20];
+      sprintf(funcname, "fitfcn_%i", i);
+      fdt_n[i]    = (TF1*)f_hlt_data_neg ->Get(funcname);
+      fmc_n[i]    = (TF1*)f_hlt_mc_neg   ->Get(funcname);
+      fdt_p[i]    = (TF1*)f_hlt_data_pos ->Get(funcname);
+      fmc_p[i]    = (TF1*)f_hlt_mc_pos   ->Get(funcname);
+      fmc_n_b0[i] = (TF1*)f_hlt_mc_neg_b0->Get(funcname);
+    }
+  }
 
   // file format for output plots
   const TString format("png"); 
@@ -221,107 +223,109 @@ void fitWe(const TString  outputDir,   // output directory
 
 
   // ======================= Recoil Corrections ================================
-  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
+  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
 //   const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
+
   // for Puppi, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
   recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
   recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
   recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
   // placeholders until recoil files are fixed
   RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
-  recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupUp/",directory.Data()));
-  recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory.Data()));
-  recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory.Data()));
+  recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupUp/",directory1.Data()));
+  recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory1.Data()));
+  recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory1.Data()));
   
   RecoilCorrector *recoilCorrPuUpm = new  RecoilCorrector("","");
-  recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupUp/",directory.Data()));
-  recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory.Data()));
-  recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupUp/",directory1.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory1.Data()));
+  recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory1.Data()));
   
   RecoilCorrector *recoilCorrPuDown = new  RecoilCorrector("","");
-  recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupDown/",directory.Data()));
-  recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory.Data()));
-  recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory.Data()));
+  recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupDown/",directory1.Data()));
+  recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory1.Data()));
+  recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory1.Data()));
   
   RecoilCorrector *recoilCorrPuDownm = new  RecoilCorrector("","");
-  recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupDown/",directory.Data()));
-  recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory.Data()));
-  recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupDown/",directory1.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory1.Data()));
+  recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory1.Data()));
 
   // --------------------- Eta-binned recoil corrections -----------------------
   RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
-  recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory.Data()));
-  recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory1.Data()));
+  recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory1.Data()));
 //   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
-  recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory1.Data()));
   
   RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
-  recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory.Data()));
-  recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory1.Data()));
+  recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory1.Data()));
 //   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
-  recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory1.Data()));
 
   RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
-  recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory.Data()));
-  recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory1.Data()));
+  recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory1.Data()));
 //   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
-  recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory1.Data()));
 
   RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
-  recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory.Data()));
-  recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory1.Data()));
+  recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory1.Data()));
 //   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
-  recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory1.Data()));
 
   RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
-  recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory.Data()));
-  recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory1.Data()));
+  recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory1.Data()));
 //   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
-  recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+  recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory1.Data()));
 
   RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
-  recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory.Data()));
-  recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory1.Data()));
+  recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory1.Data()));
 //   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
-  recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
+  recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory1.Data()));
   
   // ---------------------- KEYS -------------
   RecoilCorrector *recoilCorrKeys05 = new  RecoilCorrector("","");
-  recoilCorrKeys05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05/",directory.Data()));
-  recoilCorrKeys05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorrKeys05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  recoilCorrKeys05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05/",directory1.Data()));
+  recoilCorrKeys05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory1.Data()));
+  recoilCorrKeys05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory1.Data()));
   
   RecoilCorrector *recoilCorrKeysm05 = new  RecoilCorrector("","");
-  recoilCorrKeysm05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05/",directory.Data()));
-  recoilCorrKeysm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorrKeysm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  recoilCorrKeysm05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05/",directory1.Data()));
+  recoilCorrKeysm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory1.Data()));
+  recoilCorrKeysm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory1.Data()));
 
   RecoilCorrector *recoilCorrKeys051 = new  RecoilCorrector("","");
-  recoilCorrKeys051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05-1/",directory.Data()));
-  recoilCorrKeys051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-  recoilCorrKeys051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  recoilCorrKeys051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05-1/",directory1.Data()));
+  recoilCorrKeys051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory1.Data()));
+  recoilCorrKeys051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory1.Data()));
 
   RecoilCorrector *recoilCorrKeysm051 = new  RecoilCorrector("","");
-  recoilCorrKeysm051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05-1/",directory.Data()));
-  recoilCorrKeysm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-  recoilCorrKeysm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  recoilCorrKeysm051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05-1/",directory1.Data()));
+  recoilCorrKeysm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory1.Data()));
+  recoilCorrKeysm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory1.Data()));
 
   RecoilCorrector *recoilCorrKeys1 = new  RecoilCorrector("","");
-  recoilCorrKeys1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap1/",directory.Data()));
-  recoilCorrKeys1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-  recoilCorrKeys1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+  recoilCorrKeys1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap1/",directory1.Data()));
+  recoilCorrKeys1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory1.Data()));
+  recoilCorrKeys1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory1.Data()));
 
   RecoilCorrector *recoilCorrKeysm1 = new  RecoilCorrector("","");
-  recoilCorrKeysm1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap1/",directory.Data()));
-  recoilCorrKeysm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-  recoilCorrKeysm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
+  recoilCorrKeysm1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap1/",directory1.Data()));
+  recoilCorrKeysm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory1.Data()));
+  recoilCorrKeysm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory1.Data()));
   
   // ===========================================================================
   // ---------------- Recoil corrections for PF MET ---------------------
@@ -366,49 +370,25 @@ void fitWe(const TString  outputDir,   // output directory
   enum { eData, eWenu, eEWK , eBKG, eQCD, eAntiData, eAntiWenu, eAntiEWK, eAntiQCD};  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
-  
 
-// //   fnamev.push_back("/afs/cern.ch/work/x/xniu/public/Lumi/Ele/CMSSW_7_6_3_patch2/src/MitEwk13TeV/Selection/ntuples/data_select.root"); typev.push_back(eData);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/LumiSplit_Part1/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-//  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
-// // //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/public/SM/FlatNtuples_scaledown/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-// // // //   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/public/SM/FlatNtuples_scaledown/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/ewk_select1.root");  typev.push_back(eEWK);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/boson_select.root");  typev.push_back(eBKG);
-//   //fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-//   //fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/SM/SelectQCD_01_31/Wenu/ntuples/qcd_select.raw.root");  typev.push_back(eQCD);
+  ///the 10 times slices corresponding ntuples eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon/
 
- 
-//   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWenu/ntuples/data_select.root"); typev.push_back(eAntiData);
-//   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
-//   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWenu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWenu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
+  ///
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/ewk_select1.root");  typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/boson_select.root");  typev.push_back(eBKG);
 
+  ///
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/data_select.raw.root"); typev.push_back(eAntiData);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/top_select.root"); typev.push_back(eAntiEWK);
 
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/LumiSplit_Part1/AntiWenu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
-// // // 
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/Ele_NoLoose/AntiWenu/ntuples/top_select.root"); typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/SM/SelectQCD_01_31/AntiWenu/ntuples/qcd_select.root"); typev.push_back(eAntiQCD);
-  
-//     fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/data_select.root"); typev.push_back(eAntiData);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
-// // // // 
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
-//   fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/EleIsoSel_Gap2.5/AntiWenu/ntuples/top_select.root"); typev.push_back(eAntiEWK);
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -585,7 +565,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   Int_t   q;
   TLorentzVector *lep=0, *lep_raw=0;
 //   TLorentzVector *sc=0;
-  
+  Float_t pfCombIso;
+  UInt_t nexphits;
   
   TFile *infile=0;
   TTree *intree=0;
@@ -629,8 +610,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
     intree->SetBranchAddress("lep_raw",      &lep_raw);       // lepton 4-vector
 //     intree->SetBranchAddress("sc",       &sc);        // electron Supercluster 4-vector
-  
-                                    
+    intree->SetBranchAddress("pfCombIso",      &pfCombIso);       // lepton 4-vector
+    intree->SetBranchAddress("nexphits",      &nexphits);       // lepton 4-vector
   
     //
     // loop over events
@@ -657,38 +638,43 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
       Double_t effBkgShapedata;
       Double_t corrBkgShape=1;
 
+      // ======================================
+      //  Check if Control or Signal Region & apply appropriate Iso requirement
+      // ======================================
+      //      if((typev[ifile]==eAntiData||typev[ifile]==eAntiWenu||typev[ifile]==eAntiEWK||typev[ifile]==eAntiQCD) && (pfCombIso < 0.35*(lep->Pt()) || pfCombIso > 0.45*(lep->Pt()))) continue;
+      //      if((typev[ifile]==eData||typev[ifile]==eWenu||typev[ifile]==eEWK||typev[ifile]==eBKG||typev[ifile]==eQCD) && (( fabs(lep->Eta()) < 1.442 &&  pfCombIso >= 0.0766*(lep->Pt())) || (fabs(lep->Eta()) > 1.566 &&  pfCombIso >= 0.0678*(lep->Pt())))  ) continue;
+
 //       if(lep->Pt()        < PT_CUT)  continue;   
       if(fabs(lep->Eta()) > ETA_CUT) continue;
-//       if(fabs(lep->Eta()) > 1.4) continue;
-//       if(met < 20) continue;
   
       mt     = sqrt( 2.0 * (lep->Pt()) * (met) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metPhi))) );
 
       effdata=1; effmc=1;
       
-//       if(q>0) { 
-//         effdata *= (1.-dataHLTEff_pos.getEff(lep->Eta(), lep->Pt())); 
-//         effmc   *= (1.-zeeHLTEff_pos.getEff(lep->Eta(), lep->Pt())); 
-//       } else {
-//         effdata *= (1.-dataHLTEff_neg.getEff(lep->Eta(), lep->Pt())); 
-//         effmc   *= (1.-zeeHLTEff_neg.getEff(lep->Eta(), lep->Pt())); 
-//       }
-//       effdata = 1.-effdata;
-//       effmc   = 1.-effmc;
-//       corr *= effdata/effmc;
-//       corrSigShape *= effdata/effmc;
-//       corrBkgShape *= effdata/effmc;
+      if(!doEffFromFit) {
+	if(q>0) {
+	  effdata *= (1.-dataHLTEff_pos.getEff(lep->Eta(), lep->Pt()));
+	  effmc   *= (1.-zeeHLTEff_pos.getEff(lep->Eta(), lep->Pt()));
+	} else {
+	  effdata *= (1.-dataHLTEff_neg.getEff(lep->Eta(), lep->Pt()));
+	  effmc   *= (1.-zeeHLTEff_neg.getEff(lep->Eta(), lep->Pt()));
+	}
+	effdata = 1.-effdata;
+	effmc   = 1.-effmc;
+	corr *= effdata/effmc;
+	corrSigShape *= effdata/effmc;
+	corrBkgShape *= effdata/effmc;
+      }
 
-        if(dataHLTEffFile_pos && zeeHLTEffFile_pos) {
-          if(q>0){
-            effdata = fdt_p[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
-            effmc   = fmc_p[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
-            
-          } else {
-            effdata = fdt_n[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
-            effmc   = fmc_n[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
-            if((int) getEtaBinLabel(lep->Eta())==0) effmc   = fmc_n_b0[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
-          }
+      if(doEffFromFit && dataHLTEffFile_pos && zeeHLTEffFile_pos) {
+	if(q>0){
+	  effdata = fdt_p[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
+	  effmc   = fmc_p[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
+	} else {
+	  effdata = fdt_n[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
+	  effmc   = fmc_n[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
+	  if((int) getEtaBinLabel(lep->Eta())==0) effmc   = fmc_n_b0[(int) getEtaBinLabel(lep->Eta())]->Eval(TMath::Min(lep->Pt(),119.0));
+	}
 
 //   if(effdata==1 || effmc==1 || (effdata/effmc>1.5) || (effdata/effmc<0.5)) {
 //     cout << " HLT (binned)=" << effdata/effmc  << " effdata=" << effdata << " effmc=" << effmc <<  endl;
