@@ -1030,7 +1030,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
 //   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
-  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWenuMetm->Integral(),0,0.5*hAntiDataMetp->Integral());
+  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWenuMetp->Integral(),0,0.5*hAntiDataMetp->Integral());
 //   nAntiSigp.setVal(0);
 //   nAntiSigp.setConstant(kTRUE);
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.95*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
