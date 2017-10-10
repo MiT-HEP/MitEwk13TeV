@@ -1822,7 +1822,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // iso.setRange("cutwindow",vIsoBins[i],vIsoBins[i+1]);
   // RooAbsData *reduce = dataMetp2D.reduce(CutRange("cutwindow"));
 //     RooPlot *lFrame1 = lRXVar.frame(Title(TString("Projection Range: "+ int2string( i0*((int)(fZPtMax/lNBins))) + "  to  " +int2string(i0*((int)(fZPtMax/lNBins))+((int)(fZPtMax/lNBins))) + " [GeV]" )));
-  RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[i]) + "  to  " + to_string(vIsoBins[i+1]) + " iso" )));
+  RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[0]) + "  to  " + to_string(vIsoBins[1]) + " iso" )));
   // reduce->plotOn(lFrame1);
   antiMetp1.plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
   apdfMetp1.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
@@ -1839,47 +1839,47 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   c2->SaveAs(plotname2);
   c2->Clear();
   
-  lFrame1->Clear();
+  delete lFrame1;
   
-    // RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[i]) + "  to  " + to_string(vIsoBins[i+1]) + " iso" )));
+    RooPlot *lFrame2 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[1]) + "  to  " + to_string(vIsoBins[2]) + " iso" )));
   // reduce->plotOn(lFrame1);
-  antiMetp2.plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  apdfMetp2.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
-  apdfMetp2.plotOn(lFrame1,LineColor(linecolorW));
-  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(apdfEWKp2,*(qcdp2d2.model))),FillColor(fillcolorEWK),DrawOption("F"));
-  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(apdfEWKp2,*(qcdp2d2.model))),LineColor(linecolorEWK));
-  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d2.model))),FillColor(fillcolorQCD),DrawOption("F"));
-  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d2.model))),LineColor(linecolorQCD));
-  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(apdfWep2)),LineColor(linecolorW),LineStyle(2));
+  antiMetp2.plotOn(lFrame2,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  apdfMetp2.plotOn(lFrame2,FillColor(fillcolorW),DrawOption("F"));
+  apdfMetp2.plotOn(lFrame2,LineColor(linecolorW));
+  apdfMetp2.plotOn(lFrame2,Components(RooArgSet(apdfEWKp2,*(qcdp2d2.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  apdfMetp2.plotOn(lFrame2,Components(RooArgSet(apdfEWKp2,*(qcdp2d2.model))),LineColor(linecolorEWK));
+  apdfMetp2.plotOn(lFrame2,Components(RooArgSet(*(qcdp2d2.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  apdfMetp2.plotOn(lFrame2,Components(RooArgSet(*(qcdp2d2.model))),LineColor(linecolorQCD));
+  apdfMetp2.plotOn(lFrame2,Components(RooArgSet(apdfWep2)),LineColor(linecolorW),LineStyle(2));
   // qcdp2d.model->plotOn(lFrame1,Components(RooArgSet(*(qcdp2d.model))),FillColor(fillcolorQCD),DrawOption("F"));
   
   sprintf(plotname2,"%s/hBin2testp_%i.png",CPlot::sOutDir.Data(),i);
-  lFrame1->Draw();
+  lFrame2->Draw();
   c2->SaveAs(plotname2);
   c2->Clear();
-  lFrame1->Clear();
+  // lFrame1->Clear();
   
-  // delete lFrame1;
+  delete lFrame2;
   // delete reduce;
   
   // RooAbsData *reduce2 = dataMetm2D.reduce(CutRange("cutwindow"));
 //     RooPlot *lFrame1 = lRXVar.frame(Title(TString("Projection Range: "+ int2string( i0*((int)(fZPtMax/lNBins))) + "  to  " +int2string(i0*((int)(fZPtMax/lNBins))+((int)(fZPtMax/lNBins))) + " [GeV]" )));
-  // RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[i]) + "  to  " + to_string(vIsoBins[i+1]) + " iso" )));
+  RooPlot *lFrame3 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[0]) + "  to  " + to_string(vIsoBins[1]) + " iso" )));
   // reduce->plotOn(lFrame1);
-  antiMetm1.plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  apdfMetm1.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
-  apdfMetm1.plotOn(lFrame1,LineColor(linecolorW));
-  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),FillColor(fillcolorEWK),DrawOption("F"));
-  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),LineColor(linecolorEWK));
-  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(*(qcdm2d1.model))),FillColor(fillcolorQCD),DrawOption("F"));
-  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(*(qcdm2d1.model))),LineColor(linecolorQCD));
-  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(apdfWem1)),LineColor(linecolorW),LineStyle(2));
+  antiMetm1.plotOn(lFrame3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  apdfMetm1.plotOn(lFrame3,FillColor(fillcolorW),DrawOption("F"));
+  apdfMetm1.plotOn(lFrame3,LineColor(linecolorW));
+  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),LineColor(linecolorEWK));
+  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(*(qcdm2d1.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(*(qcdm2d1.model))),LineColor(linecolorQCD));
+  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfWem1)),LineColor(linecolorW),LineStyle(2));
   
   sprintf(plotname2,"%s/hBin1testm_%i.png",CPlot::sOutDir.Data(),i);
-  lFrame1->Draw();
+  lFrame3->Draw();
   c2->SaveAs(plotname2);
   c2->Clear();
-  delete lFrame1;
+  delete lFrame3;
   // delete reduce2;
   
   }
