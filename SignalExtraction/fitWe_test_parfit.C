@@ -99,7 +99,7 @@ void fitWe_test_parfit(const TString  outputDir,   // output directory
   
   // double isobins[6] = {0.25,0.35,0.45,0.55,0.65,0.75};
   // std::vector<double> vIsoBins = {0.25,0.35,0.45,0.55,0.65,0.75};
-  Double_t vIsoBins[] = {0.25,0.30,0.35,0.40,0.45,0.50,0.55/*,0.65,0.75*/};
+  Double_t vIsoBins[] = {0.25,0.30,0.35/*,0.40,0.45,0.50,0.55,0.65,0.75*/};
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
@@ -794,11 +794,25 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 			hDataMetp->Fill(corrMetWithLepton); 
 			hElectronEtaDatap->Fill(fabs(lep->Eta()));
 			h2dIsoBinsDatap->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hDataMetpIsoBins[it]->Fill(corrMetWithLepton);
+                    // break;
+                // }
+            // }
 		}
         else    { 
 			hDataMetm->Fill(corrMetWithLepton); 
 			hElectronEtaDatam->Fill(fabs(lep->Eta()));
 			h2dIsoBinsDatam->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hDataMetmIsoBins[it]->Fill(corrMetWithLepton);
+                    // break;
+                // }
+            // }
 		}
       }
       else if(typev[ifile]==eAntiData) {
@@ -908,6 +922,13 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             hWenuMetp_PileupUp->Fill(corrMetWithLepton,weightUp);
             hWenuMetp_PileupDown->Fill(corrMetWithLepton,weightDown);
 			h2dIsoBinsSigp->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton,weight);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hWenuMetpIsoBins[it]->Fill(corrMetWithLepton,weight);
+                    // break;
+                // }
+            // }
           }
           else
           {
@@ -917,6 +938,13 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp);
             hEWKMetp_PileupDown->Fill(corrMetWithLepton,weightDown);
 			h2dIsoBinsEwkp->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton,weight);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hEWKMetpIsoBins[it]->Fill(corrMetWithLepton,weight);
+                    // break;
+                // }
+            // }
           }
         } else { 
           // make a plot with the electron eta for W- only
@@ -949,6 +977,13 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             hWenuMetm_PileupUp->Fill(corrMetWithLepton,weightUp); corrMet=met, corrMetPhi=metPhi;
             hWenuMetm_PileupDown->Fill(corrMetWithLepton,weightDown); corrMet=met, corrMetPhi=metPhi;
 			h2dIsoBinsSigm->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton,weight);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hWenuMetmIsoBins[it]->Fill(corrMetWithLepton,weight);
+                    // break;
+                // }
+            // }
           }
           else
           {
@@ -958,6 +993,13 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             hEWKMetm_PileupUp->Fill(corrMetWithLepton,weightUp); corrMet=met, corrMetPhi=metPhi; 
             hEWKMetm_PileupDown->Fill(corrMetWithLepton,weightDown); corrMet=met, corrMetPhi=metPhi; 
 			h2dIsoBinsEwkm->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton,weight);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hEWKMetmIsoBins[it]->Fill(corrMetWithLepton,weight);
+                    // break;
+                // }
+            // }
           }
         }
         // unused ??
@@ -1070,6 +1112,13 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp); 
             hEWKMetp_PileupDown->Fill(corrMetWithLepton,weightDown); 
 			h2dIsoBinsEwkp->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton,weight);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hEWKMetpIsoBins[it]->Fill(corrMetWithLepton,weight);
+                    // break;
+                // }
+            // }
           }
           else { 
 //             std::cout << "Filling other EWK info: Wm" << std::endl;
@@ -1077,6 +1126,13 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             hEWKMetm_PileupUp->Fill(corrMetWithLepton,weightUp); 
             hEWKMetm_PileupDown->Fill(corrMetWithLepton,weightDown); 
 			h2dIsoBinsEwkm->Fill(pfCombIso/(lep->Pt()),corrMetWithLepton,weight);
+            // for(int it=0; it < nIsoBins; ++it){
+                // // check the isolation value for this event and fill appropriate histogram
+                // if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
+                    // hEWKMetmIsoBins[it]->Fill(corrMetWithLepton,weight);
+                    // break;
+                // }
+            // }
           }
         }
         if(typev[ifile]==eAntiEWK) { 
@@ -1093,7 +1149,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
             for(int it=0; it < nIsoBins; ++it){
                 // check the isolation value for this event and fill appropriate histogram
                 if(pfCombIso/(lep->Pt()) > vIsoBins[it] && pfCombIso/(lep->Pt()) < vIsoBins[it+1]) {
-                    hAntiEWKMetmIsoBins[it]->Fill(corrMetWithLepton, weight2);
+                    hAntiEWKMetpIsoBins[it]->Fill(corrMetWithLepton, weight2);
                     break;
                 }
             }
@@ -1234,6 +1290,65 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   cewkm2d.setConstant(kTRUE);
   RooFormulaVar nEWKm2d("nEWKm2d","nEWKm2d","cewkm2d*nSigm2d",RooArgList(nSigm2d,cewkm2d));
   
+  // --------------------------------------------------------------------------
+  // set up the Normalizations for the RooCategory PDFs
+  // ---------------------------------------------------------------------
+  // // the main signal region W+
+  // don't need it for now
+  // RooRealVar nSigp("nSigp","nSigp",0.85*hDataMetp->Integral(),0,hDataMetp->Integral());
+  // RooRealVar nQCDp("nQCDp","nQCDp",0.05*hDataMetp->Integral(),0,hDataMetp->Integral());
+  // RooRealVar cewkp("cewkp","cewkp",0.1,0,1.0);
+  // cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
+// //   cewkp.setConstant(kTRUE);
+  // RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
+  
+  // // the main signal region W-
+  // RooRealVar nSigm("nSigm","nSigm",0.8*hDataMetm->Integral(),0,hDataMetm->Integral());
+  // RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.2,0,hDataMetm->Integral());
+  // RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
+  // cewkm.setVal(hEWKMetm->Integral()/hWenuMetm->Integral());
+// //   cewkm.setConstant(kTRUE);
+  // RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
+  
+  // the isolation control regions
+  // NOTE: need to implement a way to set this up to automatically adjust to number of bins
+  // which i have specified at the beginning of this code
+  // ****hard-coded 2 bins for testing****
+  // bin1 W+
+  RooRealVar nAntiSigp1("nAntiSigp1","nAntiSigp1",hAntiWenuMetpIsoBins[0]->Integral(),0,0.5*hAntiDataMetpIsoBins[0]->Integral());
+  RooRealVar nAntiQCDp1("nAntiQCDp1","nAntiQCDp1",0.8*(hAntiDataMetpIsoBins[0]->Integral()),0,hAntiDataMetpIsoBins[0]->Integral());
+  RooRealVar dewkp1("dewkp1","dewk1p",0.1,0,1.0) ;
+  dewkp1.setVal(hAntiEWKMetpIsoBins[0]->Integral()/hAntiWenuMetpIsoBins[0]->Integral());
+  // dewkp.setConstant(kTRUE);
+  RooFormulaVar nAntiEWKp1("nAntiEWKp1","nAntiEWKp1","dewkp1*nAntiSigp1",RooArgList(nAntiSigp1,dewkp1));
+
+  // Bin1 W-
+  RooRealVar nAntiSigm1("nAntiSigm1","nAntiSigm1",hAntiWenuMetmIsoBins[0]->Integral()*0.05,0,hAntiDataMetmIsoBins[0]->Integral());
+  RooRealVar nAntiQCDm1("nAntiQCDm1","nAntiQCDm1",0.90*(hAntiDataMetmIsoBins[0]->Integral()),0.5*(hAntiDataMetpIsoBins[0]->Integral()),hAntiDataMetmIsoBins[0]->Integral());
+  RooRealVar dewkm1("dewkm1","dewkm1",0.1,0,5) ;
+  dewkm1.setVal(hAntiEWKMetmIsoBins[0]->Integral()/hAntiWenuMetmIsoBins[0]->Integral());
+  // dewkm1.setConstant(kTRUE);
+  RooFormulaVar nAntiEWKm1("nAntiEWKm1","nAntiEWKm1","dewkm1*nAntiSigm1",RooArgList(nAntiSigm1,dewkm1));
+  
+  // bin2 W+
+  RooRealVar nAntiSigp2("nAntiSigp2","nAntiSigp2",hAntiWenuMetpIsoBins[1]->Integral(),0,0.5*hAntiDataMetpIsoBins[1]->Integral());
+  RooRealVar nAntiQCDp2("nAntiQCDp2","nAntiQCDp2",0.95*(hAntiDataMetpIsoBins[1]->Integral()),0.5*(hAntiDataMetpIsoBins[1]->Integral()),hAntiDataMetpIsoBins[1]->Integral());
+  RooRealVar dewkp2("dewkp2","dewkp2",0.1,0,1.0) ;
+  dewkp2.setVal(hAntiEWKMetpIsoBins[1]->Integral()/hAntiWenuMetpIsoBins[1]->Integral());
+  // dewkp2.setConstant(kTRUE);
+  RooFormulaVar nAntiEWKp2("nAntiEWKp2","nAntiEWKp2","dewkp2*nAntiSigp2",RooArgList(nAntiSigp2,dewkp2));
+
+  // Bin2 W-
+  RooRealVar nAntiSigm2("nAntiSigm2","nAntiSigm2",hAntiWenuMetmIsoBins[1]->Integral()*0.05,0,hAntiDataMetmIsoBins[1]->Integral());
+  RooRealVar nAntiQCDm2("nAntiQCDm2","nAntiQCDm2",0.90*(hAntiDataMetmIsoBins[1]->Integral()),0,hAntiDataMetmIsoBins[1]->Integral());
+  RooRealVar dewkm2("dewkm2","dewkm2",0.1,0,5) ;
+  dewkm2.setVal(hAntiEWKMetmIsoBins[1]->Integral()/hAntiWenuMetmIsoBins[1]->Integral());
+  // dewkm2.setConstant(kTRUE);
+  RooFormulaVar nAntiEWKm2("nAntiEWKm2","nAntiEWKm2","dewkm2*nAntiSigm2",RooArgList(nAntiSigm2,dewkm2));
+  
+  //-----------------------------------------------------------------------------------
+  
+  
   //
   // Construct PDFs for fitting
   //
@@ -1248,7 +1363,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooDataHist wenuMet ("wenuMET", "wenuMET", RooArgSet(pfmet),hWenuMet);  RooHistPdf pdfWe ("we", "we", pfmet,wenuMet, 1);
   RooDataHist wenuMetp("wenuMETp","wenuMETp",RooArgSet(pfmet),hWenuMetp); RooHistPdf pdfWep("wep","wep",pfmet,wenuMetp,1);
   RooDataHist wenuMetm("wenuMETm","wenuMETm",RooArgSet(pfmet),hWenuMetm); RooHistPdf pdfWem("wem","wem",pfmet,wenuMetm,1); 
-  
+
+    
   RooDataHist wenuMet_RecoilUp("wenuMET_RecoilUp", "wenuMET_RecoilUp", RooArgSet(pfmet),hWenuMet_RecoilUp);  RooHistPdf pdfWe_RecoilUp("we_RecoilUp", "we_RecoilUp", pfmet,wenuMet_RecoilUp, 1);
   RooDataHist wenuMetp_RecoilUp("wenuMETp_RecoilUp","wenuMETp_RecoilUp",RooArgSet(pfmet),hWenuMetp_RecoilUp); RooHistPdf pdfWep_RecoilUp("wep_RecoilUp","wep_RecoilUp",pfmet,wenuMetp_RecoilUp,1);
   
@@ -1273,17 +1389,20 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooDataHist wenuMetp_PileupDown("wenuMETp_PileupDown","wenuMETp_PileupDown",RooArgSet(pfmet),hWenuMetp_PileupDown); RooHistPdf pdfWep_PileupDown("wep_PileupDown","wep_PileupDown",pfmet,wenuMetp_PileupDown,1);
   RooDataHist wenuMetm_PileupDown("wenuMETm_PileupDown","wenuMETm_PileupDown",RooArgSet(pfmet),hWenuMetm_PileupDown); RooHistPdf pdfWem_PileupDown("wem_PileupDown","wem_PileupDown",pfmet,wenuMetm_PileupDown,1); 
   
+  
   // EWK+top PDFs
   RooDataHist ewkMet ("ewkMET", "ewkMET", RooArgSet(pfmet),hEWKMet);  RooHistPdf pdfEWK ("ewk", "ewk", pfmet,ewkMet, 1);
   RooDataHist ewkMetp("ewkMETp","ewkMETp",RooArgSet(pfmet),hEWKMetp); RooHistPdf pdfEWKp("ewkp","ewkp",pfmet,ewkMetp,1); 
   RooDataHist ewkMetm("ewkMETm","ewkMETm",RooArgSet(pfmet),hEWKMetm); RooHistPdf pdfEWKm("ewkm","ewkm",pfmet,ewkMetm,1); 
-  
+
+    
   RooDataHist ewkMet_PileupUp("ewkMET_PileupUp", "ewkMET_PileupUp", RooArgSet(pfmet),hEWKMet_PileupUp);  RooHistPdf pdfEWK_PileupUp("ewk_PileupUp", "ewk_PileupUp", pfmet,ewkMet_PileupUp, 1);
   RooDataHist ewkMetp_PileupUp("ewkMETp_PileupUp","ewkMETp_PileupUp",RooArgSet(pfmet),hEWKMetp_PileupUp); RooHistPdf pdfEWKp_PileupUp("ewkp_PileupUp","ewkp_PileupUp",pfmet,ewkMetp_PileupUp,1);
   RooDataHist ewkMetm_PileupUp("ewkMETm_PileupUp","ewkMETm_PileupUp",RooArgSet(pfmet),hEWKMetm_PileupUp); RooHistPdf pdfEWKm_PileupUp("ewkm_PileupUp","ewkm_PileupUp",pfmet,ewkMetm_PileupUp,1); 
   RooDataHist ewkMet_PileupDown("ewkMET_PileupDown", "ewkMET_PileupDown", RooArgSet(pfmet),hEWKMet_PileupDown);  RooHistPdf pdfEWK_PileupDown("ewk_PileupDown", "ewk_PileupDown", pfmet,ewkMet_PileupDown, 1);
   RooDataHist ewkMetp_PileupDown("ewkMETp_PileupDown","ewkMETp_PileupDown",RooArgSet(pfmet),hEWKMetp_PileupDown); RooHistPdf pdfEWKp_PileupDown("ewkp_PileupDown","ewkp_PileupDown",pfmet,ewkMetp_PileupDown,1);
   RooDataHist ewkMetm_PileupDown("ewkMETm_PileupDown","ewkMETm_PileupDown",RooArgSet(pfmet),hEWKMetm_PileupDown); RooHistPdf pdfEWKm_PileupDown("ewkm_PileupDown","ewkm_PileupDown",pfmet,ewkMetm_PileupDown,1); 
+  
   
   // Anti-Signal PDFs
   RooDataHist awenuMet ("awenuMET", "awenuMET", RooArgSet(pfmet),hAntiWenuMet);
@@ -1305,6 +1424,37 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooDataHist aqcdMet ("aqcdMET", "aqcdMET", RooArgSet(pfmet),hAntiQCDMet);  RooHistPdf apdfQCD ("aqcd", "aqcd", pfmet,aqcdMet, 1);
   RooDataHist aqcdMetp("aqcdMetp","aqcdMetp",RooArgSet(pfmet),hAntiQCDMetp); RooHistPdf apdfQCDp("aqcdp","aqcdp",pfmet,aqcdMetp,1); 
   RooDataHist aqcdMetm("aqcdMetm","aqcdMetm",RooArgSet(pfmet),hAntiQCDMetm); RooHistPdf apdfQCDm("aqcdm","aqcdm",pfmet,aqcdMetm,1); 
+  
+  // --------------------------------------------------------------------------
+  // The 2 isolation control bins to test RooCategory fit w/ iso-dependent Pepe
+  // Want to change this to automatically construct bins based on hardcoded array
+  // specified at beginning of file
+  
+  // W+ bin 1
+  // Anti-Signal PDFs
+  RooDataHist awenuMetp1("awenuMETp1","awenuMETp1",RooArgSet(pfmet),hAntiWenuMetpIsoBins[0]);
+  RooHistPdf apdfWep1("awep1","awep1",pfmet,awenuMetp1,1);
+  RooDataHist awenuMetm1("awenuMETm1","awenuMETm1",RooArgSet(pfmet),hAntiWenuMetmIsoBins[0]);
+  RooHistPdf apdfWem1("awem1","awem1",pfmet,awenuMetm1,1); 
+  
+  // W- bin 1
+  // Anti-EWK+top PDFs
+  RooDataHist aewkMetp1("aewkMETp1","aewkMETp1",RooArgSet(pfmet),hAntiEWKMetpIsoBins[0]); RooHistPdf apdfEWKp1("aewkp1","aewkp1",pfmet,aewkMetp1,1); 
+  RooDataHist aewkMetm1("aewkMETm1","aewkMETm1",RooArgSet(pfmet),hAntiEWKMetmIsoBins[0]); RooHistPdf apdfEWKm1("aewkm1","aewkm1",pfmet,aewkMetm1,1); 
+  
+  // W+ bin 2
+  // Anti-Signal PDFs
+  RooDataHist awenuMetp2("awenuMETp2","awenuMETp2",RooArgSet(pfmet),hAntiWenuMetpIsoBins[1]);
+  RooHistPdf apdfWep2("awep2","awep2",pfmet,awenuMetp1,1);
+  RooDataHist awenuMetm2("awenuMETm2","awenuMETm2",RooArgSet(pfmet),hAntiWenuMetmIsoBins[1]);
+  RooHistPdf apdfWem2("awem2","awem2",pfmet,awenuMetm1,1); 
+  
+  // W- bin 2
+  // Anti-EWK+top PDFs
+  RooDataHist aewkMetp2("aewkMETp2","aewkMETp2",RooArgSet(pfmet),hAntiEWKMetpIsoBins[1]); RooHistPdf apdfEWKp2("aewkp2","aewkp2",pfmet,aewkMetp2,1); 
+  RooDataHist aewkMetm2("aewkMETm2","aewkMETm2",RooArgSet(pfmet),hAntiEWKMetmIsoBins[1]); RooHistPdf apdfEWKm2("aewkm2","aewkm2",pfmet,aewkMetm2,1); 
+  // --------------------------------------------------------------------------
+  
   
   
   // The 2-d histograms / pdfs
@@ -1336,20 +1486,17 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
    // The 2d QCD shapes
    CPepeModel2dim qcdp2d("qcdp2d",pfmet,iso);
    CPepeModel2dim qcdm2d("qcdm2d",pfmet,iso);
-
-   // CPepeModel2 aqcd("aqcd",pfmet);
-   // CPepeModel2 aqcdp("aqcdp",pfmet);
-   // CPepeModel2 aqcdm("aqcdm",pfmet);
-
-//    CPepeModelSq qcd("qcd",pfmet);
-//    CPepeModelSq qcdp("qcdp",pfmet);
-//    CPepeModelSq qcdm("qcdm",pfmet);
-// 
-//    
-//    CPepeModelSq aqcd("aqcd",pfmet);
-//    CPepeModelSq aqcdp("aqcdp",pfmet);
-//    CPepeModelSq aqcdm("aqcdm",pfmet);  
-//    
+   
+   // ---------------------------------------
+   // QCD shapes for RooCategory fit
+   // 2 bins to test with
+   CPepeModel2isobins qcdp2d1("qcdp2d1",pfmet,(vIsoBins[0]+vIsoBins[1])/2);
+   CPepeModel2isobins qcdm2d1("qcdm2d1",pfmet,(vIsoBins[0]+vIsoBins[1])/2);
+   
+   CPepeModel2isobins qcdp2d2("qcdp2d2",pfmet,(vIsoBins[1]+vIsoBins[2])/2,qcdp2d1.c1, qcdp2d1.c2, qcdp2d1.d1, qcdp2d1.d2);
+   CPepeModel2isobins qcdm2d2("qcdm2d2",pfmet,(vIsoBins[1]+vIsoBins[2])/2,qcdm2d1.c1, qcdm2d1.c2, qcdm2d1.d1, qcdm2d1.d2);
+   // ---------------------------------------
+   
     RooGaussian constm("constm","constm",nEWKm,RooConst(hEWKMetm->Integral()),RooConst(0.15*hEWKMetm->Integral()));
     RooGaussian constp("constp","constp",nEWKp,RooConst(hEWKMetp->Integral()),RooConst(0.15*hEWKMetp->Integral()));
     
@@ -1380,6 +1527,17 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooAddPdf pdfMetp2d("pdfMetp2d","pdfMetp2d",RooArgList(/*pdfWep2d,pdfEWKp2d,*/*(qcdp2d.model)),RooArgList(/*nSigp2d,nEWKp2d,*/nQCDp2d));
   RooAddPdf pdfMetm2d("pdfMetm2d","pdfMetm2d",RooArgList(pdfWem2d,pdfEWKm2d,*(qcdm2d.model)),RooArgList(nSigm2d,nEWKm2d,nQCDm2d)); 
   
+  // -------------------------------------------------------------------------------------
+  // contstuct the PDFs for the 2 test isolation bins
+  // Bin 1
+  RooAddPdf apdfMetp1("apdfMetp1","apdfMetp1",RooArgList(apdfWep1,apdfEWKp1,*(qcdp2d1.model)),RooArgList(nAntiSigp1,nAntiEWKp1,nAntiQCDp1));
+  RooAddPdf apdfMetm1("apdfMetm1","apdfMetm1",RooArgList(apdfWem1,apdfEWKm1,*(qcdm2d1.model)),RooArgList(nAntiSigm1,nAntiEWKm1,nAntiQCDm1));
+  
+  // Bin 2
+  RooAddPdf apdfMetp2("apdfMetp2","apdfMetp2",RooArgList(apdfWep2,apdfEWKp2,*(qcdp2d2.model)),RooArgList(nAntiSigp2,nAntiEWKp2,nAntiQCDp2));
+  RooAddPdf apdfMetm2("apdfMetm2","apdfMetm2",RooArgList(apdfWem2,apdfEWKm2,*(qcdm2d2.model)),RooArgList(nAntiSigm2,nAntiEWKm2,nAntiQCDm2));
+  
+  // -------------------------------------------------------------------------------------
   
     // Anti-selection PDFs
 //   RooAddPdf apdfMet ("apdfMet", "apdfMet", RooArgList(apdfWe,apdfEWK,apdfQCD),   RooArgList(nAntiSig,nAntiEWK,nAntiQCD));  
@@ -1413,6 +1571,52 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooDataHist dataMetm2D("dataMetm2D","dataMetp2D",RooArgSet(iso,pfmet),h2dIsoBinsDatam);
 
   
+  // ------------------------------------------------------------------------
+  // Make the data histograms for the RooCategory Fit
+  
+  // Bin1
+  RooDataHist antiMetp1("antiMetp1", "antiMetp1", RooArgSet(pfmet), hAntiDataMetpIsoBins[0]);
+  RooDataHist antiMetm1("antiMetm1", "antiMetm1", RooArgSet(pfmet), hAntiDataMetmIsoBins[0]);
+  
+  // Bin1
+  RooDataHist antiMetp2("antiMetp2", "antiMetp2", RooArgSet(pfmet), hAntiDataMetpIsoBins[1]);
+  RooDataHist antiMetm2("antiMetm2", "antiMetm2", RooArgSet(pfmet), hAntiDataMetmIsoBins[1]);
+  
+  // ------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
+  // set up RooCategory for data
+  // test only 2 bins at first
+  
+  RooCategory rooCat2dTest("rooCat2dTest","rooCat2dTest");
+  rooCat2dTest.defineType("iso1");
+  rooCat2dTest.defineType("iso2");
+  
+  // RooCategory rooCat2dTestm("rooCat2dTestm","rooCat2dTestm");
+  // rooCat2dTestm.defineType("iso1");
+  // rooCat2dTestm.defineType("iso2");
+  
+  // RooDataSet combDatap("combDatap","combined data W+",pfmet,Index(rooCat2dTestp),Import("iso1",antiMetp1),Import("iso2",antiMetp2) ;
+  // RooDataSet combDatam("combDatam","combined data W-",pfmet,Index(rooCat2dTestm),Import("iso1",antiMetm1),Import("iso2",antiMetm2) ;
+  
+  RooDataHist combDatap("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat2dTest),
+             Import("Select", dataMetp),
+             Import("Anti",   antiMetp));
+
+  RooDataHist combDatam("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat2dTest),
+             Import("Select", dataMetm),
+             Import("Anti", antiMetm));
+  // ------------------------------------------------------------------------
+  // set up simultaneous PDF 
+   // Construct a simultaneous pdf using category sample as index
+  RooSimultaneous simPdfp("simPdfp","simultaneous pdf W+",rooCat2dTest) ;
+  simPdfp.addPdf(apdfMetp1,"iso1") ;
+  simPdfp.addPdf(apdfMetp2,"iso2") ;
+  
+  RooSimultaneous simPdfm("simPdfm","simultaneous pdf W+",rooCat2dTest) ;
+  simPdfm.addPdf(apdfMetm1,"iso1") ;
+  simPdfm.addPdf(apdfMetm2,"iso2") ;
+  
+  // ------------------------------------------------------------------------
   
   
 //  RooDataHist dataTotal("dataTotal,","dataTotal,", RooArgList(pfmet), Index(rooCat),
@@ -1554,22 +1758,25 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 
  std::cout << "after workspace" << std::endl;
 
-  RooFitResult *fitResp2D = pdfMetp2d.fitTo(dataMetp2D,Extended(),Save(kTRUE));
-  RooFitResult *fitResm2D = pdfMetm2d.fitTo(dataMetm2D,Extended(),Save(kTRUE));
+  // RooFitResult *fitResp2D = pdfMetp2d.fitTo(dataMetp2D,Extended(),Save(kTRUE));
+  // RooFitResult *fitResm2D = pdfMetm2d.fitTo(dataMetm2D,Extended(),Save(kTRUE));
   // RooFitResult *fitResp2D = qcdp2d.model->fitTo(dataMetp2D,Extended(),Save(kTRUE));
+  
+  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE));
+  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE));
 
-  RooFitResult *fitRes = 0;//pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE)); 
-//   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),ExternalConstraints(RooArgSet(constp,constantip)),RooFit::Strategy(2),Save(kTRUE));
+  // RooFitResult *fitRes = 0;//pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE)); 
+// //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
+  // RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),ExternalConstraints(RooArgSet(constp,constantip)),RooFit::Strategy(2),Save(kTRUE));
   // RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(RooArgSet(constp/*,fconsta1p,fconsta2p,fconsta3p*/)),Minos(kTRUE)/*RooFit::Strategy(2)*/,Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
   // RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),/*ExternalConstraints(constantip),*/Minos(kTRUE),Save(kTRUE));
 
   
   //RooFitResult *fitResm = pdfTotal.fitTo(dataTotal,Extended(),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),ExternalConstraints(RooArgSet(constm,constantim)),RooFit::Strategy(2),Save(kTRUE));
+  // // RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),ExternalConstraints(RooArgSet(constm,constantim)),RooFit::Strategy(2),Save(kTRUE));
   // RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),ExternalConstraints(RooArgSet(constm/*,fconsta1m,fconsta2m,fconsta3m*/)),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),/*ExternalConstraints(constantim),*/Minos(kTRUE),Save(kTRUE));
+  // RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),/*ExternalConstraints(constantim),*/Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
     
 	std::cout << "Fits completed " << std::endl;
@@ -1586,87 +1793,108 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   TCanvas *c2 = MakeCanvas("c2","c2",800,600);
    char plotname2[100];
   c2->Clear();
-  c2->SetLogz(kTRUE);
-  h2dIsoBinsDatap->Draw("colz");
-  sprintf(plotname2,"%s/test2d_data.png",CPlot::sOutDir.Data());
-  c2->SaveAs(plotname2);
-  c2->Clear();
+  // c2->SetLogz(kTRUE);
+  // h2dIsoBinsDatap->Draw("colz");
+  // sprintf(plotname2,"%s/test2d_data.png",CPlot::sOutDir.Data());
+  // c2->SaveAs(plotname2);
+  // c2->Clear();
   
-  for(int it = 0; it < h2dIsoBinsDatap->GetNbinsX();++it){
-      TH1D *bin = (TH1D*) h2dIsoBinsDatap->ProjectionY(" ",it,it+1);
-      bin->Draw();
-      sprintf(plotname2,"%s/test_bin_%i.png",CPlot::sOutDir.Data(),it);
-      c2->SaveAs(plotname2);
-      c2->Clear();
-  }
+  // for(int it = 0; it < hAntiWenuMetmIsoBins->GetNbinsX();++it){
+      // TH1D *bin = (TH1D*) h2dIsoBinsDatap->ProjectionY(" ",it,it+1);
+      // bin->Draw();
+      // sprintf(plotname2,"%s/test_bin_%i.png",CPlot::sOutDir.Data(),it);
+      // c2->SaveAs(plotname2);
+      // c2->Clear();
+  // }
   
-  h2dIsoBinsSigp->Draw("colz");
-  sprintf(plotname2,"%s/test2d_sig.png",CPlot::sOutDir.Data());
-  c2->SaveAs(plotname2);
-  c2->Clear();
-  h2dIsoBinsEwkp->Draw("colz");
-  sprintf(plotname2,"%s/test2d_ewk.png",CPlot::sOutDir.Data());
-  c2->SaveAs(plotname2);
-  c2->Clear();
-  c2->SetLogz(kFALSE);
+  // h2dIsoBinsSigp->Draw("colz");
+  // sprintf(plotname2,"%s/test2d_sig.png",CPlot::sOutDir.Data());
+  // c2->SaveAs(plotname2);
+  // c2->Clear();
+  // h2dIsoBinsEwkp->Draw("colz");
+  // sprintf(plotname2,"%s/test2d_ewk.png",CPlot::sOutDir.Data());
+  // c2->SaveAs(plotname2);
+  // c2->Clear();
+  // c2->SetLogz(kFALSE);
   
-  for(int i = 0; i < nIsoBins; ++i){
+  for(int i = 0; i < 1; ++i){
   
-  iso.setRange("cutwindow",vIsoBins[i],vIsoBins[i+1]);
-  RooAbsData *reduce = dataMetp2D.reduce(CutRange("cutwindow"));
+  // iso.setRange("cutwindow",vIsoBins[i],vIsoBins[i+1]);
+  // RooAbsData *reduce = dataMetp2D.reduce(CutRange("cutwindow"));
 //     RooPlot *lFrame1 = lRXVar.frame(Title(TString("Projection Range: "+ int2string( i0*((int)(fZPtMax/lNBins))) + "  to  " +int2string(i0*((int)(fZPtMax/lNBins))+((int)(fZPtMax/lNBins))) + " [GeV]" )));
   RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[i]) + "  to  " + to_string(vIsoBins[i+1]) + " iso" )));
   // reduce->plotOn(lFrame1);
-  reduce->plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  pdfMetp2d.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
-  pdfMetp2d.plotOn(lFrame1,LineColor(linecolorW));
-  pdfMetp2d.plotOn(lFrame1,Components(RooArgSet(pdfEWKp2d,*(qcdp2d.model))),FillColor(fillcolorEWK),DrawOption("F"));
-  pdfMetp2d.plotOn(lFrame1,Components(RooArgSet(pdfEWKp2d,*(qcdp2d.model))),LineColor(linecolorEWK));
-  pdfMetp2d.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d.model))),FillColor(fillcolorQCD),DrawOption("F"));
-  pdfMetp2d.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d.model))),LineColor(linecolorQCD));
-  pdfMetp2d.plotOn(lFrame1,Components(RooArgSet(pdfWep2d)),LineColor(linecolorW),LineStyle(2));
+  antiMetp1.plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  apdfMetp1.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
+  apdfMetp1.plotOn(lFrame1,LineColor(linecolorW));
+  apdfMetp1.plotOn(lFrame1,Components(RooArgSet(apdfEWKp1,*(qcdp2d1.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  apdfMetp1.plotOn(lFrame1,Components(RooArgSet(apdfEWKp1,*(qcdp2d1.model))),LineColor(linecolorEWK));
+  apdfMetp1.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d1.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  apdfMetp1.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d1.model))),LineColor(linecolorQCD));
+  apdfMetp1.plotOn(lFrame1,Components(RooArgSet(apdfWep1)),LineColor(linecolorW),LineStyle(2));
   // qcdp2d.model->plotOn(lFrame1,Components(RooArgSet(*(qcdp2d.model))),FillColor(fillcolorQCD),DrawOption("F"));
   
   sprintf(plotname2,"%s/hBin1testp_%i.png",CPlot::sOutDir.Data(),i);
   lFrame1->Draw();
   c2->SaveAs(plotname2);
   c2->Clear();
-  // delete lFrame1;
-  delete reduce;
   
-  RooAbsData *reduce2 = dataMetm2D.reduce(CutRange("cutwindow"));
+  lFrame1->Clear();
+  
+    // RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[i]) + "  to  " + to_string(vIsoBins[i+1]) + " iso" )));
+  // reduce->plotOn(lFrame1);
+  antiMetp2.plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  apdfMetp2.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
+  apdfMetp2.plotOn(lFrame1,LineColor(linecolorW));
+  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(apdfEWKp2,*(qcdp2d2.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(apdfEWKp2,*(qcdp2d2.model))),LineColor(linecolorEWK));
+  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d2.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(*(qcdp2d2.model))),LineColor(linecolorQCD));
+  apdfMetp2.plotOn(lFrame1,Components(RooArgSet(apdfWep2)),LineColor(linecolorW),LineStyle(2));
+  // qcdp2d.model->plotOn(lFrame1,Components(RooArgSet(*(qcdp2d.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  
+  sprintf(plotname2,"%s/hBin2testp_%i.png",CPlot::sOutDir.Data(),i);
+  lFrame1->Draw();
+  c2->SaveAs(plotname2);
+  c2->Clear();
+  lFrame1->Clear();
+  
+  // delete lFrame1;
+  // delete reduce;
+  
+  // RooAbsData *reduce2 = dataMetm2D.reduce(CutRange("cutwindow"));
 //     RooPlot *lFrame1 = lRXVar.frame(Title(TString("Projection Range: "+ int2string( i0*((int)(fZPtMax/lNBins))) + "  to  " +int2string(i0*((int)(fZPtMax/lNBins))+((int)(fZPtMax/lNBins))) + " [GeV]" )));
   // RooPlot *lFrame1 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[i]) + "  to  " + to_string(vIsoBins[i+1]) + " iso" )));
   // reduce->plotOn(lFrame1);
-  reduce2->plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  pdfMetm2d.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
-  pdfMetm2d.plotOn(lFrame1,LineColor(linecolorW));
-  pdfMetm2d.plotOn(lFrame1,Components(RooArgSet(pdfEWKm2d,*(qcdm2d.model))),FillColor(fillcolorEWK),DrawOption("F"));
-  pdfMetm2d.plotOn(lFrame1,Components(RooArgSet(pdfEWKm2d,*(qcdm2d.model))),LineColor(linecolorEWK));
-  pdfMetm2d.plotOn(lFrame1,Components(RooArgSet(*(qcdm2d.model))),FillColor(fillcolorQCD),DrawOption("F"));
-  pdfMetm2d.plotOn(lFrame1,Components(RooArgSet(*(qcdm2d.model))),LineColor(linecolorQCD));
-  pdfMetm2d.plotOn(lFrame1,Components(RooArgSet(pdfWem2d)),LineColor(linecolorW),LineStyle(2));
+  antiMetm1.plotOn(lFrame1,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  apdfMetm1.plotOn(lFrame1,FillColor(fillcolorW),DrawOption("F"));
+  apdfMetm1.plotOn(lFrame1,LineColor(linecolorW));
+  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),LineColor(linecolorEWK));
+  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(*(qcdm2d1.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(*(qcdm2d1.model))),LineColor(linecolorQCD));
+  apdfMetm1.plotOn(lFrame1,Components(RooArgSet(apdfWem1)),LineColor(linecolorW),LineStyle(2));
   
   sprintf(plotname2,"%s/hBin1testm_%i.png",CPlot::sOutDir.Data(),i);
   lFrame1->Draw();
   c2->SaveAs(plotname2);
   c2->Clear();
   delete lFrame1;
-  delete reduce2;
+  // delete reduce2;
   
   }
   
   ofstream txtfile1;
   char txtfname1[100];
   std::cout << "Printing We+. " << std::endl;
-  sprintf(txtfname1,"%s/fitresWe2d.txt",CPlot::sOutDir.Data());
+  sprintf(txtfname1,"%s/fitresWe2dCatTest.txt",CPlot::sOutDir.Data());
   txtfile1.open(txtfname1);
   assert(txtfile1.is_open());
   
   // flags = txtfile.flags();
   // txtfile << setprecision(10);
   // txtfile << " *** Yields *** " << endl;
-  txtfile1 << "Selected: " << h2dIsoBinsDatap->Integral() << endl;
+  txtfile1 << "Selected: " << hAntiDataMetpIsoBins[0]->Integral() << endl;
   // txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResp) << endl;
   // txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResp) << endl;
   // txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResp) << endl;
@@ -1677,15 +1905,15 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // txtfile << endl;  
   // txtfile.flags(flags);
   
-  fitResp2D->printStream(txtfile1,RooPrintable::kValue,RooPrintable::kVerbose);
+  fitResp2dCatTest->printStream(txtfile1,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile1 << endl;
   
-  fitResm2D->printStream(txtfile1,RooPrintable::kValue,RooPrintable::kVerbose);
+  fitResm2dCatTest->printStream(txtfile1,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile1 << endl;
   txtfile1.close();
 	
 	std::cout << "finished plotting 2-d test plots, start doing diffs for 1-d" << std::endl;
-	
+	/*
   //
   // Use histogram version of fitted PDFs to make ratio plots
   // (Will also use PDF histograms later for Chi^2 and KS tests)
@@ -2149,11 +2377,11 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   txtfile << endl;  
   txtfile.flags(flags);
   
-  fitResp2D->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  fitResp->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
   // fitResAntip->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
-  printCorrelations(txtfile, fitResp2D);
+  printCorrelations(txtfile, fitResp);
   txtfile << endl;
   printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
   txtfile.close();
@@ -2192,6 +2420,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   txtfile.close();
 
   makeHTML(outputDir);
+  */
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
