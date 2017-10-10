@@ -12,10 +12,11 @@ Bool_t passMuonID(const baconhep::TMuon *muon, const Double_t rho=0);
 Bool_t passAntiMuonID(const baconhep::TMuon *muon, const Double_t rho=0);
 Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho=0);
 
+Bool_t passEleMediumID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
-Bool_t passEleTightID(const baconhep::TElectron *electron, const Double_t rho);
 Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
+Bool_t passAntiMedEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
 
 Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits);
 Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1);
@@ -80,7 +81,7 @@ Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho)
 }
 
 //--------------------------------------------------------------------------------------------------
-Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
+Bool_t passEleMediumID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
 { // Medium Electron ID for PU20 bx25
 
   const Double_t ECAL_GAP_LOW  = 1.4442;
@@ -88,15 +89,12 @@ Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, 
 
   if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
 
-  // conversion rejection
   if(electron->isConv)            return kFALSE;
 
   Double_t ea = getEffAreaEl(tag.Eta());
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
-  // barrel/endcap dependent requirements
   if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
-    // barrel
     if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
     if(electron->nMissingHits > 2)                                    return kFALSE;
     if(electron->sieie >= 0.0101)                                     return kFALSE;
@@ -107,8 +105,6 @@ Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, 
     if(fabs(electron->d0) >= 0.0118)                                  return kFALSE;
     if(fabs(electron->dz) >= 0.373)                                  return kFALSE;
   } else {
-    // endcap
-//    if(iso >= 0.0678*(electron->pt))                                  return kFALSE;
     if(iso >= 0.0678*(tag.Pt()))                                      return kFALSE;
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie  	  >= 0.0283)                          return kFALSE;
@@ -125,7 +121,88 @@ Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, 
 }
 
 //--------------------------------------------------------------------------------------------------
+Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
+{ // Medium Electron ID for PU20 bx25
+
+  const Double_t ECAL_GAP_LOW  = 1.4442;
+  const Double_t ECAL_GAP_HIGH = 1.566;
+
+  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+
+  if(electron->isConv)            return kFALSE;
+
+  Double_t ea = getEffAreaEl(tag.Eta());
+  Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+
+  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+    if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE;
+    if(electron->nMissingHits > 2)                                    return kFALSE;
+    if(electron->sieie >= 0.0101)                                     return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
+    if(fabs(electron->dEtaIn) >= 0.00926)                              return kFALSE;
+    if(electron->hovere >= 0.0597)                                    return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.012*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.0111)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.0466)                                  return kFALSE;
+  } else {
+    if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE;
+    if(electron->nMissingHits > 1)                                    return kFALSE;
+    if(electron->sieie            >= 0.0279)                          return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.0918)                           return kFALSE;
+    if(fabs(electron->dEtaIn)     >= 0.00724)                         return kFALSE;
+    if(electron->hovere           >= 0.0615)                          return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.00999*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.0351)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.417)                                  return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+//--------------------------------------------------------------------------------------------------
+
 Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
+{
+  const Double_t ECAL_GAP_LOW  = 1.4442;
+  const Double_t ECAL_GAP_HIGH = 1.566;
+
+  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+
+  // conversion rejection
+  if(electron->isConv)            return kFALSE;
+
+  Double_t ea = getEffAreaEl(tag.Eta());	
+  Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+  
+  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+    if(iso < 0.0354*(tag.Pt()))                                      return kFALSE;
+    //if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE;
+    if(electron->nMissingHits > 2)                                    return kFALSE;
+    if(electron->sieie >= 0.0101)                                     return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
+    if(fabs(electron->dEtaIn) >= 0.00926)                              return kFALSE;
+    if(electron->hovere >= 0.0597)                                    return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.012*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.0111)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.0466)                                  return kFALSE;
+  } else {
+    if(iso < 0.0646*(tag.Pt()))                                      return kFALSE;
+    //if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE;
+    if(electron->nMissingHits > 1)                                    return kFALSE;
+    if(electron->sieie            >= 0.0279)                          return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.0918)                           return kFALSE;
+    if(fabs(electron->dEtaIn)     >= 0.00724)                         return kFALSE;
+    if(electron->hovere           >= 0.0615)                          return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.00999*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.0351)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.417)                                  return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+Bool_t passAntiMedEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
 {
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
@@ -277,6 +354,7 @@ Double_t getEffAreaMu(const Double_t eta) {
   else if (fabs(eta) < 2.5)  return 0.1177;
   else return -1; // This should never happen, a cut on |eta|<2.4 is applied in selection.
 }
+
 //---------------------------------------------------------------------------------------------------
 Int_t getEtaBinLabel(const Double_t eta) {
 
@@ -292,8 +370,7 @@ Int_t getEtaBinLabel(const Double_t eta) {
   else if(eta< 1.4442)      return 8;
   else if(eta< 1.566)       return 9;
   else if(eta< 2.0)         return 10;
-  else                      return 11;
+  else 			    return 11;
 }
-
 #endif
 
