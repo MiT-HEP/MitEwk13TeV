@@ -54,17 +54,18 @@ class CPepeModel2isobins
 {
 public:
   CPepeModel2isobins():model(0){}
-  CPepeModel2isobins(const char *name, RooRealVar &x, RooRealVar &iso, RooFormulaVar *sigma1=0, RooRealVar *sigma0=0);
+  CPepeModel2isobins(const char *name, RooRealVar &x, double iso, RooRealVar *lin1=0, RooRealVar *lin2=0, RooRealVar *off1=0, RooRealVar *off2=0);
   ~CPepeModel2isobins() {
 //     delete a1; // temporary fix to prevent segfault when using simultaneous fit
-    delete a2;
+    // delete c1, c2, d1, d2;
     delete a3;
     delete model;
   }
-  RooFormulaVar *a1;//, *a2;
-  RooRealVar *a3, *a2, *c1, *c2, *isoVal;
-  // RooRealVar c1("c1", "c1",0,  -5.0, 5.0);
-  // RooRealVar c2("c2", "c2",0,  -5.0, 5.0);
+  // the iso-dependent a1 and a2 replacements
+  RooRealVar *c1, *c2, *d1, *d2;
+  // keep a3 as constant for now? 
+  RooRealVar *a3;
+  
   RooGenericPdf *model;
 };
 
@@ -246,58 +247,51 @@ CPepeModel2::CPepeModel2(const char *name, RooRealVar &x,  RooRealVar *sigma1, R
 //--------------------------------------------------------------------------------------------------
 // Pepe2, with the a1 and a2 parameters as a function of isolation
 // test with a1 first, then parametrize a2 as well
-CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, RooRealVar &iso,  RooFormulaVar *sigma1, RooRealVar *sigma0)
+CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double iso,  RooRealVar *lin1, RooRealVar *lin2, RooRealVar *off1, RooRealVar *off2)
 {
-  char a1Name[50]; 
+    
+   std::cout << "New Pepe model with isolation = " << iso << std::endl;
   char c1Name[50]; 
-  char c2Name[50]; 
-  if(sigma1) {
-    sprintf(a1Name,"%s",sigma1->GetName());
-    sprintf(c1Name,"c1_%s",name);
-    sprintf(c2Name,"c2_%s",name);
-    c1 = (RooRealVar*)sigma1->getParameter(0);
-    c2 = (RooRealVar*)sigma1->getParameter(1);
-    // c2 = new RooRealVar("c2", "c2", 0, -5.0, 5.0);
-    // isoVal=new RooRealVar("iso","iso",0);
-    // isoVal->setVal(iso);
-    a1 = new RooFormulaVar(a1Name,a1Name,"@0*@2+@1",RooArgSet(*c1,*c2,iso));
-    a1 = sigma1; 
+  char d1Name[50]; 
+  if(lin1 && off1) {
+    sprintf(c1Name,"%s",lin1->GetName());
+    sprintf(d1Name,"%s",off1->GetName());
+    c1 = lin1;
+    d1 = off1;
   } else {
-    sprintf(a1Name,"a1_%s",name);
     sprintf(c1Name,"c1_%s",name);
-    sprintf(c2Name,"c2_%s",name);
-    // isoVal = new RooRealVar("iso","iso",0);
-    // isoVal->setVal(iso);
-    c1 = new RooRealVar("c1", "c1", 0, -5.0, 5.0);
-    c2 = new RooRealVar("c2", "c2", 0, -5.0, 5.0);
-    a1 = new RooFormulaVar(a1Name,a1Name,"@0*@2+@1",RooArgSet(*c1,*c2,iso));
-    //a1 = new RooRealVar(a1Name,a1Name,0.01,-1,1);
+    sprintf(d1Name,"d1_%s",name);
+    c1 = new RooRealVar(c1Name, c1Name, 1.0, -5.0, 5.0);
+    d1 = new RooRealVar(d1Name, d1Name, 0.0, -5.0, 5.0);
   }
-  char a2Name[50];
-  if(sigma0) {
-    sprintf(a2Name,"%s",sigma0->GetName());
-    a2 = sigma0;
+  char c2Name[50]; 
+  char d2Name[50]; 
+  if(lin2 && off2) {
+    sprintf(c2Name,"%s",lin2->GetName());
+    sprintf(d2Name,"%s",off2->GetName());
+    c2 = lin2;
+    d2 = off2;
   } else {
-    sprintf(a2Name,"a2_%s",name);
-    // Keep a2 as is for now, update to RooFormulaVar once a1 works
-    // a2 = new RooFormulaVar(a2Name,a2Name,6.0,0.0,20);
-    a2 = new RooRealVar(a2Name,a2Name,6.0,0.0,20);
+    sprintf(c2Name,"c2_%s",name);
+    sprintf(d2Name,"d2_%s",name);
+    c2 = new RooRealVar(c2Name, c2Name, 1.0, -5.0, 5.0);
+    d2 = new RooRealVar(d2Name, d2Name, 0.0, -5.0, 5.0);
   }
   char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,2.9,0.3,6.0);
   
   // f(x) = x*exp[-x^2 / a*x*x + b*x + c]
   char formula[300];
   sprintf(formula,
-          "%s*exp(-%s*%s/(%s*%s*%s*0.01 + %s*%s + %s*100))",
+          "%s*exp(-%s*%s/((%s*%f+%s)*%s*%s*0.01 + (%s*%f+%s)*%s + %s*100))",
 	  x.GetName(),
 	  x.GetName(),x.GetName(),
-	  a1Name,x.GetName(),x.GetName(),
-	  a2Name,x.GetName(),
+	  c1Name,iso,d1Name,x.GetName(),x.GetName(),
+	  c2Name,iso,d2Name,x.GetName(),
 	  a3Name);
   
   char vname[50];
   sprintf(vname,"pepe2Pdf_%s",name);  
-  model = new RooGenericPdf(vname,vname,formula,RooArgSet(x,*a1,*a2,*a3));
+  model = new RooGenericPdf(vname,vname,formula,RooArgSet(x,*c1,*c2,*d1,*d2,*a3));
 }
 
 
