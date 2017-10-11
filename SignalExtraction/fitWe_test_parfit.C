@@ -99,7 +99,7 @@ void fitWe_test_parfit(const TString  outputDir,   // output directory
   
   // double isobins[6] = {0.25,0.35,0.45,0.55,0.65,0.75};
   // std::vector<double> vIsoBins = {0.25,0.35,0.45,0.55,0.65,0.75};
-  Double_t vIsoBins[] = {0.25,0.30,0.35/*,0.40,0.45,0.50,0.55,0.65,0.75*/};
+  Double_t vIsoBins[] = {0.25,0.35,0.45,0.55/*,0.65,0.75*/};
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
@@ -673,7 +673,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
     // loop over events
     //
     // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(int)intree->GetEntries()*0.05; ientry++) {
+    for(UInt_t ientry=0; ientry<(int)intree->GetEntries()*0.01; ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
       
@@ -1316,14 +1316,14 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // ****hard-coded 2 bins for testing****
   // bin1 W+
   RooRealVar nAntiSigp1("nAntiSigp1","nAntiSigp1",hAntiWenuMetpIsoBins[0]->Integral(),0,0.5*hAntiDataMetpIsoBins[0]->Integral());
-  RooRealVar nAntiQCDp1("nAntiQCDp1","nAntiQCDp1",0.8*(hAntiDataMetpIsoBins[0]->Integral()),0,hAntiDataMetpIsoBins[0]->Integral());
+  RooRealVar nAntiQCDp1("nAntiQCDp1","nAntiQCDp1",0.8*(hAntiDataMetpIsoBins[0]->Integral()),0.5*hAntiDataMetpIsoBins[0]->Integral(),hAntiDataMetpIsoBins[0]->Integral());
   RooRealVar dewkp1("dewkp1","dewk1p",0.1,0,1.0) ;
   dewkp1.setVal(hAntiEWKMetpIsoBins[0]->Integral()/hAntiWenuMetpIsoBins[0]->Integral());
   // dewkp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp1("nAntiEWKp1","nAntiEWKp1","dewkp1*nAntiSigp1",RooArgList(nAntiSigp1,dewkp1));
 
   // Bin1 W-
-  RooRealVar nAntiSigm1("nAntiSigm1","nAntiSigm1",hAntiWenuMetmIsoBins[0]->Integral()*0.05,0,hAntiDataMetmIsoBins[0]->Integral());
+  RooRealVar nAntiSigm1("nAntiSigm1","nAntiSigm1",hAntiWenuMetmIsoBins[0]->Integral(),0,hAntiDataMetmIsoBins[0]->Integral());
   RooRealVar nAntiQCDm1("nAntiQCDm1","nAntiQCDm1",0.90*(hAntiDataMetmIsoBins[0]->Integral()),0.5*(hAntiDataMetpIsoBins[0]->Integral()),hAntiDataMetmIsoBins[0]->Integral());
   RooRealVar dewkm1("dewkm1","dewkm1",0.1,0,5) ;
   dewkm1.setVal(hAntiEWKMetmIsoBins[0]->Integral()/hAntiWenuMetmIsoBins[0]->Integral());
@@ -1339,12 +1339,28 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooFormulaVar nAntiEWKp2("nAntiEWKp2","nAntiEWKp2","dewkp2*nAntiSigp2",RooArgList(nAntiSigp2,dewkp2));
 
   // Bin2 W-
-  RooRealVar nAntiSigm2("nAntiSigm2","nAntiSigm2",hAntiWenuMetmIsoBins[1]->Integral()*0.05,0,hAntiDataMetmIsoBins[1]->Integral());
-  RooRealVar nAntiQCDm2("nAntiQCDm2","nAntiQCDm2",0.90*(hAntiDataMetmIsoBins[1]->Integral()),0,hAntiDataMetmIsoBins[1]->Integral());
+  RooRealVar nAntiSigm2("nAntiSigm2","nAntiSigm2",hAntiWenuMetmIsoBins[1]->Integral(),0,hAntiDataMetmIsoBins[1]->Integral());
+  RooRealVar nAntiQCDm2("nAntiQCDm2","nAntiQCDm2",0.90*(hAntiDataMetmIsoBins[1]->Integral()),0.5*hAntiDataMetmIsoBins[1]->Integral(),hAntiDataMetmIsoBins[1]->Integral());
   RooRealVar dewkm2("dewkm2","dewkm2",0.1,0,5) ;
   dewkm2.setVal(hAntiEWKMetmIsoBins[1]->Integral()/hAntiWenuMetmIsoBins[1]->Integral());
   // dewkm2.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm2("nAntiEWKm2","nAntiEWKm2","dewkm2*nAntiSigm2",RooArgList(nAntiSigm2,dewkm2));
+  
+    // bin3 W+
+  RooRealVar nAntiSigp3("nAntiSigp3","nAntiSigp3",hAntiWenuMetpIsoBins[2]->Integral(),0,0.5*hAntiDataMetpIsoBins[2]->Integral());
+  RooRealVar nAntiQCDp3("nAntiQCDp3","nAntiQCDp3",0.95*(hAntiDataMetpIsoBins[2]->Integral()),0.5*(hAntiDataMetpIsoBins[2]->Integral()),hAntiDataMetpIsoBins[2]->Integral());
+  RooRealVar dewkp3("dewkp3","dewkp3",0.1,0,1.0) ;
+  dewkp3.setVal(hAntiEWKMetpIsoBins[2]->Integral()/hAntiWenuMetpIsoBins[2]->Integral());
+  // dewkp2.setConstant(kTRUE);
+  RooFormulaVar nAntiEWKp3("nAntiEWKp3","nAntiEWKp3","dewkp3*nAntiSigp3",RooArgList(nAntiSigp3,dewkp3));
+
+  // Bin3 W-
+  RooRealVar nAntiSigm3("nAntiSigm3","nAntiSigm3",hAntiWenuMetmIsoBins[2]->Integral(),0,hAntiDataMetmIsoBins[2]->Integral());
+  RooRealVar nAntiQCDm3("nAntiQCDm3","nAntiQCDm3",0.90*(hAntiDataMetmIsoBins[2]->Integral()),0.5*hAntiDataMetmIsoBins[2]->Integral(),hAntiDataMetmIsoBins[2]->Integral());
+  RooRealVar dewkm3("dewkm3","dewkm3",0.1,0,5) ;
+  dewkm3.setVal(hAntiEWKMetmIsoBins[2]->Integral()/hAntiWenuMetmIsoBins[2]->Integral());
+  // dewkm2.setConstant(kTRUE);
+  RooFormulaVar nAntiEWKm3("nAntiEWKm3","nAntiEWKm3","dewkm3*nAntiSigm3",RooArgList(nAntiSigm3,dewkm3));
   
   //-----------------------------------------------------------------------------------
   
@@ -1453,6 +1469,18 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // Anti-EWK+top PDFs
   RooDataHist aewkMetp2("aewkMETp2","aewkMETp2",RooArgSet(pfmet),hAntiEWKMetpIsoBins[1]); RooHistPdf apdfEWKp2("aewkp2","aewkp2",pfmet,aewkMetp2,1); 
   RooDataHist aewkMetm2("aewkMETm2","aewkMETm2",RooArgSet(pfmet),hAntiEWKMetmIsoBins[1]); RooHistPdf apdfEWKm2("aewkm2","aewkm2",pfmet,aewkMetm2,1); 
+  
+    // W+ bin 2
+  // Anti-Signal PDFs
+  RooDataHist awenuMetp3("awenuMETp3","awenuMETp3",RooArgSet(pfmet),hAntiWenuMetpIsoBins[2]);
+  RooHistPdf apdfWep3("awep3","awep3",pfmet,awenuMetp1,1);
+  RooDataHist awenuMetm3("awenuMETm3","awenuMETm3",RooArgSet(pfmet),hAntiWenuMetmIsoBins[2]);
+  RooHistPdf apdfWem3("awem3","awem3",pfmet,awenuMetm1,1); 
+  
+  // W- bin 2
+  // Anti-EWK+top PDFs
+  RooDataHist aewkMetp3("aewkMETp3","aewkMETp3",RooArgSet(pfmet),hAntiEWKMetpIsoBins[2]); RooHistPdf apdfEWKp3("aewkp3","aewkp3",pfmet,aewkMetp3,1); 
+  RooDataHist aewkMetm3("aewkMETm3","aewkMETm3",RooArgSet(pfmet),hAntiEWKMetmIsoBins[2]); RooHistPdf apdfEWKm3("aewkm3","aewkm3",pfmet,aewkMetm3,1); 
   // --------------------------------------------------------------------------
   
   
@@ -1495,6 +1523,15 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
    
    CPepeModel2isobins qcdp2d2("qcdp2d2",pfmet,(vIsoBins[1]+vIsoBins[2])/2,qcdp2d1.c1, qcdp2d1.c2, qcdp2d1.d1, qcdp2d1.d2);
    CPepeModel2isobins qcdm2d2("qcdm2d2",pfmet,(vIsoBins[1]+vIsoBins[2])/2,qcdm2d1.c1, qcdm2d1.c2, qcdm2d1.d1, qcdm2d1.d2);
+   
+   CPepeModel2isobins qcdp2d3("qcdp2d3",pfmet,(vIsoBins[2]+vIsoBins[3])/2,qcdp2d1.c1, qcdp2d1.c2, qcdp2d1.d1, qcdp2d1.d2);
+   CPepeModel2isobins qcdm2d3("qcdm2d3",pfmet,(vIsoBins[2]+vIsoBins[3])/2,qcdm2d1.c1, qcdm2d1.c2, qcdm2d1.d1, qcdm2d1.d2);
+   
+   // CPepeModel2isobins qcdp2d1("qcdp2d1",pfmet,(vIsoBins[0]+vIsoBins[1])/2);
+   // CPepeModel2isobins qcdm2d1("qcdm2d1",pfmet,(vIsoBins[0]+vIsoBins[1])/2);
+   
+   // CPepeModel2isobins qcdp2d2("qcdp2d2",pfmet,(vIsoBins[1]+vIsoBins[2])/2,qcdp2d1.c1, qcdp2d1.d1, qcdp2d1.a2);
+   // CPepeModel2isobins qcdm2d2("qcdm2d2",pfmet,(vIsoBins[1]+vIsoBins[2])/2,qcdm2d1.c1, qcdm2d1.d1, qcdm2d1.a2);
    // ---------------------------------------
    
     RooGaussian constm("constm","constm",nEWKm,RooConst(hEWKMetm->Integral()),RooConst(0.15*hEWKMetm->Integral()));
@@ -1536,6 +1573,11 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // Bin 2
   RooAddPdf apdfMetp2("apdfMetp2","apdfMetp2",RooArgList(apdfWep2,apdfEWKp2,*(qcdp2d2.model)),RooArgList(nAntiSigp2,nAntiEWKp2,nAntiQCDp2));
   RooAddPdf apdfMetm2("apdfMetm2","apdfMetm2",RooArgList(apdfWem2,apdfEWKm2,*(qcdm2d2.model)),RooArgList(nAntiSigm2,nAntiEWKm2,nAntiQCDm2));
+  
+    
+  // Bin 3
+  RooAddPdf apdfMetp3("apdfMetp3","apdfMetp3",RooArgList(apdfWep3,apdfEWKp3,*(qcdp2d3.model)),RooArgList(nAntiSigp3,nAntiEWKp3,nAntiQCDp3));
+  RooAddPdf apdfMetm3("apdfMetm3","apdfMetm3",RooArgList(apdfWem3,apdfEWKm3,*(qcdm2d3.model)),RooArgList(nAntiSigm3,nAntiEWKm3,nAntiQCDm3));
   
   // -------------------------------------------------------------------------------------
   
@@ -1582,6 +1624,10 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooDataHist antiMetp2("antiMetp2", "antiMetp2", RooArgSet(pfmet), hAntiDataMetpIsoBins[1]);
   RooDataHist antiMetm2("antiMetm2", "antiMetm2", RooArgSet(pfmet), hAntiDataMetmIsoBins[1]);
   
+  // Bin1
+  RooDataHist antiMetp3("antiMetp3", "antiMetp3", RooArgSet(pfmet), hAntiDataMetpIsoBins[2]);
+  RooDataHist antiMetm3("antiMetm3", "antiMetm3", RooArgSet(pfmet), hAntiDataMetmIsoBins[2]);
+  
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
   // set up RooCategory for data
@@ -1590,6 +1636,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   RooCategory rooCat2dTest("rooCat2dTest","rooCat2dTest");
   rooCat2dTest.defineType("iso1");
   rooCat2dTest.defineType("iso2");
+  rooCat2dTest.defineType("iso3");
   
   // RooCategory rooCat2dTestm("rooCat2dTestm","rooCat2dTestm");
   // rooCat2dTestm.defineType("iso1");
@@ -1599,22 +1646,26 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // RooDataSet combDatam("combDatam","combined data W-",pfmet,Index(rooCat2dTestm),Import("iso1",antiMetm1),Import("iso2",antiMetm2) ;
   
   RooDataHist combDatap("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat2dTest),
-             Import("Select", dataMetp),
-             Import("Anti",   antiMetp));
+             Import("iso1", antiMetp1),
+             Import("iso2",   antiMetp2),
+			 Import("iso3",   antiMetp3));
 
   RooDataHist combDatam("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat2dTest),
-             Import("Select", dataMetm),
-             Import("Anti", antiMetm));
+             Import("iso1", antiMetm1),
+             Import("iso2",   antiMetm2),
+			 Import("iso3",   antiMetm3));
   // ------------------------------------------------------------------------
   // set up simultaneous PDF 
    // Construct a simultaneous pdf using category sample as index
   RooSimultaneous simPdfp("simPdfp","simultaneous pdf W+",rooCat2dTest) ;
   simPdfp.addPdf(apdfMetp1,"iso1") ;
   simPdfp.addPdf(apdfMetp2,"iso2") ;
+  simPdfp.addPdf(apdfMetp3,"iso3") ;
   
   RooSimultaneous simPdfm("simPdfm","simultaneous pdf W+",rooCat2dTest) ;
   simPdfm.addPdf(apdfMetm1,"iso1") ;
   simPdfm.addPdf(apdfMetm2,"iso2") ;
+  simPdfm.addPdf(apdfMetm3,"iso3") ;
   
   // ------------------------------------------------------------------------
   
@@ -1860,27 +1911,47 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
   // lFrame1->Clear();
   
   delete lFrame2;
-  // delete reduce;
   
-  // RooAbsData *reduce2 = dataMetm2D.reduce(CutRange("cutwindow"));
-//     RooPlot *lFrame1 = lRXVar.frame(Title(TString("Projection Range: "+ int2string( i0*((int)(fZPtMax/lNBins))) + "  to  " +int2string(i0*((int)(fZPtMax/lNBins))+((int)(fZPtMax/lNBins))) + " [GeV]" )));
-  RooPlot *lFrame3 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[0]) + "  to  " + to_string(vIsoBins[1]) + " iso" )));
+  RooPlot *lFrame3 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[2]) + "  to  " + to_string(vIsoBins[3]) + " iso" )));
   // reduce->plotOn(lFrame1);
-  antiMetm1.plotOn(lFrame3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  apdfMetm1.plotOn(lFrame3,FillColor(fillcolorW),DrawOption("F"));
-  apdfMetm1.plotOn(lFrame3,LineColor(linecolorW));
-  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),FillColor(fillcolorEWK),DrawOption("F"));
-  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),LineColor(linecolorEWK));
-  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(*(qcdm2d1.model))),FillColor(fillcolorQCD),DrawOption("F"));
-  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(*(qcdm2d1.model))),LineColor(linecolorQCD));
-  apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfWem1)),LineColor(linecolorW),LineStyle(2));
+  antiMetp3.plotOn(lFrame3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  apdfMetp3.plotOn(lFrame3,FillColor(fillcolorW),DrawOption("F"));
+  apdfMetp3.plotOn(lFrame3,LineColor(linecolorW));
+  apdfMetp3.plotOn(lFrame3,Components(RooArgSet(apdfEWKp3,*(qcdp2d3.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  apdfMetp3.plotOn(lFrame3,Components(RooArgSet(apdfEWKp3,*(qcdp2d3.model))),LineColor(linecolorEWK));
+  apdfMetp3.plotOn(lFrame3,Components(RooArgSet(*(qcdp2d3.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  apdfMetp3.plotOn(lFrame3,Components(RooArgSet(*(qcdp2d3.model))),LineColor(linecolorQCD));
+  apdfMetp3.plotOn(lFrame3,Components(RooArgSet(apdfWep3)),LineColor(linecolorW),LineStyle(2));
+  // qcdp2d.model->plotOn(lFrame1,Components(RooArgSet(*(qcdp2d.model))),FillColor(fillcolorQCD),DrawOption("F"));
   
-  sprintf(plotname2,"%s/hBin1testm_%i.png",CPlot::sOutDir.Data(),i);
+  sprintf(plotname2,"%s/hBin3testp_%i.png",CPlot::sOutDir.Data(),i);
   lFrame3->Draw();
   c2->SaveAs(plotname2);
   c2->Clear();
+  // lFrame1->Clear();
+  
   delete lFrame3;
-  // delete reduce2;
+  // delete reduce;
+  
+  // // RooAbsData *reduce2 = dataMetm2D.reduce(CutRange("cutwindow"));
+// //     RooPlot *lFrame1 = lRXVar.frame(Title(TString("Projection Range: "+ int2string( i0*((int)(fZPtMax/lNBins))) + "  to  " +int2string(i0*((int)(fZPtMax/lNBins))+((int)(fZPtMax/lNBins))) + " [GeV]" )));
+  // RooPlot *lFrame3 = pfmet.frame(Title(TString("Projection Range: "+ to_string(vIsoBins[0]) + "  to  " + to_string(vIsoBins[1]) + " iso" )));
+  // // reduce->plotOn(lFrame1);
+  // antiMetm1.plotOn(lFrame3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  // apdfMetm1.plotOn(lFrame3,FillColor(fillcolorW),DrawOption("F"));
+  // apdfMetm1.plotOn(lFrame3,LineColor(linecolorW));
+  // apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),FillColor(fillcolorEWK),DrawOption("F"));
+  // apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfEWKm1,*(qcdm2d1.model))),LineColor(linecolorEWK));
+  // apdfMetm1.plotOn(lFrame3,Components(RooArgSet(*(qcdm2d1.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  // apdfMetm1.plotOn(lFrame3,Components(RooArgSet(*(qcdm2d1.model))),LineColor(linecolorQCD));
+  // apdfMetm1.plotOn(lFrame3,Components(RooArgSet(apdfWem1)),LineColor(linecolorW),LineStyle(2));
+  
+  // sprintf(plotname2,"%s/hBin1testm_%i.png",CPlot::sOutDir.Data(),i);
+  // lFrame3->Draw();
+  // c2->SaveAs(plotname2);
+  // c2->Clear();
+  // delete lFrame3;
+  // // delete reduce2;
   
   }
   

@@ -54,6 +54,7 @@ class CPepeModel2isobins
 {
 public:
   CPepeModel2isobins():model(0){}
+// CPepeModel2isobins(const char *name, RooRealVar &x, double iso, RooRealVar *lin1=0, RooRealVar *off1=0, RooRealVar *sig2=0);
   CPepeModel2isobins(const char *name, RooRealVar &x, double iso, RooRealVar *lin1=0, RooRealVar *lin2=0, RooRealVar *off1=0, RooRealVar *off2=0);
   ~CPepeModel2isobins() {
 //     delete a1; // temporary fix to prevent segfault when using simultaneous fit
@@ -62,6 +63,7 @@ public:
     delete model;
   }
   // the iso-dependent a1 and a2 replacements
+  // RooRealVar *c1, *d1, *a2;
   RooRealVar *c1, *c2, *d1, *d2;
   // keep a3 as constant for now? 
   RooRealVar *a3;
@@ -247,7 +249,9 @@ CPepeModel2::CPepeModel2(const char *name, RooRealVar &x,  RooRealVar *sigma1, R
 //--------------------------------------------------------------------------------------------------
 // Pepe2, with the a1 and a2 parameters as a function of isolation
 // test with a1 first, then parametrize a2 as well
+
 CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double iso,  RooRealVar *lin1, RooRealVar *lin2, RooRealVar *off1, RooRealVar *off2)
+// CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double iso,  RooRealVar *lin1, RooRealVar *off1, RooRealVar *sig2)
 {
     
    std::cout << "New Pepe model with isolation = " << iso << std::endl;
@@ -266,16 +270,23 @@ CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double i
   }
   char c2Name[50]; 
   char d2Name[50]; 
+  char a2Name[50];
   if(lin2 && off2) {
+  // if(sig2) {
     sprintf(c2Name,"%s",lin2->GetName());
     sprintf(d2Name,"%s",off2->GetName());
     c2 = lin2;
     d2 = off2;
+	// sprintf(a2Name,"%s",sig2->GetName());
+    // a2 = sig2;
   } else {
-    sprintf(c2Name,"c2_%s",name);
     sprintf(d2Name,"d2_%s",name);
+    sprintf(c2Name,"c2_%s",name);
     c2 = new RooRealVar(c2Name, c2Name, 0.1, -10.0, 10.0);
     d2 = new RooRealVar(d2Name, d2Name, 6.0, -40.0, 40.0);
+	
+	// sprintf(a2Name,"a2_%s",name);
+    // a2 = new RooRealVar(a2Name, a2Name, 6.0, -10.0, 10.0);
   }
   char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,2.9,0.3,6.0);
   
@@ -288,7 +299,16 @@ CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double i
 	  c1Name,iso,d1Name,x.GetName(),x.GetName(),
 	  c2Name,iso,d2Name,x.GetName(),
 	  a3Name);
+	  
+   // sprintf(formula,
+          // "%s*exp(-%s*%s/((%s*%f+%s)*%s*%s*0.01 + %s*%s + %s*100))",
+	  // x.GetName(),
+	  // x.GetName(),x.GetName(),
+	  // c1Name,iso,d1Name,x.GetName(),x.GetName(),
+	  // a2Name,x.GetName(),
+	  // a3Name);
   
+  std::cout << "the formula is  " << formula << std::endl;
   char vname[50];
   sprintf(vname,"pepe2Pdf_%s",name);  
   model = new RooGenericPdf(vname,vname,formula,RooArgSet(x,*c1,*c2,*d1,*d2,*a3));
