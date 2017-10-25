@@ -839,10 +839,22 @@ void selectZee(const TString conf="zee.conf", // input file
 	  
 	  Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
 			    ((glep2) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+
+	  TLorentzVector tvec=*glep1+*glep2;
+	  genV=new TLorentzVector(0,0,0,0);
+	  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+	  genVPt   = tvec.Pt();
+	  genVPhi  = tvec.Phi();
+	  genVy    = tvec.Rapidity();
+	  genVMass = tvec.M();
+	  delete gvec;
+	  delete glep1;
+	  delete glep2;
+	  glep1=0; glep2=0; gvec=0;
 	  
 	  if(match1 && match2) {
 	    hasGenMatch = kTRUE;
-	    if (gvec!=0) {
+	    /*if (gvec!=0) {
 	      genV=new TLorentzVector(0,0,0,0);
 	      genV->SetPtEtaPhiM(gvec->Pt(), gvec->Eta(), gvec->Phi(), gvec->M());
 	      genVPt   = gvec->Pt();
@@ -858,19 +870,19 @@ void selectZee(const TString conf="zee.conf", // input file
 	      genVPhi  = tvec.Phi();
 	      genVy    = tvec.Rapidity();
 	      genVMass = tvec.M();
-	    }
-	    delete gvec;
-	    delete glep1;
-	    delete glep2;
-	    glep1=0; glep2=0; gvec=0;
+	      }*/
+	    //delete gvec;
+	    //delete glep1;
+	    //delete glep2;
+	    //glep1=0; glep2=0; gvec=0;
 	  }
-	  else {
-	    genV     = new TLorentzVector(0,0,0,0);
-	    genVPt   = -999;
-	    genVPhi  = -999;
-	    genVy    = -999;
-	    genVMass = -999;
-	  }
+	  //  else {
+	  // genV     = new TLorentzVector(0,0,0,0);
+	  // genVPt   = -999;
+	  // genVPhi  = -999;
+	  // genVy    = -999;
+	  // genVMass = -999;
+	  //}
 	}
 	
 	if (hasGen) {
