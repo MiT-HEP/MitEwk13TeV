@@ -142,6 +142,8 @@ void selectWm(const TString conf="wm.conf", // input file
 
     // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
+    //flag to save the info for recoil corrections
+    Bool_t isRecoil = ((snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
     // flag to reject W->mnu events when selecting wrong flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
     
@@ -423,25 +425,36 @@ void selectWm(const TString conf="wm.conf", // input file
           scalePDF  = -999;
           weightPDF = -999;
 
-	  if(isSignal && hasGen) {
+	  if(isRecoil && hasGen) {
             Int_t glepq1=-99;
             Int_t glepq2=-99;
 	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-	    
+	   
+            TLorentzVector tvec=*glep1+*glep2;
+            genV=new TLorentzVector(0,0,0,0);
+            genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+            genVPt   = tvec.Pt();
+            genVPhi  = tvec.Phi();
+            genVy    = tvec.Rapidity();
+            genVMass = tvec.M();
+
             if (gvec && glep1) {
-	      genV      = new TLorentzVector(0,0,0,0);
-	      genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+	      //genV      = new TLorentzVector(0,0,0,0);
+	      //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
 	      genLep    = new TLorentzVector(0,0,0,0);
-	      genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              genVPt    = gvec->Pt();
-              genVPhi   = gvec->Phi();
-              genVy     = gvec->Rapidity();
-              genVMass  = gvec->M();
-              genLepPt  = glep1->Pt();
-              genLepPhi = glep1->Phi();
+	      if(BOSON_ID*glepq1>0)
+                genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              if(BOSON_ID*glepq2>0)
+                genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+              //genVPt    = gvec->Pt();
+              //genVPhi   = gvec->Phi();
+              //genVy     = gvec->Rapidity();
+              //genVMass  = gvec->M();
+              genLepPt  = genLep->Pt();
+              genLepPhi = genLep->Phi();
 	      
               TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
               TVector2 vLepPt(vLep.Px(),vLep.Py());

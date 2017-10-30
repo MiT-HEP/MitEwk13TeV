@@ -169,6 +169,8 @@ void selectWe(const TString conf="we.conf", // input file
 
     // Assume signal sample is given name "we" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
+    //flag to save the info for recoil corrections
+    Bool_t isRecoil = ((snamev[isam].CompareTo("we",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
     // flag to reject W->enu events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
     
@@ -522,26 +524,37 @@ void selectWe(const TString conf="we.conf", // input file
 	  scalePDF  = -999;
 	  weightPDF = -999;
 
-	  if(isSignal && hasGen) {
-        Int_t glepq1=-99;
-        Int_t glepq2=-99;
+	  if(isRecoil && hasGen) {
+            Int_t glepq1=-99;
+            Int_t glepq2=-99;
 	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
 	    TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
 	    TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 // 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
-        toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+            toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+
+            TLorentzVector tvec=*glep1+*glep2;
+            genV=new TLorentzVector(0,0,0,0);
+            genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+            genVPt   = tvec.Pt();
+            genVPhi  = tvec.Phi();
+            genVy    = tvec.Rapidity();
+            genVMass = tvec.M();
 
 	    if (gvec && glep1) {
-	      genV      = new TLorentzVector(0,0,0,0);
-              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+	      //genV      = new TLorentzVector(0,0,0,0);
+              //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
               genLep    = new TLorentzVector(0,0,0,0);
-              genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              genVPt    = gvec->Pt();
-              genVPhi   = gvec->Phi();
-              genVy     = gvec->Rapidity();
-              genVMass  = gvec->M();
-              genLepPt  = glep1->Pt();
-              genLepPhi = glep1->Phi();
+              if(BOSON_ID*glepq1>0)
+                genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              if(BOSON_ID*glepq2>0)
+                genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+              //genVPt    = gvec->Pt();
+              //genVPhi   = gvec->Phi();
+              //genVy     = gvec->Rapidity();
+              //genVMass  = gvec->M();
+              genLepPt  = genLep->Pt();
+              genLepPhi = genLep->Phi();
 
 	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
 	      TVector2 vLepPt(vLep.Px(),vLep.Py());
@@ -561,10 +574,10 @@ void selectWe(const TString conf="we.conf", // input file
 	      mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
 	      mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
           
-          TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-          TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
-          puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-          puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+              TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
+              puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
           
 	    }
 	    id_1      = gen->id_1;

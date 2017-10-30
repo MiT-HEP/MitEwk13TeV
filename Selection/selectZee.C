@@ -174,6 +174,8 @@ void selectZee(const TString conf="zee.conf", // input file
     
     // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
+    //flag to save the info for recoil corrections
+    Bool_t isRecoil = ((snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
     // flag to reject Z->ee events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);  
     
@@ -831,7 +833,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 	TLorentzVector *gph=new TLorentzVector(0,0,0,0);
 	Bool_t hasGenMatch = kFALSE;
-	if(isSignal && hasGen) {
+	if(isRecoil && hasGen) {
 	  toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
 	  
 	  Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 

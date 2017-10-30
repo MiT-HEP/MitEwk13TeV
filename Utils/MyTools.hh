@@ -75,7 +75,7 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
     const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
     if(fabs(genloop->pdgId)==22) continue;
     //std::cout << i << " " << genloop->pdgId << " " << genloop->status << " " << genloop->parent << " " << genloop->pt << " " << genloop->mass << std::endl;
-    if (genloop->status==44 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11)) {
+    if (genloop->status==44 && (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11 || fabs(genloop->pdgId)==16 || fabs(genloop->pdgId)==14 || fabs(genloop->pdgId)==12)) {
       if (genloop->pdgId<0 && lepPos==0) {
 	lepPos=new TLorentzVector(0,0,0,0);
 	lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
@@ -101,7 +101,7 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 	vec->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
         iv=i;
       }
-      else if (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11) {
+      else if (fabs(genloop->pdgId)==15 || fabs(genloop->pdgId)==13 || fabs(genloop->pdgId)==11 || fabs(genloop->pdgId)==16 || fabs(genloop->pdgId)==14 || fabs(genloop->pdgId)==12) {
 	if (genloop->pdgId<0 && lepPos==0) {
           lepPos=new TLorentzVector(0,0,0,0);
           lepPos->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
