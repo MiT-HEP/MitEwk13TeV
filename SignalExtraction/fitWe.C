@@ -229,12 +229,12 @@ void fitWe(const TString  outputDir,   // output directory
 
   // for Puppi, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
-  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
+  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_genFix/",directory.Data()));
   recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
   recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
-  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_genFix/",directory.Data()));
   recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
   recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
@@ -375,9 +375,9 @@ void fitWe(const TString  outputDir,   // output directory
 
   ///
   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/we_select.root");   typev.push_back(eWenu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wenu/ntuples/we_select.root");      typev.push_back(eWenu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wenu/ntuples/boson_select.root");   typev.push_back(eBKG);
   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/ewk_select1.root");  typev.push_back(eEWK);
-  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wenu/ntuples/boson_select.root");  typev.push_back(eBKG);
 
   ///
   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/data_select.raw.root"); typev.push_back(eAntiData);

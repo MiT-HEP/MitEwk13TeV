@@ -200,7 +200,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   vector<Bool_t> isBkgv;
 
   if (useData == 0){
-    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
+    //    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
+    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
     //    fnamev.push_back(TString(infoldername) + TString("wm_select.raw.root")); isBkgv.push_back(kFALSE);
   } else if (useData == 1){
     fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/data_select.root"); isBkgv.push_back(kFALSE);
