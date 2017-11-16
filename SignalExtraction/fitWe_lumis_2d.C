@@ -1408,8 +1408,8 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
    std::cout << "just finished making the pepes" << std::endl;
    
    // create the appropriate gaussian constraint for the signal region electroweak+ttbar 
-    RooGaussian constm_sr("constm_sr","constm_sr",*dewkm_[0],RooConst(0.10*dewkm_[0]->getVal()),RooConst(0.15*dewkm_[0]->getVal()));
-    RooGaussian constp_sr("constp_sr","constp_sr",*dewkp_[0],RooConst(0.10*dewkp_[0]->getVal()),RooConst(0.15*dewkp_[0]->getVal()));
+    RooGaussian constm_sr("constm_sr","constm_sr",*nEWKm_[0],RooConst(nEWKm_[0]->getVal()),RooConst(0.15*nEWKm_[0]->getVal()));
+    RooGaussian constp_sr("constp_sr","constp_sr",*nEWKp_[0],RooConst(nEWKp_[0]->getVal()),RooConst(0.15*nEWKp_[0]->getVal()));
 
    
     // RooGaussian constm("constm","constm",cewkm,RooConst(0.10*cewkm.getVal()),RooConst(0.15*cewkm.getVal()));
