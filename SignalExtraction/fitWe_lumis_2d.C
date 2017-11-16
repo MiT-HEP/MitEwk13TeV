@@ -1163,82 +1163,82 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   infile=0, intree=0;   
   
   
-  //   Calculate the shapes for W+
-  TH1D *corrP = (TH1D*) hWenuMetp->Clone("up");
-  *corrP = (*hh_diffp)*(*hWenuMetp);
-  hWenuMetp_RecoilUp->Add(corrP,hWenuMetp,-1);
-  hWenuMetp_RecoilDown->Add(corrP,hWenuMetp,1);
-//   hWenuMetp_ScaleUp->Add(corrP,hWenuMetp,-1);
-//   hWenuMetp_ScaleDown->Add(corrP,hWenuMetp,1);
-  // Calculate the shapes for W-
-  TH1D *corrM = (TH1D*) hWenuMetm->Clone("up");
-  *corrM = (*hh_diffm)*(*hWenuMetm);
-  std::cout << hh_diffm->GetBinContent(2)<< std::endl;
-  hWenuMetm_RecoilUp->Add(corrM,hWenuMetm,-1);
-  std::cout << corrM->GetBinContent(2)<< std::endl;
-  std::cout << hWenuMetm->GetBinContent(2)<< std::endl;
-  std::cout << hWenuMetm_RecoilUp->GetBinContent(2)<< std::endl;
-  hWenuMetm_RecoilDown->Add(corrM,hWenuMetm,1);
-//   hWenuMetm_ScaleUp->Add(corrM,hWenuMetm,-1);
-//   hWenuMetm_ScaleDown->Add(corrM,hWenuMetm,1);
+  // //   Calculate the shapes for W+
+  // TH1D *corrP = (TH1D*) hWenuMetp->Clone("up");
+  // *corrP = (*hh_diffp)*(*hWenuMetp);
+  // hWenuMetp_RecoilUp->Add(corrP,hWenuMetp,-1);
+  // hWenuMetp_RecoilDown->Add(corrP,hWenuMetp,1);
+// //   hWenuMetp_ScaleUp->Add(corrP,hWenuMetp,-1);
+// //   hWenuMetp_ScaleDown->Add(corrP,hWenuMetp,1);
+  // // Calculate the shapes for W-
+  // TH1D *corrM = (TH1D*) hWenuMetm->Clone("up");
+  // *corrM = (*hh_diffm)*(*hWenuMetm);
+  // std::cout << hh_diffm->GetBinContent(2)<< std::endl;
+  // hWenuMetm_RecoilUp->Add(corrM,hWenuMetm,-1);
+  // std::cout << corrM->GetBinContent(2)<< std::endl;
+  // std::cout << hWenuMetm->GetBinContent(2)<< std::endl;
+  // std::cout << hWenuMetm_RecoilUp->GetBinContent(2)<< std::endl;
+  // hWenuMetm_RecoilDown->Add(corrM,hWenuMetm,1);
+// //   hWenuMetm_ScaleUp->Add(corrM,hWenuMetm,-1);
+// //   hWenuMetm_ScaleDown->Add(corrM,hWenuMetm,1);
   
-  //
-  // Declare fit parameters for signal and background yields
-  // Note: W signal and EWK+top PDFs are constrained to the ratio described in MC
-  //
-  RooRealVar nSig("nSig","nSig",0.7*(hDataMet->Integral()),0,hDataMet->Integral());
-  RooRealVar nQCD("nQCD","nQCD",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-  //RooRealVar nSig("nSig","nSig",(hWenuMet->Integral()),0,hWenuMet->Integral());
-  //RooRealVar nQCD("nQCD","nQCD",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-  RooRealVar cewk("cewk","cewk",0.1,0,5) ;
-  //RooRealVar cewk("cewk","cewk",0.1,0,5) ;
-  cewk.setVal(hEWKMet->Integral()/hWenuMet->Integral());
-//   cewk.setConstant(kTRUE);
-  RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
+  // //
+  // // Declare fit parameters for signal and background yields
+  // // Note: W signal and EWK+top PDFs are constrained to the ratio described in MC
+  // //
+  // RooRealVar nSig("nSig","nSig",0.7*(hDataMet->Integral()),0,hDataMet->Integral());
+  // RooRealVar nQCD("nQCD","nQCD",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+  // //RooRealVar nSig("nSig","nSig",(hWenuMet->Integral()),0,hWenuMet->Integral());
+  // //RooRealVar nQCD("nQCD","nQCD",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+  // RooRealVar cewk("cewk","cewk",0.1,0,5) ;
+  // //RooRealVar cewk("cewk","cewk",0.1,0,5) ;
+  // cewk.setVal(hEWKMet->Integral()/hWenuMet->Integral());
+// //   cewk.setConstant(kTRUE);
+  // RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
   
-  RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiDataMet->Integral()*0.1,0,hAntiDataMet->Integral());
-  RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
-  RooRealVar dewk("dewk","dewk",0.1,0,5) ;
-  dewk.setVal(hAntiEWKMet->Integral()/hAntiWenuMet->Integral());
-  dewk.setConstant(kTRUE);
-  //   nAntiSig.setConstant(kTRUE);
-  RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
+  // RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiDataMet->Integral()*0.1,0,hAntiDataMet->Integral());
+  // RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hAntiDataMet->Integral()),0,hAntiDataMet->Integral());
+  // RooRealVar dewk("dewk","dewk",0.1,0,5) ;
+  // dewk.setVal(hAntiEWKMet->Integral()/hAntiWenuMet->Integral());
+  // dewk.setConstant(kTRUE);
+  // //   nAntiSig.setConstant(kTRUE);
+  // RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
 
-  //hWenuMetp->Scale(6.7446e+06/hWenuMetp->Integral());
-  //RooRealVar nSigp("nSigp","nSigp",hDataMetp->Integral()*0.8,0,hDataMetp->Integral());
-  RooRealVar nSigp("nSigp","nSigp",0.75*hDataMetp->Integral(),0,hDataMetp->Integral());
-  //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
-  RooRealVar nQCDp("nQCDp","nQCDp",0.2*hDataMetp->Integral(),0,hDataMetp->Integral());
-  RooRealVar cewkp("cewkp","cewkp",0.1,0,1.0);
-  cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
-//   cewkp.setConstant(kTRUE);
-  RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
-  RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiDataMetp->Integral()*0.1,0,0.5*hAntiDataMetp->Integral());
-//   nAntiSigp.setVal(0);
-//   nAntiSigp.setConstant(kTRUE);
-  RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.95*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
-  RooRealVar dewkp("dewkp","dewkp",0.1,0,1.0) ;
-  dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
-  dewkp.setConstant(kTRUE);
-  RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
+  // //hWenuMetp->Scale(6.7446e+06/hWenuMetp->Integral());
+  // //RooRealVar nSigp("nSigp","nSigp",hDataMetp->Integral()*0.8,0,hDataMetp->Integral());
+  // RooRealVar nSigp("nSigp","nSigp",0.75*hDataMetp->Integral(),0,hDataMetp->Integral());
+  // //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+  // RooRealVar nQCDp("nQCDp","nQCDp",0.2*hDataMetp->Integral(),0,hDataMetp->Integral());
+  // RooRealVar cewkp("cewkp","cewkp",0.1,0,1.0);
+  // cewkp.setVal(hEWKMetp->Integral()/hWenuMetp->Integral());
+// //   cewkp.setConstant(kTRUE);
+  // RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
+  // RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiDataMetp->Integral()*0.1,0,0.5*hAntiDataMetp->Integral());
+// //   nAntiSigp.setVal(0);
+// //   nAntiSigp.setConstant(kTRUE);
+  // RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.95*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
+  // RooRealVar dewkp("dewkp","dewkp",0.1,0,1.0) ;
+  // dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
+  // dewkp.setConstant(kTRUE);
+  // RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
 
-  //hWenuMetm->Scale(5.2551e+06/hWenuMetm->Integral());
-  RooRealVar nSigm("nSigm","nSigm",0.8*hDataMetm->Integral(),0,hDataMetm->Integral());
-  //RooRealVar nSigm("nSigm","nSigm",hDataMetm->Integral()*0.8,0,hDataMetm->Integral());
-  //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
-  RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.2,0,hDataMetm->Integral());
-  RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
-  cewkm.setVal(hEWKMetm->Integral()/hWenuMetm->Integral());
-//   cewkm.setConstant(kTRUE);
-  RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
-  RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiDataMetm->Integral()*0.1,0,hAntiDataMetm->Integral());
-//   nAntiSigm.setVal(0);
-//   nAntiSigm.setConstant(kTRUE);
-  RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.95*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
-  RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
-  dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
-  dewkm.setConstant(kTRUE);
-  RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
+  // //hWenuMetm->Scale(5.2551e+06/hWenuMetm->Integral());
+  // RooRealVar nSigm("nSigm","nSigm",0.8*hDataMetm->Integral(),0,hDataMetm->Integral());
+  // //RooRealVar nSigm("nSigm","nSigm",hDataMetm->Integral()*0.8,0,hDataMetm->Integral());
+  // //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
+  // RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.2,0,hDataMetm->Integral());
+  // RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
+  // cewkm.setVal(hEWKMetm->Integral()/hWenuMetm->Integral());
+// //   cewkm.setConstant(kTRUE);
+  // RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
+  // RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiDataMetm->Integral()*0.1,0,hAntiDataMetm->Integral());
+// //   nAntiSigm.setVal(0);
+// //   nAntiSigm.setConstant(kTRUE);
+  // RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.95*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
+  // RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
+  // dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
+  // dewkm.setConstant(kTRUE);
+  // RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
 
   
    vector<RooRealVar*> nSigp_(nIsoBins), nQCDp_(nIsoBins), dewkp_(nIsoBins);
