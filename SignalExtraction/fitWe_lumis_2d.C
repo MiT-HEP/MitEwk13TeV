@@ -1243,7 +1243,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   
    vector<RooRealVar*> nSigp_(nIsoBins), nQCDp_(nIsoBins), dewkp_(nIsoBins);
    vector<RooRealVar*> nSigm_(nIsoBins), nQCDm_(nIsoBins), dewkm_(nIsoBins);
-   vector<RooFormulaVar*> nEWKp_(nIsoBins), nEWKm_(nIsoBins);
+   vector<RooRealVar*> nEWKp_(nIsoBins), nEWKm_(nIsoBins);
    
   char nname[50];
   char formula[50];
@@ -1251,40 +1251,42 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 	  // W+
       double qcdFac = 0.9;
       if(j==0) qcdFac = 0.4;
+	  double QCDlims = 0.5;
+	  if(j==0) QCDlims = 0.0;
       sprintf(nname, "nAntiSigp%d",j);
-      nSigp_[j] = new RooRealVar(nname,nname,0.1*hWenuMetpIsoBins[j]->Integral(),0,hDataMetpIsoBins[j]->Integral());
+      nSigp_[j] = new RooRealVar(nname,nname,hWenuMetpIsoBins[j]->Integral(),0,hDataMetpIsoBins[j]->Integral());
       
       sprintf(nname, "nAntiQCDp%d",j);
-      nQCDp_[j] = new RooRealVar(nname,nname,(qcdFac)*hDataMetpIsoBins[j]->Integral(),0,hDataMetpIsoBins[j]->Integral());
+      nQCDp_[j] = new RooRealVar(nname,nname,(qcdFac)*hDataMetpIsoBins[j]->Integral(),(0+QCDlims)*hDataMetpIsoBins[j]->Integral(),(1+QCDlims)*hDataMetpIsoBins[j]->Integral());
 	  
       sprintf(nname, "dewkp%d",j);
       dewkp_[j] = new RooRealVar(nname,nname,0.1,0,10.0);
       dewkp_[j]->setVal(hEWKMetpIsoBins[j]->Integral()/hWenuMetpIsoBins[j]->Integral());
 	  
       sprintf(nname, "nAntiEWKp%d",j); sprintf(formula,"dewkp%d*nAntiSigp%d",j,j);
-      nEWKp_[j] = new RooFormulaVar(nname,nname,formula,RooArgList(*nSigp_[j],*dewkp_[j]));
+      nEWKp_[j] = new RooRealVar(nname,nname,hEWKMetpIsoBins[j]->Integral(),(0.5)*hEWKMetpIsoBins[j]->Integral(),(1.5)*hEWKMetpIsoBins[j]->Integral());
 	
 	 
       // W-	 
 	  sprintf(nname, "nAntiSigm%d",j);
-      nSigm_[j] = new RooRealVar(nname,nname,0.1*hWenuMetmIsoBins[j]->Integral(),0,hDataMetmIsoBins[j]->Integral());
+      nSigm_[j] = new RooRealVar(nname,nname,hWenuMetmIsoBins[j]->Integral(),0,hDataMetmIsoBins[j]->Integral());
 
       sprintf(nname, "nAntiQCDm%d",j);
-      nQCDm_[j] = new RooRealVar(nname,nname,(qcdFac)*hDataMetmIsoBins[j]->Integral(),0,hDataMetmIsoBins[j]->Integral());
+      nQCDm_[j] = new RooRealVar(nname,nname,(qcdFac)*hDataMetmIsoBins[j]->Integral(),(0+QCDlims)*hDataMetmIsoBins[j]->Integral(),(1+QCDlims)*hDataMetmIsoBins[j]->Integral());
 	  
       sprintf(nname, "dewkm%d",j);
       dewkm_[j] = new RooRealVar(nname,nname,0.1,0,10.0);
       dewkm_[j]->setVal(hEWKMetmIsoBins[j]->Integral()/hWenuMetmIsoBins[j]->Integral());
 	  
       sprintf(nname, "nAntiEWKm%d",j); sprintf(formula,"dewkm%d*nAntiSigm%d",j,j);
-      nEWKm_[j] = new RooFormulaVar(nname,nname,formula,RooArgList(*nSigm_[j],*dewkm_[j]));
+      nEWKm_[j] = new RooRealVar(nname,nname,hEWKMetmIsoBins[j]->Integral(),(0.5)*hEWKMetmIsoBins[j]->Integral(),(1.5)*hEWKMetmIsoBins[j]->Integral());
 	  
 	  // for now we are setting the control region EWK and Signal yields to be zero
 	  if(j >= 1) {
 		  nSigp_[j]->setVal(0); nSigp_[j]->setConstant(kTRUE);
 		  nSigm_[j]->setVal(0); nSigm_[j]->setConstant(kTRUE);
-		  dewkp_[j]->setVal(0); dewkp_[j]->setConstant(kTRUE);
-		  dewkm_[j]->setVal(0); dewkm_[j]->setConstant(kTRUE);
+		  nEWKp_[j]->setVal(0); nEWKp_[j]->setConstant(kTRUE);
+		  nEWKm_[j]->setVal(0); nEWKm_[j]->setConstant(kTRUE);
 	  }
 	  
   }
@@ -1662,21 +1664,21 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE)/*,RooFit::Strategy(2),Minimizer("Minuit2","minimize")*/,ExternalConstraints(constm_sr),PrintEvalErrors(-1));
   
   // do likelihood plots stuff
-  // TCanvas *c2 = MakeCanvas("c2","c2",800,600);
+  TCanvas *c2 = MakeCanvas("c2","c2",800,600);
   // // // test likelihood plotting --------------
     // // // Construct Likelihood
     // RooAbsReal* nllm = simPdfm.createNLL(combDatam,NumCPU(2)) ;
-    // // RooAbsReal* nllp = simPdfp.createNLL(combDatap,NumCPU(2)) ;
+    RooAbsReal* nllp = simPdfp.createNLL(combDatap,NumCPU(2)) ;
 
-   // // // Minimize likelihood w.r.t all parameters before making plots
-    // // // RooMinuit(*nllm).SetPrintLevel(-1) ;
-    // // // RooMinuit(*nllp).SetPrintLevel(-1) ;
+   // // Minimize likelihood w.r.t all parameters before making plots
+    // // RooMinuit(*nllm).SetPrintLevel(-1) ;
+    // // RooMinuit(*nllp).SetPrintLevel(-1) ;
     // RooMinuit(*nllm).migrad() ;
-    // // RooMinuit(*nllp).migrad() ;
+    RooMinuit(*nllp).migrad() ;
 
    // // // Plot likelihood scan frac 
    // RooPlot* framesigmll = nSigm_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
-   // RooPlot* frameewkmll = dewkm_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
+   // RooPlot* frameewkmll = nEWKm_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
    // RooPlot* frameqcdmll = nQCDm_[0]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
    // RooPlot* frameqcdmc1ll = (qcdm_[0]->c1)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
    // RooPlot* frameqcdmc2ll = (qcdm_[0]->c2)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
@@ -1690,25 +1692,25 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
    // RooPlot* frameqcdmll3 = nQCDm_[3]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
    // RooPlot* frameqcdmll4 = nQCDm_[4]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
    // RooPlot* frameqcdmll5 = nQCDm_[5]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // //nll->plotOn(framell,ShiftToZero()) ;
+   //nll->plotOn(framell,ShiftToZero()) ;
    
-    // // // Plot likelihood scan frac 
-   // // RooPlot* framesigpll = nSigp_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
-   // // RooPlot* frameewkpll = dewkp_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
-   // // RooPlot* frameqcdpll = nQCDp_[0]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // // RooPlot* frameqcdpc1ll = (qcdp_[0]->c1)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
-   // // RooPlot* frameqcdpc2ll = (qcdp_[0]->c2)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
-   // // RooPlot* frameqcdpc3ll = (qcdp_[0]->c3)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
-   // // RooPlot* frameqcdpd1ll = (qcdp_[0]->d1)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
-   // // RooPlot* frameqcdpd2ll = (qcdp_[0]->d2)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
-   // // RooPlot* frameqcdpd3ll = (qcdp_[0]->d3)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
+    // // Plot likelihood scan frac 
+   RooPlot* framesigpll = nSigp_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
+   RooPlot* frameewkpll = nEWKp_[0]->frame(Bins(10)/*,Range(6761148.828-10000,6761148.828+10000)*/,Title("")) ;
+   RooPlot* frameqcdpll = nQCDp_[0]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
+   RooPlot* frameqcdpc1ll = (qcdp_[0]->c1)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
+   RooPlot* frameqcdpc2ll = (qcdp_[0]->c2)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
+   RooPlot* frameqcdpc3ll = (qcdp_[0]->c3)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
+   RooPlot* frameqcdpd1ll = (qcdp_[0]->d1)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
+   RooPlot* frameqcdpd2ll = (qcdp_[0]->d2)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
+   RooPlot* frameqcdpd3ll = (qcdp_[0]->d3)->frame(Bins(10)/*,Range(-10.0,20.0)*/,Title("")) ;
 
-   // // RooPlot* frameqcdpll1 = nQCDp_[1]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // // RooPlot* frameqcdpll2 = nQCDp_[2]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // // RooPlot* frameqcdpll3 = nQCDp_[3]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // // RooPlot* frameqcdpll4 = nQCDp_[4]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // // RooPlot* frameqcdpll5 = nQCDp_[5]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
-   // // //nll->plotOn(framell,ShiftToZero()) ;
+   RooPlot* frameqcdpll1 = nQCDp_[1]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
+   RooPlot* frameqcdpll2 = nQCDp_[2]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
+   RooPlot* frameqcdpll3 = nQCDp_[3]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
+   RooPlot* frameqcdpll4 = nQCDp_[4]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
+   RooPlot* frameqcdpll5 = nQCDp_[5]->frame(Bins(10)/*,Range(3552156-10000,3552156+10000)*/,Title("")) ;
+   // //nll->plotOn(framell,ShiftToZero()) ;
    
     // RooAbsReal* pll_nsigm = nllm->createProfile(*nSigm_[0]) ;
     // RooAbsReal* pll_newkm = nllm->createProfile(*nEWKm_[0]) ;
@@ -1726,21 +1728,21 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 	// RooAbsReal* pll_nqcdm4 = nllm->createProfile(*nQCDm_[4]) ;
 	// RooAbsReal* pll_nqcdm5 = nllm->createProfile(*nQCDm_[5]) ;
 	
-    // // RooAbsReal* pll_nsigp = nllp->createProfile(*nSigp_[0]) ;
-    // // RooAbsReal* pll_newkp = nllp->createProfile(*nEWKp_[0]) ;
-    // // RooAbsReal* pll_nqcdp = nllp->createProfile(*nQCDp_[0]) ;
-    // // RooAbsReal* pll_qcdpc1 = nllp->createProfile(*(qcdp_[0]->c1)) ;
-    // // RooAbsReal* pll_qcdpc2 = nllp->createProfile(*(qcdp_[0]->c2)) ;
-    // // RooAbsReal* pll_qcdpc3 = nllp->createProfile(*(qcdp_[0]->c3)) ;
-    // // RooAbsReal* pll_qcdpd1 = nllp->createProfile(*(qcdp_[0]->d1)) ;
-    // // RooAbsReal* pll_qcdpd2 = nllp->createProfile(*(qcdp_[0]->d2)) ;
-    // // RooAbsReal* pll_qcdpd3 = nllp->createProfile(*(qcdp_[0]->d3)) ;
+    RooAbsReal* pll_nsigp = nllp->createProfile(*nSigp_[0]) ;
+    RooAbsReal* pll_newkp = nllp->createProfile(*nEWKp_[0]) ;
+    RooAbsReal* pll_nqcdp = nllp->createProfile(*nQCDp_[0]) ;
+    RooAbsReal* pll_qcdpc1 = nllp->createProfile(*(qcdp_[0]->c1)) ;
+    RooAbsReal* pll_qcdpc2 = nllp->createProfile(*(qcdp_[0]->c2)) ;
+    RooAbsReal* pll_qcdpc3 = nllp->createProfile(*(qcdp_[0]->c3)) ;
+    RooAbsReal* pll_qcdpd1 = nllp->createProfile(*(qcdp_[0]->d1)) ;
+    RooAbsReal* pll_qcdpd2 = nllp->createProfile(*(qcdp_[0]->d2)) ;
+    RooAbsReal* pll_qcdpd3 = nllp->createProfile(*(qcdp_[0]->d3)) ;
 
-	// // RooAbsReal* pll_nqcdp1 = nllp->createProfile(*nQCDp_[1]) ;
-	// // RooAbsReal* pll_nqcdp2 = nllp->createProfile(*nQCDp_[2]) ;
-	// // RooAbsReal* pll_nqcdp3 = nllp->createProfile(*nQCDp_[3]) ;
-	// // RooAbsReal* pll_nqcdp4 = nllp->createProfile(*nQCDp_[4]) ;
-	// // RooAbsReal* pll_nqcdp5 = nllp->createProfile(*nQCDp_[5]) ;
+	RooAbsReal* pll_nqcdp1 = nllp->createProfile(*nQCDp_[1]) ;
+	RooAbsReal* pll_nqcdp2 = nllp->createProfile(*nQCDp_[2]) ;
+	RooAbsReal* pll_nqcdp3 = nllp->createProfile(*nQCDp_[3]) ;
+	RooAbsReal* pll_nqcdp4 = nllp->createProfile(*nQCDp_[4]) ;
+	RooAbsReal* pll_nqcdp5 = nllp->createProfile(*nQCDp_[5]) ;
 	
     // // // Plot the profile likelihood in frac
     // pll_nsigm->plotOn(framesigmll,LineColor(kRed)) ;
@@ -1759,27 +1761,27 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 	// pll_nqcdm4->plotOn(frameqcdmll4,LineColor(kRed)) ;
 	// pll_nqcdm5->plotOn(frameqcdmll5,LineColor(kRed)) ;
 
-    // // // Plot the profile likelihood in frac
-    // // pll_nsigp->plotOn(framesigpll,LineColor(kRed)) ;
-    // // pll_newkp->plotOn(frameewkpll,LineColor(kRed)) ;
-    // // pll_nqcdp->plotOn(frameqcdpll,LineColor(kRed)) ;
-    // // pll_qcdpc1->plotOn(frameqcdpc1ll,LineColor(kRed)) ;
-    // // pll_qcdpc2->plotOn(frameqcdpc2ll,LineColor(kRed)) ;
-    // // pll_qcdpc3->plotOn(frameqcdpc3ll,LineColor(kRed)) ;
-    // // pll_qcdpd1->plotOn(frameqcdpd1ll,LineColor(kRed)) ;
-    // // pll_qcdpd2->plotOn(frameqcdpd2ll,LineColor(kRed)) ;
-    // // pll_qcdpd3->plotOn(frameqcdpd3ll,LineColor(kRed)) ;
+    // // Plot the profile likelihood in frac
+    pll_nsigp->plotOn(framesigpll,LineColor(kRed)) ;
+    pll_newkp->plotOn(frameewkpll,LineColor(kRed)) ;
+    pll_nqcdp->plotOn(frameqcdpll,LineColor(kRed)) ;
+    pll_qcdpc1->plotOn(frameqcdpc1ll,LineColor(kRed)) ;
+    pll_qcdpc2->plotOn(frameqcdpc2ll,LineColor(kRed)) ;
+    pll_qcdpc3->plotOn(frameqcdpc3ll,LineColor(kRed)) ;
+    pll_qcdpd1->plotOn(frameqcdpd1ll,LineColor(kRed)) ;
+    pll_qcdpd2->plotOn(frameqcdpd2ll,LineColor(kRed)) ;
+    pll_qcdpd3->plotOn(frameqcdpd3ll,LineColor(kRed)) ;
 	
-	// // pll_nqcdp1->plotOn(frameqcdpll1,LineColor(kRed)) ;
-	// // pll_nqcdp2->plotOn(frameqcdpll2,LineColor(kRed)) ;
-	// // pll_nqcdp3->plotOn(frameqcdpll3,LineColor(kRed)) ;
-	// // pll_nqcdp4->plotOn(frameqcdpll4,LineColor(kRed)) ;
-	// // pll_nqcdp5->plotOn(frameqcdpll5,LineColor(kRed)) ;
+	pll_nqcdp1->plotOn(frameqcdpll1,LineColor(kRed)) ;
+	pll_nqcdp2->plotOn(frameqcdpll2,LineColor(kRed)) ;
+	pll_nqcdp3->plotOn(frameqcdpll3,LineColor(kRed)) ;
+	pll_nqcdp4->plotOn(frameqcdpll4,LineColor(kRed)) ;
+	pll_nqcdp5->plotOn(frameqcdpll5,LineColor(kRed)) ;
 	
-   // char plotname[100];
-    // // Adjust frame maximum for visual clarity
-   // // framell->SetMinimum(0) ;
-   // // framell->SetMaximum(3) ;
+   char plotname[100];
+    // Adjust frame maximum for visual clarity
+   // framell->SetMinimum(0) ;
+   // framell->SetMaximum(3) ;
    // sprintf(plotname,"%s/LogLikelihood_nSigm.png",CPlot::sOutDir.Data());
    // c2->Clear();framesigmll->Draw();c2->Update();c2->SaveAs(plotname);
    // sprintf(plotname,"%s/LogLikelihood_nEWKm.png",CPlot::sOutDir.Data());
@@ -1811,35 +1813,35 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
    // c2->Clear();frameqcdmll5->Draw();c2->Update();c2->SaveAs(plotname);
    
    
-    // // sprintf(plotname,"%s/LogLikelihood_nSigp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();framesigpll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_nEWKp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameewkpll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_nQCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_c1QCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpc1ll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_c2QCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpc2ll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_c3QCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpc3ll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_d1QCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpd1ll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_d2QCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpd2ll->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_d3QCDp.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpd3ll->Draw();c2->Update();c2->SaveAs(plotname);
+    sprintf(plotname,"%s/LogLikelihood_nSigp.png",CPlot::sOutDir.Data());
+   c2->Clear();framesigpll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nEWKp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameewkpll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nQCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_c1QCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpc1ll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_c2QCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpc2ll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_c3QCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpc3ll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_d1QCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpd1ll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_d2QCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpd2ll->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_d3QCDp.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpd3ll->Draw();c2->Update();c2->SaveAs(plotname);
    
-   // // sprintf(plotname,"%s/LogLikelihood_nQCDp1.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpll1->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_nQCDp2.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpll2->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_nQCDp3.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpll3->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_nQCDp4.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpll4->Draw();c2->Update();c2->SaveAs(plotname);
-   // // sprintf(plotname,"%s/LogLikelihood_nQCDp5.png",CPlot::sOutDir.Data());
-   // // c2->Clear();frameqcdpll5->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nQCDp1.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpll1->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nQCDp2.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpll2->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nQCDp3.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpll3->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nQCDp4.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpll4->Draw();c2->Update();c2->SaveAs(plotname);
+   sprintf(plotname,"%s/LogLikelihood_nQCDp5.png",CPlot::sOutDir.Data());
+   c2->Clear();frameqcdpll5->Draw();c2->Update();c2->SaveAs(plotname);
  
   // //
   // // Use histogram version of fitted PDFs to make ratio plots
