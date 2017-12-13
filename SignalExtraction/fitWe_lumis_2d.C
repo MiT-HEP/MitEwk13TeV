@@ -692,8 +692,8 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.10); ientry++) {
+    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.05); ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
 
@@ -1427,20 +1427,35 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   }
   
 
-// without linear term on a1
-  vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
-  qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.015);
-  qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.015);
-  double binCenters[] = {0.015, 0.292, 0.393, 0.495, 0.595, 0.693};
+  // test systematic quadratic*iso
+  vector <CPepeModel2isobinsQuad*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  //original
+  // vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  // Test the extra quadratic*isolation term for systematics
+  qcdp_[0] = new CPepeModel2isobinsQuad("qcdp2d0",pfmet, 0.015);
+  std::cout << "created first bin +" << std::endl;
+  qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.015);
+  std::cout << "created the first bin " << std::endl;
+  // the original
+  // qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.015);
+  // qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.015);
+  // double binCenters[] = {0.015, 0.292, 0.393, 0.495, 0.595, 0.693};
   for (int j = 1; j < nIsoBins; ++j){
       sprintf(nname, "qcdp2d%d",j);
-      qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-      // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+	  std::cout << "made the first qcd+" << std::endl;
 	  
 	  printf(nname, "qcdm2d%d",j);
-      qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-      // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      // // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+	  std::cout << "made the first qcd-" << std::endl;
   }
+  
+  
+  
 // original
   // vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
   // qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.03);

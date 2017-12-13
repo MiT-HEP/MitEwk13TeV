@@ -66,6 +66,23 @@ public:
   RooGenericPdf *model;
 };
 
+// Define the class for special Pepe2, with isolation dependence
+class CPepeModel2isobinsQuad
+{
+public:
+  CPepeModel2isobinsQuad():model(0){}
+  CPepeModel2isobinsQuad(const char *name, RooRealVar &x, double iso, RooRealVar *qu1=0, RooRealVar *qu2 =0, RooRealVar *qu3 = 0, RooRealVar *lin1=0, RooRealVar *lin2=0, RooRealVar *lin3=0, RooRealVar *off1=0, RooRealVar *off2=0, RooRealVar *off3=0);
+  ~CPepeModel2isobinsQuad() {
+//     delete a1; // temporary fix to prevent segfault when using simultaneous fit
+    // delete c1, c2, d1, d2;
+    // delete a3;
+    delete model;
+  }
+  RooRealVar *b1, *b2, *b3, *c1, *c2, *c3, *d1, *d2, *d3;
+  // RooRealVar *a3;
+  RooGenericPdf *model;
+};
+
 class CPepeModel2isobinsMuons
 {
 public:
@@ -351,6 +368,109 @@ CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double i
   char vname[50];
   sprintf(vname,"pepe2Pdf_%s",name);  
   model = new RooGenericPdf(vname,vname,formula,RooArgSet(x,*c1,*c2,*c3,*d1,*d2,*d3));
+}
+
+
+
+
+CPepeModel2isobinsQuad::CPepeModel2isobinsQuad(const char *name, RooRealVar &x, double iso,  RooRealVar *qu1, RooRealVar *qu2, RooRealVar *qu3, RooRealVar *lin1, RooRealVar *lin2, RooRealVar *lin3, RooRealVar *off1, RooRealVar *off2, RooRealVar *off3)
+{
+    
+   std::cout << "New Pepe model with isolation = " << iso << std::endl;
+  char b1Name[50]; 
+  char c1Name[50]; 
+  char d1Name[50]; 
+  if(lin1 && off1 && qu1) {
+	std::cout << "initializing 1 params" << std::endl;
+    sprintf(b1Name,"%s",qu1->GetName());
+    sprintf(c1Name,"%s",lin1->GetName());
+    sprintf(d1Name,"%s",off1->GetName());
+    b1 = lin1;
+    c1 = lin1;
+    d1 = off1;
+	std::cout << "done" << std::endl;
+  } else {
+    sprintf(b1Name,"b1_%s",name);
+    sprintf(c1Name,"c1_%s",name);
+    sprintf(d1Name,"d1_%s",name);
+    b1 = new RooRealVar(b1Name, b1Name, 0.0, -10.0, 10.0);
+    c1 = new RooRealVar(c1Name, c1Name, 1.0, -2.0, 10.0);
+    d1 = new RooRealVar(d1Name, d1Name, 0.5, -2.0, 4.0);
+  }
+  char b2Name[50]; 
+  char c2Name[50]; 
+  char d2Name[50]; 
+  if(lin2 && off2 && qu2) {
+	std::cout << "initializing 2 params" << std::endl;
+    sprintf(b2Name,"%s",qu2->GetName());
+    sprintf(c2Name,"%s",lin2->GetName());
+    sprintf(d2Name,"%s",off2->GetName());
+    b2 = qu2;
+    c2 = lin2;
+    d2 = off2;
+	std::cout << "done" << std::endl;
+  } else {
+    sprintf(b2Name,"b2_%s",name);
+    sprintf(d2Name,"d2_%s",name);
+    sprintf(c2Name,"c2_%s",name);
+    b2 = new RooRealVar(b2Name, b2Name, 0.0, -10.0, 10.0);
+    c2 = new RooRealVar(c2Name, c2Name, -3.0, -10.0, 2.0);
+    d2 = new RooRealVar(d2Name, d2Name, 8.0, 6.0, 12.0);
+  }
+  // char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,2.9,0.3,6.0);
+  char b3Name[50]; 
+  char c3Name[50]; 
+  char d3Name[50]; 
+  // char a3Name[50];
+  if(lin3 && off3 && qu3) {
+	std::cout << "initializing 3 params" << std::endl;
+    sprintf(b3Name,"%s",qu3->GetName());
+    sprintf(c3Name,"%s",lin3->GetName());
+    sprintf(d3Name,"%s",off3->GetName());
+    b3 = qu3;
+    c3 = lin3;
+    d3 = off3;
+	std::cout << "done" << std::endl;
+  } else {
+    sprintf(b3Name,"b3_%s",name);
+    sprintf(d3Name,"d3_%s",name);
+    sprintf(c3Name,"c3_%s",name);
+    b3 = new RooRealVar(b3Name, b3Name, 0.0, -10.0, 10.0);
+    c3 = new RooRealVar(c3Name, c3Name, 3.0, 0.0, 5.0);
+    d3 = new RooRealVar(d3Name, d3Name, 1.0, 0.5, 3.0);
+  }
+  
+  // char formula[300];
+  // sprintf(formula,
+          // "%s*exp(-%s*%s/((%s*%f+%s)*%s*%s*0.01 + (%s*%f+%s)*%s + %s*100))",
+	  // x.GetName(),
+	  // x.GetName(),x.GetName(),
+	  // c1Name,iso,d1Name,x.GetName(),x.GetName(),
+	  // c2Name,iso,d2Name,x.GetName(),
+	  // a3Name);
+      
+  char formula[300];
+  sprintf(formula,
+          "(%s*exp(-%s*%s/((%s*%f*%f+%s*%f+%s)*%s*%s*0.01 + (%s*%f*%f+%s*%f+%s)*%s + (%s*%f*%f+%s*%f+%s)*100)))*(((%s*%f*%f+%s*%f+%s)*%s*%s*0.01 + (%s*%f*%f+%s*%f+%s)*%s + (%s*%f*%f+%s*%f+%s)*100) > 0)",
+	  x.GetName(),
+	  x.GetName(),x.GetName(),
+	  b1Name,iso,iso,c1Name,iso,d1Name,x.GetName(),x.GetName(),
+	  b2Name,iso,iso,c2Name,iso,d2Name,x.GetName(),
+	  b3Name,iso,iso,c3Name,iso,d3Name,
+	  b1Name,iso,iso,c1Name,iso,d1Name,x.GetName(),x.GetName(),
+	  b2Name,iso,iso,c2Name,iso,d2Name,x.GetName(),
+	  b3Name,iso,iso,c3Name,iso,d3Name);
+
+  std::cout << "the formula is  " << formula << std::endl;
+  char vname[50];
+  sprintf(vname,"pepe2Pdf_%s",name);  
+  // split RooArgSet into 2 lines because you can only put up to 9 arguments at once
+  RooArgSet qcdVars(x,*b1,*b2,*b3,*c1,*c2,*c3);
+  std::cout << "test 1 " << std::endl;
+  qcdVars.add(RooArgSet(*d1,*d2,*d3));
+  std::cout << "test 2 " << std::endl;
+  model = new RooGenericPdf(vname,vname,formula,qcdVars);
+  std::cout << "test 3 " << std::endl;
 }
 
 
