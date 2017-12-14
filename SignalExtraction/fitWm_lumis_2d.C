@@ -1388,8 +1388,8 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
   
     vector<RooRealVar*> nSigp_(nIsoBins), nQCDp_(nIsoBins), dewkp_(nIsoBins), cewkp_(nIsoBins);
    vector<RooRealVar*> nSigm_(nIsoBins), nQCDm_(nIsoBins), dewkm_(nIsoBins), cewkm_(nIsoBins);
-   // vector<RooRealVar*> nEWKp_(nIsoBins), nEWKm_(nIsoBins);
-   vector<RooFormulaVar*> nEWKp_(nIsoBins), nEWKm_(nIsoBins);
+   vector<RooRealVar*> nEWKp_(nIsoBins), nEWKm_(nIsoBins);
+   // vector<RooFormulaVar*> nEWKp_(nIsoBins), nEWKm_(nIsoBins);
    // RooRealVar* nEWKpSR = new RooRealVar("nEWKpSR","nEWKpSR",hEWKMetpIsoBins[0]->Integral());
    // RooRealVar* nEWKmSR = new RooRealVar("nEWKmSR","nEWKmSR",hEWKMetmIsoBins[0]->Integral());
   char nname[50];
@@ -1399,7 +1399,7 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
 	  double qcdFac = 0.9;
       if(j==0) qcdFac = 0.15;
       sprintf(nname, "nAntiSigp%d",j);
-      nSigp_[j] = new RooRealVar(nname,nname,0.1*hWmunuMetpIsoBins[j]->Integral(),0,hDataMetpIsoBins[j]->Integral());      
+      nSigp_[j] = new RooRealVar(nname,nname,hWmunuMetpIsoBins[j]->Integral(),0,hDataMetpIsoBins[j]->Integral());      
       sprintf(nname, "nAntiQCDp%d",j);
       nQCDp_[j] = new RooRealVar(nname,nname,(qcdFac)*hDataMetpIsoBins[j]->Integral(),0,hDataMetpIsoBins[j]->Integral());
 	  
@@ -1408,12 +1408,13 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
       dewkp_[j]->setVal(hEWKMetpIsoBins[j]->Integral()/hWmunuMetpIsoBins[j]->Integral());
 	  
       sprintf(nname, "nAntiEWKp%d",j); sprintf(formula,"dewkp%d*nAntiSigp%d",j,j);
-      nEWKp_[j] = new RooFormulaVar(nname,nname,formula,RooArgList(*nSigp_[j],*dewkp_[j]));
+      // nEWKp_[j] = new RooFormulaVar(nname,nname,formula,RooArgList(*nSigp_[j],*dewkp_[j]));
+	  nEWKp_[j] = new RooRealVar(nname,nname,hEWKMetpIsoBins[j]->Integral(),0.0,(2.0)*hEWKMetpIsoBins[j]->Integral());
 	
 	 
       // W-	 
 	  sprintf(nname, "nAntiSigm%d",j);
-      nSigm_[j] = new RooRealVar(nname,nname,0.1*hWmunuMetmIsoBins[j]->Integral(),0,hDataMetmIsoBins[j]->Integral());
+      nSigm_[j] = new RooRealVar(nname,nname,hWmunuMetmIsoBins[j]->Integral(),0,hDataMetmIsoBins[j]->Integral());
 
       sprintf(nname, "nAntiQCDm%d",j);
       nQCDm_[j] = new RooRealVar(nname,nname,(qcdFac)*hDataMetpIsoBins[j]->Integral(),0,hDataMetmIsoBins[j]->Integral());
@@ -1423,7 +1424,8 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
       dewkm_[j]->setVal(hEWKMetmIsoBins[j]->Integral()/hWmunuMetmIsoBins[j]->Integral());
 	  
       sprintf(nname, "nAntiEWKm%d",j); sprintf(formula,"dewkm%d*nAntiSigm%d",j,j);
-      nEWKm_[j] = new RooFormulaVar(nname,nname,formula,RooArgList(*nSigm_[j],*dewkm_[j]));
+      // nEWKm_[j] = new RooFormulaVar(nname,nname,formula,RooArgList(*nSigm_[j],*dewkm_[j]));
+	  nEWKm_[j] = new RooRealVar(nname,nname,hEWKMetmIsoBins[j]->Integral(),0.0,(2.0)*hEWKMetmIsoBins[j]->Integral());
 	  
 	  /*
       double qcdFac = 0.9;
@@ -1548,8 +1550,8 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
 	  if(j >= 1) {
 		  nSigp_[j]->setVal(0); nSigp_[j]->setConstant(kTRUE);
 		  nSigm_[j]->setVal(0); nSigm_[j]->setConstant(kTRUE);
-		  dewkp_[j]->setVal(0.0); dewkp_[j]->setConstant(kTRUE);
-		  dewkm_[j]->setVal(0.0); dewkm_[j]->setConstant(kTRUE);
+		  nEWKp_[j]->setVal(0.0); nEWKp_[j]->setConstant(kTRUE);
+		  nEWKm_[j]->setVal(0.0); nEWKm_[j]->setConstant(kTRUE);
 	  }
 	  
   }
@@ -1712,11 +1714,11 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
    std::cout << "just finished making the pepes" << std::endl;
    
    // create the appropriate gaussian constraint for the signal region electroweak+ttbar 
-    // RooGaussian constm_sr("constm_sr","constm_sr",*nEWKm_[0],RooConst(nEWKm_[0]->getVal()),RooConst(0.15*nEWKm_[0]->getVal()));
-    // RooGaussian constp_sr("constp_sr","constp_sr",*nEWKp_[0],RooConst(nEWKp_[0]->getVal()),RooConst(0.15*nEWKp_[0]->getVal()));
+    RooGaussian constm_sr("constm_sr","constm_sr",*nEWKm_[0],RooConst(nEWKm_[0]->getVal()),RooConst(0.15*nEWKm_[0]->getVal()));
+    RooGaussian constp_sr("constp_sr","constp_sr",*nEWKp_[0],RooConst(nEWKp_[0]->getVal()),RooConst(0.15*nEWKp_[0]->getVal()));
 	
-	RooGaussian constm_sr("constm_sr","constm_sr",*dewkm_[0],RooConst(0.1*dewkm_[0]->getVal()),RooConst(0.15*dewkm_[0]->getVal()));
-    RooGaussian constp_sr("constp_sr","constp_sr",*dewkp_[0],RooConst(0.1*dewkp_[0]->getVal()),RooConst(0.15*dewkp_[0]->getVal()));
+	// RooGaussian constm_sr("constm_sr","constm_sr",*dewkm_[0],RooConst(dewkm_[0]->getVal()),RooConst(0.15*dewkm_[0]->getVal()));
+    // RooGaussian constp_sr("constp_sr","constp_sr",*dewkp_[0],RooConst(dewkp_[0]->getVal()),RooConst(0.15*dewkp_[0]->getVal()));
 	
 
 	RooGaussian constm_cr1("constm_cr1","constm_cr1",*nEWKm_[1],RooConst(nEWKm_[1]->getVal()),RooConst(0.05*nEWKm_[1]->getVal()));
@@ -1943,8 +1945,8 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
 
   
   
-  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(constp_sr),/*RooFit::Strategy(2),Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
-  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(constm_sr),/*RooFit::Strategy(2),Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
+  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(constp_sr),RooFit::Strategy(2),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
+  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(constm_sr),RooFit::Strategy(2),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
   
   TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", pfmet));
   hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
