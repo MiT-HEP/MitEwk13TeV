@@ -139,7 +139,7 @@ void fitWe_lumis_2d(const TString  outputDir,   // output directory
    
 
   // MET histogram binning and range
-  const Int_t    NBINS  = 75*4;
+  const Int_t    NBINS  = 75;
   const Double_t METMAX = 150;
   // SUPER TEST
 //   const Int_t    NBINS  = 75*2;
@@ -516,21 +516,24 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   TH1D **hMetmIsoValues = new TH1D*[nIsoBins];
   // Create a histogram pointer in each space in the array
   for(int i = 0; i < nIsoBins; i++){
-    hDataMetmIsoBins[i]  = new TH1D(("hDataMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-    hDataMetpIsoBins[i]  = new TH1D(("hDataMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-    hWenuMetpIsoBins[i]  = new TH1D(("hWenuMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-    hWenuMetmIsoBins[i]  = new TH1D(("hWenuMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+	 int fac=1;
+    if(i==0){ fac=4;} else{fac=1;}
+	 
+    hDataMetmIsoBins[i]  = new TH1D(("hDataMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+    hDataMetpIsoBins[i]  = new TH1D(("hDataMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+    hWenuMetpIsoBins[i]  = new TH1D(("hWenuMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+    hWenuMetmIsoBins[i]  = new TH1D(("hWenuMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
 	
-    hEWKMetpIsoBins[i]  = new TH1D(("hEWKMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-    hEWKMetmIsoBins[i]  = new TH1D(("hEWKMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-	hDibMetpIsoBins[i]  = new TH1D(("hDibMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-    hDibMetmIsoBins[i]  = new TH1D(("hDibMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-	hTtbMetpIsoBins[i]  = new TH1D(("hTtbMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
-    hTtbMetmIsoBins[i]  = new TH1D(("hTtbMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+    hEWKMetpIsoBins[i]  = new TH1D(("hEWKMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+    hEWKMetmIsoBins[i]  = new TH1D(("hEWKMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+	hDibMetpIsoBins[i]  = new TH1D(("hDibMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+    hDibMetmIsoBins[i]  = new TH1D(("hDibMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+	hTtbMetpIsoBins[i]  = new TH1D(("hTtbMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
+    hTtbMetmIsoBins[i]  = new TH1D(("hTtbMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS*fac,0,METMAX); 
     //FileService->make<TH1F>(("hM2M0_HB_5_10_p"+int2string(i+1)).c_str(),  ("M2/M0, HB part"+int2string(i+1)+" 5-10GeV").c_str(),  50, 0.0, 2.0);
      hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  1000,vIsoBins[i],vIsoBins[i+1]);
      hMetmIsoValues[i] = new TH1D(("hMetmIsoValues_"+std::to_string(i)).c_str(),"",  1000,vIsoBins[i],vIsoBins[i+1]);
-  
+	 
   }
   
   Double_t NBINS2 = 25;
@@ -704,8 +707,8 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.05); ientry++) {
+    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.2); ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
 
@@ -1353,6 +1356,16 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   //
   RooRealVar pfmet("pfmet","pfmet",0,METMAX);
   pfmet.setBins(NBINS);
+  
+  vector<RooRealVar*> pfmet_(nIsoBins);
+  for (int i = 0; i < nIsoBins; ++i){
+	  sprintf(nname, "pfmet%d",i);
+	  pfmet_[i] = new RooRealVar(nname,nname,0,METMAX);
+	  if(i==0){
+	     pfmet_[i]->setBins(NBINS*4);
+	  } else {pfmet_[i]->setBins(NBINS);}
+	  
+  }
    
   // // Signal PDFs
   // RooDataHist wenuMet ("wenuMET", "wenuMET", RooArgSet(pfmet),hWenuMet);  RooHistPdf pdfWe ("we", "we", pfmet,wenuMet, 1);
@@ -1425,17 +1438,17 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // char pname[50];
   for (int j = 0; j < nIsoBins; ++j){
       // signal pdfs
-      sprintf(nname, "awenuMETp%d",j); RooDataHist *antiWenuMetp_hold = new RooDataHist(nname, nname, RooArgSet(pfmet),hWenuMetpIsoBins[j]);
-      sprintf(nname, "awep%d",j); pdfWep_[j] = new RooHistPdf(nname,nname,pfmet,*antiWenuMetp_hold,1);      
+      sprintf(nname, "awenuMETp%d",j); RooDataHist *antiWenuMetp_hold = new RooDataHist(nname, nname, RooArgSet(*pfmet_[j]),hWenuMetpIsoBins[j]);
+      sprintf(nname, "awep%d",j); pdfWep_[j] = new RooHistPdf(nname,nname,*pfmet_[j],*antiWenuMetp_hold,1);      
       // ewk pdfs
-      sprintf(nname, "aewkMETp%d",j); RooDataHist *antiEWKMetp_hold = new RooDataHist(nname, nname, RooArgSet(pfmet),hEWKMetpIsoBins[j]);
-      sprintf(nname, "aewkp%d",j); pdfEWKp_[j] = new RooHistPdf(nname,nname,pfmet,*antiEWKMetp_hold,1);
+      sprintf(nname, "aewkMETp%d",j); RooDataHist *antiEWKMetp_hold = new RooDataHist(nname, nname, RooArgSet(*pfmet_[j]),hEWKMetpIsoBins[j]);
+      sprintf(nname, "aewkp%d",j); pdfEWKp_[j] = new RooHistPdf(nname,nname,*pfmet_[j],*antiEWKMetp_hold,1);
 	  
-	  sprintf(nname, "awenuMETm%d",j); RooDataHist *antiWenuMetm_hold = new RooDataHist(nname, nname, RooArgSet(pfmet),hWenuMetmIsoBins[j]);
-      sprintf(nname, "awem%d",j); pdfWem_[j] = new RooHistPdf(nname,nname,pfmet,*antiWenuMetm_hold,1);      
+	  sprintf(nname, "awenuMETm%d",j); RooDataHist *antiWenuMetm_hold = new RooDataHist(nname, nname, RooArgSet(*pfmet_[j]),hWenuMetmIsoBins[j]);
+      sprintf(nname, "awem%d",j); pdfWem_[j] = new RooHistPdf(nname,nname,*pfmet_[j],*antiWenuMetm_hold,1);      
       // ewk pdfs
-      sprintf(nname, "aewkMETm%d",j); RooDataHist *antiEWKMetm_hold = new RooDataHist(nname, nname, RooArgSet(pfmet),hEWKMetmIsoBins[j]);
-      sprintf(nname, "aewkm%d",j); pdfEWKm_[j] = new RooHistPdf(nname,nname,pfmet,*antiEWKMetm_hold,1);
+      sprintf(nname, "aewkMETm%d",j); RooDataHist *antiEWKMetm_hold = new RooDataHist(nname, nname, RooArgSet(*pfmet_[j]),hEWKMetmIsoBins[j]);
+      sprintf(nname, "aewkm%d",j); pdfEWKm_[j] = new RooHistPdf(nname,nname,*pfmet_[j],*antiEWKMetm_hold,1);
   }
   
 
@@ -1458,21 +1471,21 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.015);
   // std::cout << "created the first bin " << std::endl;
   // the original
-  qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.015);
-  qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.015);
+  qcdp_[0] = new CPepeModel2isobins("qcdp2d0",*pfmet_[0], 0.015);
+  qcdm_[0] = new CPepeModel2isobins("qcdm2d0",*pfmet_[0], 0.015);
   // double binCenters[] = {0.015, 0.292, 0.393, 0.495, 0.595, 0.693};
   for (int j = 1; j < nIsoBins; ++j){
       sprintf(nname, "qcdp2d%d",j);
       // qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
       // qcdp_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-      qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      qcdp_[j] = new CPepeModel2isobins(nname,*pfmet_[j], (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
       // // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
 	  std::cout << "made the first qcd+" << std::endl;
 	  
 	  printf(nname, "qcdm2d%d",j);
       // qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
       // qcdm_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-      qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      qcdm_[j] = new CPepeModel2isobins(nname,*pfmet_[j], (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
       // // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
 	  std::cout << "made the first qcd-" << std::endl;
   }
@@ -1558,6 +1571,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 	 }
   }
 
+  std::cout << "did roo add pdfts" << std::endl;
     
   // RooSimultaneous pdfTotal("pdfTotal","pdfTotal",rooCat);
   // pdfTotal.addPdf(pdfMetp, "Selectp");
@@ -1601,11 +1615,13 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // put them into a vector map, make sure the names match the RooCategory names
   map<string, RooDataHist*> dataMetp_, dataMetm_;
   // map<string, RooDataHist*> dataMetm_;
+  std::cout << "data hists" << std::endl;
   for(int i = 0; i < nIsoBins; ++i){
 	  sprintf(nname, "iso%d",i);
-	  dataMetp_[nname]=new RooDataHist(nname,nname, RooArgSet(pfmet), hDataMetpIsoBins[i]);
-	  dataMetm_[nname]=new RooDataHist(nname,nname, RooArgSet(pfmet), hDataMetmIsoBins[i]);
+	  dataMetp_[nname]=new RooDataHist(nname,nname, RooArgSet(*pfmet_[i]), hDataMetpIsoBins[i]);
+	  dataMetm_[nname]=new RooDataHist(nname,nname, RooArgSet(*pfmet_[i]), hDataMetmIsoBins[i]);
   }
+  std::cout << "did data hists" << std::endl;
 
   // ------------------------------------------------------------------------
   // ------------------------------------------------------------------------
@@ -1616,16 +1632,17 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   for (int i = 0; i < nIsoBins; ++ i){
 	  sprintf(nname,"iso%d",i); rooCat2dTest.defineType(nname);
   }
-
-  RooDataHist combDatap("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat2dTest),Import(dataMetp_));
-  RooDataHist combDatam("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat2dTest),Import(dataMetm_));
-  
+  std::cout << "comb data" << std::endl;
+  RooDataHist combDatap("dataTotalp","dataTotalp", RooArgList(*pfmet_[0]), Index(rooCat2dTest),Import(dataMetp_));
+  RooDataHist combDatam("dataTotalm","dataTotalm", RooArgList(*pfmet_[0]), Index(rooCat2dTest),Import(dataMetm_));
+  std::cout << "did comb data" << std::endl;
   RooSimultaneous simPdfp("simPdfp","simultaneous pdf W+",rooCat2dTest) ;
   RooSimultaneous simPdfm("simPdfm","simultaneous pdf W-",rooCat2dTest) ;
   for(int i = 0; i < nIsoBins; ++i ){
 	  sprintf(nname, "iso%d", i); simPdfp.addPdf(*pdfMetp_[i],nname);
 	  sprintf(nname, "iso%d", i); simPdfm.addPdf(*pdfMetm_[i],nname);
   }
+  std::cout << "did iso bins" << std::endl;
 
              
   // cout << "Starting values for Wenu yields: " << endl;
@@ -1828,11 +1845,12 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   Double_t ksprobm, ksprobpem, ksprobp, ksprobpep;
   
   for(int i = 0; i < nIsoBins; ++i){
-      
+      double fac=1;
+	  if(i==0)fac=4;
     // set up the diff plot
     // turn this into its own function later?
     std::cout << "set up diff plot #" << i << std::endl;
-    TH1D *hPdfMetp = (TH1D*)(pdfMetp_[i]->createHistogram("hPdfMetp", pfmet));
+    TH1D *hPdfMetp = (TH1D*)(pdfMetp_[i]->createHistogram("hPdfMetp", *pfmet_[i]));
     for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWenuMetpIsoBins[i]->GetBinError(ibin));}
     hPdfMetp->Scale((nSigp_[i]->getVal()+nEWKp_[i]->getVal()+nQCDp_[i]->getVal())/hPdfMetp->Integral());
     TH1D *hMetpDiff = makeDiffHist(hDataMetpIsoBins[i],hPdfMetp,"hMetpDiff");
@@ -1841,7 +1859,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     std::cout << "did diff " <<  i << std::endl;
 
     // turn this part also into its own function later
-    RooPlot *wepframe = pfmet.frame(Bins(NBINS)); 
+    RooPlot *wepframe = pfmet_[i]->frame(Bins(NBINS*fac)); 
     wepframe->GetYaxis()->SetNdivisions(505);
     wepframe->GetXaxis()->SetLabelOffset(2.0);
     sprintf(nname,"iso%d",i);
@@ -1894,7 +1912,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
    
     // Do the W-  plots here
     std::cout << "set up diff plot #" << i << std::endl;
-    TH1D *hPdfMetm = (TH1D*)(pdfMetm_[i]->createHistogram("hPdfMetm", pfmet));
+    TH1D *hPdfMetm = (TH1D*)(pdfMetm_[i]->createHistogram("hPdfMetm", *pfmet_[i]));
     for(int ibin = 1; ibin < hPdfMetm->GetNbinsX(); ++ibin){hPdfMetm->SetBinError(ibin, hWenuMetmIsoBins[i]->GetBinError(ibin));}
     hPdfMetm->Scale((nSigm_[i]->getVal()+nEWKm_[i]->getVal()+nQCDm_[i]->getVal())/hPdfMetm->Integral());
     TH1D *hMetmDiff = makeDiffHist(hDataMetmIsoBins[i],hPdfMetm,"hMetmDiff");
@@ -1903,7 +1921,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     std::cout << "did diff " <<  i << std::endl;
 
     // turn this part also into its own function later
-    RooPlot *wemframe = pfmet.frame(Bins(NBINS)); 
+    RooPlot *wemframe = pfmet_[i]->frame(Bins(NBINS*fac)); 
     wemframe->GetYaxis()->SetNdivisions(505);
     wemframe->GetXaxis()->SetLabelOffset(2.0);
     sprintf(nname,"iso%d",i);
