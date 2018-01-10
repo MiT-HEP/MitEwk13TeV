@@ -141,6 +141,7 @@ void fitWe_lumis_2d(const TString  outputDir,   // output directory
   // MET histogram binning and range
   const Int_t    NBINS  = 75*4;
   const Double_t METMAX = 150;
+  // SUPER TEST
 //   const Int_t    NBINS  = 75*2;
 //   const Double_t METMAX = 75;
 
@@ -504,6 +505,12 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // TH1D **hAntiEWKMetIsoBins    = new TH1D*[5];// hAntiEWKMet->Sumw2();
   TH1D **hEWKMetpIsoBins   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hEWKMetmIsoBins   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+   
+  TH1D **hDibMetpIsoBins   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D **hDibMetmIsoBins   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  
+  TH1D **hTtbMetpIsoBins   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D **hTtbMetmIsoBins   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   TH1D **hMetpIsoValues = new TH1D*[nIsoBins];
   TH1D **hMetmIsoValues = new TH1D*[nIsoBins];
@@ -513,8 +520,13 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     hDataMetpIsoBins[i]  = new TH1D(("hDataMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
     hWenuMetpIsoBins[i]  = new TH1D(("hWenuMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
     hWenuMetmIsoBins[i]  = new TH1D(("hWenuMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+	
     hEWKMetpIsoBins[i]  = new TH1D(("hEWKMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
     hEWKMetmIsoBins[i]  = new TH1D(("hEWKMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+	hDibMetpIsoBins[i]  = new TH1D(("hDibMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+    hDibMetmIsoBins[i]  = new TH1D(("hDibMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+	hTtbMetpIsoBins[i]  = new TH1D(("hTtbMetpIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
+    hTtbMetmIsoBins[i]  = new TH1D(("hTtbMetmIsoBins_"+std::to_string(i)).c_str(),"",  NBINS,0,METMAX); 
     //FileService->make<TH1F>(("hM2M0_HB_5_10_p"+int2string(i+1)).c_str(),  ("M2/M0, HB part"+int2string(i+1)+" 5-10GeV").c_str(),  50, 0.0, 2.0);
      hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  1000,vIsoBins[i],vIsoBins[i+1]);
      hMetmIsoValues[i] = new TH1D(("hMetmIsoValues_"+std::to_string(i)).c_str(),"",  1000,vIsoBins[i],vIsoBins[i+1]);
@@ -692,8 +704,8 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     //
     // loop over events
     //
-    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.05); ientry++) {
+    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.05); ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
 
@@ -1290,7 +1302,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
       
 	  if(j==0){
          sprintf(nname, "nAntiQCDp%d",j);
-         nQCDp_[j] = new RooRealVar(nname,nname,(0.3)*hDataMetpIsoBins[j]->Integral(),0.2*hDataMetpIsoBins[j]->Integral(),0.5*hDataMetpIsoBins[j]->Integral());
+         nQCDp_[j] = new RooRealVar(nname,nname,(0.4)*hDataMetpIsoBins[j]->Integral(),0.2*hDataMetpIsoBins[j]->Integral(),0.6*hDataMetpIsoBins[j]->Integral());
 	  } else {
          sprintf(nname, "nAntiQCDp%d",j);
          nQCDp_[j] = new RooRealVar(nname,nname,hDataMetpIsoBins[j]->Integral(),0.95*hDataMetpIsoBins[j]->Integral(),1.05*hDataMetpIsoBins[j]->Integral());
@@ -1427,29 +1439,40 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   }
   
 
-  // test systematic quadratic*iso
-  vector <CPepeModel2isobinsQuad*> qcdp_(nIsoBins), qcdm_(nIsoBins);
-  //original
-  // vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  // test systematic quadratic*iso or constant
+  // constant
+  // vector <CPepeModel2isobinsConst*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  // // quadratic 
+  // vector <CPepeModel2isobinsQuad*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  // //original
+  vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  
+  
+  // qcdp_[0] = new CPepeModel2isobinsConst("qcdp2d0",pfmet, 0.015);
+  // std::cout << "created first bin +" << std::endl;
+  // qcdm_[0] = new CPepeModel2isobinsConst("qcdm2d0",pfmet, 0.015);
+  // std::cout << "created the first bin " << std::endl;
   // Test the extra quadratic*isolation term for systematics
-  qcdp_[0] = new CPepeModel2isobinsQuad("qcdp2d0",pfmet, 0.015);
-  std::cout << "created first bin +" << std::endl;
-  qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.015);
-  std::cout << "created the first bin " << std::endl;
+  // qcdp_[0] = new CPepeModel2isobinsQuad("qcdp2d0",pfmet, 0.015);
+  // std::cout << "created first bin +" << std::endl;
+  // qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.015);
+  // std::cout << "created the first bin " << std::endl;
   // the original
-  // qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.015);
-  // qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.015);
+  qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.015);
+  qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.015);
   // double binCenters[] = {0.015, 0.292, 0.393, 0.495, 0.595, 0.693};
   for (int j = 1; j < nIsoBins; ++j){
       sprintf(nname, "qcdp2d%d",j);
-      qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-      // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // qcdp_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
       // // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
 	  std::cout << "made the first qcd+" << std::endl;
 	  
 	  printf(nname, "qcdm2d%d",j);
-      qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-      // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      // qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      // qcdm_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
       // // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, binCenters[j], qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
 	  std::cout << "made the first qcd-" << std::endl;
   }
@@ -1729,9 +1752,9 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   
 
   
-    
-  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE)/*,RooFit::Strategy(2),Minimizer("Minuit2","minimize")*/,ExternalConstraints(constp_sr),PrintEvalErrors(-1));
-  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE)/*,RooFit::Strategy(2),Minimizer("Minuit2","minimize")*/,ExternalConstraints(constm_sr),PrintEvalErrors(-1));
+    // had commented out the Min2/Strat2 when running some of the other options
+  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(constp_sr),PrintEvalErrors(-1));
+  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(constm_sr),PrintEvalErrors(-1));
   
   
      char plotname2[100];
@@ -1977,7 +2000,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 
  
   // // do likelihood plots stuff
-  // TCanvas *c2 = MakeCanvas("c2","c2",800,600);
+  TCanvas *c2 = MakeCanvas("c2","c2",800,600);
   // // // // test likelihood plotting --------------
     // // // // Construct Likelihood
     // RooAbsReal* nllm = simPdfm.createNLL(combDatam,NumCPU(2)) ;
@@ -2076,7 +2099,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
    // sprintf(plotname,"%s/LogLikelihood_nQCDm5.png",CPlot::sOutDir.Data());
    // c2->Clear();frameqcdmll5->Draw();c2->Update();c2->SaveAs(plotname);
    
-       // // // // Plot likelihood scan frac 
+       // // // // // Plot likelihood scan frac 
    // RooPlot* framesigpll = nSigp_[0]->frame(Bins(10),Range(0.9*nSigp_[0]->getVal(),1.1*nSigp_[0]->getVal()),Title("")) ; //
    // RooPlot* frameewkpll = nEWKp_[0]->frame(Bins(10),Range(0.9*nEWKp_[0]->getVal(),1.1*nEWKp_[0]->getVal()),Title("")) ; //frameewkpll->SetMinimum(0); frameewkpll->SetMaximum(100);
    // RooPlot* frameqcdpll = nQCDp_[0]->frame(Bins(10),Range(0.9*nQCDp_[0]->getVal(),1.1*nQCDp_[0]->getVal()),Title("")) ; //frameqcdpll->SetMinimum(0); frameqcdpll->SetMaximum(100);
@@ -2112,7 +2135,7 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
     // // // // // Plot the profile likelihood in frac
 
 
-    // // // // Plot the profile likelihood in frac
+    // // // // // Plot the profile likelihood in frac
     // pll_nsigp->plotOn(framesigpll,LineColor(kRed)) ;  framesigpll->SetMinimum(0); framesigpll->SetMaximum(10);
     // pll_newkp->plotOn(frameewkpll,LineColor(kRed)) ;  frameewkpll->SetMinimum(0); frameewkpll->SetMaximum(10);
     // pll_nqcdp->plotOn(frameqcdpll,LineColor(kRed)) ;  frameqcdpll->SetMinimum(0); frameqcdpll->SetMaximum(10);
