@@ -357,6 +357,8 @@ void fitWm(const TString  outputDir,   // output directory
   vector<Int_t>   typev;
   
   ///the 10 times slices corresponding ntuples eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon/
+  // this is the equivalent for the time stability
+  //  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon_fixGen_2018_01_12/Lumi10Parts_Part"+input_section+"/Wenu/ntuples/data_select.root"); typev.push_back(eData);
 
   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
@@ -1870,31 +1872,31 @@ RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraint
   Double_t chi2prob, chi2ndf;
   Double_t ksprob, ksprobpe;
   
-  chi2prob = hDataMet->Chi2Test(hPdfMet,"PUW");
-  chi2ndf  = hDataMet->Chi2Test(hPdfMet,"CHI2/NDFUW");
-  ksprob   = hDataMet->KolmogorovTest(hPdfMet);
-  ksprobpe = hDataMet->KolmogorovTest(hPdfMet,"DX");
-  sprintf(txtfname,"%s/fitresWm.txt",CPlot::sOutDir.Data());
-  txtfile.open(txtfname);
-  assert(txtfile.is_open());
-  
-  flags = txtfile.flags();
-  txtfile << setprecision(10);
-  txtfile << " *** Yields *** " << endl;
-  txtfile << "Selected: " << hDataMet->Integral() << endl;
-  txtfile << "  Signal: " << nSig.getVal() << " +/- " << nSig.getPropagatedError(*fitRes) << endl;
-  txtfile << "     QCD: " << nQCD.getVal() << " +/- " << nQCD.getPropagatedError(*fitRes) << endl;
-  txtfile << "   Other: " << nEWK.getVal() << " +/- " << nEWK.getPropagatedError(*fitRes) << endl;
-  txtfile << endl;
-  txtfile.flags(flags);
-  
-  fitRes->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
-  txtfile << endl;
-  printCorrelations(txtfile, fitRes);
-  txtfile << endl;
-  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
-  txtfile.close();
-  
+  //  chi2prob = hDataMet->Chi2Test(hPdfMet,"PUW");
+  //  chi2ndf  = hDataMet->Chi2Test(hPdfMet,"CHI2/NDFUW");
+  //  ksprob   = hDataMet->KolmogorovTest(hPdfMet);
+  //  ksprobpe = hDataMet->KolmogorovTest(hPdfMet,"DX");
+  //  sprintf(txtfname,"%s/fitresWm.txt",CPlot::sOutDir.Data());
+  //  txtfile.open(txtfname);
+  //  assert(txtfile.is_open());
+
+  //  flags = txtfile.flags();
+  //  txtfile << setprecision(10);
+  //  txtfile << " *** Yields *** " << endl;
+  //  txtfile << "Selected: " << hDataMet->Integral() << endl;
+  //  txtfile << "  Signal: " << nSig.getVal() << " +/- " << nSig.getPropagatedError(*fitRes) << endl;
+  //  txtfile << "     QCD: " << nQCD.getVal() << " +/- " << nQCD.getPropagatedError(*fitRes) << endl;
+  //  txtfile << "   Other: " << nEWK.getVal() << " +/- " << nEWK.getPropagatedError(*fitRes) << endl;
+  //  txtfile << endl;
+  //  txtfile.flags(flags);
+
+  //  fitRes->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  //  txtfile << endl;
+  //  printCorrelations(txtfile, fitRes);
+  //  txtfile << endl;
+  //  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
+  //  txtfile.close();
+
   chi2prob = hDataMetp->Chi2Test(hPdfMetp,"PUW");
   chi2ndf  = hDataMetp->Chi2Test(hPdfMetp,"CHI2/NDFUW");
   ksprob   = hDataMetp->KolmogorovTest(hPdfMetp);
