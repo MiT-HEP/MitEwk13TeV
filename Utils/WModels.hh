@@ -327,7 +327,7 @@ CPepeModel2isobins::CPepeModel2isobins(const char *name, RooRealVar &x, double i
   } else {
     sprintf(c1Name,"c1_%s",name);
     sprintf(d1Name,"d1_%s",name);
-    c1 = new RooRealVar(c1Name, c1Name, 1.0, -10.0, 10.0);
+    c1 = new RooRealVar(c1Name, c1Name, 1.0, -2.0, 10.0);
     d1 = new RooRealVar(d1Name, d1Name, 0.5, -2.0, 4.0);
   }
   char c2Name[50]; 
@@ -472,8 +472,8 @@ CPepeModel2isobinsQuad::CPepeModel2isobinsQuad(const char *name, RooRealVar &x, 
     sprintf(b1Name,"b1_%s",name);
     sprintf(c1Name,"c1_%s",name);
     sprintf(d1Name,"d1_%s",name);
-    b1 = new RooRealVar(b1Name, b1Name, 0.0, -15.0, 10.0);
-    c1 = new RooRealVar(c1Name, c1Name, 1.0, -2.0, 20.0);
+    b1 = new RooRealVar(b1Name, b1Name, 0.0, -15.0, 15.0);
+    c1 = new RooRealVar(c1Name, c1Name, 1.0, -10.0, 20.0);
     d1 = new RooRealVar(d1Name, d1Name, 0.5, -4.0, 4.0);
   }
   char b2Name[50]; 
@@ -493,7 +493,7 @@ CPepeModel2isobinsQuad::CPepeModel2isobinsQuad(const char *name, RooRealVar &x, 
     sprintf(b2Name,"b2_%s",name);
     sprintf(d2Name,"d2_%s",name);
     sprintf(c2Name,"c2_%s",name);
-    b2 = new RooRealVar(b2Name, b2Name, 0.0, -10.0, 10.0);
+    b2 = new RooRealVar(b2Name, b2Name, 0.0, -10.0, 15.0);
     c2 = new RooRealVar(c2Name, c2Name, -3.0, -10.0, 5.0);
     d2 = new RooRealVar(d2Name, d2Name, 8.0, 6.0, 12.0);
   }
@@ -570,9 +570,9 @@ CPepeModel2isobinsMuons::CPepeModel2isobinsMuons(const char *name, RooRealVar &x
     sprintf(c1Name,"c1_%s",name);
     sprintf(d1Name,"d1_%s",name);
     // c1 = new RooRealVar(c1Name, c1Name, 1.0, -5.0, 15.0);
-    c1 = new RooRealVar(c1Name, c1Name, 5.0, -10.0, 10.0);
+    c1 = new RooRealVar(c1Name, c1Name, 0.5, -10.0, 10.0);
     // d1 = new RooRealVar(d1Name, d1Name, 0.5, -5.0, 10.0);
-    d1 = new RooRealVar(d1Name, d1Name, 1.0, -30.0, 30.0);
+    d1 = new RooRealVar(d1Name, d1Name, 4.0, -30.0, 30.0);
   }
   char c2Name[50]; 
   char d2Name[50]; 
@@ -586,9 +586,9 @@ CPepeModel2isobinsMuons::CPepeModel2isobinsMuons(const char *name, RooRealVar &x
     sprintf(d2Name,"d2_%s",name);
     sprintf(c2Name,"c2_%s",name);
     // c2 = new RooRealVar(c2Name, c2Name, -3.0, -10.0, 10.0);
-    c2 = new RooRealVar(c2Name, c2Name, -5.0, -15.0, 10.0);
+    c2 = new RooRealVar(c2Name, c2Name, 0.1, -15.0, 10.0);
     // d2 = new RooRealVar(d2Name, d2Name, 8.0, 0.0, 15.0);
-    d2 = new RooRealVar(d2Name, d2Name, 10.0, -40.0, 40.0);
+    d2 = new RooRealVar(d2Name, d2Name, 6.0, -40.0, 40.0);
   }
   // char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,2.9,0.3,6.0);
   char c3Name[50]; 
@@ -603,9 +603,9 @@ CPepeModel2isobinsMuons::CPepeModel2isobinsMuons(const char *name, RooRealVar &x
     sprintf(d3Name,"d3_%s",name);
     sprintf(c3Name,"c3_%s",name);
     // c3 = new RooRealVar(c3Name, c3Name, 3.0, -5.0, 10.0);
-    c3 = new RooRealVar(c3Name, c3Name, 3.0, -10.0, 10.0);
+    c3 = new RooRealVar(c3Name, c3Name, 0.1, -10.0, 10.0);
     // d3 = new RooRealVar(d3Name, d3Name, 1.0, -5.0, 10.0);
-    d3 = new RooRealVar(d3Name, d3Name, 1.0, -40.0, 40.0);
+    d3 = new RooRealVar(d3Name, d3Name, 6.0, -40.0, 40.0);
   }
   
   // char formula[300];
