@@ -270,18 +270,18 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_genFix/",directory.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkgTopEWK/",directory.Data()));
-  // recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
-  // recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  // recoilCorr->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkgTopEWK/",directory.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
+  // recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
   // recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
   recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_genFix/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkgTopEWK/",directory.Data()));
-  // recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
-  // recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  // recoilCorrm->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkgTopEWK/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
+  // recoilCorrm->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
 //   // placeholders until recoil files are fixed
 //   RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
@@ -454,10 +454,10 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   
    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon/Lumi10Parts_Part"+input_section+"/AntiWenu/ntuples/data_select.raw.root"); typev.push_back(eAntiData);
    // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/data_select.raw.root");  typev.push_back(eAntiData);
-   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
+   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2018_02_20_CR_AntiWe/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
 // // // // // // 
-   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
-   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
+   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2018_02_20_CR_AntiWe/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
+   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2018_02_20_CR_AntiWe/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
@@ -1696,9 +1696,9 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // constant
   // vector <CPepeModel2isobinsConst*> qcdp_(nIsoBins), qcdm_(nIsoBins);
   // // quadratic 
-  vector <CPepeModel2isobinsQuad*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  // vector <CPepeModel2isobinsQuad*> qcdp_(nIsoBins), qcdm_(nIsoBins);
   // //original
-  // vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
+  vector <CPepeModel2isobins*> qcdp_(nIsoBins), qcdm_(nIsoBins);
   
   
   // qcdp_[0] = new CPepeModel2isobinsConst("qcdp2d0",pfmet, 0.015);
@@ -1706,12 +1706,12 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // qcdm_[0] = new CPepeModel2isobinsConst("qcdm2d0",pfmet, 0.015);
   // std::cout << "created the first bin " << std::endl;
   // Test the extra quadratic*isolation term for systematics
-  qcdp_[0] = new CPepeModel2isobinsQuad("qcdp2d0",pfmet, 0.015);
-  qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.015);
+  // qcdp_[0] = new CPepeModel2isobinsQuad("qcdp2d0",pfmet, 0.035);
+  // qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.035);
   // std::cout << "created the first bin " << std::endl;
   // the original
-   // qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.015);
-   // qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.015);
+   qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, 0.035);
+   qcdm_[0] = new CPepeModel2isobins("qcdm2d0",pfmet, 0.035);
   double binCentersWp[] = {0.00805894 , 0.292814 , 0.39376 , 0.494721 , 0.594866 , 0.696129 };
   double binCentersWm[] = {0.00829091  , 0.292647 , 0.393855 , 0.494664 , 0.595103 , 0.695609 };
   // qcdp_[0] = new CPepeModel2isobins("qcdp2d0",pfmet, binCentersWp[0]);
@@ -1722,19 +1722,19 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   
   for (int j = 1; j < nIsoBins; ++j){
       sprintf(nname, "qcdp2d%d",j);
-      qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-      // qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, binCentersWp[j], qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-      // qcdp_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-       // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-     // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, binCentersWp[j], qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // // qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, binCentersWp[j], qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+      // // qcdp_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+       qcdp_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
+     // // qcdp_[j] = new CPepeModel2isobins(nname,pfmet, binCentersWp[j], qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
 	  std::cout << "made the first qcd+" << std::endl;
 	  
 	  printf(nname, "qcdm2d%d",j);
-      qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-      // qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, binCentersWm[j],  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      // qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+      // // qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, binCentersWm[j],  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
       // // qcdm_[j] = new CPepeModel2isobinsConst(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-       // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-     // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, binCentersWm[j], qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+       qcdm_[j] = new CPepeModel2isobins(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
+     // // qcdm_[j] = new CPepeModel2isobins(nname,pfmet, binCentersWm[j], qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
 	  std::cout << "made the first qcd-" << std::endl;
   }
   
@@ -1872,11 +1872,11 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 	 if(j==0||j==1||j==2){
 		 sprintf(nname,"pdfWep%d",j);
 		  pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j]));
-		 //pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfWxp_[j],*pdfZxxp_[j],*pdfDibp_[j],*pdfTtbp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nWxp_[j],*nZxxp_[j],*nDibp_[j],*nTtbp_[j],*nQCDp_[j]));
+		 // pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfWxp_[j],*pdfZxxp_[j],*pdfDibp_[j],*pdfTtbp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nWxp_[j],*nZxxp_[j],*nDibp_[j],*nTtbp_[j],*nQCDp_[j]));
 		 
 		 sprintf(nname,"pdfWem%d",j);
 		 pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j]));
-		 //pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfWxm_[j],*pdfZxxm_[j],*pdfDibm_[j],*pdfTtbm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nWxm_[j],*nZxxm_[j],*nDibm_[j],*nTtbm_[j],*nQCDm_[j]));
+		 // pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfWxm_[j],*pdfZxxm_[j],*pdfDibm_[j],*pdfTtbm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nWxm_[j],*nZxxm_[j],*nDibm_[j],*nTtbm_[j],*nQCDm_[j]));
 	 } else {
          sprintf(nname,"pdfWep%d",j);
 		 pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*(qcdp_[j]->model)),RooArgList(*nQCDp_[j]));
@@ -2081,11 +2081,11 @@ const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 
   
     // had commented out the Min2/Strat2 when running some of the other options
-  //RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgSet(srp_4ewk,crp_4ewk)),PrintEvalErrors(-1));
-  //RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgSet(srm_4ewk,crm_4ewk)),PrintEvalErrors(-1));
+  // RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2),Minos(kTrue),/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgSet(srp_4ewk,crp_4ewk)),PrintEvalErrors(-1));
+  // RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2),Minos(kTrue),/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgSet(srm_4ewk,crm_4ewk)),PrintEvalErrors(-1));
   
-   RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgList(constp_sr,constp_cr,constp_cr2)),PrintEvalErrors(-1));
-   RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgList(constm_sr,constm_cr,constm_cr2)),PrintEvalErrors(-1));
+   RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2),Minos(kTRUE)/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgList(constp_sr,constp_cr,constp_cr2)),PrintEvalErrors(-1));
+   RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2),Minos(kTRUE)/*,Minimizer("Minuit2","minimize"),*/,ExternalConstraints(RooArgList(constm_sr,constm_cr,constm_cr2)),PrintEvalErrors(-1));
   
     
     //--------------------------------------------------------------------------------------------------------------

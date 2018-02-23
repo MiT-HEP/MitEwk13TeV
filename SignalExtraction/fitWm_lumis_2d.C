@@ -225,16 +225,16 @@ void fitWm_lumis_2d(const TString  outputDir,   // output directory
   // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
   // recoilCorr->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkgTopEWK_par%s/",directory.Data(),input_section.Data()));
   recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
-  // recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  // recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
   recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_genFix/",directory.Data()));
   // recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
   // recoilCorrm->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkgTopEWK_par%s/",directory.Data(),input_section.Data()));
   recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
-  // recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  // recoilCorrm->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
 // //   const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
 // //   const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
@@ -400,12 +400,12 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
   
   // original ntuples without EWK combined
     fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/top_select.raw.root"); typev.push_back(eTtb);
-	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wx_select.raw.root"); typev.push_back(eWx);
-	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/zxx_select.raw.root"); typev.push_back(eZxx);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/wx_select.raw.root"); typev.push_back(eWx);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/zxx_select.raw.root"); typev.push_back(eZxx);
 	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/ww_select.raw.root"); typev.push_back(eDib);
 	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wz_select.raw.root"); typev.push_back(eDib);
 	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/zz_select.raw.root"); typev.push_back(eDib);
-	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wm_select.raw.root"); typev.push_back(eWmunu);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/wm_select.raw.root"); typev.push_back(eWmunu);
   
   // // the original ntuples
   // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
@@ -416,8 +416,14 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
 
 //   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
 fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon/Lumi10Parts_Part"+input_section+"/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
-  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2018_02_20_CR_AntiWe/AntiWmunu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2018_02_20_CR_AntiWe/AntiWmunu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWmunu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWmunu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWmunu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
+	fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2018_02_20_CR_AntiWe/AntiWmunu/ntuples/wm_select.root"); typev.push_back(eAntiWmunu);
+  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
+  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
   fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWmunu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
 // //   fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/SM/SelectQCD_01_31/AntiWmunu/ntuples/qcd_select.root");  typev.push_back(eAntiQCD);
 
@@ -2333,8 +2339,8 @@ fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select1
   // RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),PrintEvalErrors(-1));
   // RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),PrintEvalErrors(-1));
   
-  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(RooArgSet(constp_sr,constp_cr)),RooFit::Strategy(2),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
-  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(RooArgSet(constm_sr,constm_cr)),RooFit::Strategy(2),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
+  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(RooArgSet(constp_sr,constp_cr)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
+  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(RooArgSet(constm_sr,constm_cr)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
   
   TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", pfmet));
   hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
