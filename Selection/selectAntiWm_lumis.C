@@ -45,11 +45,12 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectWm(const TString conf="wm.conf", // input file
-              const TString outputDir=".",  // output directory
-	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
+void selectAntiWm_lumis(const TString conf="wm.conf", // input file
+              const TString outputDir=".",       // output directory
+	         const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+              const TString input_section = "1"              
 ) {
-  gBenchmark->Start("selectWm");
+  gBenchmark->Start("selectAntiWm");
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
@@ -69,9 +70,9 @@ void selectWm(const TString conf="wm.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+  TFile *f_rw = TFile::Open("./pileup_rw_80X_"+input_section+".root", "read");
 
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
@@ -142,7 +143,7 @@ void selectWm(const TString conf="wm.conf", // input file
 
     // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
-    //flag to save the info for recoil corrections
+     //flag to save the info for recoil corrections
     Bool_t isRecoil = ((snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
     // flag to reject W->mnu events when selecting wrong flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
@@ -153,9 +154,9 @@ void selectWm(const TString conf="wm.conf", // input file
     // Set up output ntuple
     //
     TString outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.root");
-    if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
+	if(isam!=0 && !doScaleCorr) outfilename = ntupDir + TString("/") + snamev[isam] + TString("_select.raw.root");
     cout << outfilename << endl;
-    TFile *outFile = new TFile(outfilename,"RECREATE"); 
+	TFile *outFile = new TFile(outfilename,"RECREATE"); 
     TTree *outTree = new TTree("Events","Events");
     outTree->Branch("runNum",     &runNum,     "runNum/i");      // event run number
     outTree->Branch("lumiSec",    &lumiSec,    "lumiSec/i");     // event lumi section
@@ -335,7 +336,7 @@ void selectWm(const TString conf="wm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+        if (!isMuonTriggerNoIso(triggerMenu, info->triggerBits)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -355,23 +356,23 @@ void selectWm(const TString conf="wm.conf", // input file
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
-          // apply scale and resolution corrections to MC
+		  // apply scale and resolution corrections to MC
           Double_t mupt_corr = mu->pt;
           if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
             mupt_corr = gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
 
-          if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
-          if(mupt_corr     < VETO_PT)  continue; // loose lepton pT cut
-          if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
+          if(fabs(mu->eta) > VETO_PT)  continue; // loose lepton |eta| cut
+          if(mu->pt        < VETO_ETA) continue; // loose lepton pT cut
+         // if(passMuonLooseID(mu)) nLooseLep++; // loose lepton selection
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
           }
           
-          if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
-	  if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
-          if(!passMuonID(mu))                 continue;  // lepton selection
-          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+          if(fabs(mu->eta) > ETA_CUT)         continue; // lepton |eta| cut
+          if(mu->pt < PT_CUT)                 continue; // lepton pT cut   
+          if(!passAntiMuonID(mu))             continue; // lepton anti-selection
+          if(!isMuonTriggerObjNoIso(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
 
 	  passSel=kTRUE;
 	  goodMuon = mu;
@@ -382,11 +383,12 @@ void selectWm(const TString conf="wm.conf", // input file
 	  nsel+=weight;
           nselvar+=weight*weight;
 	  
-          // apply scale and resolution corrections to MC
+	   // apply scale and resolution corrections to MC
           Double_t goodMuonpt_corr = goodMuon->pt;
           if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
             goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
 
+	  
 	  TLorentzVector vLep; 
 	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
@@ -440,9 +442,9 @@ void selectWm(const TString conf="wm.conf", // input file
             genVPhi  = tvec.Phi();
             genVy    = tvec.Rapidity();
             genVMass = tvec.M();
-
+			
             if (gvec && glep1) {
-	      //genV      = new TLorentzVector(0,0,0,0);
+	     	      //genV      = new TLorentzVector(0,0,0,0);
 	      //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
 	      genLep    = new TLorentzVector(0,0,0,0);
 	      if(BOSON_ID*glepq1>0)
@@ -575,5 +577,5 @@ void selectWm(const TString conf="wm.conf", // input file
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;  
       
-  gBenchmark->Show("selectWm"); 
+  gBenchmark->Show("selectAntiWm"); 
 }

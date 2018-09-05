@@ -20,6 +20,11 @@
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
+#include "../SignalExtraction/rochcor2015r.cc"
+#include "../SignalExtraction/rochcor2015r.h"
+#include "../SignalExtraction/muresolution_run2r.h"
+#include "../SignalExtraction/muresolution_run2r.cc"
+
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -28,6 +33,7 @@
 #include "RooAddPdf.h"
 #include "RooHistPdf.h"
 #include "RooKeysPdf.h"
+#include "RooHist.h"
 #include "RooPlot.h"
 #include "RooFitResult.h"
 #include "RooDataHist.h"
@@ -36,12 +42,13 @@
 #include "RooRealIntegral.h"
 #include "Math/MinimizerOptions.h"
 #include "Math/Minimizer.h"
+#include "RooConstVar.h"
 #endif
 
 using namespace RooFit;
 using namespace std;
 
-bool do_keys=true;
+bool do_keys=false;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -172,8 +179,11 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 
 
 //   Double_t ptbins[] = {0,2,6,10,20,30,40,55,70,100};
+  // may22 binning
+  Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
+
 // oct7 binning below
-  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
+//  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
 // oct2 binning below
   //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
 //   Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
@@ -190,9 +200,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   vector<Bool_t> isBkgv;
 
   if (useData == 0){
-    fnamev.push_back(TString(infoldername) + TString("wm_select.raw.root")); isBkgv.push_back(kFALSE);
+    //    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
+    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/2017_10_27_fixGen/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
+    //    fnamev.push_back(TString(infoldername) + TString("wm_select.raw.root")); isBkgv.push_back(kFALSE);
   } else if (useData == 1){
-    fnamev.push_back(TString(infoldername) + TString("data_select.root")); isBkgv.push_back(kFALSE);
+    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/data_select.root"); isBkgv.push_back(kFALSE);
+  ///    fnamev.push_back(TString(infoldername) + TString("data_select.root")); isBkgv.push_back(kFALSE);
   } else {
     cout << "useData value doesn't make sense" << endl;
   }
@@ -207,7 +220,9 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   
   const Double_t PT_CUT  = 25;
   const Double_t ETA_CUT = 2.4;
-     
+
+  const Double_t mu_MASS = 0.1057;
+  rochcor2015 *rmcor = new rochcor2015();
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -227,6 +242,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   RooWorkspace pdfsU2("pdfsU2");
 
   for(Int_t ibin=0; ibin<nbins; ibin++) {
+  //  for(Int_t ibin=0; ibin<5; ibin++) {
 
     int range=100;
     if(ptbins[ibin]>80) range=125;
@@ -309,7 +325,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   Float_t scale1fb, puWeight, scale1fbUp, scale1fbDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  TLorentzVector *lep=0, *genV = 0;  
+  TLorentzVector *lep=0, *lep_raw=0, *genV = 0;
+
 //   Float_t puWeight;
 //   Float_t scale1fb;
 
@@ -331,6 +348,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("puppiMet",      &met);       // MET
     intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
+    //    intree->SetBranchAddress("met",      &met);       // MET
+    //    intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
@@ -339,18 +358,28 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
     intree->SetBranchAddress("genV",      &genV);       // lepton 4-vector 
     intree->SetBranchAddress("puWeight",     &puWeight); 
-//     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
+    //     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
     //
     // Loop over events
     //
 
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
- 
+
+      // apply rochester correction
+      TLorentzVector mu;
+      mu.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
+      float qter=1.0;
+      if(infoldername.Contains("data_")) {
+	rmcor->momcor_data(mu,q,0,qter);
+      } else {
+	rmcor->momcor_mc(mu,q,0,qter);
+      } 
+
       if(charge== 1 && q<0) continue;
       if(charge==-1 && q>0) continue;
      
-      if(lep->Pt()        < PT_CUT)  continue;  
+      if(mu.Pt()        < PT_CUT)  continue;  
       if(fabs(lep->Eta()) > ETA_CUT) continue;
       
       // 0 is inclusive, 1 is fabs(eta)<=0.5,  2 is fabs(eta)=[0.5,1], 3 is fabs(eta)>=1
@@ -364,30 +393,47 @@ void fitRecoilWm(TString infoldername,  // input ntuple
           ipt = ibin;
       }
       if(ipt<0) continue;
-    
-      vu1Var[ipt].setVal(u1);
-      vu2Var[ipt].setVal(u2);
+
+      double pU1=u1;
+      double pU2=u2;
+
+      TVector2 vLepRaw1((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
+      TVector2 vLepCor1((mu.Pt())*cos(lep->Phi()),(mu.Pt())*sin(lep->Phi()));
+
+      TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+      Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 - vLepCor1).Mod();
+      Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 - vLepCor1).Phi();
+      // corrMetWithLepton and mu corrected for rochCorr 
+      double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + mu.Pt()*cos(lep->Phi());
+      double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + mu.Pt()*sin(lep->Phi());
+      double pU   = sqrt(pUX*pUX+pUY*pUY);
+      // projected on the corrected W 
+      double pCos = - (pUX*cos(genVPhi) + pUY*sin(genVPhi))/pU;
+      double pSin =   (pUX*sin(genVPhi) - pUY*cos(genVPhi))/pU;
+      pU1   = pU*pCos; // U1 in data
+      pU2   = pU*pSin; // U2 in data
+
+      vu1Var[ipt].setVal(pU1);
+      vu2Var[ipt].setVal(pU2);
       lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
       lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
 
       if(isBkgv[ifile]) {
-        hPFu1Bkgv[ipt]->Fill(u1,scale1fb*lumi);
-        hPFu2Bkgv[ipt]->Fill(u2,scale1fb*lumi);
-      
+        hPFu1Bkgv[ipt]->Fill(pU1,scale1fb*lumi);
+        hPFu2Bkgv[ipt]->Fill(pU2,scale1fb*lumi);
       } else {
-	hPFu1v[ipt]->Fill(u1,scale1fb*lumi);
-	hPFu2v[ipt]->Fill(u2,scale1fb*lumi);
+	hPFu1v[ipt]->Fill(pU1,scale1fb*lumi);
+	hPFu2v[ipt]->Fill(pU2,scale1fb*lumi);
 	//	hPFu1v[ipt]->Fill(u1,scale1fbUp*lumi);
 	//	hPFu2v[ipt]->Fill(u2,scale1fbUp*lumi);
 	//	hPFu1v[ipt]->Fill(u1,scale1fbDown*lumi);
 	//	hPFu2v[ipt]->Fill(u2,scale1fbDown*lumi);
-
       }
     }
     
     delete infile;
     infile=0, intree=0;   
-  }  
+  }
   
   Double_t xval[nbins], xerr[nbins];
   for(Int_t ibin=0; ibin<nbins; ibin++) {
@@ -704,7 +750,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 
     
     grPFu2frac2 = new TGraphErrors(nbins,xval,pfu2Frac2, xerr,pfu2Frac2Err);
-    grPFu1frac2->GetYaxis()->SetRangeUser(0., 1.);
+    grPFu2frac2->GetYaxis()->SetRangeUser(0., 1.);
     grPFu2frac2->SetName("grPFu2frac2");
     fcnPFu2frac2->SetParameter(0,fcnPFu2sigma0->GetParameter(0));
     fcnPFu2frac2->SetParameter(1,fcnPFu2sigma0->GetParameter(1));
@@ -1133,6 +1179,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 		int etaBinCategory
 ) {
   char pname[50];
+  char lumi[50];
   char ylabel[50];
   char binlabel[50];
   char binYlabel[50];
@@ -1206,7 +1253,10 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     name.str(""); name << "gauss3_" << ibin;
     RooGaussian gauss3(name.str().c_str(),name.str().c_str(),u,mean3,sigma3);name.str("");
     
-    
+    RooGaussian constGauss1("constGauss1","constGauss1",mean1,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss2("constGauss2","constGauss2",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+    RooGaussian constGauss3("constGauss3","constGauss3",mean3,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
+
 //     if( ibin == 0){
 //       mean1.setVal(hv[ibin]->GetMean());
 //       mean2.setVal(hv[ibin]->GetMean());
@@ -1363,23 +1413,25 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     fitResult = modelpdf.fitTo(dataHist,
 			       NumCPU(4),
 			       Minimizer("Minuit2","minimize"),
+			       ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
                                //RooFit::Minos(),
 			       RooFit::Strategy(2),
 	                       RooFit::Save());
 
 
 
-    if(fitResult->status()>1) {
+    if(fitResult->status()>0) {
 
       fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
 				 Minimizer("Minuit2","scan"),
+				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
     }
 
     c->SetFillColor(kWhite);
-    if(fitResult->status()>1) c->SetFillColor(kYellow);
+    if(fitResult->status()>0) c->SetFillColor(kYellow);
 
     std::cout << "frac 2 v1 = " << frac2.getVal() << std::endl;
     std::cout << "frac 3 v1 = " << frac3.getVal() << std::endl;
@@ -1482,9 +1534,12 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     }
 
+    sprintf(lumi,"CMS                               2.3 fb^{-1} (13 TeV)");
     sprintf(pname,"%sfit_%i",plabel,ibin);
     sprintf(ylabel,"Events / %.1f GeV",hv[ibin]->GetBinWidth(1));
-    sprintf(binlabel,"%i < p_{T}(W) < %i",(Int_t)ptbins[ibin],(Int_t)ptbins[ibin+1]);
+    //    sprintf(binlabel,"%i < p_{T}(W) < %i",(Int_t)ptbins[ibin],(Int_t)ptbins[ibin+1]);
+    sprintf(binlabel,"p_{T}(W) = %.1f - %.1f GeV ",ptbins[ibin],ptbins[ibin+1]);
+
     if(etaBinCategory==1) sprintf(binYlabel,"|y| < 0.5");
     if(etaBinCategory==2) sprintf(binYlabel,"0.5 < |y| < 1");
     if(etaBinCategory==3) sprintf(binYlabel,"|y| > 1");
@@ -1508,6 +1563,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     }
     
     CPlot plot(pname,frame,"",xlabel,ylabel);
+    plot.AddTextBox(lumi,0.05,0.92,0.95,0.97,0,kBlack,-1);
     plot.AddTextBox(binlabel,0.21,0.80,0.51,0.85,0,kBlack,-1);
     if(etaBinCategory!=0) plot.AddTextBox(binYlabel,0.21,0.85,0.51,0.9,0,kBlack,-1);
     if(sigOnly) plot.AddTextBox(nsigtext,0.21,0.78,0.51,0.73,0,kBlack,-1);
@@ -1544,6 +1600,8 @@ void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Doubl
         Double_t *frac3Arr,  Double_t *frac3ErrArr,
         RooWorkspace *wksp
 ) {
+
+  char lumi[50];
   char pname[50];
   char ylabel[50];
   char binlabel[50];

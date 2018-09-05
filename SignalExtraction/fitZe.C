@@ -129,11 +129,13 @@ void fitWithGaus(TH2F *inputHist, std::string name, std::vector<double> &mean, s
 
 void fitZe(const TString  outputDir,   // output directory
            const Double_t lumi,        // integrated luminosity (/fb)
+	   int ptBinCategory,
 	   const Double_t nsigma=0     // vary MET corrections by n-sigmas (nsigma=0 means nominal correction)
 ) {
   gBenchmark->Start("fitZe");
 
-  bool doRecoilplot=false;
+  bool doRecoilplot=true;
+  bool doZpt=false;
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
@@ -159,28 +161,38 @@ void fitZe(const TString  outputDir,   // output directory
   const TString format("png"); 
   //  rochcor2015 *rmcor = new rochcor2015();
 
-  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/oct7");
+  // 5TeV
+  //  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/5TeV/dec6");
+  //  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/5TeV/dec6");
+
+  // 13TeV
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/MAY17");
+  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
+  //  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
 
   // Puppi Corrections
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
+  //  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZeeMCPuppi/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesData(Form("%s/ZeeDataPuppi_bkg/",directory.Data()));
+  //  recoilCorr->loadRooWorkspacesMC(Form("%s/ZeeMCPuppi/",directory.Data()));
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi/",directory.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
   recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
 
   RecoilCorrector *recoilCorr_c = new  RecoilCorrector("","");
-  recoilCorr_c->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
-  recoilCorr_c->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorr_c->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  recoilCorr_c->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory1.Data()));
+  recoilCorr_c->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory1.Data()));
+  recoilCorr_c->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory1.Data()));
 
   RecoilCorrector *recoilCorr_t = new  RecoilCorrector("","");
-  recoilCorr_t->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
-  recoilCorr_t->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-  recoilCorr_t->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  recoilCorr_t->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05-1/",directory1.Data()));
+  recoilCorr_t->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory1.Data()));
+  recoilCorr_t->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory1.Data()));
 
   RecoilCorrector *recoilCorr_f = new  RecoilCorrector("","");
-  recoilCorr_f->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
-  recoilCorr_f->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-  recoilCorr_f->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+  recoilCorr_f->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap1/",directory1.Data()));
+  recoilCorr_f->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory1.Data()));
+  recoilCorr_f->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory1.Data()));
 
   // Load the Z data and Z MC Pt spectra
   TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
@@ -194,17 +206,28 @@ void fitZe(const TString  outputDir,   // output directory
   hh_diff->Scale(1/hh_diff->Integral()); // normalize
   hh_diff->Divide(hh_mc);
 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
-  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MG/eff.root";
-  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CT/eff.root";
-  
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CT/eff.root";
+  //////// MARIA BOOK debugging histo
+  TH1D *h_ZptDATA = new TH1D("h_ZptDY","h_ZptDY",75,0,150);
+  TH1D *h_ZptDY = new TH1D("h_ZptDATA","h_ZptDATA",75,0,150);
+  TH1D *h_ZptEWK = new TH1D("h_ZptEWK","h_ZptEWK",75,0,150);
+  TH1D *h_deltaMetDY = new TH1D("h_deltaMetDY","h_deltaMetDY",100,-50.,50.);
+  TH1D *h_deltaMetDY_010 = new TH1D("h_deltaMetDY_0-10","h_deltaMetDY_0-10",100,-50.,50.);
+  TH1D *h_deltaMetDY_1030 = new TH1D("h_deltaMetDY_1030","h_deltaMetDY_1030",100,-50.,50.);
+  TH1D *h_deltaMetDY_3050 = new TH1D("h_deltaMetDY_3050","h_deltaMetDY_2050",100,-50.,50.);
+  TH1D *h_deltaMetDY_50 = new TH1D("h_deltaMetDY_50","h_deltaMetDY_50",100,-50.,50.);
+  TH1D *h_deltaMetDYpull = new TH1D("h_deltaMetDYpull","h_deltaMetDYpull",100,-5.,5.);
 
+  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/OldEleStore/BeforeExcludeBadData/";
+  //  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
+  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MGpositive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MGnegative/eff.root";
+  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CTpositive/eff.root";
+  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CTnegative/eff.root";
+  
+  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative/eff.root";
+  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CTpositive/eff.root";
+  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CTnegative/eff.root";
 
   //
   // input ntuple file names
@@ -213,13 +236,49 @@ void fitZe(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
+  /*
+    // those goes with /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/zee_select.root"); typev.push_back(eWmunu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/zxx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/wx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/zz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/wz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/ww_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_TightEleTightIso/Zee/ntuples/top_select.root"); typev.push_back(eEWK);
+  */
+
+    // those goes with /afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/zee_select.root"); typev.push_back(eWmunu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/zxx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/wx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/zz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/wz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/ww_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Zee/ntuples/top_select.root"); typev.push_back(eEWK);
+
+  //  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/top_select.root"); typev.push_back(eEWK);
+
+  /*
+   // those contains the raw
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/zee_select.root"); typev.push_back(eWmunu);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/zxx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/wx_select.root"); typev.push_back(eQCD);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/zz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/wz_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/ww_select.root"); typev.push_back(eEWK);
+  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/ZeeForFootprint/top_select.root"); typev.push_back(eEWK);
+  */
+
+   /*
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/data_select.root"); typev.push_back(eData);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/zee_select.root");   typev.push_back(eWmunu);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/boson_select.root");  typev.push_back(eQCD);
   fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zee/ntuples/ewk_select1.root");  typev.push_back(eEWK);
+   */
 //   fnamev.push_back("/data/smptuples/sabrandt/top_select.raw.root");  typev.push_back(eEWK);
-
-
   
 
   //--------------------------------------------------------------------------------------------------------------
@@ -230,6 +289,7 @@ void fitZe(const TString  outputDir,   // output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
   
+
   //
   // Declare MET histograms
   //
@@ -273,10 +333,11 @@ void fitZe(const TString  outputDir,   // output directory
   TH1D *hAntiEWKMetp   = new TH1D("hAntiEWKMetp", "", NBINS,0,METMAX); hAntiEWKMetp->Sumw2();
   TH1D *hAntiEWKMetm   = new TH1D("hAntiEWKMetm", "", NBINS,0,METMAX); hAntiEWKMetm->Sumw2();
 
-  
+  //////
+  //////
+  //////
+  // only for response/resolution plots
   double bins[] = {0,2,5,10,20,30,40,50,60,70,80,90,100};
-// double bins[] ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100/*,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300*/};
-//     double bins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100};// ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};// {0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100/*,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200*/};
   int nbins = sizeof(bins)/sizeof(double)-1; // calculate the number of bins
   
   TH2F *hU1vsZpt_rsp = new TH2F("hU1vsZpt_rsp","",nbins, bins,200,-12.0,12.0); // Get resp. & res. for Parallel component from this
@@ -340,7 +401,7 @@ void fitZe(const TString  outputDir,   // output directory
   Int_t   q1, q2;
   UInt_t  category;
   //TLorentzVector *lep=0;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0;
     
   TFile *infile=0;
   TTree *intree=0;
@@ -349,7 +410,7 @@ void fitZe(const TString  outputDir,   // output directory
   // Loop over files
   //
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
-    
+
     // Read input file and get the TTrees
     cout << "Processing " << fnamev[ifile] << "..." << endl;
     infile = new TFile(fnamev[ifile]);	  assert(infile);
@@ -376,7 +437,8 @@ void fitZe(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep2",        &lep2);        // probe lepton 4-vector
     intree->SetBranchAddress("dilep",       &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("category",    &category);    // dilepton category
-    
+    intree->SetBranchAddress("lep1_raw",    &lep1_raw);       // tag lepton 4-vector
+    intree->SetBranchAddress("lep2_raw",    &lep2_raw);       // probe lepton 4-vector
     
     Double_t mt=-999;
 
@@ -391,10 +453,17 @@ void fitZe(const TString  outputDir,   // output directory
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
       if(!((category==1) || (category==2) || (category==3))) continue;
 
+      //      if(etaBinCategory==1 && fabs(dilep->Eta())>0.5) continue;
+      //      if(etaBinCategory==2 && (fabs(dilep->Eta())<=0.5 || fabs(dilep->Eta())>=1 )) continue;
+      //      if(etaBinCategory==3 && fabs(dilep->Eta())<1) continue;
+
+      if(ptBinCategory==1 && dilep->Pt()>10) continue;
+      if(ptBinCategory==2 && (dilep->Pt()<10 || dilep->Pt()>20) ) continue;
+      if(ptBinCategory==3 && (dilep->Pt()<20)) continue;
+
       double pU1         = 0;  //--
       double pU2         = 0;  //--
-      
-      
+
       Double_t effdata, effmc;
       Double_t corr=1;
 
@@ -402,6 +471,17 @@ void fitZe(const TString  outputDir,   // output directory
 //       if(lep->Pt()        < PT_CUT)  continue;	
       if(fabs(lep1->Eta()) > ETA_CUT) continue;
       if(fabs(lep2->Eta()) > ETA_CUT) continue;
+
+      if(lep1->Pt()        < PT_CUT)  continue;
+      if(lep2->Pt()        < PT_CUT)  continue;
+      if(dilep->M()        < MASS_LOW)  continue;
+      if(dilep->M()        > MASS_HIGH) continue;
+
+      TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
+      TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
+      TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+      TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
+      TVector2 dilepRaw=vLepRaw1+vLepRaw2;
       
 //       if(nJets30 <2) continue;
 //       if(dilep->Pt() > 10) continue;// || dilep->Pt() < 40) continue;
@@ -454,25 +534,7 @@ void fitZe(const TString  outputDir,   // output directory
       corr *= effdata/effmc;
       //corr=1;
 
-
-      
       if(typev[ifile]==eData) {
-        
-        //TLorentzVector mu1;
-        //TLorentzVector mu2;
-        //mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
-        //mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-        //float qter1=1.0;
-        //float qter2=1.0;
-        //rmcor->momcor_data(mu1,q1,0,qter1);
-        //rmcor->momcor_data(mu2,q2,0,qter2);
-        //if(mu1.Pt()        < PT_CUT)  continue;
-        //if(mu2.Pt()        < PT_CUT)  continue;
-	if(lep1->Pt()        < PT_CUT)  continue;
-	if(lep2->Pt()        < PT_CUT)  continue;
-        if(dilep->M()        < MASS_LOW)  continue;
-        if(dilep->M()        > MASS_HIGH) continue;
-        
         
         // For making W-like met spectrum
 //       if(q1 > 0) {tl1Pt = mu1.Pt(); tl1Phi = mu1.Phi();}
@@ -483,11 +545,13 @@ void fitZe(const TString  outputDir,   // output directory
       
         hDataMet->Fill(met);
         if(q1*q2<0) {
-	  double pUX  = met*cos(metPhi) + dilep->Pt()*cos(dilep->Phi());
-          double pUY  = met*sin(metPhi) + dilep->Pt()*sin(dilep->Phi());
+	  // met and dilepRaw do not have scale correction
+	  double pUX  = met*cos(metPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
+          double pUY  = met*sin(metPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
           double pU   = sqrt(pUX*pUX+pUY*pUY);
 	  if(doRecoilplot) hDataMetp->Fill(pU);
-	  if(!doRecoilplot) hDataMetp->Fill(met);
+	  if(!doRecoilplot && !doZpt) hDataMetp->Fill(met);
+	  if(!doRecoilplot && doZpt) { hDataMetp->Fill(dilep->Pt()); h_ZptDATA->Fill(dilep->Pt()); }
           hU1vsZpt_rsp->Fill(dilep->Pt(),u1/dilep->Pt());
           hU1vsZpt->Fill(dilep->Pt(),u1);
           hU2vsZpt->Fill(dilep->Pt(),u2);
@@ -495,7 +559,7 @@ void fitZe(const TString  outputDir,   // output directory
         else    { hDataMetm->Fill(met); }
       } else if(typev[ifile]==eAntiData) {
         hAntiDataMet->Fill(met);
-        if(q1*q2<0) { hAntiDataMetp->Fill(met); } 
+        if(q1*q2<0) { hAntiDataMetp->Fill(met); }
         else    { hAntiDataMetm->Fill(met); }
       } else {
         Double_t weight = 1;
@@ -530,12 +594,6 @@ void fitZe(const TString  outputDir,   // output directory
           //dl=l1+l2;
           //double mll=dl.M();
         
-          if(lep1->Pt()        < PT_CUT)  continue;
-          if(lep2->Pt()        < PT_CUT)  continue;
-          if(dilep->M()        < MASS_LOW)  continue;
-          if(dilep->M()        > MASS_HIGH) continue;
-
-//           
           hWmunuMet->Fill(corrMet,weight);
           if(q1*q2<0) {
 	    pU1 = 0; pU2 = 0;
@@ -547,18 +605,22 @@ void fitZe(const TString  outputDir,   // output directory
 
 	    double w2 = 1.0;//hh_diff->GetBinContent(bin);
 
+
+	    /*
 	    //MARIA: to use the eta binned recoil
-	    if(fabs(dilep->Eta())<0.5) recoilCorr_c->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
-	    if(fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<=1 ) recoilCorr_t->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
-	    if(fabs(dilep->Eta())>1) recoilCorr_f->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
+	    if(fabs(dilep->Eta())<0.5) recoilCorr_c->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    if(fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<=1 ) recoilCorr_t->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    if(fabs(dilep->Eta())>1) recoilCorr_f->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    */
 
-	    //	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilep->Pt(),dilep->Phi(),pU1,pU2,0,0,0);
-
-	      //     recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
-//               recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
-              double pUX  = corrMet*cos(corrMetPhi) + dilep->Pt()*cos(dilep->Phi());
-              double pUY  = corrMet*sin(corrMetPhi) + dilep->Pt()*sin(dilep->Phi());
+	    recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,dilepRaw.Mod(),dilepRaw.Phi(),pU1,pU2,0,0,0);
+	    //      recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,tl1Pt,tl1Pt,pU1,pU2,0,0,0);
+	    //      recoilCorr->CorrectFromToys(corrMet,corrMetPhi,genVPt,genVPhi,dl.Pt(),dl.Phi(),pU1,pU2,0,0,0);
+	    // met and dilepRaw do not have scale correction
+	      double pUX  = corrMet*cos(corrMetPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
+              double pUY  = corrMet*sin(corrMetPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
               double pU   = sqrt(pUX*pUX+pUY*pUY);
+	      // projection along the corrected Z
               double pCos = - (pUX*cos(dilep->Phi()) + pUY*sin(dilep->Phi()))/pU;
               double pSin =   (pUX*sin(dilep->Phi()) - pUY*cos(dilep->Phi()))/pU;
               pU1   = pU*pCos; // U1 in data
@@ -571,16 +633,33 @@ void fitZe(const TString  outputDir,   // output directory
               hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt(),weight);
               hU1vsZpt_MC->Fill(dilep->Pt(),pU1,weight);
               hU2vsZpt_MC->Fill(dilep->Pt(),pU2,weight);
+
+	      TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
+	      Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
+	      Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
+
 	      if(typev[ifile]==eWmunu)
 		{
 		  if(doRecoilplot) hWmunuMetp->Fill(pU,weight*w2);
-		  if(!doRecoilplot) hWmunuMetp->Fill(corrMet,weight*w2);
+		  if(!doRecoilplot && !doZpt) hWmunuMetp->Fill(corrMetWithLepton,weight*w2);
+		  //		  if(!doRecoilplot && doZpt) hWmunuMetp->Fill(dilep->Pt(),weight*w2);
+		  //		  if(!doRecoilplot && doZpt) hWmunuMetp->Fill((vLepRaw1 + vLepRaw2).Mod(),weight*w2);
+		  if(!doRecoilplot && doZpt) { hWmunuMetp->Fill(dilep->Pt(),weight*w2); h_ZptDY->Fill(dilep->Pt(),weight*w2);
+		    h_deltaMetDY->Fill(met-corrMet,weight*w2);
+		    if(dilep->Pt()<10) h_deltaMetDY_010->Fill(met-corrMet,weight*w2);
+		    if(dilep->Pt()>10 && dilep->Pt()<30) h_deltaMetDY_1030->Fill(met-corrMet,weight*w2);
+		    if(dilep->Pt()>30 && dilep->Pt()<50) h_deltaMetDY_3050->Fill(met-corrMet,weight*w2);
+		    if(dilep->Pt()>50) h_deltaMetDY_50->Fill(met-corrMet,weight*w2);
+		    h_deltaMetDYpull->Fill((met-corrMet)/met,weight*w2); }
 		  corrMet=met, corrMetPhi=metPhi;
 		}
 	      else
 		{
 		  if(doRecoilplot) hEWKMetp->Fill(pU,weight);
-		  if(!doRecoilplot) hEWKMetp->Fill(corrMet,weight);
+		  //		  if(!doRecoilplot && !doZpt) hEWKMetp->Fill(corrMet,weight);
+		  if(!doRecoilplot && !doZpt) hEWKMetp->Fill(corrMetWithLepton,weight);
+		  //		  if(!doRecoilplot && doZpt) hEWKMetp->Fill((vLepRaw1 + vLepRaw2).Mod(),weight);
+		  if(!doRecoilplot && doZpt) { hEWKMetp->Fill(dilep->Pt(),weight); h_ZptEWK->Fill(dilep->Pt(),weight); }
 		  corrMet=met, corrMetPhi=metPhi;
 		}
             }
@@ -612,15 +691,25 @@ void fitZe(const TString  outputDir,   // output directory
           else    { hAntiWmunuMetm->Fill(corrMet,weight); }
         }
         if(typev[ifile]==eEWK) {
-	  double pUX  = met*cos(metPhi) + dilep->Pt()*cos(dilep->Phi());
-	  double pUY  = met*sin(metPhi) + dilep->Pt()*sin(dilep->Phi());
+
+	  // met and dilepRaw do not have scale correction
+	  double pUX  = met*cos(metPhi) + dilepRaw.Mod()*cos(dilepRaw.Phi());
+	  double pUY  = met*sin(metPhi) + dilepRaw.Mod()*sin(dilepRaw.Phi());
 	  double pU   = sqrt(pUX*pUX+pUY*pUY);
-          if(lep1->Pt()        < PT_CUT)  continue;
-          if(lep2->Pt()        < PT_CUT)  continue;
-          if(dilep->M()        < MASS_LOW)  continue;
-          if(dilep->M()        > MASS_HIGH) continue;
+
+	  //	  TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
+	  //	  TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
+	  //	  TVector2 dilepRaw=vLepRaw1+vLepRaw2;
+
           hEWKMet->Fill(met,weight);
-          if(q1*q2<0) { if(doRecoilplot) hEWKMetp->Fill(pU,weight); if(!doRecoilplot) hEWKMetp->Fill(met,weight); }
+	  if(q1*q2<0) {
+	    if(doRecoilplot) hEWKMetp->Fill(pU,weight);
+	    if(!doRecoilplot && !doZpt) hEWKMetp->Fill(met,weight);
+	    //	    if(!doRecoilplot && doZpt) hEWKMetp->Fill(dilep->Pt(),weight);
+	    //	    if(!doRecoilplot && doZpt) hEWKMetp->Fill((vLepRaw1 + vLepRaw2).Mod(),weight);
+	    if(!doRecoilplot && doZpt) { hEWKMetp->Fill(dilep->Pt(),weight); h_ZptEWK->Fill(dilep->Pt()); }
+
+	  }
           else    { hEWKMetm->Fill(met,weight); }
         }
         if(typev[ifile]==eAntiEWK) {
@@ -631,6 +720,22 @@ void fitZe(const TString  outputDir,   // output directory
       }
     }
   }
+
+  //  TFile* fileDebug = TFile::Open((outputdir+"debug.root"), "RECREATE");
+  TFile* fileDebug = TFile::Open("debug.root", "RECREATE");
+  //  fileDebug->cd();
+  h_ZptDY->Write();
+  h_ZptDATA->Write();
+  h_ZptEWK->Write();
+  h_deltaMetDY->Write();
+  h_deltaMetDY_010->Write();
+  h_deltaMetDY_1030->Write();
+  h_deltaMetDY_3050->Write();
+  h_deltaMetDY_50->Write();
+  h_deltaMetDYpull->Write();
+  fileDebug->Write(); fileDebug->Close();
+
+
   delete infile;
   infile=0, intree=0;   
   
@@ -786,7 +891,6 @@ void fitZe(const TString  outputDir,   // output directory
   TH1D *hMetmDiff = makeDiffHist(hDataMetm,hPdfMetm,"hMetmDiff");
   hMetmDiff->SetMarkerStyle(kFullCircle); 
   hMetmDiff->SetMarkerSize(0.9);
-
  
   
   //--------------------------------------------------------------------------------------------------------------
@@ -1102,12 +1206,17 @@ void fitZe(const TString  outputDir,   // output directory
   //plotMetp.GetLegend()->AddEntry(hDummyQCD,"QCD","F");
   plotMetp.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
   plotMetp.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+  if(ptBinCategory==1) plotMetp.AddTextBox("Zp_{T}<10",0.63,0.45,0.95,0.55,0);
+  if(ptBinCategory==2) plotMetp.AddTextBox("10<Zp_{T}<20",0.63,0.45,0.95,0.55,0);
+  if(ptBinCategory==3) plotMetp.AddTextBox("Zp_{T}>20",0.63,0.45,0.95,0.55,0);
+
 //  plotMetp.SetYRange(0.1,1.1*(hDataMetp->GetMaximum()));
 //plotMetp.SetYRange(0.1,5000);
   plotMetp.Draw(c,kFALSE,format,1);
 
   TString titleX="#slash{E}_{T} [GeV]";
   if(doRecoilplot) titleX="Recoil  [GeV]";
+  if(!doRecoilplot && doZpt) titleX="Z p_{T}  [GeV]";
   CPlot plotMetpDiff("fitmetp","",titleX.Data(),"#frac{Data-Pred}{Data}");
   plotMetpDiff.AddHist1D(hMetpDiff,"EX0",ratioColor);
   plotMetpDiff.SetYRange(-0.2,0.2);
@@ -1278,23 +1387,28 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
     
-    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
-    Double_t diff = diff0/hData->GetBinContent(ibin);
-    std::cout << "bin # " << ibin << std::endl;
-    std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
-    std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
-    std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
-    std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
-    std::cout << "diff =  " << diff << std::endl;
-//     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
-    Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
-    //Double_t err = sqrt(hData->GetBinContent(ibin));
-    //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
-    //if(err>0) hDiff->SetBinContent(ibin,diff/err);
-    //else      hDiff->SetBinContent(ibin,0);
-    std::cout << "err = " << err << std::endl;
-    hDiff->SetBinContent(ibin,diff);
-    hDiff->SetBinError(ibin,err);   
+    if(hData->GetBinContent(ibin)!=0) {
+      Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+      Double_t diff = diff0/hData->GetBinContent(ibin);
+      std::cout << "bin # " << ibin << std::endl;
+      std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
+      std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
+      std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
+      std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
+      std::cout << "diff =  " << diff << std::endl;
+      //     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+      Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+      //Double_t err = sqrt(hData->GetBinContent(ibin));
+      //if(err==0) err= sqrt(hFit->GetBinContent(ibin));
+      //if(err>0) hDiff->SetBinContent(ibin,diff/err);
+      //else      hDiff->SetBinContent(ibin,0);
+      std::cout << "err = " << err << std::endl;
+      hDiff->SetBinContent(ibin,diff);
+      hDiff->SetBinError(ibin,err);
+    } else {
+      hDiff->SetBinContent(ibin,-99);
+      hDiff->SetBinError(ibin,0);
+    }
   }
   
   hDiff->GetYaxis()->SetTitleOffset(0.42);

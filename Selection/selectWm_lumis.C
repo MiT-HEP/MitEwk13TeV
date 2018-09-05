@@ -45,9 +45,10 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectWm(const TString conf="wm.conf", // input file
+void selectWm_lumis(const TString conf="wm.conf", // input file
               const TString outputDir=".",  // output directory
-	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
+	      const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+              const TString input_section = "1"
 ) {
   gBenchmark->Start("selectWm");
 
@@ -69,9 +70,9 @@ void selectWm(const TString conf="wm.conf", // input file
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
-
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TFile *f_rw = TFile::Open("./pileup_rw_80X_"+input_section+".root", "read");
+   
+  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
@@ -440,7 +441,7 @@ void selectWm(const TString conf="wm.conf", // input file
             genVPhi  = tvec.Phi();
             genVy    = tvec.Rapidity();
             genVMass = tvec.M();
-
+			
             if (gvec && glep1) {
 	      //genV      = new TLorentzVector(0,0,0,0);
 	      //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());

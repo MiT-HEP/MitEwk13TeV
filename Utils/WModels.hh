@@ -271,6 +271,8 @@ CPepeModel1::CPepeModel1(const char *name, RooRealVar &x, RooRealVar *sigma1,Roo
   model = new RooGenericPdf(vname,vname,formula,RooArgSet(x,*a1,*a2,*a3));
 }
 */
+
+ /// THIS IS THE NOMINAL PEPE VERSION
 //--------------------------------------------------------------------------------------------------
 CPepeModel2::CPepeModel2(const char *name, RooRealVar &x,  RooRealVar *sigma1, RooRealVar *sigma0)
 {
@@ -295,11 +297,15 @@ CPepeModel2::CPepeModel2(const char *name, RooRealVar &x,  RooRealVar *sigma1, R
   char a3Name[50]; sprintf(a3Name, "a3_%s", name); a3 = new RooRealVar(a3Name,a3Name,2.9,0.3,6.0);
   
   // f(x) = x*exp[-x^2 / a*x*x + b*x + c]
+  // with the constraints that the denominator should be positive
   char formula[300];
   sprintf(formula,
-          "%s*exp(-%s*%s/(%s*%s*%s*0.01 + %s*%s + %s*100))",
+          "%s*exp(-%s*%s/(%s*%s*%s*0.01 + %s*%s + %s*100))*((%s*%s*%s*0.01 + %s*%s + %s*100)>0)",
 	  x.GetName(),
 	  x.GetName(),x.GetName(),
+	  a1Name,x.GetName(),x.GetName(),
+	  a2Name,x.GetName(),
+	  a3Name,
 	  a1Name,x.GetName(),x.GetName(),
 	  a2Name,x.GetName(),
 	  a3Name);
