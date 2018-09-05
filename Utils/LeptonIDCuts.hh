@@ -84,18 +84,18 @@ Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho)
 //--------------------------------------------------------------------------------------------------
 Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
 { // Medium Electron ID for PU20 bx25
-
+  // 2018/01/13 - changing all mention of SC to just the ele info
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   if(electron->isConv)            return kFALSE;
 
   Double_t ea = getEffAreaEl(tag.Eta());
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
-  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+  if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
     if(electron->nMissingHits > 2)                                    return kFALSE;
     if(electron->sieie >= 0.0101)                                     return kFALSE;
@@ -128,16 +128,16 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   if(electron->isConv)            return kFALSE;
 
   Double_t ea = getEffAreaEl(tag.Eta());
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
-  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
-    if(iso >= 0.5*0.0354*(tag.Pt()))                                      return kFALSE; // tight ISO
-    //if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
+  if(fabs(electron->eta)<=ECAL_GAP_LOW) {
+    //if(iso >= 0.5*0.0354*(tag.Pt()))                                      return kFALSE; // tight ISO
+    if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
     if(electron->nMissingHits > 2)                                    return kFALSE;
     if(electron->sieie >= 0.0101)                                     return kFALSE;
     if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
@@ -147,8 +147,8 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector 
     if(fabs(electron->d0) >= 0.0111)                                  return kFALSE;
     if(fabs(electron->dz) >= 0.0466)                                  return kFALSE;
   } else {
-    if(iso >= 0.5*0.0646*(tag.Pt()))                                      return kFALSE; // tight ISO
-    //if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
+   // if(iso >= 0.5*0.0646*(tag.Pt()))                                      return kFALSE; // tight ISO
+    if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
    // if(electron->nMissingHits > 0)                                    return kFALSE;
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie            >= 0.0279)                          return kFALSE;
@@ -171,7 +171,7 @@ Bool_t passAntiTightEleID(const baconhep::TElectron *electron,const TLorentzVect
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   // conversion rejection
   if(electron->isConv)            return kFALSE;
@@ -179,7 +179,7 @@ Bool_t passAntiTightEleID(const baconhep::TElectron *electron,const TLorentzVect
   Double_t ea = getEffAreaEl(tag.Eta());	
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
   
-  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+  if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     //if(iso < 0.25*(tag.Pt()))                                      return kFALSE; // with gap
     if(iso < 0.0354*(tag.Pt()))                                      return kFALSE; // regular cut
 //    if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE;
@@ -219,7 +219,7 @@ Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector ta
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   // conversion rejection
   if(electron->isConv)            return kFALSE;
@@ -228,7 +228,7 @@ Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector ta
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
   // barrel/endcap dependent requirements
-  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+ if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     // barrel
     //if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
     if(iso < 0.0766*(tag.Pt()))                                      return kFALSE;
@@ -269,7 +269,7 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
-  if((fabs(electron->scEta)>ECAL_GAP_LOW) && (fabs(electron->scEta)<ECAL_GAP_HIGH)) return kFALSE;
+  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
   
   // conversion rejection
   if(electron->isConv) return kFALSE;
@@ -278,7 +278,7 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);     
 
   // barrel/endcap dependent requirements
-  if(fabs(electron->scEta)<=ECAL_GAP_LOW) {
+  if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     // barrel
     if(iso > 0.126*(tag.Pt()))                                       return kFALSE;
     if(electron->nMissingHits > 2)                                   return kFALSE;
