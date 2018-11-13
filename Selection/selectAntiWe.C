@@ -134,7 +134,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
   Int_t   q;
-  TLorentzVector *lep=0;
+  TLorentzVector *lep=0, *lep_raw=0;
   Int_t lepID;
   ///// electron specific /////
   Float_t trkIso, emIso, hadIso;
@@ -169,6 +169,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
 
     // Assume signal sample is given name "we" -- flag to store GEN W kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
+    //flag to save the info for recoil corrections
+    Bool_t isRecoil = ((snamev[isam].CompareTo("we",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
     // flag to reject W->enu events when selecting  wrong flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
   
@@ -230,6 +232,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",       "TLorentzVector", &lep);        // lepton 4-vector
+    outTree->Branch("lep_raw",       "TLorentzVector", &lep_raw);        // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
     ///// electron specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");      // track isolation of tag lepton
@@ -381,6 +384,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	Int_t nLooseLep=0;
 	const baconhep::TElectron *goodEle=0;
 	TLorentzVector vEle(0,0,0,0);
+	TLorentzVector vGoodEle(0,0,0,0);
 	Bool_t passSel=kFALSE;
 
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
@@ -447,7 +451,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
 //          if(passEleLooseID(ele,info->rhoIso)) nLooseLep++;  // loose lepton selection
 	  if(fabs(vEle.Eta())    > VETO_ETA) continue;
           if(vEle.Pt()           < VETO_PT)  continue; 
-          if(passEleLooseID(ele,vEle, info->rhoIso)) nLooseLep++;
+          // if(passEleLooseID(ele,vEle, info->rhoIso)) nLooseLep++;
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
@@ -464,6 +468,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	  
 	  passSel=kTRUE;
 	  goodEle = ele;  
+          vGoodEle = vEle;
 	}
 
 	if(passSel) {  
@@ -477,7 +482,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
 //          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
 //            goodElept_corr = gRandom->Gaus(goodEle->pt*getEleScaleCorr(goodEle->scEta,0),getEleResCorr(goodEle->scEta,0));
 
-          TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0);
+          TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0); TLorentzVector vLep_raw(0,0,0,0);
           // apply scale and resolution corrections to MC
 //          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
 //            vLep.SetPtEtaPhiM(goodElept_corr, goodEle->eta, goodEle->phi, ELE_MASS);
@@ -486,8 +491,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
 //            vLep.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
 //            vSC.SetPtEtaPhiM(goodEle->scEt,goodEle->scEta,goodEle->scPhi,ELE_MASS);
 //          }
-	  vLep = vEle;
-
+	  vLep = vGoodEle;
+          vLep_raw.SetPtEtaPhiM(goodEle->pt, goodEle->eta,goodEle->phi, ELE_MASS);
 	  //
 	  // Fill tree
 	  //
@@ -525,7 +530,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	  scalePDF  = -999;
 	  weightPDF = -999;
 
-	  if(isSignal && hasGen) {
+	  if(isRecoil && hasGen) {
         Int_t glepq1=-99;
         Int_t glepq2=-99;
 	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
@@ -534,18 +539,43 @@ void selectAntiWe(const TString conf="we.conf", // input file
 // 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,1);
         toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
 
-	    if (gvec && glep1) {
-	      genV      = new TLorentzVector(0,0,0,0);
-              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
-              genLep    = new TLorentzVector(0,0,0,0);
-              genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              genVPt    = gvec->Pt();
-              genVPhi   = gvec->Phi();
-              genVy     = gvec->Rapidity();
-              genVMass  = gvec->M();
-              genLepPt  = glep1->Pt();
-              genLepPhi = glep1->Phi();
+        TLorentzVector tvec=*glep1+*glep2;
+        genV=new TLorentzVector(0,0,0,0);
+        genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+        genVPt   = tvec.Pt();
+        genVPhi  = tvec.Phi();
+        genVy    = tvec.Rapidity();
+        genVMass = tvec.M();
 
+
+	    if (gvec && glep1) {
+//	      genV      = new TLorentzVector(0,0,0,0);
+//              genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+//              genLep    = new TLorentzVector(0,0,0,0);
+//              genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+//              genVPt    = gvec->Pt();
+//              genVPhi   = gvec->Phi();
+//              genVy     = gvec->Rapidity();
+//              genVMass  = gvec->M();
+//              genLepPt  = glep1->Pt();
+//              genLepPhi = glep1->Phi();
+
+
+
+              //genV      = new TLorentzVector(0,0,0,0);
+              //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+              genLep    = new TLorentzVector(0,0,0,0);
+              if(BOSON_ID*glepq1>0)
+                     genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              if(BOSON_ID*glepq2>0)
+                    genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+              //genVPt    = gvec->Pt();
+              //genVPhi   = gvec->Phi();
+              //genVy     = gvec->Rapidity();
+              //genVMass  = gvec->M();
+              genLepPt  = genLep->Pt();
+              genLepPhi = genLep->Phi();
+              
 	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
 	      TVector2 vLepPt(vLep.Px(),vLep.Py());
 
@@ -602,13 +632,13 @@ void selectAntiWe(const TString conf="we.conf", // input file
 // 	  TVector2 vLepPt(vLep.Px(),vLep.Py());
 // 	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
 // 	  TVector2 vpp; vpp=vPuppi-vLepPt;
-      puppiMet   = info->puppET;
+          puppiMet   = info->puppET;
 	  puppiMetPhi = info->puppETphi;
 	  puppiSumEt  = 0;
 	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodEle->q;
 	  lep      = &vLep;
-	  
+	  lep_raw = &vLep_raw; 
 	  ///// electron specific /////
 	  sc       = &vSC;
 	  trkIso    = goodEle->trkIso;
