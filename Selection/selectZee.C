@@ -801,7 +801,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle2HLT;  
 	      } 
-	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kTRUE, isData)) {
+	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle1HLT1L1; 
 	      }
 	      else { icat=eEleEle1HLT; }

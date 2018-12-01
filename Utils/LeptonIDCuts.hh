@@ -18,8 +18,8 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
 Bool_t passAntiTightEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
 Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
 
-Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits);
-Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1);
+Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits,Bool_t isData);
+Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isData);
 
 Bool_t isMuonTriggerNoIso(baconhep::TTrigger triggerMenu, TriggerBits hltBits);
 Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1);
@@ -306,17 +306,20 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
 }
 
 //--------------------------------------------------------------------------------------------------
-Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits) {
-  return triggerMenu.pass("HLT_IsoMu20_v*",hltBits);
+Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits,Bool_t isData) {
+  if(isData)
+    return triggerMenu.pass("HLT_HIMu17_v*",hltBits);
+  else
+    return triggerMenu.pass("HLT_IsoMu20_v*",hltBits);
 }
 
 Bool_t isMuonTriggerNoIso(baconhep::TTrigger triggerMenu, TriggerBits hltBits) {
-  return triggerMenu.pass("HLT_Mu20_v*",hltBits);
+  return triggerMenu.pass("HLT_HIMu17_v*",hltBits);
 }
 
-Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1) {
-  if (isL1) return triggerMenu.passObj("HLT_IsoMu20_v*","hltL1sL1SingleMu16",hltMatchBits);
-  else return triggerMenu.passObj("HLT_IsoMu20_v*","hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09",hltMatchBits);
+Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isData) {
+  if (isData) return triggerMenu.passObj("HLT_HIMu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits);
+  else return triggerMenu.passObj("HLT_IsoMu27_v*","hltL3crIsoL1sMu22Or25L1f0L2f10QL3f27QL3trkIsoFiltered0p09",hltMatchBits);
 }
 
 Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1) {
@@ -327,12 +330,11 @@ Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltM
 
 Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t isData) {
   if (isData) {
-    return triggerMenu.pass("HLT_Ele23_WPLoose_Gsf_v*",hltBits);
+    return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits);
     //return triggerMenu.pass("HLT_Ele27_WPLoose_Gsf_v*",hltBits);
   }
   else {
-    return triggerMenu.pass("HLT_Ele23_WPLoose_Gsf_v*",hltBits);
-    //return triggerMenu.pass("HLT_Ele27_WPLoose_Gsf_v*",hltBits);
+    return triggerMenu.pass("HLT_Ele27_WPTight_Gsf_v*",hltBits);
   }
 }
 Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData) {
@@ -342,7 +344,7 @@ Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBi
       //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
     }
     else {
-      return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEle23WPLooseGsfTrackIsoFilter",hltMatchBits);
+      return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits);
       //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
     }
   }
@@ -351,7 +353,7 @@ Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBi
     //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
   }
   else {
-    return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEle23WPLooseGsfTrackIsoFilter",hltMatchBits);
+    return triggerMenu.passObj("HLT_Ele27_WPTight_Gsf_v*","hltEle27WPTightGsfTrackIsoFilter",hltMatchBits);
     //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
   }
 }
