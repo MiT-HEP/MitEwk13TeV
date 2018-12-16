@@ -58,7 +58,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 22;
+  const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
@@ -303,9 +303,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  totalWeight+=gen->weight*puWeight;
-	  totalWeightUp+=gen->weight*puWeightUp;
-	  totalWeightDown+=gen->weight*puWeightDown;
+	  // totalWeight+=gen->weight*puWeight;
+	  // totalWeightUp+=gen->weight*puWeightUp;
+	  // totalWeightDown+=gen->weight*puWeightDown;
+      totalWeight+=gen->weight;
+	  totalWeightUp+=gen->weight;
+	  totalWeightDown+=gen->weight;
 	}
       }
       else if (not isData){
@@ -313,9 +316,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  totalWeight+= 1.0*puWeight;
-	  totalWeightUp+= 1.0*puWeightUp;
-	  totalWeightDown+= 1.0*puWeightDown;
+	  // totalWeight+= 1.0*puWeight;
+	  // totalWeightUp+= 1.0*puWeightUp;
+	  // totalWeightDown+= 1.0*puWeightDown;
+      totalWeight+= 1.0;
+	  totalWeightUp+= 1.0;
+	  totalWeightDown+= 1.0;
 	}
 
       }
@@ -343,9 +349,12 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  weight*=gen->weight*puWeight;
-	  weightUp*=gen->weight*puWeightUp;
-	  weightDown*=gen->weight*puWeightDown;
+	  // weight*=gen->weight*puWeight;
+	  // weightUp*=gen->weight*puWeightUp;
+	  // weightDown*=gen->weight*puWeightDown;
+      weight*=gen->weight;
+	  weightUp*=gen->weight;
+	  weightDown*=gen->weight;
 	}
 
 	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
@@ -403,7 +412,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      Pt2=Mu_Pt;
 	    }
 
-          //if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData)) continue;
+          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData)) continue;
 
 	  if(Mu_Pt<tagPt) continue;
 
@@ -633,8 +642,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	scale1fb = weight;
 	scale1fbUp = weightUp;
 	scale1fbDown = weightDown;
-	met      = info->pfMET;
-	metPhi   = info->pfMETphi;
+	met      = info->pfMETC;
+	metPhi   = info->pfMETCphi;
 	sumEt    = 0;
 	tkMet    = info->trkMET;
 	tkMetPhi = info->trkMETphi;
