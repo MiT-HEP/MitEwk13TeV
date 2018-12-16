@@ -58,7 +58,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
-  const Double_t PT_CUT    = 25;
+  const Double_t PT_CUT    = 22;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
 
@@ -303,12 +303,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  // totalWeight+=gen->weight*puWeight;
-	  // totalWeightUp+=gen->weight*puWeightUp;
-	  // totalWeightDown+=gen->weight*puWeightDown;
-      totalWeight+=gen->weight;
-	  totalWeightUp+=gen->weight;
-	  totalWeightDown+=gen->weight;
+	  totalWeight+=gen->weight*puWeight;
+	  totalWeightUp+=gen->weight*puWeightUp;
+	  totalWeightDown+=gen->weight*puWeightDown;
 	}
       }
       else if (not isData){
@@ -316,12 +313,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  // totalWeight+= 1.0*puWeight;
-	  // totalWeightUp+= 1.0*puWeightUp;
-	  // totalWeightDown+= 1.0*puWeightDown;
-      totalWeight+= 1.0;
-	  totalWeightUp+= 1.0;
-	  totalWeightDown+= 1.0;
+	  totalWeight+= 1.0*puWeight;
+	  totalWeightUp+= 1.0*puWeightUp;
+	  totalWeightDown+= 1.0*puWeightDown;
 	}
 
       }
@@ -331,7 +325,6 @@ void selectZmm(const TString conf="zmm.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	//for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 
 	if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -349,12 +342,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  // weight*=gen->weight*puWeight;
-	  // weightUp*=gen->weight*puWeightUp;
-	  // weightDown*=gen->weight*puWeightDown;
-      weight*=gen->weight;
-	  weightUp*=gen->weight;
-	  weightDown*=gen->weight;
+	  weight*=gen->weight*puWeight;
+	  weightUp*=gen->weight*puWeightUp;
+	  weightDown*=gen->weight*puWeightDown;
 	}
 
 	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
@@ -366,7 +356,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData)) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -412,7 +402,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      Pt2=Mu_Pt;
 	    }
 
-          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData)) continue;
+          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE)) continue;
 
 	  if(Mu_Pt<tagPt) continue;
 
@@ -508,10 +498,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
 	  // determine event category
 	  if(passMuonID(probe)) {
-	    if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, isData)) {
+	    if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kFALSE)) {
 	      icat=eMuMu2HLT;
 	    }
-	    else if(0) {
+	    else if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kTRUE)) {
 	      icat=eMuMu1HLT1L1;
 	  }
 	    else {
