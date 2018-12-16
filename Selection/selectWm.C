@@ -251,7 +251,7 @@ void selectWm(const TString conf="wm.conf", // input file
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
-	eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
+	   eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
 
       // Compute MC event weight per 1/fb
@@ -260,16 +260,9 @@ void selectWm(const TString conf="wm.conf", // input file
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
 
-//       if (hasGen) {
-// 	TH1D *hall = new TH1D("hall", "", 1,0,1);
-// 	eventTree->Draw("0.5>>hall", "GenEvtInfo->weight");
-// 	totalWeight=hall->Integral();
-// 	delete hall;
-// 	hall=0;
-//       }
 
       if (hasGen) {
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);
       puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
@@ -292,6 +285,7 @@ void selectWm(const TString conf="wm.conf", // input file
 
       }
 
+
       //
       // loop over events
       //
@@ -299,24 +293,26 @@ void selectWm(const TString conf="wm.conf", // input file
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
         infoBr->GetEntry(ientry);
 
+        
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 	Double_t weight=1;
 	Double_t weightUp=1;
 	Double_t weightDown=1;
-        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+    if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
-          genPartBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+      genPartBr->GetEntry(ientry);
+      puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
 	  weight*=gen->weight*puWeight;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
 	}
+        
        /* Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	if(hasGen) {
@@ -335,7 +331,7 @@ void selectWm(const TString conf="wm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -371,7 +367,7 @@ void selectWm(const TString conf="wm.conf", // input file
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
 	  if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
-          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE,isData)) continue;
 
 	  passSel=kTRUE;
 	  goodMuon = mu;
@@ -390,6 +386,7 @@ void selectWm(const TString conf="wm.conf", // input file
 	  TLorentzVector vLep; 
 	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
+
 	  //
 	  // Fill tree
 	  //
@@ -432,6 +429,9 @@ void selectWm(const TString conf="wm.conf", // input file
             TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+        if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
+			toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
+	    }
 	   
             TLorentzVector tvec=*glep1+*glep2;
             genV=new TLorentzVector(0,0,0,0);

@@ -335,9 +335,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  totalWeight+=gen->weight*puWeight;
-	  totalWeightUp+=gen->weight*puWeightUp;
-	  totalWeightDown+=gen->weight*puWeightDown;
+	  // totalWeight+=gen->weight*puWeight;
+	  // totalWeightUp+=gen->weight*puWeightUp;
+	  // totalWeightDown+=gen->weight*puWeightDown;
+      	  totalWeight+=gen->weight;
+	  totalWeightUp+=gen->weight;
+	  totalWeightDown+=gen->weight;
 	}
       }
       else if (not isData){
@@ -345,9 +348,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  totalWeight+= 1.0*puWeight;
-	  totalWeightUp+= 1.0*puWeightUp;
-	  totalWeightDown+= 1.0*puWeightDown;
+	  // totalWeight+= 1.0*puWeight;
+	  // totalWeightUp+= 1.0*puWeightUp;
+	  // totalWeightDown+= 1.0*puWeightDown;
+      	  totalWeight+= 1.0;
+	  totalWeightUp+= 1.0;
+	  totalWeightDown+= 1.0;
 	}
 
       }
@@ -372,9 +378,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
 	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
 	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  weight*=gen->weight*puWeight;
-	  weightUp*=gen->weight*puWeightUp;
-	  weightDown*=gen->weight*puWeightDown;
+	  // weight*=gen->weight*puWeight;
+	  // weightUp*=gen->weight*puWeightUp;
+	  // weightDown*=gen->weight*puWeightDown;
+      	  weight*=gen->weight;
+	  weightUp*=gen->weight;
+	  weightDown*=gen->weight;
 	}
 	
 	// veto z -> xx decays for signal and z -> ee for bacground samples (needed for inclusive DYToLL sample)
@@ -476,10 +485,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	  
 //	  if(tagscEt_corr        < PT_CUT)     continue;  // lepton pT cut
 //	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
-//	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
+//	  if(!passEleTightID(tag,info->rhoIso))     continue;  // lepton selection
           if(vTag.Pt()	         < PT_CUT)     continue;  // lepton pT cut
           if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          if(!passEleID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          // if(!passEleID(tag, vTag, info->rhoIso))     continue;  // lepton selection
 
 	  double El_Pt=0;
 	  El_Pt = vTag.Pt();
@@ -501,6 +511,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	      Pt2=El_Pt;
 	    }
 
+        // comment back in when trigger matching works
 	  if(!isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData)) continue;
 	  if(El_Pt<tagPt) continue;
 
@@ -526,7 +537,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  pfGamIso1  = tag->gammaIso;	    
 	  pfNeuIso1  = tag->neuHadIso;
 //	  pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - (info->rhoIso)*getEffAreaEl(tag->scEta), 0.);
-          pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - (info->rhoIso)*getEffAreaEl(vTag.Eta()), 0.);
+       pfCombIso1 = tag->chHadIso + TMath::Max(tag->neuHadIso + tag->gammaIso - (info->rhoIso)*getEffAreaEl(vTag.Eta()), 0.);
 	  sigieie1   = tag->sieie;
 	  hovere1    = tag->hovere;
 	  eoverp1    = tag->eoverp;
@@ -734,12 +745,19 @@ void selectZee(const TString conf="zee.conf", // input file
 	  }
 
 	  if(El_Pt < PT_CUT) continue;
-	  if(passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-	  if(passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)) continue;
+	  if(passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)) continue;
 	  if(passID&&!eleProbe) continue;
-	  if(!passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(!passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
 	  if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-	  if(!passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+	  if(!passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+      
+      // if(passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  // if(passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)) continue;
+	  // if(passID&&!eleProbe) continue;
+	  // if(!passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  // if(!passID&&!eleProbe&&El_Pt<probePt) continue;
+	  // if(!passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
 	  probePt=El_Pt;
 
@@ -796,12 +814,13 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	  // determine event category
 	  if(eleProbe) {
-	    if(passEleID(eleProbe,vEleProbe,info->rhoIso)) {
+	    if(passEleTightID(eleProbe,vEleProbe,info->rhoIso)) {
+	    // if(passEleID(eleProbe,vEleProbe,info->rhoIso)) {
 	      
 	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle2HLT;  
 	      } 
-	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kTRUE, isData)) {
+	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle1HLT1L1; 
 	      }
 	      else { icat=eEleEle1HLT; }
