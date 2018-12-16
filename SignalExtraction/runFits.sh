@@ -4,8 +4,8 @@
 NTUPDIR=/afs/cern.ch/work/s/sabrandt/public/SM/newBacon/
 
 # integrated luminosity for data
-LUMI=2157.8 # updated removed the bad data in the lumiBin#6
-LUMI2=90.5 # this number need to be updated (muon CR is prescaled, electron CR is full lumi)
+LUMI=212 # Low PU 13 TeV 2017
+LUMI2=90.5 # not used in Low PU atm
 
 LUMI_0=222.904
 LUMI_1=223.971
@@ -32,6 +32,8 @@ LUMI_9=224.172
 #sleep 100
 #root -l -q fitWe.C+\(\"Wenu_default\",${LUMI},${LUMI},0\) #central
 
-root -l -q fitZm.C+\(\"Zmm_pf_lowPU13_pt15\",240,0\);
+# root -l -q fitZm.C+\(\"Zmm_pf_newSamples_lowPU13_pt27\",$LUMI,0\);
+# root -l -q fitZm.C+\(\"Zee_pf_newSamples_lowPU13_wZmmmacro\",$LUMI,0\);
+root -l -q fitZe.C+\(\"Zee_pf_newSamples_lowPU13_sc\",$LUMI,0\);
 
 #rm *.so *.d
