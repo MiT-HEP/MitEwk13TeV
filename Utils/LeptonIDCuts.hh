@@ -306,8 +306,8 @@ Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchB
 }
 
 Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1) {
-  if (isL1) return triggerMenu.passObj("HLT_Mu20_v*","hltL1sL1SingleMu16",hltMatchBits);
-  else return triggerMenu.passObj("HLT_Mu20_v*","hltL3fL1sMu16L1f0L2f10QL3Filtered20Q",hltMatchBits);
+  if (isL1) return triggerMenu.passObj("HLT_HIMu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits);
+  else return triggerMenu.passObj("HLT_Mu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits);
 }
 
 
