@@ -4,15 +4,15 @@
 #/afs/cern.ch/user/s/sabrandt/work/public/SM/newBacon/
 # INPUTDIR=/data/t3home000/sabrandt/2018_09_07_Masters_Incl_2
 # INPUTDIR=/data/t3home000/sabrandt/2018_09_07_Masters_Incl
-INPUTDIR=/data/t3home000/sabrandt/2018_11_11_LowPUFlat_Aram
+INPUTDIR=/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v1/
 
-LUMI=2152
+LUMI=212
 #LUMI=1 #fitting for the fractions
 
 # root -l -b -q fitRecoilWm.C+\(\"${INPUTDIR}/Wmunu/ntuples/we_select.root\",3,3,1,1,0,\"puppiU1\",\"puppiU2\",\"puppiMet\",\"WepMCPuppi_test\",${LUMI},0\)  #Zmumu data/ /BKG selection selection
 # root -l -b -q fitRecoilZmm.C+\(\"${INPUTDIR}/Zmumu/ntuples/zmm_select.raw.root\",3,3,1,\"puppiU1\",\"puppiU2\",\"puppiMet\",\"ZmmMCPuppi_genBin\",${LUMI},0\)  #Zmumu data/ /BKG selection selection
- root -l -b -q fitRecoilZmm.C+\(\"${INPUTDIR}/Zmumu/ntuples/zmm_select.raw.root\",3,3,1,\"u1\",\"u2\",\"met\",\"ZmmMCPF_lowPU13_15GeV\",${LUMI},0\)  #Zmumu data/ /BKG selection selection
-# root -l -b -q fitRecoilZmm.C+\(\"${INPUTDIR}/Zmumu/ntuples/data_select.root\",3,3,0,\"u1\",\"u2\",\"met\",\"ZmmDataPF_bkgTopEWK_lowPU13_15GeV\",${LUMI},0\)  #Zmumu data/ /BKG selection selection
+ root -l -b -q fitRecoilZmm.C+\(\"${INPUTDIR}/Zmumu/ntuples/zmm_select.raw.root\",3,3,1,\"u1\",\"u2\",\"met\",\"ZmmMCPF_loPU_25GeV\",${LUMI},0\)  #Zmumu data/ /BKG selection selection
+# root -l -b -q fitRecoilZmm.C+\(\"${INPUTDIR}/Zmumu/ntuples/data_select.root\",3,3,0,\"u1\",\"u2\",\"met\",\"ZmmDataPF_loPU_25GeV\",${LUMI},0\)  #Zmumu data/ /BKG selection selection
 
 # muons
 # root -l -b -q fitRecoilZmm.C+\(\"${INPUTDIR}/Zmumu/ntuples/data_select.root\",3,3,0,\"puppiU1\",\"puppiU2\",\"puppi\",\"ZmmDataPuppi_bkgTopEWK_TEST\",${LUMI},0\)  #Zmumu data/ /BKG selection selection

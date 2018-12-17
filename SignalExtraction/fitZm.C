@@ -109,15 +109,15 @@ void fitWithGaus(TH2F *inputHist, std::string name, std::vector<double> &mean, s
 //        b->SetLogy(kTRUE);
 //        b->Print((outputdir+"/"+name+"bin_"+int2string(bin)+".png").c_str());
         
-//         mean.push_back(-gaus->GetParameter(1));///((bins[bin-1]+bins[bin])*0.5));
-//         sigma.push_back(gaus->GetParameter(2));
-//         meanErr.push_back(gaus->GetParError(1));///((bins[bin]-bins[bin-1])*0.5));
-//         sigmaErr.push_back(gaus->GetParError(2));
+        mean.push_back(-gaus->GetParameter(1));///((bins[bin-1]+bins[bin])*0.5));
+        sigma.push_back(gaus->GetParameter(2));
+        meanErr.push_back(gaus->GetParError(1));///((bins[bin]-bins[bin-1])*0.5));
+        sigmaErr.push_back(gaus->GetParError(2));
 
-        mean.push_back(-vHistos.back()->GetMean());///((bins[bin-1]+bins[bin])*0.5));
-        sigma.push_back(vHistos.back()->GetRMS());
-        meanErr.push_back(vHistos.back()->GetMeanError());///((bins[bin]-bins[bin-1])*0.5));
-        sigmaErr.push_back(vHistos.back()->GetRMSError());
+        // mean.push_back(-vHistos.back()->GetMean());///((bins[bin-1]+bins[bin])*0.5));
+        // sigma.push_back(vHistos.back()->GetRMS());
+        // meanErr.push_back(vHistos.back()->GetMeanError());///((bins[bin]-bins[bin-1])*0.5));
+        // sigmaErr.push_back(vHistos.back()->GetRMSError());
 
     }
   }
@@ -142,7 +142,7 @@ void fitZm(const TString  outputDir,   // output directory
   bool doDiago = false;
   bool doKeys=false;
   bool doEta=false;
-  bool doInclusive=true;
+  bool doInclusive=false;
   bool doToys = false;
   bool doShittyRecoil=false;
 
@@ -159,8 +159,8 @@ void fitZm(const TString  outputDir,   // output directory
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
 
-  // const Double_t PT_CUT  = 25;
-  const Double_t PT_CUT  = 15;
+  const Double_t PT_CUT  = 25;
+  // const Double_t PT_CUT  = 15;
   const Double_t ETA_CUT = 2.4;
 
   enum { eMuMu2HLT=1, eMuMu1HLT1L1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk }; // event category enum
@@ -171,7 +171,8 @@ void fitZm(const TString  outputDir,   // output directory
   const TString format("png"); 
   rochcor2015 *rmcor = new rochcor2015();
 
-  const TString directory1("../Recoil/");
+  const TString directory1("/home/sabrandt/SM/InclusiveMaster/CMSSW_7_6_3_patch2/src/MitEwk13TeV/Recoil/");
+  const TString directory2("../Recoil/");
   const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
   // for Puppi, inclusive
   int rec_sig = 1;
@@ -188,9 +189,9 @@ void fitZm(const TString  outputDir,   // output directory
    recoilCorrShit->loadFileRatio(recName);
   if(doDiago && !doEta){
   std::cout << "loading diagonal recoil workspaces W+" << std::endl;
-  recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/ZmmMCPuppi_v2/",directory1.Data()), rec_sig);
-  recoilCorr->loadRooWorkspacesDiagData(Form("%s/ZmmDataPuppi_bkg_v2/",directory1.Data()), rec_sig);
-  recoilCorr->loadRooWorkspacesDiagMC(Form("%s/ZmmMCPuppi_v2/",directory1.Data()), rec_sig);
+  recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/ZmmMCPF_loPU_25GeV/",directory2.Data()), rec_sig);
+  recoilCorr->loadRooWorkspacesDiagData(Form("%s/ZmmDataPF_loPU_25GeV/",directory2.Data()), rec_sig);
+  recoilCorr->loadRooWorkspacesDiagMC(Form("%s/ZmmMCPF_loPU_25GeV/",directory2.Data()), rec_sig);
   
   
   
@@ -229,51 +230,53 @@ void fitZm(const TString  outputDir,   // output directory
   // recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPF_lowPU13/",directory1.Data()));  
   
   // PF MET
-    recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPF_lowPU13_15GeV/",directory1.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPF_bkgTopEWK_lowPU13_15GeV/",directory1.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPF_lowPU13_15GeV/",directory1.Data()));
+  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPF_loPU_25GeV/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPF_loPU_25GeV/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPF_loPU_25GeV/",directory2.Data()));
 
   
   }
-  if(doEta && !doDiago){
-  // RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
-  recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
-  recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  // recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
-  recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  //temporarily commented ETA and KEYS til afs issue is fixed
   
-  // RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
-  recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
-  recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  // recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory.Data()));
-  recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  // if(doEta && !doDiago){
+  // // RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
+  // recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  // recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  // // recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
+  // recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  
+  // // RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
+  // recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  // recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
+  // // recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory.Data()));
+  // recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
 
-  // RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
-  recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
-  recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-  // recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory.Data()));
-  recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  // // RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
+  // recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  // recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
+  // // recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory.Data()));
+  // recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
   
-    // RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
-  recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
-  recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-  // recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory.Data()));
-  recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
-  }
+    // // RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
+  // recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+  // recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
+  // // recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory.Data()));
+  // recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+  // }
   
-  // //   // ---------------------- KEYS - inclusive-------------
-std::cout << "load inclusive RooKeys files" << std::endl;
-  RecoilCorrector *recoilCorrKeys = new  RecoilCorrector("","");
-  // recoilCorrKeys->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys/",directory.Data()));
-  recoilCorrKeys->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMCPuppi_keys/",directory.Data()));
-  recoilCorrKeys->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
-  recoilCorrKeys->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  // // //   // ---------------------- KEYS - inclusive-------------
+// std::cout << "load inclusive RooKeys files" << std::endl;
+  // RecoilCorrector *recoilCorrKeys = new  RecoilCorrector("","");
+  // // recoilCorrKeys->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys/",directory.Data()));
+  // recoilCorrKeys->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMCPuppi_keys/",directory.Data()));
+  // recoilCorrKeys->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
+  // recoilCorrKeys->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
-  RecoilCorrector *recoilCorrKeysm = new  RecoilCorrector("","");
-  // recoilCorrKeysm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys/",directory.Data()));
-  recoilCorrKeysm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMCPuppi_keys/",directory.Data()));
-  recoilCorrKeysm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
-  recoilCorrKeysm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  // RecoilCorrector *recoilCorrKeysm = new  RecoilCorrector("","");
+  // // recoilCorrKeysm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys/",directory.Data()));
+  // recoilCorrKeysm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMCPuppi_keys/",directory.Data()));
+  // recoilCorrKeysm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
+  // recoilCorrKeysm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
   // Load the Z data and Z MC Pt spectra
   // TFile *_rat1 = new TFile("zptratio.root");
@@ -391,8 +394,17 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  fnamev.push_back("/data/t3home000/sabrandt/2018_11_11_LowPUFlat_Aram/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/data/t3home000/sabrandt/2018_11_11_LowPUFlat_Aram/Zmumu/ntuples/zmm_select.raw.root"); typev.push_back(eZmumu);
+  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v1/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v2_noTrigMatch/Zee/ntuples/data_select.root"); typev.push_back(eZmumu);
+  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v1/Zmumu/ntuples/zmm_select.raw.root"); typev.push_back(eData);
+  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v2_noTrigMatch/Zee/ntuples/zee_select.raw.root"); typev.push_back(eZmumu);
+  
+  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
+  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zmumu/ntuples/zmm_select.raw.root"); typev.push_back(eZmumu);
+  
+  
+  fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zee/ntuples/zee_select.raw.root"); typev.push_back(eZmumu);
   
   // // // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_10sec/Lumi10Parts_Part"+input_section+"/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
@@ -428,6 +440,10 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   TH1D *hDataRecoilp  = new TH1D("hDataRecoilp","", NBINS,0,METMAX); hDataRecoilp->Sumw2();
   TH1D *hWmunuRecoilp = new TH1D("hWmunuRecoilp","",NBINS,0,METMAX); hWmunuRecoilp->Sumw2();
   TH1D *hEWKRecoilp   = new TH1D("hEWKRecoilp", "", NBINS,0,METMAX); hEWKRecoilp->Sumw2();
+  
+  TH1D *hDataMassp  = new TH1D("hDataMassp","", 60,60,120); hDataMassp->Sumw2();
+  TH1D *hWmunuMassp = new TH1D("hWmunuMassp","",60,60,120); hWmunuMassp->Sumw2();
+  TH1D *hEWKMassp   = new TH1D("hEWKMassp", "", 60,60,120); hEWKMassp->Sumw2();
   
   TH1D *hDataZpt  = new TH1D("hDataZpt","", NBINS,0,METMAX); hDataZpt->Sumw2();
   TH1D *hWmunuZpt = new TH1D("hWmunuZpt","",NBINS,0,METMAX); hWmunuZpt->Sumw2();
@@ -488,8 +504,9 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   }
   
   // double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-  double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300};
-  // double bins[] = {0,2,5,10,20,30,40,50,60,70,80,90,100};
+  // double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300};
+  // double bins[] = {0,2,5,10,20,30,40,50,60,70,80,90,100,125,150,175,200};
+  double bins[] = {0,5,10,15,20,25,30,40,50,60,70,80,100};
 // double bins[] ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100/*,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300*/};
 //     double bins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100};// ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};// {0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100/*,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200*/};
   int nbins = sizeof(bins)/sizeof(double)-1; // calculate the number of bins
@@ -507,85 +524,85 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   TH2F *hU2vsZpt_MC_raw = new TH2F("hU2vsZpt_MC_raw","",nbins, bins,300,-500,300); // Get resp. & res. for perpendicular component from this
   
    cout << "Loading trigger efficiencies..." << endl;
+  // temporarily comment till AFS mounting issue fixed
+  // TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
+  // CEffUser2D dataHLTEff_pos;
+  // dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
-  CEffUser2D dataHLTEff_pos;
-  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
-  CEffUser2D dataHLTEff_neg;
-  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
+  // CEffUser2D dataHLTEff_neg;
+  // dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
     
-  TFile *zmmHLTEffFile_pos = new TFile(zmmHLTEffName_pos);
-  CEffUser2D zmmHLTEff_pos;
-  zmmHLTEff_pos.loadEff((TH2D*)zmmHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zmmHLTEffFile_pos = new TFile(zmmHLTEffName_pos);
+  // CEffUser2D zmmHLTEff_pos;
+  // zmmHLTEff_pos.loadEff((TH2D*)zmmHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);
-  CEffUser2D zmmHLTEff_neg;
-  zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);
+  // CEffUser2D zmmHLTEff_neg;
+  // zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
   
-  //
-  // Selection efficiency
-  //
-  cout << "Loading selection efficiencies..." << endl;
+  // //
+  // // Selection efficiency
+  // //
+  // cout << "Loading selection efficiencies..." << endl;
   
-  TFile *dataSelEffFile_pos = new TFile(dataSelEffName_pos);
-  CEffUser2D dataSelEff_pos;
-  dataSelEff_pos.loadEff((TH2D*)dataSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataSelEffFile_pos = new TFile(dataSelEffName_pos);
+  // CEffUser2D dataSelEff_pos;
+  // dataSelEff_pos.loadEff((TH2D*)dataSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataSelEffFile_neg = new TFile(dataSelEffName_neg);
-  CEffUser2D dataSelEff_neg;
-  dataSelEff_neg.loadEff((TH2D*)dataSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataSelEffFile_neg = new TFile(dataSelEffName_neg);
+  // CEffUser2D dataSelEff_neg;
+  // dataSelEff_neg.loadEff((TH2D*)dataSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zmmSelEffFile_pos = new TFile(zmmSelEffName_pos);
-  CEffUser2D zmmSelEff_pos;
-  zmmSelEff_pos.loadEff((TH2D*)zmmSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zmmSelEffFile_pos = new TFile(zmmSelEffName_pos);
+  // CEffUser2D zmmSelEff_pos;
+  // zmmSelEff_pos.loadEff((TH2D*)zmmSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrhEtaPt"));
 
-  TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);
-  CEffUser2D zmmSelEff_neg;
-  zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);
+  // CEffUser2D zmmSelEff_neg;
+  // zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
 
-     //
-  // Standalone efficiency
-  //
-  cout << "Loading standalone efficiencies..." << endl;
+     // //
+  // // Standalone efficiency
+  // //
+  // cout << "Loading standalone efficiencies..." << endl;
   
-  TFile *dataStaEffFile_pos = new TFile(dataStaEffName_pos);
-  CEffUser2D dataStaEff_pos;
-  dataStaEff_pos.loadEff((TH2D*)dataStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataStaEffFile_pos = new TFile(dataStaEffName_pos);
+  // CEffUser2D dataStaEff_pos;
+  // dataStaEff_pos.loadEff((TH2D*)dataStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataStaEffFile_neg = new TFile(dataStaEffName_neg);
-  CEffUser2D dataStaEff_neg;
-  dataStaEff_neg.loadEff((TH2D*)dataStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataStaEffFile_neg = new TFile(dataStaEffName_neg);
+  // CEffUser2D dataStaEff_neg;
+  // dataStaEff_neg.loadEff((TH2D*)dataStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zmmStaEffFile_pos = new TFile(zmmStaEffName_pos);
-  CEffUser2D zmmStaEff_pos;
-  zmmStaEff_pos.loadEff((TH2D*)zmmStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zmmStaEffFile_pos = new TFile(zmmStaEffName_pos);
+  // CEffUser2D zmmStaEff_pos;
+  // zmmStaEff_pos.loadEff((TH2D*)zmmStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);
-  CEffUser2D zmmStaEff_neg;
-  zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt"));
-  //
-  // Tracker efficiency
-  //
-  cout << "Loading track efficiencies..." << endl;
+  // TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);
+  // CEffUser2D zmmStaEff_neg;
+  // zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt"));
+  // //
+  // // Tracker efficiency
+  // //
+  // cout << "Loading track efficiencies..." << endl;
   
-  TFile *dataTrkEffFile_pos = new TFile(dataTrkEffName_pos);
-  CEffUser2D dataTrkEff_pos;
-  dataTrkEff_pos.loadEff((TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataTrkEffFile_pos = new TFile(dataTrkEffName_pos);
+  // CEffUser2D dataTrkEff_pos;
+  // dataTrkEff_pos.loadEff((TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataTrkEffFile_neg = new TFile(dataTrkEffName_neg);
-  CEffUser2D dataTrkEff_neg;
-  dataTrkEff_neg.loadEff((TH2D*)dataTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataTrkEffFile_neg = new TFile(dataTrkEffName_neg);
+  // CEffUser2D dataTrkEff_neg;
+  // dataTrkEff_neg.loadEff((TH2D*)dataTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zmmTrkEffFile_pos = new TFile(zmmTrkEffName_pos);
-  CEffUser2D zmmTrkEff_pos;
-  zmmTrkEff_pos.loadEff((TH2D*)zmmTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zmmTrkEffFile_pos = new TFile(zmmTrkEffName_pos);
+  // CEffUser2D zmmTrkEff_pos;
+  // zmmTrkEff_pos.loadEff((TH2D*)zmmTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zmmTrkEffFile_neg = new TFile(zmmTrkEffName_neg);
-  CEffUser2D zmmTrkEff_neg;
-  zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
-// 
+  // TFile *zmmTrkEffFile_neg = new TFile(zmmTrkEffName_neg);
+  // CEffUser2D zmmTrkEff_neg;
+  // zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
+// // 
   
   
   //
@@ -637,6 +654,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
     intree->SetBranchAddress("q2",          &q2);	  // charge of probe lepton
     //intree->SetBranchAddress("lep",       &lep);       // lepton 4-vector
     intree->SetBranchAddress("lep1",        &lep1);        // tag lepton 4-vector
+    intree->SetBranchAddress("lep2",        &lep2);        // probe lepton 4-vector    intree->SetBranchAddress("lep1",        &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",        &lep2);        // probe lepton 4-vector
     intree->SetBranchAddress("dilep",       &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("category",    &category);    // dilepton category
@@ -675,60 +693,60 @@ std::cout << "load inclusive RooKeys files" << std::endl;
 //   
       double tl1Pt = 0;
       double tl1Phi = 0;
-      
-      effdata=1; effmc=1;    
-          if(q1>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
-            effmc   *= (1.-zmmHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
-            effmc   *= (1.-zmmHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
-          }
-          if(q2>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt())); 
-            effmc   *= (1.-zmmHLTEff_pos.getEff(lep2->Eta(), lep2->Pt()));
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt())); 
-            effmc   *= (1.-zmmHLTEff_neg.getEff(lep2->Eta(), lep2->Pt()));
-          }
-          effdata = 1.-effdata;
-          effmc   = 1.-effmc;
-          corr *= effdata/effmc;
-    
-          effdata=1; effmc=1;
-          if(q1>0) { 
-            effdata *= dataSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
-            effmc   *= zmmSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
-          } else {
-            effdata *= dataSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-            effmc   *= zmmSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-          }
-          if(q2>0) {
-            effdata *= dataSelEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
-            effmc   *= zmmSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-          } else {
-            effdata *= dataSelEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
-            effmc   *= zmmSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-          }
-          corr *= effdata/effmc;
-    
-          effdata=1; effmc=1;
-          if(q1>0) { 
-            effdata *= dataStaEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
-            effmc   *= zmmStaEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
-          } else {
-            effdata *= dataStaEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-            effmc   *= zmmStaEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-          }
-          if(q2>0) {
-            effdata *= dataStaEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
-            effmc   *= zmmStaEff_pos.getEff(lep2->Eta(), lep2->Pt());
-          } else {
-            effdata *= dataStaEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
-            effmc   *= zmmStaEff_neg.getEff(lep2->Eta(), lep2->Pt());
-          }
+      //temporarily comment til afs is mounted again
+      // effdata=1; effmc=1;    
+          // if(q1>0) { 
+            // effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
+            // effmc   *= (1.-zmmHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
+          // } else {
+            // effdata *= (1.-dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
+            // effmc   *= (1.-zmmHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
+          // }
+          // if(q2>0) {
+            // effdata *= (1.-dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt())); 
+            // effmc   *= (1.-zmmHLTEff_pos.getEff(lep2->Eta(), lep2->Pt()));
+          // } else {
+            // effdata *= (1.-dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt())); 
+            // effmc   *= (1.-zmmHLTEff_neg.getEff(lep2->Eta(), lep2->Pt()));
+          // }
+          // effdata = 1.-effdata;
+          // effmc   = 1.-effmc;
           // corr *= effdata/effmc;
-          // also temporarily set sf to 1 for low pu
+    
+          // effdata=1; effmc=1;
+          // if(q1>0) { 
+            // effdata *= dataSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
+            // effmc   *= zmmSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
+          // } else {
+            // effdata *= dataSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+            // effmc   *= zmmSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+          // }
+          // if(q2>0) {
+            // effdata *= dataSelEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
+            // effmc   *= zmmSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+          // } else {
+            // effdata *= dataSelEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
+            // effmc   *= zmmSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+          // }
+          // corr *= effdata/effmc;
+    
+          // effdata=1; effmc=1;
+          // if(q1>0) { 
+            // effdata *= dataStaEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
+            // effmc   *= zmmStaEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
+          // } else {
+            // effdata *= dataStaEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+            // effmc   *= zmmStaEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+          // }
+          // if(q2>0) {
+            // effdata *= dataStaEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
+            // effmc   *= zmmStaEff_pos.getEff(lep2->Eta(), lep2->Pt());
+          // } else {
+            // effdata *= dataStaEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
+            // effmc   *= zmmStaEff_neg.getEff(lep2->Eta(), lep2->Pt());
+          // }
+          // // corr *= effdata/effmc;
+          // // also temporarily set sf to 1 for low pu
           corr = 1;
     
 	  /*  effdata=1; effmc=1;
@@ -798,9 +816,13 @@ std::cout << "load inclusive RooKeys files" << std::endl;
           // hDataMetp->Fill(abs(pU2));
           hDataRecoilp->Fill(pU);
           hDataMetp->Fill(corrMetWithLepton);
+	     hDataMassp->Fill(dilep->M());
           hU1vsZpt_rsp->Fill(vDilepCor.Mod(),pU1/vDilepCor.Mod());
           hU1vsZpt->Fill(vDilepCor.Mod(),pU1);
           hU2vsZpt->Fill(vDilepCor.Mod(),pU2);
+          // hU1vsZpt_rsp->Fill(genVPt,pU1/genVPt);
+          // hU1vsZpt->Fill(genVPt,pU1);
+          // hU2vsZpt->Fill(genVPt,pU2);
           hDataZpt->Fill(vDilepCor.Mod());
         }
         else    { hDataMetm->Fill(corrMetPhiLepton); }
@@ -890,16 +912,16 @@ std::cout << "load inclusive RooKeys files" << std::endl;
 	          double w2 = 1;//hh_diff->GetBinContent(bin);
              double recoilWeight = 1;
 	      if(doKeys) {
-                  recoilCorrKeys->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
+                  // recoilCorrKeys->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
 	      }  else if(doEta) {
-                if(fabs(dilep->Eta())<0.5)
-                  recoilCorr05->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
-                else if (fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<1.0)
-                  recoilCorr051->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
-                else
-                  recoilCorr1->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago); 
-          } else if(doToys){
-            recoilCorr->CorrectFromToys(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0);
+                // if(fabs(dilep->Eta())<0.5)
+                  // recoilCorr05->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
+                // else if (fabs(dilep->Eta())>=0.5 && fabs(dilep->Eta())<1.0)
+                  // recoilCorr051->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
+                // else
+                  // recoilCorr1->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago); 
+          // } else if(doToys){
+            // recoilCorr->CorrectFromToys(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0);
           
           }else if(doInclusive){
 
@@ -942,9 +964,13 @@ std::cout << "load inclusive RooKeys files" << std::endl;
               
 	      if(typev[ifile]==eZmumu)
 		{
-			  hU1vsZpt_rsp_MC_raw->Fill(dilep->Pt(),u1/dilep->Pt(),weight);
+			  hU1vsZpt_rsp_MC_raw->Fill(vDilepCor.Mod(),u1/vDilepCor.Mod(),weight);
               hU1vsZpt_MC_raw->Fill(vDilepCor.Mod(),u1,weight);
-              hU2vsZpt_MC_raw->Fill(dilep->Pt(),u2,weight);
+              hU2vsZpt_MC_raw->Fill(vDilepCor.Mod(),u2,weight);
+              
+              // hU1vsZpt_rsp_MC_raw->Fill(genVPt,u1/genVPt,weight);
+              // hU1vsZpt_MC_raw->Fill(genVPt,u1,weight);
+              // hU2vsZpt_MC_raw->Fill(genVPt,u2,weight);
 
               // hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt(),weight);
               // hU1vsZpt_MC->Fill(dilep->Pt(),pU1,weight);
@@ -957,6 +983,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
 		  // hWmunuRecoilp->Fill(abs(pU1),weight*w2);			
 		  hWmunuMetp->Fill(corrMetWithLepton,weight*w2*recoilWeight);
 		  hWmunuRecoilp->Fill(pU,weight*w2*recoilWeight);
+		  hWmunuMassp->Fill(dilep->M(),weight*w2*recoilWeight);
           hWmunuZpt->Fill(genVPt,weight*w2*recoilWeight);
 		  corrMet=met, corrMetPhi=metPhi;
 		}
@@ -964,6 +991,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
 		{
 		  hEWKMetp->Fill(corrMetWithLepton,weight);
 		  hEWKRecoilp->Fill(pU,weight);
+		  hEWKMassp->Fill(dilep->M(),weight);
           hEWKZpt->Fill(vDilepCor.Mod(),weight);
 		  corrMet=met, corrMetPhi=metPhi;
 		}
@@ -1014,6 +1042,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
           hEWKMet->Fill(corrMetWithLepton,weight);
           if(q1*q2<0) { 
 			  hEWKRecoilp->Fill(pU,weight); 
+			  hEWKMassp->Fill(dilep->M(),weight); 
 			  hEWKMetp->Fill(corrMetWithLepton,weight); 
 			  hEWKZpt->Fill(vDilepCor.Mod(),weight); 
 		  }
@@ -1063,8 +1092,8 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   dewkp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
   
-  RooRealVar nSigRp("nSigRp","nSigRp",1.0*(hWmunuRecoilp->Integral()),0.7*hDataRecoilp->Integral(),1.5*hDataRecoilp->Integral());
-  //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+  RooRealVar nSigRp("nSigRp","nSigRp",1.0*(hDataRecoilp->Integral()),0.7*hDataRecoilp->Integral(),1.5*hDataRecoilp->Integral());
+  // RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nQCDRp("nQCDRp","nQCDRp",0.01*hDataRecoilp->Integral(),0,hDataRecoilp->Integral());
   RooRealVar cewkRp("cewkRp","cewkRp",0.01,0,5) ;
   cewkRp.setVal(hEWKRecoilp->Integral()/hWmunuRecoilp->Integral());
@@ -1072,14 +1101,23 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   cewkRp.setConstant(kTRUE);
   RooFormulaVar nEWKRp("nEWKRp","nEWKRp","cewkRp*nSigRp",RooArgList(nSigRp,cewkRp));
   
-    RooRealVar nSigZp("nSigZp","nSigZp",1.0*(hWmunuZpt->Integral()),0.7*hDataZpt->Integral(),1.5*hDataZpt->Integral());
-  //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+    RooRealVar nSigZp("nSigZp","nSigZp",1.0*(hDataZpt->Integral()),0.7*hDataZpt->Integral(),1.5*hDataZpt->Integral());
+  // RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nQCDZp("nQCDZp","nQCDZp",0.01*hDataZpt->Integral(),0,hDataZpt->Integral());
   RooRealVar cewkZp("cewkZp","cewkZp",0.01,0,5) ;
   // cewkZp.setVal(hEWKZpt->Integral()/hWmunuZpt->Integral());
   cewkZp.setVal(0);
   cewkZp.setConstant(kTRUE);
   RooFormulaVar nEWKZp("nEWKZp","nEWKZp","cewkZp*nSigZp",RooArgList(nSigZp,cewkZp));
+  
+   RooRealVar nSigMp("nSigMp","nSigMp",1.0*(hDataMassp->Integral()),0.7*hDataMassp->Integral(),1.5*hDataMassp->Integral());
+  //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+  RooRealVar nQCDMp("nQCDMp","nQCDMp",0.01*hDataMassp->Integral(),0,hDataMassp->Integral());
+  RooRealVar cewkMp("cewkMp","cewkMp",0.01,0,5) ;
+  // cewkRp.setVal(hEWKRecoilp->Integral()/hWmunuRecoilp->Integral());
+  cewkMp.setVal(0);
+  cewkMp.setConstant(kTRUE);
+  RooFormulaVar nEWKMp("nEWKMp","nEWKMp","cewkMp*nSigMp",RooArgList(nSigMp,cewkMp));
   
   
   RooRealVar nSigm("nSigm","nSigm",1.0*(hDataMetm->Integral()),0,hDataMetm->Integral());
@@ -1100,7 +1138,9 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   // Construct PDFs for fitting
   //
   RooRealVar pfmet("pfmet","pfmet",0,METMAX);
+  RooRealVar pfmet2("pfmet2","pfmet2",60,120);
   pfmet.setBins(NBINS);
+  pfmet2.setBins(60);
    
   // Signal PDFs
   RooDataHist wmunuMet ("wmunuMET", "wmunuMET", RooArgSet(pfmet),hWmunuMet);  RooHistPdf pdfWm ("wm", "wm", pfmet,wmunuMet, 1);
@@ -1122,6 +1162,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   
   RooDataHist wmunuRecoilp("wmunuRecoilp","wmunuRecoilp",RooArgSet(pfmet),hWmunuRecoilp); RooHistPdf pdfWmpRecoil("wmprec","wmprec",pfmet,wmunuRecoilp,1);
   RooDataHist wmunuZpt("wmunuZpt","wmunuZpt",RooArgSet(pfmet),hWmunuZpt); RooHistPdf pdfWmZpt("wmzpt","wmzpt",pfmet,wmunuZpt,1);
+  RooDataHist wmunuMassp("wmunuMassp","wmunuMassp",RooArgSet(pfmet2),hWmunuMassp); RooHistPdf pdfWmpMass("wmpmass","wmpmass",pfmet2,wmunuMassp,1);
   
   // EWK+top PDFs
   RooDataHist ewkMet ("ewkMET", "ewkMET", RooArgSet(pfmet),hEWKMet);  RooHistPdf pdfEWK ("ewk", "ewk", pfmet,ewkMet, 1);
@@ -1130,6 +1171,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
 
   RooDataHist ewkRecoilp("ewkRecoilp","ewkRecoilp",RooArgSet(pfmet),hEWKRecoilp); RooHistPdf pdfEWKpRecoil("ewkprec","ewkprec",pfmet,ewkRecoilp,1); 
   RooDataHist ewkZpt("ewkZpt","ewkZpt",RooArgSet(pfmet),hEWKZpt); RooHistPdf pdfEWKZpt("pdfEWKZpt","pdfEWKZpt",pfmet,ewkZpt,1); 
+  RooDataHist ewkMassp("ewkMassp","ewkMassp",RooArgSet(pfmet2),hEWKMassp); RooHistPdf pdfEWKpMass("ewkpmass","ewkpmass",pfmet2,ewkMassp,1); 
   // Signal + Background PDFs
   RooAddPdf pdfMet ("pdfMet", "pdfMet", RooArgList(pdfWm,pdfEWK),   RooArgList(nSig,nEWK));  
   // RooAddPdf pdfMetp("pdfMetp","pdfMetp",RooArgList(pdfWmp,pdfEWKp),RooArgList(nSigp,nEWKp));
@@ -1140,8 +1182,10 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   // RooAddPdf pdfRecoilp("pdRecoilp","pdfRecoilp",RooArgList(pdfWmpRecoil,pdfEWKpRecoil),RooArgList(nSigRp,nEWKRp));
   // RooAddPdf pdfZpt("pdfZpt","pdfZpt",RooArgList(pdfWmZpt,pdfEWKZpt),RooArgList(nSigZp,nEWKZp)); 
   RooAddPdf pdfRecoilp("pdRecoilp","pdfRecoilp",RooArgList(pdfWmpRecoil),RooArgList(nSigRp));
+  RooAddPdf pdfMassp("pdfMassp","pdfMassp",RooArgList(pdfWmpMass),RooArgList(nSigMp));
   RooAddPdf pdfZpt("pdfZpt","pdfZpt",RooArgList(pdfWmZpt),RooArgList(nSigZp));
  
+  RooDataHist dataMassp("dataMassp", "dataMassp", RooArgSet(pfmet2), hDataMassp);
   //
   // Perform fits
   //
@@ -1161,7 +1205,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   cout << "Starting values for Wmunu_p yields: " << endl;
   cout << "   sig: " << hWmunuMetp->Integral() << endl;
   cout << "   EWK: " << hEWKMetp->Integral() << endl;
-  cout << "   qcd: " << hDataMetp->Integral()-hWmunuMetp->Integral()-hEWKMetp->Integral() << endl;
+  cout << "   data: " << hDataMetp->Integral() << endl;
 
   cout << "Starting values for Wmunu_m yields: " << endl;
   cout << "   sig: " << hWmunuMetm->Integral() << endl;
@@ -1203,6 +1247,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE)); 
   RooFitResult *fitRecoilp = pdfRecoilp.fitTo(dataRecoilp,Extended(),Minos(kTRUE),Save(kTRUE)); 
   RooFitResult *fitZpt = pdfZpt.fitTo(dataZpt,Extended(),Minos(kTRUE),Save(kTRUE)); 
+  RooFitResult *fitmassp = pdfMassp.fitTo(dataMassp,Extended(),Minos(kTRUE),Save(kTRUE)); 
   //  RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
  
   // Use histogram version of fitted PDFs to make ratio plots
@@ -1235,6 +1280,13 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   TH1D *hZptDiff = makeDiffHist(hDataZpt,hPdfZpt,"hZptDiff");
   hZptDiff->SetMarkerStyle(kFullCircle);
   hZptDiff->SetMarkerSize(0.9);
+  
+   TH1D *hPdfMassp = (TH1D*)(pdfMassp.createHistogram("hPdfMassp", pfmet2));
+  // hPdfMassp->Scale((nSigRp.getVal()+nEWKRp.getVal())/hPdfMassp->Integral());
+  hPdfMassp->Scale((nSigMp.getVal())/hPdfMassp->Integral());
+  TH1D *hMasspDiff = makeDiffHist(hDataMassp,hPdfMassp,"hMasspDiff");
+  hMasspDiff->SetMarkerStyle(kFullCircle);
+  hMasspDiff->SetMarkerSize(0.9);
     
   TH1D *hPdfMetm = (TH1D*)(pdfMetm.createHistogram("hPdfMetm", pfmet));
   hPdfMetm->Scale((nSigm.getVal()+nEWKm.getVal())/hPdfMetm->Integral());
@@ -1428,7 +1480,7 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   plot_response_u1.AddGraph(response_U1_MC_raw ,"MC w/o Recoil Corr" ,"", kBlue   ,20);
   plot_response_u1.AddGraph(response_U1_MC     ,"MC w/ Recoil Corr","", kRed ,34); // Draw MC with open circles
 //   plot_response_u1.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plot_response_u1.SetYRange(0.0,1.1);
+  plot_response_u1.SetYRange(0.0,2.0);
   plot_response_u1.Draw(c2,kTRUE,format);
   
   // Plot response of perpendicular resolution component
@@ -1690,7 +1742,53 @@ std::cout << "load inclusive RooKeys files" << std::endl;
   plotRecoilp.SetYRange(1e-4*(hDataRecoilp->GetMaximum()),10*(hDataRecoilp->GetMaximum()));
   plotRecoilp.Draw(c,kTRUE,format,1);
   
+    //
+  // Zee Mass plot
+  //
+  RooPlot *wepframemass = pfmet2.frame(Bins(60));    
+  wepframemass->GetYaxis()->SetNdivisions(505);
+  dataMassp.plotOn(wepframemass,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  pdfMassp.plotOn(wepframemass,FillColor(fillcolorW),DrawOption("F"));
+  pdfMassp.plotOn(wepframemass,LineColor(linecolorW));
+  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfEWKpMass)),FillColor(fillcolorEWK),DrawOption("F"));
+  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfEWKpMass)),LineColor(linecolorEWK));
+  //pdfMassp.plotOn(wepframemass,Components(RooArgSet(*(qcdp.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  //pdfMassp.plotOn(wepframe,Components(RooArgSet(*(qcdp.model))),LineColor(linecolorQCD));
+//  pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfEWKp,pdfQCDp)),FillColor(fillcolorEWK),DrawOption("F"));
+//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfEWKp,pdfQCDp)),LineColor(linecolorEWK));
+//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfQCDp)),FillColor(fillcolorQCD),DrawOption("F"));
+//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfQCDp)),LineColor(linecolorQCD));
   
+  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfWmpMass)),LineColor(linecolorW),LineStyle(2));
+  dataMassp.plotOn(wepframemass,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
+  
+  sprintf(ylabel,"Events / %.1f GeV",hDataMassp->GetBinWidth(1));
+  CPlot plotMassp("fitMassp",wepframemass,"","",ylabel);
+  plotMassp.SetLegend(0.68,0.57,0.93,0.77);
+  plotMassp.GetLegend()->AddEntry(hDummyData,"data","PL");
+  plotMassp.GetLegend()->AddEntry(hDummyW,"Z#rightarrowe^{+}e^{-}","F");
+  plotMassp.GetLegend()->AddEntry(hDummyEWK,"EWK+t#bar{t}","F");
+  //plotMassp.GetLegend()->AddEntry(hDummyQCD,"QCD","F");
+  plotMassp.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotMassp.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+//  plotMassp.SetYRange(0.1,1.1*(hDataMassp->GetMaximum()));
+//plotMassp.SetYRange(0.1,5000);
+  plotMassp.Draw(c,kFALSE,format,1);
+
+  // TString titleX="#slash{E}_{T} [GeV]";
+  titleX="Mass  [GeV]";
+  CPlot plotMasspDiff("fitMassp","",titleX.Data(),"#frac{Data-Pred}{Data}");
+  plotMasspDiff.AddHist1D(hMasspDiff,"EX0",ratioColor);
+  plotMasspDiff.SetYRange(-0.2,0.2);
+  plotMasspDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
+  plotMasspDiff.AddLine(0, 0.10,METMAX, 0.10,kBlack,3);
+  plotMasspDiff.AddLine(0,-0.10,METMAX,-0.10,kBlack,3);
+  plotMasspDiff.Draw(c,kTRUE,format,2);
+  
+  plotMassp.SetName("fitMassplog");
+  plotMassp.SetLogy();
+  plotMassp.SetYRange(1e-4*(hDataMassp->GetMaximum()),10*(hDataMassp->GetMaximum()));
+  plotMassp.Draw(c,kTRUE,format,1);
   
   RooPlot *wepzframe = pfmet.frame(Bins(NBINS));    
   wepzframe->GetYaxis()->SetNdivisions(505);
