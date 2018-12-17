@@ -476,10 +476,10 @@ void selectZee(const TString conf="zee.conf", // input file
 	  
 //	  if(tagscEt_corr        < PT_CUT)     continue;  // lepton pT cut
 //	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
-//	  if(!passEleID(tag,info->rhoIso))     continue;  // lepton selection
+//	  if(!passEleTightId(tag,info->rhoIso))     continue;  // lepton selection
           if(vTag.Pt()	         < PT_CUT)     continue;  // lepton pT cut
           if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          if(!passEleID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          if(!passEleTightId(tag, vTag, info->rhoIso))     continue;  // lepton selection
 
 	  double El_Pt=0;
 	  El_Pt = vTag.Pt();
@@ -734,12 +734,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	  }
 
 	  if(El_Pt < PT_CUT) continue;
-	  if(passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-	  if(passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)) continue;
+	  if(passID&&eleProbe&&passEleTightId(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(passID&&eleProbe&&!passEleTightId(eleProbe,vEleProbe,info->rhoIso)) continue;
 	  if(passID&&!eleProbe) continue;
-	  if(!passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(!passID&&eleProbe&&!passEleTightId(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
 	  if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-	  if(!passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+	  if(!passID&&eleProbe&&passEleTightId(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
 	  probePt=El_Pt;
 
@@ -796,12 +796,12 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	  // determine event category
 	  if(eleProbe) {
-	    if(passEleID(eleProbe,vEleProbe,info->rhoIso)) {
+	    if(passEleTightId(eleProbe,vEleProbe,info->rhoIso)) {
 	      
 	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle2HLT;  
 	      } 
-	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kTRUE, isData)) {
+	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
 		icat=eEleEle1HLT1L1; 
 	      }
 	      else { icat=eEleEle1HLT; }

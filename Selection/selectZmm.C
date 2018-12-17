@@ -325,6 +325,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+	//for(UInt_t ientry=0; ientry<1000; ientry++) {
         infoBr->GetEntry(ientry);
 
 	if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -356,7 +357,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData)) continue;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -402,7 +403,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      Pt2=Mu_Pt;
 	    }
 
-          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE)) continue;
+          //if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData)) continue;
 
 	  if(Mu_Pt<tagPt) continue;
 
@@ -498,10 +499,10 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
 	  // determine event category
 	  if(passMuonID(probe)) {
-	    if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kFALSE)) {
+	    if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, isData)) {
 	      icat=eMuMu2HLT;
 	    }
-	    else if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, kTRUE)) {
+	    else if(0) {
 	      icat=eMuMu1HLT1L1;
 	  }
 	    else {
@@ -632,8 +633,8 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	scale1fb = weight;
 	scale1fbUp = weightUp;
 	scale1fbDown = weightDown;
-	met      = info->pfMETC;
-	metPhi   = info->pfMETCphi;
+	met      = info->pfMET;
+	metPhi   = info->pfMETphi;
 	sumEt    = 0;
 	tkMet    = info->trkMET;
 	tkMetPhi = info->trkMETphi;
