@@ -2,10 +2,10 @@
 
 # output ntuple directory
 #NTUPDIR=/data/blue/Bacon/Run2/wz_flat_diffxsec
-NTUPDIR=/data/t3home000/sabrandt/2018_12_17_RelValZee/
+NTUPDIR=/afs/cern.ch/work/a/arapyan/public/flat_new
 
 # integrated luminosity for data
-LUMI=212
+LUMI=213.1
 
 #root -l -q selectZmm.C+g\(\"zmm_eos.conf\",\"${NTUPDIR}/Zmumu\",0\)
 # root -l -q selectZmm.C+\(\"zmm.conf\",\"${NTUPDIR}/Zmumu\",0\)
