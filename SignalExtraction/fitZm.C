@@ -236,8 +236,7 @@ void fitZm(const TString  outputDir,   // output directory
 
   
   }
-  //temporarily commented ETA and KEYS til afs issue is fixed
-  
+  // temporarily comment eta and keys while AFS is not mounted
   // if(doEta && !doDiago){
   // // RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
   // recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
@@ -399,18 +398,13 @@ void fitZm(const TString  outputDir,   // output directory
   // fnamev.push_back("/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v1/Zmumu/ntuples/zmm_select.raw.root"); typev.push_back(eData);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_12_02_13TeVlowPU_25GeV_v2_noTrigMatch/Zee/ntuples/zee_select.raw.root"); typev.push_back(eZmumu);
   
-  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  // fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zmumu/ntuples/zmm_select.raw.root"); typev.push_back(eZmumu);
-  
-  
-  fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/data/t3home000/sabrandt/2018_12_17_RelValZee/Zee/ntuples/zee_select.raw.root"); typev.push_back(eBKG);
   fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zee/ntuples/zee_select.raw.root"); typev.push_back(eZmumu);
-  
+  fnamev.push_back("/data/t3home000/sabrandt/2018_12_15_fixTriggerFilters/Zee/ntuples/data_select.root"); typev.push_back(eData);
   // // // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_10sec/Lumi10Parts_Part"+input_section+"/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl_2/Zmumu/ntuples/zmm_select.raw.root"); typev.push_back(eZmumu);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/zxx_select.raw.root"); typev.push_back(eBKG);
-  // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/wx_select.raw.root"); typev.push_back(eBKG);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/zz_select.raw.root"); typev.push_back(eEWK);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/wz_select.raw.root"); typev.push_back(eEWK);
   // fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/ww_select.raw.root"); typev.push_back(eEWK);
@@ -523,8 +517,10 @@ void fitZm(const TString  outputDir,   // output directory
   TH2F *hU1vsZpt_MC_raw = new TH2F("hU1vsZpt_MC_raw","",nbins, bins,400, -500,300);
   TH2F *hU2vsZpt_MC_raw = new TH2F("hU2vsZpt_MC_raw","",nbins, bins,300,-500,300); // Get resp. & res. for perpendicular component from this
   
-   cout << "Loading trigger efficiencies..." << endl;
-  // temporarily comment till AFS mounting issue fixed
+  
+  // temporarily comment while AFS is not mounted
+   // cout << "Loading trigger efficiencies..." << endl;
+  
   // TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
   // CEffUser2D dataHLTEff_pos;
   // dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
@@ -693,8 +689,8 @@ void fitZm(const TString  outputDir,   // output directory
 //   
       double tl1Pt = 0;
       double tl1Phi = 0;
-      //temporarily comment til afs is mounted again
-      // effdata=1; effmc=1;    
+      //temporarily comment while AFS isnt mounted
+      effdata=1; effmc=1;    
           // if(q1>0) { 
             // effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
             // effmc   *= (1.-zmmHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
@@ -746,7 +742,7 @@ void fitZm(const TString  outputDir,   // output directory
             // effmc   *= zmmStaEff_neg.getEff(lep2->Eta(), lep2->Pt());
           // }
           // // corr *= effdata/effmc;
-          // // also temporarily set sf to 1 for low pu
+          // also temporarily set sf to 1 for low pu
           corr = 1;
     
 	  /*  effdata=1; effmc=1;
@@ -832,7 +828,7 @@ void fitZm(const TString  outputDir,   // output directory
         else    { hAntiDataMetm->Fill(met); }
       } else {
         Double_t weight = 1;
-        weight *= scale1fb*lumi*corr;
+        // weight *= scale1fb*lumi*corr;
         // weight *= scale1fbUp*lumi*corr;
         // weight *= scale1fbDown*lumi*corr;
         
@@ -920,7 +916,7 @@ void fitZm(const TString  outputDir,   // output directory
                   // recoilCorr051->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
                 // else
                   // recoilCorr1->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago); 
-          // } else if(doToys){
+          } else if(doToys){
             // recoilCorr->CorrectFromToys(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0);
           
           }else if(doInclusive){
@@ -964,13 +960,13 @@ void fitZm(const TString  outputDir,   // output directory
               
 	      if(typev[ifile]==eZmumu)
 		{
-			  hU1vsZpt_rsp_MC_raw->Fill(vDilepCor.Mod(),u1/vDilepCor.Mod(),weight);
-              hU1vsZpt_MC_raw->Fill(vDilepCor.Mod(),u1,weight);
-              hU2vsZpt_MC_raw->Fill(vDilepCor.Mod(),u2,weight);
+			  // hU1vsZpt_rsp_MC_raw->Fill(vDilepCor.Mod(),u1/vDilepCor.Mod(),weight);
+              // hU1vsZpt_MC_raw->Fill(vDilepCor.Mod(),u1,weight);
+              // hU2vsZpt_MC_raw->Fill(vDilepCor.Mod(),u2,weight);
               
-              // hU1vsZpt_rsp_MC_raw->Fill(genVPt,u1/genVPt,weight);
-              // hU1vsZpt_MC_raw->Fill(genVPt,u1,weight);
-              // hU2vsZpt_MC_raw->Fill(genVPt,u2,weight);
+              hU1vsZpt_rsp_MC_raw->Fill(genVPt,u1/genVPt,weight);
+              hU1vsZpt_MC_raw->Fill(genVPt,u1,weight);
+              hU2vsZpt_MC_raw->Fill(genVPt,u2,weight);
 
               // hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt(),weight);
               // hU1vsZpt_MC->Fill(dilep->Pt(),pU1,weight);
@@ -1117,7 +1113,9 @@ void fitZm(const TString  outputDir,   // output directory
   // cewkRp.setVal(hEWKRecoilp->Integral()/hWmunuRecoilp->Integral());
   cewkMp.setVal(0);
   cewkMp.setConstant(kTRUE);
-  RooFormulaVar nEWKMp("nEWKMp","nEWKMp","cewkMp*nSigMp",RooArgList(nSigMp,cewkMp));
+  // RooFormulaVar nEWKMp("nEWKMp","nEWKMp","cewkMp*nSigMp",RooArgList(nSigMp,cewkMp));
+  RooRealVar nEWKMp("nEWKMp","nEWKMp",1.0*(hDataMassp->Integral()),0.7*hDataMassp->Integral(),1.5*hDataMassp->Integral());
+  nEWKMp.setConstant();
   
   
   RooRealVar nSigm("nSigm","nSigm",1.0*(hDataMetm->Integral()),0,hDataMetm->Integral());
@@ -1138,9 +1136,9 @@ void fitZm(const TString  outputDir,   // output directory
   // Construct PDFs for fitting
   //
   RooRealVar pfmet("pfmet","pfmet",0,METMAX);
-  RooRealVar pfmet2("pfmet2","pfmet2",60,120);
   pfmet.setBins(NBINS);
-  pfmet2.setBins(60);
+  RooRealVar pfmet2("pfmet2","pfmet2",0,METMAX);
+  pfmet2.setBins(NBINS);
    
   // Signal PDFs
   RooDataHist wmunuMet ("wmunuMET", "wmunuMET", RooArgSet(pfmet),hWmunuMet);  RooHistPdf pdfWm ("wm", "wm", pfmet,wmunuMet, 1);
@@ -1162,8 +1160,8 @@ void fitZm(const TString  outputDir,   // output directory
   
   RooDataHist wmunuRecoilp("wmunuRecoilp","wmunuRecoilp",RooArgSet(pfmet),hWmunuRecoilp); RooHistPdf pdfWmpRecoil("wmprec","wmprec",pfmet,wmunuRecoilp,1);
   RooDataHist wmunuZpt("wmunuZpt","wmunuZpt",RooArgSet(pfmet),hWmunuZpt); RooHistPdf pdfWmZpt("wmzpt","wmzpt",pfmet,wmunuZpt,1);
-  RooDataHist wmunuMassp("wmunuMassp","wmunuMassp",RooArgSet(pfmet2),hWmunuMassp); RooHistPdf pdfWmpMass("wmpmass","wmpmass",pfmet2,wmunuMassp,1);
-  
+   RooDataHist wmunuMassp("wmunuMassp","wmunuMassp",RooArgSet(pfmet2),hWmunuMassp); RooHistPdf pdfWmpMass("wmpmass","wmpmass",pfmet2,wmunuMassp,1);
+   
   // EWK+top PDFs
   RooDataHist ewkMet ("ewkMET", "ewkMET", RooArgSet(pfmet),hEWKMet);  RooHistPdf pdfEWK ("ewk", "ewk", pfmet,ewkMet, 1);
   RooDataHist ewkMetp("ewkMETp","ewkMETp",RooArgSet(pfmet),hEWKMetp); RooHistPdf pdfEWKp("ewkp","ewkp",pfmet,ewkMetp,1); 
@@ -1185,7 +1183,6 @@ void fitZm(const TString  outputDir,   // output directory
   RooAddPdf pdfMassp("pdfMassp","pdfMassp",RooArgList(pdfWmpMass),RooArgList(nSigMp));
   RooAddPdf pdfZpt("pdfZpt","pdfZpt",RooArgList(pdfWmZpt),RooArgList(nSigZp));
  
-  RooDataHist dataMassp("dataMassp", "dataMassp", RooArgSet(pfmet2), hDataMassp);
   //
   // Perform fits
   //
@@ -1193,6 +1190,7 @@ void fitZm(const TString  outputDir,   // output directory
   RooDataHist dataMet("dataMet", "dataMet", RooArgSet(pfmet), hDataMet);
   RooDataHist dataMetp("dataMetp", "dataMetp", RooArgSet(pfmet), hDataMetp);
   RooDataHist dataMetm("dataMetm", "dataMetm", RooArgSet(pfmet), hDataMetm);
+  RooDataHist dataMassp("dataMassp", "dataMassp", RooArgSet(pfmet2), hDataMassp);
   
   RooDataHist dataRecoilp("dataRecoilp", "dataRecoilp", RooArgSet(pfmet), hDataRecoilp);
   RooDataHist dataZpt("dataZpt", "dataZpt", RooArgSet(pfmet), hDataZpt);
@@ -1205,7 +1203,7 @@ void fitZm(const TString  outputDir,   // output directory
   cout << "Starting values for Wmunu_p yields: " << endl;
   cout << "   sig: " << hWmunuMetp->Integral() << endl;
   cout << "   EWK: " << hEWKMetp->Integral() << endl;
-  cout << "   data: " << hDataMetp->Integral() << endl;
+  cout << "   qcd: " << hDataMetp->Integral()-hWmunuMetp->Integral()-hEWKMetp->Integral() << endl;
 
   cout << "Starting values for Wmunu_m yields: " << endl;
   cout << "   sig: " << hWmunuMetm->Integral() << endl;
@@ -1247,7 +1245,6 @@ void fitZm(const TString  outputDir,   // output directory
   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE)); 
   RooFitResult *fitRecoilp = pdfRecoilp.fitTo(dataRecoilp,Extended(),Minos(kTRUE),Save(kTRUE)); 
   RooFitResult *fitZpt = pdfZpt.fitTo(dataZpt,Extended(),Minos(kTRUE),Save(kTRUE)); 
-  RooFitResult *fitmassp = pdfMassp.fitTo(dataMassp,Extended(),Minos(kTRUE),Save(kTRUE)); 
   //  RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
  
   // Use histogram version of fitted PDFs to make ratio plots
@@ -1281,7 +1278,7 @@ void fitZm(const TString  outputDir,   // output directory
   hZptDiff->SetMarkerStyle(kFullCircle);
   hZptDiff->SetMarkerSize(0.9);
   
-   TH1D *hPdfMassp = (TH1D*)(pdfMassp.createHistogram("hPdfMassp", pfmet2));
+     TH1D *hPdfMassp = (TH1D*)(pdfMassp.createHistogram("hPdfMassp", pfmet2));
   // hPdfMassp->Scale((nSigRp.getVal()+nEWKRp.getVal())/hPdfMassp->Integral());
   hPdfMassp->Scale((nSigMp.getVal())/hPdfMassp->Integral());
   TH1D *hMasspDiff = makeDiffHist(hDataMassp,hPdfMassp,"hMasspDiff");
@@ -1742,53 +1739,7 @@ void fitZm(const TString  outputDir,   // output directory
   plotRecoilp.SetYRange(1e-4*(hDataRecoilp->GetMaximum()),10*(hDataRecoilp->GetMaximum()));
   plotRecoilp.Draw(c,kTRUE,format,1);
   
-    //
-  // Zee Mass plot
-  //
-  RooPlot *wepframemass = pfmet2.frame(Bins(60));    
-  wepframemass->GetYaxis()->SetNdivisions(505);
-  dataMassp.plotOn(wepframemass,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  pdfMassp.plotOn(wepframemass,FillColor(fillcolorW),DrawOption("F"));
-  pdfMassp.plotOn(wepframemass,LineColor(linecolorW));
-  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfEWKpMass)),FillColor(fillcolorEWK),DrawOption("F"));
-  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfEWKpMass)),LineColor(linecolorEWK));
-  //pdfMassp.plotOn(wepframemass,Components(RooArgSet(*(qcdp.model))),FillColor(fillcolorQCD),DrawOption("F"));
-  //pdfMassp.plotOn(wepframe,Components(RooArgSet(*(qcdp.model))),LineColor(linecolorQCD));
-//  pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfEWKp,pdfQCDp)),FillColor(fillcolorEWK),DrawOption("F"));
-//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfEWKp,pdfQCDp)),LineColor(linecolorEWK));
-//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfQCDp)),FillColor(fillcolorQCD),DrawOption("F"));
-//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfQCDp)),LineColor(linecolorQCD));
   
-  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfWmpMass)),LineColor(linecolorW),LineStyle(2));
-  dataMassp.plotOn(wepframemass,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
-  
-  sprintf(ylabel,"Events / %.1f GeV",hDataMassp->GetBinWidth(1));
-  CPlot plotMassp("fitMassp",wepframemass,"","",ylabel);
-  plotMassp.SetLegend(0.68,0.57,0.93,0.77);
-  plotMassp.GetLegend()->AddEntry(hDummyData,"data","PL");
-  plotMassp.GetLegend()->AddEntry(hDummyW,"Z#rightarrowe^{+}e^{-}","F");
-  plotMassp.GetLegend()->AddEntry(hDummyEWK,"EWK+t#bar{t}","F");
-  //plotMassp.GetLegend()->AddEntry(hDummyQCD,"QCD","F");
-  plotMassp.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
-  plotMassp.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-//  plotMassp.SetYRange(0.1,1.1*(hDataMassp->GetMaximum()));
-//plotMassp.SetYRange(0.1,5000);
-  plotMassp.Draw(c,kFALSE,format,1);
-
-  // TString titleX="#slash{E}_{T} [GeV]";
-  titleX="Mass  [GeV]";
-  CPlot plotMasspDiff("fitMassp","",titleX.Data(),"#frac{Data-Pred}{Data}");
-  plotMasspDiff.AddHist1D(hMasspDiff,"EX0",ratioColor);
-  plotMasspDiff.SetYRange(-0.2,0.2);
-  plotMasspDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
-  plotMasspDiff.AddLine(0, 0.10,METMAX, 0.10,kBlack,3);
-  plotMasspDiff.AddLine(0,-0.10,METMAX,-0.10,kBlack,3);
-  plotMasspDiff.Draw(c,kTRUE,format,2);
-  
-  plotMassp.SetName("fitMassplog");
-  plotMassp.SetLogy();
-  plotMassp.SetYRange(1e-4*(hDataMassp->GetMaximum()),10*(hDataMassp->GetMaximum()));
-  plotMassp.Draw(c,kTRUE,format,1);
   
   RooPlot *wepzframe = pfmet.frame(Bins(NBINS));    
   wepzframe->GetYaxis()->SetNdivisions(505);
@@ -1829,6 +1780,62 @@ void fitZm(const TString  outputDir,   // output directory
   plotZpt.SetLogy();
   plotZpt.SetYRange(1e-4*(hDataZpt->GetMaximum()),10*(hDataZpt->GetMaximum()));
   plotZpt.Draw(c,kTRUE,format,1);
+  
+  
+  
+  
+     //
+  // Zee Mass plot
+  //
+  RooPlot *wepframemass = pfmet2.frame(Bins(60));    
+  wepframemass->GetYaxis()->SetNdivisions(505);
+  dataMassp.plotOn(wepframemass,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  pdfMassp.plotOn(wepframemass,FillColor(fillcolorW),DrawOption("F"));
+  pdfMassp.plotOn(wepframemass,LineColor(linecolorW));
+  // pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfEWKpMass)),FillColor(fillcolorEWK),DrawOption("F"));
+  pdfEWKpMass.plotOn(wepframemass,LineColor(linecolorEWK));
+  //pdfMassp.plotOn(wepframemass,Components(RooArgSet(*(qcdp.model))),FillColor(fillcolorQCD),DrawOption("F"));
+  //pdfMassp.plotOn(wepframe,Components(RooArgSet(*(qcdp.model))),LineColor(linecolorQCD));
+//  pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfEWKp,pdfQCDp)),FillColor(fillcolorEWK),DrawOption("F"));
+//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfEWKp,pdfQCDp)),LineColor(linecolorEWK));
+//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfQCDp)),FillColor(fillcolorQCD),DrawOption("F"));
+//   pdfMassp.plotOn(wepframe,Components(RooArgSet(pdfQCDp)),LineColor(linecolorQCD));
+  
+  pdfMassp.plotOn(wepframemass,Components(RooArgSet(pdfWmpMass)),LineColor(linecolorW),LineStyle(2));
+  dataMassp.plotOn(wepframemass,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
+  
+  sprintf(ylabel,"Events / %.1f GeV",hDataMassp->GetBinWidth(1));
+  CPlot plotMassp("fitMassp",wepframemass,"","",ylabel);
+  plotMassp.SetLegend(0.68,0.57,0.93,0.77);
+  plotMassp.GetLegend()->AddEntry(hDummyData,"data","PL");
+  plotMassp.GetLegend()->AddEntry(hDummyW,"Suspicious DY MC","F");
+  plotMassp.GetLegend()->AddEntry(hDummyEWK,"Zee Relval","F");
+  //plotMassp.GetLegend()->AddEntry(hDummyQCD,"QCD","F");
+  plotMassp.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotMassp.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
+//  plotMassp.SetYRange(0.1,1.1*(hDataMassp->GetMaximum()));
+//plotMassp.SetYRange(0.1,5000);
+  plotMassp.Draw(c,kFALSE,format,1);
+
+  // TString titleX="#slash{E}_{T} [GeV]";
+  titleX="Mass  [GeV]";
+  CPlot plotMasspDiff("fitMassp","",titleX.Data(),"#frac{Data-Pred}{Data}");
+  plotMasspDiff.AddHist1D(hMasspDiff,"EX0",ratioColor);
+  plotMasspDiff.SetYRange(-0.2,0.2);
+  plotMasspDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
+  plotMasspDiff.AddLine(0, 0.10,METMAX, 0.10,kBlack,3);
+  plotMasspDiff.AddLine(0,-0.10,METMAX,-0.10,kBlack,3);
+  plotMasspDiff.Draw(c,kTRUE,format,2);
+  
+  plotMassp.SetName("fitMassplog");
+  plotMassp.SetLogy();
+  plotMassp.SetYRange(1e-4*(hDataMassp->GetMaximum()),10*(hDataMassp->GetMaximum()));
+  plotMassp.Draw(c,kTRUE,format,1);
+ 
+  
+  
+  
+  
   
   
   
