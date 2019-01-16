@@ -26,7 +26,8 @@
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
 #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
-#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
+#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear // commented out to test the new one
+// #include "../EleScale/EnergyScaleCorrection.h" //EGMSmear
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -77,7 +78,8 @@ void selectZee(const TString conf="zee.conf", // input file
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
-  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+  const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
+  // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
   //data
   EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
@@ -324,36 +326,34 @@ void selectZee(const TString conf="zee.conf", // input file
       Double_t totalWeight=0;
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
-      Double_t puWeight=0;
-      Double_t puWeightUp=0;
-      Double_t puWeightDown=0;
+      // Double_t puWeight=0;
+      // Double_t puWeightUp=0;
+      // Double_t puWeightDown=0;     
+      Double_t puWeight=1.0;
+      Double_t puWeightUp=1.0;
+      Double_t puWeightDown=1.0;
 
       if (hasGen) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
 	  infoBr->GetEntry(ientry);
 	  genBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  // totalWeight+=gen->weight*puWeight;
-	  // totalWeightUp+=gen->weight*puWeightUp;
-	  // totalWeightDown+=gen->weight*puWeightDown;
-      	  totalWeight+=gen->weight;
-	  totalWeightUp+=gen->weight;
-	  totalWeightDown+=gen->weight;
+	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      // Set the PU Weight to a constant for the Low PU stuff
+	  totalWeight+=gen->weight*puWeight;
+	  totalWeightUp+=gen->weight*puWeightUp;
+	  totalWeightDown+=gen->weight*puWeightDown;
 	}
       }
       else if (not isData){
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  // totalWeight+= 1.0*puWeight;
-	  // totalWeightUp+= 1.0*puWeightUp;
-	  // totalWeightDown+= 1.0*puWeightDown;
-      	  totalWeight+= 1.0;
-	  totalWeightUp+= 1.0;
-	  totalWeightDown+= 1.0;
+	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  totalWeight+= 1.0*puWeight;
+	  totalWeightUp+= 1.0*puWeightUp;
+	  totalWeightDown+= 1.0*puWeightDown;
 	}
 
       }
@@ -375,15 +375,13 @@ void selectZee(const TString conf="zee.conf", // input file
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  // weight*=gen->weight*puWeight;
-	  // weightUp*=gen->weight*puWeightUp;
-	  // weightDown*=gen->weight*puWeightDown;
-      	  weight*=gen->weight;
-	  weightUp*=gen->weight;
-	  weightDown*=gen->weight;
+	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  weight*=gen->weight*puWeight;
+	  weightUp*=gen->weight*puWeightUp;
+	  weightDown*=gen->weight*puWeightDown;
+
 	}
 	
 	// veto z -> xx decays for signal and z -> ee for bacground samples (needed for inclusive DYToLL sample)
