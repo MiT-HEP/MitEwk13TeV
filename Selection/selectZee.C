@@ -26,7 +26,8 @@
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
 #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
-#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
+// #include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear // commented out to test the new one
+#include "../EleScale/EnergyScaleCorrection.h" //EGMSmear
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -38,6 +39,7 @@
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
+#include "CCorrUser2D.hh"
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
@@ -50,10 +52,11 @@
 void selectZee(const TString conf="zee.conf", // input file
                const TString outputDir=".",   // output directory
 	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
-	       const Int_t   sigma=0
+	       const Int_t   sigma=0,
+           const Bool_t  is13TeV=1
 ) {
   gBenchmark->Start("selectZee");
-
+std::cout << "is 13 TeV " << is13TeV << std::endl;
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
@@ -73,14 +76,25 @@ void selectZee(const TString conf="zee.conf", // input file
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
+  
+  const int gainSeed = 12;
 
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
-  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+  const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
+  // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
+  const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
+  TFile *prefireFile = new TFile(prefireFileName);
+  CCorrUser2D prefirePhotonCorr;
+  if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
+  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  
+  
   //data
-  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+  // EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+  EnergyScaleCorrection eleCorr( corrFiles.Data());// eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
@@ -133,6 +147,7 @@ void selectZee(const TString conf="zee.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genWeight, PUWeight;
   Float_t scale1fb,scale1fbUp,scale1fbDown;
+  Float_t prefireWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
@@ -210,6 +225,7 @@ void selectZee(const TString conf="zee.conf", // input file
     outTree->Branch("genVMass",   &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
     outTree->Branch("genWeight",   &genWeight,  "genWeight/F");
     outTree->Branch("PUWeight",    &PUWeight,   "PUWeight/F");
+    outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -324,36 +340,38 @@ void selectZee(const TString conf="zee.conf", // input file
       Double_t totalWeight=0;
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
-      Double_t puWeight=0;
-      Double_t puWeightUp=0;
-      Double_t puWeightDown=0;
+      // Double_t puWeight=0;
+      // Double_t puWeightUp=0;
+      // Double_t puWeightDown=0;     
+      Double_t puWeight=1.0;
+      Double_t puWeightUp=1.0;
+      Double_t puWeightDown=1.0;
 
       if (hasGen) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+	// for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.05); ientry++) {
+	// for(UInt_t ientry=0; ientry<1000; ientry++) {
 	  infoBr->GetEntry(ientry);
 	  genBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  // totalWeight+=gen->weight*puWeight;
-	  // totalWeightUp+=gen->weight*puWeightUp;
-	  // totalWeightDown+=gen->weight*puWeightDown;
-      	  totalWeight+=gen->weight;
-	  totalWeightUp+=gen->weight;
-	  totalWeightDown+=gen->weight;
+	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      // Set the PU Weight to a constant for the Low PU stuff
+	  totalWeight+=gen->weight*puWeight;
+	  totalWeightUp+=gen->weight*puWeightUp;
+	  totalWeightDown+=gen->weight*puWeightDown;
 	}
       }
       else if (not isData){
+	// for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.05); ientry++) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  // totalWeight+= 1.0*puWeight;
-	  // totalWeightUp+= 1.0*puWeightUp;
-	  // totalWeightDown+= 1.0*puWeightDown;
-      	  totalWeight+= 1.0;
-	  totalWeightUp+= 1.0;
-	  totalWeightDown+= 1.0;
+	// for(UInt_t ientry=0; ientry<1000; ientry++) {
+	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  totalWeight+= 1.0*puWeight;
+	  totalWeightUp+= 1.0*puWeightUp;
+	  totalWeightDown+= 1.0*puWeightDown;
 	}
 
       }
@@ -363,8 +381,12 @@ void selectZee(const TString conf="zee.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.05); ientry++) {
+      // for(UInt_t ientry=0; ientry<1000000; ientry++) {
         infoBr->GetEntry(ientry);
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+        // cout << "-----Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+        // std::cout << "run Number " << info->runNum << std::endl;
         Double_t weight=1;
 	Double_t weightUp=1;
 	Double_t weightDown=1;
@@ -375,15 +397,13 @@ void selectZee(const TString conf="zee.conf", // input file
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
           genPartBr->GetEntry(ientry);
-	  puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-	  // weight*=gen->weight*puWeight;
-	  // weightUp*=gen->weight*puWeightUp;
-	  // weightDown*=gen->weight*puWeightDown;
-      	  weight*=gen->weight;
-	  weightUp*=gen->weight;
-	  weightDown*=gen->weight;
+	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  weight*=gen->weight*puWeight;
+	  weightUp*=gen->weight*puWeightUp;
+	  weightDown*=gen->weight*puWeightDown;
+
 	}
 	
 	// veto z -> xx decays for signal and z -> ee for bacground samples (needed for inclusive DYToLL sample)
@@ -393,12 +413,15 @@ void selectZee(const TString conf="zee.conf", // input file
         // check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
+        // std::cout << "pass 1" << std::endl;
 
         // trigger requirement
-	if (!isEleTrigger(triggerMenu, info->triggerBits, isData)) continue;
+	if (!isEleTrigger(triggerMenu, info->triggerBits, isData, is13TeV)) continue;
+        // std::cout << "pass 2" << std::endl;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
+        // std::cout << "pass 3" << std::endl;
 
 	electronArr->Clear();
         electronBr->GetEntry(ientry);
@@ -424,6 +447,8 @@ void selectZee(const TString conf="zee.conf", // input file
 	  // check ECAL gap
 //        if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue
 	  if(fabs(vTag.Eta())>=ECAL_GAP_LOW && fabs(vTag.Eta())<=ECAL_GAP_HIGH) continue;
+      
+        // std::cout << "pass 3" << std::endl;
 
 	  float tagError = 0.;
 	  if(doScaleCorr && (tag->r9 < 1.)){
@@ -436,11 +461,15 @@ void selectZee(const TString conf="zee.conf", // input file
 	    float tagEt       = vTag.E() / cosh(tagAbsEta);
 	    bool  tagisBarrel = tagAbsEta < 1.4442;
 
+        
+          // std::cout << "probe pre smear pT " << vTag.Pt() << " presmear ETA " << vTag.Eta() << std::endl;
+        
 	    if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-	      tagScale = eleCorr.ScaleCorrection(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt);
-              tagError = eleCorr.ScaleCorrectionUncertainty(info->runNum, tagisBarrel, tag->r9, tagAbsEta, tagEt);
-
+	      // tagScale = eleCorr.scaleCorr(info->runNum, tagEt, tagAbsEta, tag->r9);
+          // tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9);
+          tagScale = eleCorr.scaleCorr(306155, tagEt, tagAbsEta, tag->r9);
+          tagError = eleCorr.scaleCorrUncert(306155, tagEt, tagAbsEta, tag->r9);
 	      if(sigma==0){
                 (vTag) *= tagScale;
 	      }else if(sigma==1){
@@ -454,16 +483,24 @@ void selectZee(const TString conf="zee.conf", // input file
               float tagR9Prime = tag->r9; // r9 corrections MC only
               if(tagisBarrel){
                         tagR9Prime = gR9EB->Eval(tag->r9);}
+                        // tagR9Prime = tag->r9;}
               else {
                         tagR9Prime = gR9EE->Eval(tag->r9);
+                        // tagR9Prime = tag->r9;
               }
 
               double tagRandom = gRandom->Gaus(0,1);
 
-	      tagSmear = eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tagR9Prime, tagAbsEta, tagEt, 0., 0.);
-	      float tagSmearEP = eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tagR9Prime, tagAbsEta, tagEt, 1., 0.);
-	      float tagSmearEM = eleCorr.getSmearingSigma(info->runNum, tagisBarrel, tagR9Prime, tagAbsEta, tagEt, -1., 0.);
+	      tagSmear = eleCorr.smearingSigma(info->runNum, tagEt, tagAbsEta, tagR9Prime, gainSeed, 0., 0.);
+	      float tagSmearEP = eleCorr.smearingSigma(info->runNum, tagEt, tagAbsEta, tagR9Prime, gainSeed, 1., 0.);
+	      float tagSmearEM = eleCorr.smearingSigma(info->runNum, tagEt, tagAbsEta, tagR9Prime, gainSeed, -1., 0.);	
+          // tagSmear = eleCorr.smearingSigma(306155, tagEt, tagAbsEta, tagR9Prime, gainSeed, 0., 0.);
+	      // float tagSmearEP = eleCorr.smearingSigma(306155, tagEt, tagAbsEta, tagR9Prime, gainSeed, 1., 0.);
+	      // float tagSmearEM = eleCorr.smearingSigma(306155, tagEt, tagAbsEta, tagR9Prime, gainSeed, -1., 0.);
 
+          // std::cout << "tag smear " << tagSmear << std::endl;
+          // std::cout << "tag pre smear pT " << vTag.Pt() << " presmear ETA " << vTag.Eta() << std::endl;
+                  
               if(sigma==0){
                 (vTag) *= 1. + tagSmear * tagRandom;
               }else if(sigma==1){
@@ -476,6 +513,9 @@ void selectZee(const TString conf="zee.conf", // input file
 
 	    }
 	  }
+      
+      // std::cout << "tag post smear pT " << vTag.Pt() << " post smear ETA " << vTag.Eta() << std::endl;
+      // std::cout << "Conditions 1 begin " << std::endl;
 	  //assert(false); 
 
           // apply scale and resolution corrections to MC
@@ -487,8 +527,14 @@ void selectZee(const TString conf="zee.conf", // input file
 //	  if(fabs(tag->scEta)    > ETA_CUT)    continue;  // lepton |eta| cut
 //	  if(!passEleTightID(tag,info->rhoIso))     continue;  // lepton selection
           if(vTag.Pt()	         < PT_CUT)     continue;  // lepton pT cut
+          // std::cout << "Tag PT 1" << std::endl;
           if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+          // std::cout << "Tag eta 1" << std::endl;
           if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          
+        // std::cout << "pass 5" << std::endl;
+          
+          // std::cout << "Tag Tight ID 1" << std::endl;
           // if(!passEleID(tag, vTag, info->rhoIso))     continue;  // lepton selection
 
 	  double El_Pt=0;
@@ -512,8 +558,13 @@ void selectZee(const TString conf="zee.conf", // input file
 	    }
 
         // comment back in when trigger matching works
-	  if(!isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData)) continue;
+	  if(!isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData, is13TeV)) continue;
+      
+        // std::cout << "pass 6" << std::endl;
+          // std::cout << "Tag Trigger Match 1" << std::endl;
 	  if(El_Pt<tagPt) continue;
+      
+      // std::cout << "Conditions 1 PASS " << std::endl;
 
 	  tagPt=El_Pt;
 	  itag=i1;
@@ -589,11 +640,15 @@ void selectZee(const TString conf="zee.conf", // input file
             float probeAbsEta   = fabs(vProbe.Eta());
             float probeEt       = vProbe.E() / cosh(probeAbsEta);
             bool  probeisBarrel = probeAbsEta < 1.4442;
+            
+          // std::cout << "probe pre smear pT " << vTag.Pt() << " presmear ETA " << vTag.Eta() << std::endl;
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              probeScale = eleCorr.ScaleCorrection(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt);
-              probeError = eleCorr.ScaleCorrectionUncertainty(info->runNum, probeisBarrel, scProbe->r9, probeAbsEta, probeEt);
+              // probeScale = eleCorr.scaleCorr(info->runNum, probeEt, probeAbsEta, scProbe->r9);
+              // probeError = eleCorr.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9);
+              probeScale = eleCorr.scaleCorr(306155, probeEt, probeAbsEta, scProbe->r9);
+              probeError = eleCorr.scaleCorrUncert(306155, probeEt, probeAbsEta, scProbe->r9);
 
               if(sigma==0){
 		(vProbe) *= probeScale;
@@ -608,14 +663,19 @@ void selectZee(const TString conf="zee.conf", // input file
 	      float probeR9Prime = scProbe->r9; // r9 corrections MC only
 	      if(probeisBarrel){
 	                probeR9Prime = gR9EB->Eval(scProbe->r9);}
+	                // probeR9Prime = scProbe->r9;}
 	      else { 
 	                probeR9Prime = gR9EE->Eval(scProbe->r9);
+	                // probeR9Prime = scProbe->r9;
 	      }
 
               double probeRandom = gRandom->Gaus(0,1);
-	      probeSmear = eleCorr.getSmearingSigma(info->runNum, probeisBarrel, probeR9Prime, probeAbsEta, probeEt, 0., 0.);
-	      float probeSmearEP = eleCorr.getSmearingSigma(info->runNum, probeisBarrel, probeR9Prime, probeAbsEta, probeEt, 1., 0.);
-	      float probeSmearEM = eleCorr.getSmearingSigma(info->runNum, probeisBarrel, probeR9Prime, probeAbsEta, probeEt, -1., 0.);
+	      probeSmear = eleCorr.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, 0., 0.);
+	      float probeSmearEP = eleCorr.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, 1., 0.);
+	      float probeSmearEM = eleCorr.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, -1., 0.);
+	      // probeSmear = eleCorr.smearingSigma(306155, probeEt, probeAbsEta, probeR9Prime, gainSeed, 0., 0.);
+	      // float probeSmearEP = eleCorr.smearingSigma(306155, probeEt, probeAbsEta, probeR9Prime, gainSeed, 1., 0.);
+	      // float probeSmearEM = eleCorr.smearingSigma(306155, probeEt, probeAbsEta, probeR9Prime, gainSeed, -1., 0.);
 
               if(sigma==0){
                 (vProbe) *= 1. + probeSmear * probeRandom;
@@ -629,7 +689,10 @@ void selectZee(const TString conf="zee.conf", // input file
 
             }
           }
+          
+          // std::cout << "probe post smear pT " << vTag.Pt() << " postsmear ETA " << vTag.Eta() << std::endl;
 
+      // std::cout << "Conditions 2 begin " << std::endl;
 	  // apply scale and resolution corrections to MC
 //	  Double_t scProbept_corr = scProbe->pt;
 //	  if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
@@ -639,6 +702,8 @@ void selectZee(const TString conf="zee.conf", // input file
 //	  if(vProbe.Pt()           < PT_CUT)  continue;
 //	  if(fabs(scProbe->eta)  > ETA_CUT) continue;  // Supercluster |eta| cuts
           if(fabs(vProbe.Eta())  > ETA_CUT) continue;
+          
+          // std::cout << "Tag eta 2" << std::endl;
 
 	  for(Int_t i2=0; i2<electronArr->GetEntriesFast(); i2++) {
 	    if(itag==i2) continue;
@@ -649,7 +714,12 @@ void selectZee(const TString conf="zee.conf", // input file
 	      iprobe   = i2;
 	      break; 
 	    }
+        
+          // std::cout << "Tag wut 2" << std::endl;
 	  }
+      
+      
+      // std::cout << "Conditions 2 PASS" << std::endl;
 
 	  double El_Pt=0;
 	  TLorentzVector vEleProbe(0,0,0,0), vEleProbeSC(0,0,0,0);
@@ -679,11 +749,16 @@ void selectZee(const TString conf="zee.conf", // input file
   
               if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
   
-                eleProbeScale = eleCorr.ScaleCorrection(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt);
-                eleProbeError = eleCorr.ScaleCorrectionUncertainty(info->runNum, eleProbeisBarrel, eleProbe->r9, eleProbeAbsEta, eleProbeEt);
+                // eleProbeScale = eleCorr.scaleCorr(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
+                // eleProbeError = eleCorr.scaleCorrUncert(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
 
-                eleProbeSCScale = eleCorr.ScaleCorrection(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt);
-                eleProbeSCError = eleCorr.ScaleCorrectionUncertainty(info->runNum, eleProbeSCisBarrel, eleProbe->r9, eleProbeSCAbsEta, eleProbeSCEt);
+                // eleProbeSCScale = eleCorr.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
+                // eleProbeSCError = eleCorr.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
+                eleProbeScale = eleCorr.scaleCorr(306155, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
+                eleProbeError = eleCorr.scaleCorrUncert(306155, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
+
+                eleProbeSCScale = eleCorr.scaleCorr(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
+                eleProbeSCError = eleCorr.scaleCorrUncert(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
   
                 if(sigma==0){
                   (vEleProbe) *= eleProbeScale;
@@ -702,19 +777,30 @@ void selectZee(const TString conf="zee.conf", // input file
                 float eleProbeR9Prime = eleProbe->r9; // r9 corrections MC only
                 if(eleProbeisBarrel){
                           eleProbeR9Prime = gR9EB->Eval(eleProbe->r9);}
+                          // eleProbeR9Prime = eleProbe->r9;}
                 else {
                           eleProbeR9Prime = gR9EE->Eval(eleProbe->r9);
+                          // eleProbeR9Prime = eleProbe->r9;
                 }
 
 		double eleProbeRandom = gRandom->Gaus(0,1);
-		eleProbeSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbeR9Prime, eleProbeAbsEta, eleProbeEt, 0., 0.);
-		float eleProbeSmearEP = eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbeR9Prime, eleProbeAbsEta, eleProbeEt, 1., 0.);
-		float eleProbeSmearEM = eleCorr.getSmearingSigma(info->runNum, eleProbeisBarrel, eleProbeR9Prime, eleProbeAbsEta, eleProbeEt, -1., 0.);
+		eleProbeSmear = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
+		float eleProbeSmearEP = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
+		float eleProbeSmearEM = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
 
 		double eleProbeSCRandom = gRandom->Gaus(0,1);
-		eleProbeSCSmear = eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbeR9Prime, eleProbeSCAbsEta, eleProbeSCEt, 0., 0.);
-		float eleProbeSCSmearEP = eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbeR9Prime, eleProbeSCAbsEta, eleProbeSCEt, 1., 0.);
-		float eleProbeSCSmearEM = eleCorr.getSmearingSigma(info->runNum, eleProbeSCisBarrel, eleProbeR9Prime, eleProbeSCAbsEta, eleProbeSCEt, -1., 0.);
+		eleProbeSCSmear = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
+		float eleProbeSCSmearEP = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
+		float eleProbeSCSmearEM = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+        // double eleProbeRandom = gRandom->Gaus(0,1);
+		// eleProbeSmear = eleCorr.smearingSigma(306155, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
+		// float eleProbeSmearEP = eleCorr.smearingSigma(306155, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
+		// float eleProbeSmearEM = eleCorr.smearingSigma(306155, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+
+		// double eleProbeSCRandom = gRandom->Gaus(0,1);
+		// eleProbeSCSmear = eleCorr.smearingSigma(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
+		// float eleProbeSCSmearEP = eleCorr.smearingSigma(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
+		// float eleProbeSCSmearEM = eleCorr.smearingSigma(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
 
                 if(sigma==0){
 		  (vEleProbe) *= 1. + eleProbeSmear * eleProbeRandom;
@@ -743,7 +829,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	    probeErrorfinal = probeError;
 	    probeSCErrorfinal = probeError;
 	  }
-
+      // std::cout << "conditions 3 start" << std::endl;
 	  if(El_Pt < PT_CUT) continue;
 	  if(passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
 	  if(passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)) continue;
@@ -751,6 +837,7 @@ void selectZee(const TString conf="zee.conf", // input file
 	  if(!passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
 	  if(!passID&&!eleProbe&&El_Pt<probePt) continue;
 	  if(!passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+      // std::cout << "conditions 3 PASS" << std::endl;
       
       // if(passID&&eleProbe&&passEleID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
 	  // if(passID&&eleProbe&&!passEleID(eleProbe,vEleProbe,info->rhoIso)) continue;
@@ -817,11 +904,11 @@ void selectZee(const TString conf="zee.conf", // input file
 	    if(passEleTightID(eleProbe,vEleProbe,info->rhoIso)) {
 	    // if(passEleID(eleProbe,vEleProbe,info->rhoIso)) {
 	      
-	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
+	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
 		icat=eEleEle2HLT;  
 	      } 
-	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData)) {
-		icat=eEleEle1HLT1L1; 
+	      else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
+		icat=eEleEle1HLT1L1; // does this ever get used
 	      }
 	      else { icat=eEleEle1HLT; }
 	    }
@@ -838,6 +925,14 @@ void selectZee(const TString conf="zee.conf", // input file
 	if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
 
 	if(icat==0) continue;
+    
+    // Loop through the photons to determine the Prefiring scale factor
+    prefireWeight=1;
+    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+	    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+       // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    } 
 
 	//******** We have a Z candidate! HURRAY! ********
 	nsel+=weight;

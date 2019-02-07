@@ -48,7 +48,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   enum { eHLTEff, eL1Eff, eSelEff, eGsfEff, eGsfSelEff, eSCEff, eIDEff, eIsoEff };  // efficiency type enum
   if(effType > eIsoEff) {
     cout << "Invalid effType option! Exiting..." << endl;
-    return;
+    return; 
   }
   enum { eEleEle2HLT=1, eEleEle1HLT1L1, eEleEle1HLT, eEleEleNoSel, eEleSC, eTrkSC, eTrkNoSC, eEleIso, eEleNoIso };  // event category enum
   

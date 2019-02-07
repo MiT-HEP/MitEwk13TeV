@@ -248,16 +248,13 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   // not doin any of the backgrounds
    if(!do_5TeV) {
      if(doElectron) {
-       fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zee/ntuples/ewk_select1.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zee/ntuples/boson_select.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
      } else {
        //newPuppi, may11
        // ekw_select1.root is ttbar, wz, ww, zz
-       fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/ewk_select1.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Zmumu/ntuples/boson_select.root"); isBkgv.push_back(kTRUE);
-
+       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
        // RAW puppi
        ///eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/rawPuppiNtuples
 
@@ -267,8 +264,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
      //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
    }
    if(do_5TeV) {
-     fnamev.push_back("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/5TeV/Mu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-     fnamev.push_back("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/5TeV/Mu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
+     fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+     fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
    }
   //
   const Double_t MASS_LOW  = 60;

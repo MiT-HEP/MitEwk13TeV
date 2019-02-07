@@ -181,7 +181,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 
 //   Double_t ptbins[] = {0,2,6,10,20,30,40,55,70,100};
   // may22 binning
-  Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
+  // shortened the binning a bit
+  Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300};
 
 // oct7 binning below
 //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
@@ -202,15 +203,17 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 
   if (useData == 0){
 	  if(doElectron){
-		  fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Wenu/ntuples/we_select.root"); isBkgv.push_back(kFALSE);
+          fnamev.push_back(TString(infoldername) + TString("/Wenu/ntuples/we_select.root")); isBkgv.push_back(kFALSE);
+		  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Wenu/ntuples/we_select.root"); isBkgv.push_back(kFALSE);
 	  } else {
     //    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
-    fnamev.push_back("/data/t3home000/sabrandt/2018_09_07_Masters_Incl/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
-	  }
+    // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
+	  fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/wm_select.raw.root")); isBkgv.push_back(kFALSE);
+      }
     //    fnamev.push_back(TString(infoldername) + TString("wm_select.raw.root")); isBkgv.push_back(kFALSE);
   } else if (useData == 1){
-    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/data_select.root"); isBkgv.push_back(kFALSE);
-  ///    fnamev.push_back(TString(infoldername) + TString("data_select.root")); isBkgv.push_back(kFALSE);
+    // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Wmunu/ntuples/data_select.root"); isBkgv.push_back(kFALSE);
+      fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/data_select.root")); isBkgv.push_back(kFALSE);
   } else {
     cout << "useData value doesn't make sense" << endl;
   }
@@ -375,12 +378,13 @@ void fitRecoilWm(TString infoldername,  // input ntuple
       // apply rochester correction
       TLorentzVector mu;
       mu.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
-      float qter=1.0;
-      if(infoldername.Contains("data_")) {
-	    rmcor->momcor_data(mu,q,0,qter);
-      } else {
-	    rmcor->momcor_mc(mu,q,0,qter);
-      } 
+      // comment out for now 
+      // float qter=1.0;
+      // if(infoldername.Contains("data_")) {
+	    // rmcor->momcor_data(mu,q,0,qter);
+      // } else {
+	    // rmcor->momcor_mc(mu,q,0,qter);
+      // } 
 
       if(charge== 1 && q<0) continue;
       if(charge==-1 && q>0) continue;

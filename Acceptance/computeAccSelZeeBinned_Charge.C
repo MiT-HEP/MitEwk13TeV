@@ -24,6 +24,7 @@
 #include <sstream>                  // class for parsing strings
 #include "TLorentzVector.h"         // 4-vector class
 #include <TRandom3.h>
+// #include <vector>
 #include "TGraph.h"
 #include "TF1.h"
 
@@ -37,7 +38,8 @@
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
-#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
+// #include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
+#include "../EleScale/EnergyScaleCorrection.h" //new EGMSmear
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -49,11 +51,16 @@
 
 //=== MAIN MACRO ================================================================================================= 
 void computeAccSelZeeBinned_Charge(const TString conf,            // input file
+			    const TString inputLabel,
 			    const TString inputDir,
                             const TString outputDir,        // output directory
+			    const Float_t ptCut,
+			    const Float_t etaCut,
 			    const Int_t   doPU,
 			    const Int_t   doScaleCorr,
-			    const Int_t   sigma
+			    const Int_t   sigma,
+			    const Int_t   ibound=-1,
+                const Bool_t is13TeV=1
 ) {
   gBenchmark->Start("computeAccSelZeeBinned");
 
@@ -63,8 +70,8 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 
   const Double_t MASS_LOW   = 60;
   const Double_t MASS_HIGH  = 120;
-  const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.5;
+  const Double_t PT_CUT     = ptCut;
+  const Double_t ETA_CUT    = etaCut;
   const Double_t ELE_MASS   = 0.000511;
 
   const Double_t ETA_BARREL = 1.4442;
@@ -72,56 +79,74 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
+  const int gainSeed = 12;
   
-  // efficiency files
-  const TString dataHLTEffName     = inputDir+"EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MGpositive/eff.root";
-  const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MGnegative/eff.root";
-
-  const TString zeeHLTEffName      = inputDir+"EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CTpositive/eff.root";
-  const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CTnegative/eff.root";
   
-  const TString dataGsfSelEffName     = inputDir+"EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MGpositive_FineBin/eff.root";
-  const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MGnegative_FineBin/eff.root";
+    const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_5TeV_Try2_Efficiency-results/";
+  // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_Efficiency-results/";
+  const TString dataHLTEffName_pos = baseDir + "DataZeeFit/HLTEff_Test/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "DataZeeFit/HLTEff_Test/eff.root";
+  const TString zeeHLTEffName_pos  = baseDir + "Zee/HLTEff_Test/eff.root";
+  const TString zeeHLTEffName_neg  = baseDir + "Zee/HLTEff_Test/eff.root";
+  
+  const TString dataGsfSelEffName_pos = baseDir + "DataZeeFit/GSFSelEff_Test/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "DataZeeFit/GSFSelEff_Test/eff.root";
+  const TString zeeGsfSelEffName_pos  = baseDir + "Zee/GSFSelEff_Test/eff.root";
+  const TString zeeGsfSelEffName_neg  = baseDir + "Zee/GSFSelEff_Test/eff.root";
+  
+  // // efficiency files
+  // const TString dataHLTEffName     = inputDir+"EleHLTEff/MG/eff.root";
+  // const TString dataHLTEffName_pos = inputDir+"EleHLTEff/MGpositive" + inputLabel + "/eff.root";
+  // const TString dataHLTEffName_neg = inputDir+"EleHLTEff/MGnegative" + inputLabel + "/eff.root";
 
-  const TString zeeGsfSelEffName      = inputDir+"EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CTpositive/eff.root";
-  const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CTnegative/eff.root";
+  // const TString zeeHLTEffName      = inputDir+"EleHLTEff/CT/eff.root";
+  // const TString zeeHLTEffName_pos  = inputDir+"EleHLTEff/CTpositive" + inputLabel + "/eff.root";
+  // const TString zeeHLTEffName_neg  = inputDir+"EleHLTEff/CTnegative" + inputLabel + "/eff.root";
+  
+  // const TString dataGsfSelEffName     = inputDir+"EleGsfSelEff/MG/eff.root";
+  // const TString dataGsfSelEffName_pos = inputDir+"EleGsfSelEff/MGpositive" + inputLabel + "/eff.root";
+  // const TString dataGsfSelEffName_neg = inputDir+"EleGsfSelEff/MGnegative" + inputLabel + "/eff.root";
 
-  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+  // const TString zeeGsfSelEffName      = inputDir+"EleGsfSelEff/CT/eff.root";
+  // const TString zeeGsfSelEffName_pos  = inputDir+"EleGsfSelEff/CTpositive" + inputLabel + "/eff.root";
+  // const TString zeeGsfSelEffName_neg  = inputDir+"EleGsfSelEff/CTnegative" + inputLabel + "/eff.root";
 
+  // const TString corrFiles = "/afs/cern.ch/work/x/xniu/public/Lumi/Ele/CMSSW_7_6_3_patch2/src/MitEwk13TeV/EleScale/76X_16DecRereco_2015_Etunc";
+  const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
   //data
-  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+  EnergyScaleCorrection eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
 
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
-  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+ TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+ TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  // char rw_80X_file[200];
+  // sprintf(rw_80X_file, "/afs/cern.ch/work/x/xniu/public/Lumi/Ele/CMSSW_7_6_3_patch2/src/MitEwk13TeV/Tools/ReweightHistogram/pileup_rw_76X_%d.root", ibound);
+  // TFile *f_rw_80X = TFile::Open(rw_80X_file, "read");
+  // TH1D *h_rw = (TH1D*) f_rw_80X->Get("h_rw");
 
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
   TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
-  TFile *f_hlt_data_posi = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
-  TFile *f_hlt_data_nega = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
-  TFile *f_hlt_mc_posi   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
-  TFile *f_hlt_mc_nega   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
+//  TFile *f_hlt_data_posi = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
+//  TFile *f_hlt_data_nega = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
+//  TFile *f_hlt_mc_posi   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
+//  TFile *f_hlt_mc_nega   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
 
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
 
-  vector<TString> fnamev;  // file name per input file
-  vector<TString> labelv;  // TLegend label per input file
-  vector<Int_t>   colorv;  // plot color per input file
-  vector<Int_t>   linev;   // plot line style per input file
+  std::vector<TString> fnamev;  // file name per input file
+  std::vector<TString> labelv;  // TLegend label per input file
+  std::vector<Int_t>   colorv;  // plot color per input file
+  std::vector<Int_t>   linev;   // plot line style per input file
 
   //
   // parse .conf file
   //
-  ifstream ifs;
+  std::ifstream ifs;
   ifs.open(conf.Data());
   assert(ifs.is_open());
   string line;
@@ -130,7 +155,7 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
     
     string fname;
     Int_t color, linesty;
-    stringstream ss(line);
+    std::stringstream ss(line);
     ss >> fname >> color >> linesty;
     string label = line.substr(line.find('@')+1);
     fnamev.push_back(fname);
@@ -208,12 +233,12 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
   TTree *eventTree=0;
   
   // Variables to store acceptances and uncertainties (per input file)
-  vector<Double_t> nEvtsv, nSelv;
-  vector<Double_t> nSelCorrv, nSelCorrVarv;
-  vector<Double_t> accv, accCorrv;
-  vector<Double_t> accErrv, accErrCorrv;
+  std::vector<Double_t> nEvtsv, nSelv;
+  std::vector<Double_t> nSelCorrv, nSelCorrVarv;
+  std::vector<Double_t> accv, accCorrv;
+  std::vector<Double_t> accErrv, accErrCorrv;
 
-  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+  const baconhep::TTrigger triggerMenu("/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/BaconAna/DataFormats/data/HLT_50nsGRun");
 
   //
   // loop through files
@@ -241,6 +266,7 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+	//if(ientry==10000) break;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
@@ -265,7 +291,7 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
       nEvtsv[ifile]+=weight;        
 
       // trigger requirement               
-      if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE)) continue;
+      if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE,is13TeV)) continue;
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -301,9 +327,12 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 
 	      double ele1Random = gRandom->Gaus(0,1);
 
-              ele1Smear = eleCorr.getSmearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, 0., 0.);
-              float ele1SmearEP = eleCorr.getSmearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, 1., 0.);
-              float ele1SmearEM = eleCorr.getSmearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, -1., 0.);
+              // ele1Smear = eleCorr.smearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, 0., 0.);
+              // float ele1SmearEP = eleCorr.smearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, 1., 0.);
+              // float ele1SmearEM = eleCorr.smearingSigma(info->runNum, ele1isBarrel, ele1R9Prime, ele1AbsEta, ele1Et, -1., 0.);
+              ele1Smear = eleCorr.smearingSigma(info->runNum, ele1Et, ele1AbsEta, ele1R9Prime, gainSeed, 0., 0.);
+              float ele1SmearEP = eleCorr.smearingSigma(info->runNum, ele1Et, ele1AbsEta, ele1R9Prime, gainSeed, 1., 0.);
+              float ele1SmearEM = eleCorr.smearingSigma(info->runNum, ele1Et, ele1AbsEta, ele1R9Prime, gainSeed, -1., 0.);
 
               if(sigma==0){
                 (vEle1) *= 1. + ele1Smear * ele1Random;
@@ -319,10 +348,10 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 
 //  	if(ele1->pt	     < PT_CUT && ele1->scEt < PT_CUT)	  continue;  // lepton pT cut
 //        if(fabs(ele1->scEta) > ETA_CUT && fabs(ele1->eta) > ETA_CUT)	  continue;  // lepton |eta| cut
-//        if(!passEleID(ele1,info->rhoIso)) continue;  // lepton selection
+//        if(!passEleTightID(ele1,info->rhoIso)) continue;  // lepton selection
         if(vEle1.Pt()           < PT_CUT)     continue;  // lepton pT cut
         if(fabs(vEle1.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-        if(!passEleID(ele1, vEle1, info->rhoIso))     continue;  // lepton selection
+        if(!passEleTightID(ele1, vEle1, info->rhoIso))     continue;  // lepton selection
 
 
 	//if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE)) continue;
@@ -358,10 +387,14 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 
 	      double ele2Random = gRandom->Gaus(0,1);
 
-              ele2Smear = eleCorr.getSmearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, 0., 0.);
-              float ele2SmearEP = eleCorr.getSmearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, 1., 0.);
-              float ele2SmearEM = eleCorr.getSmearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, -1., 0.);
+              // ele2Smear = eleCorr.smearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, 0., 0.);
+              // float ele2SmearEP = eleCorr.smearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, 1., 0.);
+              // float ele2SmearEM = eleCorr.smearingSigma(info->runNum, ele2isBarrel, ele2R9Prime, ele2AbsEta, ele2Et, -1., 0.);
 
+              ele2Smear = eleCorr.smearingSigma(info->runNum, ele2Et, ele2AbsEta, ele2R9Prime, gainSeed, 0., 0.);
+              float ele2SmearEP = eleCorr.smearingSigma(info->runNum, ele2Et, ele2AbsEta, ele2R9Prime, gainSeed, 1., 0.);
+              float ele2SmearEM = eleCorr.smearingSigma(info->runNum, ele2Et, ele2AbsEta, ele2R9Prime, gainSeed, -1., 0.);
+              
               if(sigma==0){
                 (vEle2) *= 1. + ele2Smear * ele2Random;
               }else if(sigma==1){
@@ -375,17 +408,17 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 	  if(ele1->q == ele2->q)	continue;
 //          if(ele2->pt        < PT_CUT && ele2->scEt < PT_CUT)    continue;  // lepton pT cut
 //          if(fabs(ele2->scEta) > ETA_CUT && fabs(ele2->eta) > ETA_CUT)   continue;  // lepton |eta| cut
-//	  if(!passEleID(ele2,info->rhoIso)) continue;  // lepton selection
+//	  if(!passEleTightID(ele2,info->rhoIso)) continue;  // lepton selection
           if(vEle2.Pt()           < PT_CUT)     continue;  // lepton pT cut
           if(fabs(vEle2.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          if(!passEleID(ele2, vEle2, info->rhoIso))     continue;  // lepton selection
+          if(!passEleTightID(ele2, vEle2, info->rhoIso))     continue;  // lepton selection
 
 
           //TLorentzVector vEle2(0,0,0,0);
 	  //vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS);  
           //Bool_t isB2 = (fabs(ele2->scEta)<ETA_BARREL) ? kTRUE : kFALSE;
 
-	  if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE) && !isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE)) continue;
+	  if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE,is13TeV) && !isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE,is13TeV)) continue;
 	  
 	  // mass window
           TLorentzVector vDilep = vEle1 + vEle2;
@@ -407,42 +440,42 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
 	  sprintf(funcname2, "fitfcn_%d", getEtaBinLabel(vEle2.Eta()));
 
           if(ele1->q>0) { 
-	    TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname1);
-	    TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname1);
-	    effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
-	    effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
-	    delete fdt;
-	    delete fmc;
-            //effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
-            //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+//	    TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname1);
+//	    TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname1);
+//	    effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
+//	    effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+//	    delete fdt;
+//	    delete fmc;
+            effdata *= (1.-dataHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
+            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle1.Eta(), vEle1.Pt()));
           } else {
-            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname1);
-            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname1);
-            effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
-            effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
-            delete fdt;
-            delete fmc;
-            //effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
-            //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+//            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname1);
+//            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname1);
+//            effdata *= (1.-fdt->Eval(TMath::Min(vEle1.Pt(),119.0)));
+//            effmc   *= (1.-fmc->Eval(TMath::Min(vEle1.Pt(),119.0)));
+//            delete fdt;
+//            delete fmc;
+            effdata *= (1.-dataHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle1.Eta(), vEle1.Pt())); 
           }
           if(ele2->q>0) {
-            TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname2);
-            TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname2);
-            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            delete fdt;
-            delete fmc;
-            //effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
-            //effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
+//            TF1 *fdt = (TF1*)f_hlt_data_posi->Get(funcname2);
+//            TF1 *fmc = (TF1*)f_hlt_mc_posi  ->Get(funcname2);
+//            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
+//            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+//            delete fdt;
+//            delete fmc;
+            effdata *= (1.-dataHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt())); 
+            effmc   *= (1.-zeeHLTEff_pos.getEff(vEle2.Eta(), vEle2.Pt()));
           } else {
-            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname2);
-            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname2);
-            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
-            delete fdt;
-            delete fmc;
-            //effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
-            //effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
+//            TF1 *fdt = (TF1*)f_hlt_data_nega->Get(funcname2);
+//            TF1 *fmc = (TF1*)f_hlt_mc_nega  ->Get(funcname2);
+//            effdata *= (1.-fdt->Eval(TMath::Min(vEle2.Pt(),119.0)));
+//            effmc   *= (1.-fmc->Eval(TMath::Min(vEle2.Pt(),119.0)));
+//            delete fdt;
+//            delete fmc;
+            effdata *= (1.-dataHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt())); 
+            effmc   *= (1.-zeeHLTEff_neg.getEff(vEle2.Eta(), vEle2.Pt()));
           }
           effdata = 1.-effdata;
           effmc   = 1.-effmc;
@@ -599,14 +632,14 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
     cout << "     File: " << fnamev[ifile] << endl;
     cout << endl;
     cout << "    *** Acceptance ***" << endl;
-    cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
+    cout << "          nominal: " << std::setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     cout << "     SF corrected: " << accCorrv[ifile] << " +/- " << accErrCorrv[ifile] << endl;
     cout << endl;
   }
   
   char txtfname[100];
   sprintf(txtfname,"%s/binned.txt",outputDir.Data());
-  ofstream txtfile;
+  std::ofstream txtfile;
   txtfile.open(txtfname);
   txtfile << "*" << endl;
   txtfile << "* SUMMARY" << endl;
@@ -623,7 +656,7 @@ void computeAccSelZeeBinned_Charge(const TString conf,            // input file
     txtfile << "     File: " << fnamev[ifile] << endl;
     txtfile << endl;
     txtfile << "    *** Acceptance ***" << endl;
-    txtfile << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
+    txtfile << "          nominal: " << std::setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     txtfile << "     SF corrected: " << accCorrv[ifile] << " +/- " << accErrCorrv[ifile] << endl;
     txtfile << endl;
   }

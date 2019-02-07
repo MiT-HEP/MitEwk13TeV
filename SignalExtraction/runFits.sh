@@ -32,8 +32,8 @@ LUMI_9=224.172
 #sleep 100
 #root -l -q fitWe.C+\(\"Wenu_default\",${LUMI},${LUMI},0\) #central
 
-# root -l -q fitZm.C+\(\"Zmm_pf_newSamples_lowPU13_pt27\",$LUMI,0\);
-# root -l -q fitZm.C+\(\"Zee_pf_newSamples_lowPU13_wZmmmacro\",$LUMI,0\);
-root -l -q fitZe.C+\(\"Zee_pf_newSamples_lowPU13_sc\",$LUMI,0\);
+# root -l -q fitZm.C+\(\"Zmm_pf_lowPU13_pt25_rebin_fits_plotZeeMCwithZmmMC_lowPU_scEleCorr\",$LUMI,0\);
+root -l -q fitZm.C+\(\"Zee_pf_lowPU13_pt25_zee_relval_fixfilter_wDAta\",$LUMI,0\);
+# root -l -q fitZe.C+\(\"Zee_pf_lowPU13_pt25_rebin_fits_Rel\",$LUMI,0\);
 
 #rm *.so *.d

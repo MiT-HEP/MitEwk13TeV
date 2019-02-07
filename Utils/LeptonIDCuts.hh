@@ -289,20 +289,24 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
 }
 
 //--------------------------------------------------------------------------------------------------
-Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits,Bool_t isData) {
+Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits,Bool_t isData, Bool_t is13TeV=true) {
   if(isData)
-    return triggerMenu.pass("HLT_HIMu17_v*",hltBits);
-  else
-    return triggerMenu.pass("HLT_Mu17_v*",hltBits);
+    return triggerMenu.pass("HLT_HIMu17_v*",hltBits);// both 5 & 13
+  else{
+    if(is13TeV) return triggerMenu.pass("HLT_Mu17_v*",hltBits); // 13 TeV
+    else  return triggerMenu.pass("HLT_HIMu17_v*",hltBits); // 5 TeV
+  }
 }
 
 Bool_t isMuonTriggerNoIso(baconhep::TTrigger triggerMenu, TriggerBits hltBits) {
   return triggerMenu.pass("HLT_HIMu17_v*",hltBits);
 }
 
-Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isData) {
-  if (isData) return triggerMenu.passObj("HLT_HIMu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits);
-  else return triggerMenu.passObj("HLT_Mu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits);
+Bool_t isMuonTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isData, Bool_t is13TeV=true) {
+  if (isData) return triggerMenu.passObj("HLT_HIMu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits);// both 5 & 13
+  else{ if(is13TeV) return triggerMenu.passObj("HLT_Mu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits); // 13 TeV
+    else return triggerMenu.passObj("HLT_HIMu17_v*","hltL3fL1sMu10lqL1f0L2f10L3Filtered17",hltMatchBits); // 5 TeV
+  }
 }
 
 Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1) {
@@ -311,23 +315,27 @@ Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltM
 }
 
 
-Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t isData) {
+Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t isData, Bool_t is13TeV=true) {
   if (isData) {
-    return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits);
+    return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // both 5 & 13
+    // return triggerMenu.pass("HLT_HIEle20_WPLoose_Gsf_v*",hltBits); // both 5 & 13
     //return triggerMenu.pass("HLT_Ele27_WPLoose_Gsf_v*",hltBits);
   }
   else {
-    return triggerMenu.pass("HLT_Ele27_WPTight_Gsf_v*",hltBits); // default from Aram
+    if(is13TeV) return triggerMenu.pass("HLT_Ele27_WPTight_Gsf_v*",hltBits); // 13 TeV
+    else return triggerMenu.pass("HLT_HIEle20_WPLoose_Gsf_v*",hltBits); // 5 TeV
+    // else return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // 5 TeV
   }
 }
-Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData) {
+Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData, Bool_t is13TeV=true) {
   if (isData) {
     if (isL1) {
-      return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEGL1SingleEG20ORL1SingleEG15Filter",hltMatchBits);
+      return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEGL1SingleEG20ORL1SingleEG15Filter",hltMatchBits); // not used
       //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
     }
     else {
-      return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits);
+      return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
+      // return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
       //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
     }
   }
@@ -336,8 +344,10 @@ Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBi
     //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
   }
   else {
-    return triggerMenu.passObj("HLT_Ele27_WPTight_Gsf_v*","hltEle27WPTightGsfTrackIsoFilter",hltMatchBits);
-    //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
+    if(is13TeV){return triggerMenu.passObj("HLT_Ele27_WPTight_Gsf_v*","hltEle27WPTightGsfTrackIsoFilter",hltMatchBits);} // 13 TeV
+    else{ return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits);} // 5 TeV
+    // else return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // 5 TeV
+    // return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
   }
 }
 
