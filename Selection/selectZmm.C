@@ -33,10 +33,13 @@
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
+#include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
+
+#include "CCorrUser2D.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -48,10 +51,12 @@
 void selectZmm(const TString conf="zmm.conf", // input file
                const TString outputDir=".",   // output directory
 	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections
-	       const Bool_t  doPU=0
+	       const Bool_t  doPU=0,
+           const Bool_t is13TeV=1
 ) {
   gBenchmark->Start("selectZmm");
 
+std::cout << "is 13 TeV " << is13TeV << std::endl;
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
@@ -67,6 +72,13 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
   // load trigger menu                                                                                                  
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+  
+  const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
+  TFile *prefireFile = new TFile(prefireFileName);
+  CCorrUser2D prefirePhotonCorr;
+  if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
+  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  
 
   // load pileup reweighting file                                                                                       
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
@@ -114,6 +126,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genWeight, PUWeight;
   Float_t scale1fb,scale1fbUp,scale1fbDown;
+  Float_t prefireWeight;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
@@ -136,6 +149,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
   TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
+  TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -193,6 +207,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
     outTree->Branch("scale1fb",    &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
+    outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
     outTree->Branch("met",         &met,        "met/F");         // MET
     outTree->Branch("metPhi",      &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",       &sumEt,      "sumEt/F");       // Sum ET
@@ -280,6 +295,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
+      eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -297,31 +313,28 @@ void selectZmm(const TString conf="zmm.conf", // input file
       Double_t puWeightDown=0;
 
       if (hasGen) {
+	// for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
 	  infoBr->GetEntry(ientry);
 	  genBr->GetEntry(ientry);
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  // totalWeight+=gen->weight*puWeight;
-	  // totalWeightUp+=gen->weight*puWeightUp;
-	  // totalWeightDown+=gen->weight*puWeightDown;
-      totalWeight+=gen->weight;
-	  totalWeightUp+=gen->weight;
-	  totalWeightDown+=gen->weight;
+	  totalWeight+=gen->weight*puWeight;
+	  totalWeightUp+=gen->weight*puWeightUp;
+	  totalWeightDown+=gen->weight*puWeightDown;
+
 	}
       }
       else if (not isData){
+	// for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  // totalWeight+= 1.0*puWeight;
-	  // totalWeightUp+= 1.0*puWeightUp;
-	  // totalWeightDown+= 1.0*puWeightDown;
-      totalWeight+= 1.0;
-	  totalWeightUp+= 1.0;
-	  totalWeightDown+= 1.0;
+	  totalWeight+= 1.0*puWeight;
+	  totalWeightUp+= 1.0*puWeightUp;
+	  totalWeightDown+= 1.0*puWeightDown;
 	}
 
       }
@@ -331,7 +344,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
       //
       Double_t nsel=0, nselvar=0;
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	//for(UInt_t ientry=0; ientry<1000; ientry++) {
+	// for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
         infoBr->GetEntry(ientry);
 
 	if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -349,12 +362,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
 	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
 	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-	  // weight*=gen->weight*puWeight;
-	  // weightUp*=gen->weight*puWeightUp;
-	  // weightDown*=gen->weight*puWeightDown;
-      weight*=gen->weight;
-	  weightUp*=gen->weight;
-	  weightDown*=gen->weight;
+	  weight*=gen->weight*puWeight;
+	  weightUp*=gen->weight*puWeightUp;
+	  weightDown*=gen->weight*puWeightDown;
 	}
 
 	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
@@ -366,13 +376,15 @@ void selectZmm(const TString conf="zmm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData)) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData,is13TeV)) continue;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
 
 	muonArr->Clear();
-        muonBr->GetEntry(ientry);
+    muonBr->GetEntry(ientry);
+    scArr->Clear();
+	scBr->GetEntry(ientry);
 
 	TLorentzVector vTag(0,0,0,0);
 	TLorentzVector vTagSta(0,0,0,0);
@@ -412,7 +424,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	      Pt2=Mu_Pt;
 	    }
 
-          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData)) continue;
+          if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData,is13TeV)) continue;
 
 	  if(Mu_Pt<tagPt) continue;
 
@@ -508,7 +520,7 @@ void selectZmm(const TString conf="zmm.conf", // input file
 
 	  // determine event category
 	  if(passMuonID(probe)) {
-	    if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, isData)) {
+	    if(isMuonTriggerObj(triggerMenu, probe->hltMatchBits, isData,is13TeV)) {
 	      icat=eMuMu2HLT;
 	    }
 	    else if(0) {
@@ -535,6 +547,14 @@ void selectZmm(const TString conf="zmm.conf", // input file
 	nsel+=weight;
 	nselvar+=weight*weight;
 	
+    // Loop through the photons to determine the Prefiring scale factor
+    prefireWeight=1;
+    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+	    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+       // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    } 
+    
 	// Perform matching of dileptons to GEN leptons from Z decay
 
 	Int_t glepq1=-99;

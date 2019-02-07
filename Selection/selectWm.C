@@ -33,11 +33,13 @@
 #include "BaconAna/DataFormats/interface/TGenEventInfo.hh"
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"
 #include "BaconAna/DataFormats/interface/TMuon.hh"
+#include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
+#include "CCorrUser2D.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -47,7 +49,8 @@
 
 void selectWm(const TString conf="wm.conf", // input file
               const TString outputDir=".",  // output directory
-	      const Bool_t  doScaleCorr=0   // apply energy scale corrections?
+	      const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+          const Bool_t is13TeV=1
 ) {
   gBenchmark->Start("selectWm");
 
@@ -68,6 +71,13 @@ void selectWm(const TString conf="wm.conf", // input file
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
+  const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
+  TFile *prefireFile = new TFile(prefireFileName);
+  CCorrUser2D prefirePhotonCorr;
+  if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
+  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  
+  
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
 
@@ -105,6 +115,7 @@ void selectWm(const TString conf="wm.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
+  Float_t prefireWeight;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
@@ -125,6 +136,7 @@ void selectWm(const TString conf="wm.conf", // input file
   TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
+  TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -178,6 +190,7 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("genVMass",   &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
+    outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",   &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -247,6 +260,7 @@ void selectWm(const TString conf="wm.conf", // input file
       eventTree->SetBranchAddress("Info", &info);    TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
+      eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -265,9 +279,12 @@ void selectWm(const TString conf="wm.conf", // input file
       for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);
-      puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-      puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-      puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+      // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+      // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      puWeight = 1.0;
+      puWeightUp = 1.0;
+      puWeightDown = 1.0;
       totalWeight+=gen->weight*puWeight; // mine has pu and gen separated
       totalWeightUp+=gen->weight*puWeightUp;
       totalWeightDown+=gen->weight*puWeightDown;
@@ -275,9 +292,12 @@ void selectWm(const TString conf="wm.conf", // input file
       }
       else if (not isData){
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-      puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-      puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+      // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+      // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      puWeight = 1.0;
+      puWeightUp = 1.0;
+      puWeightDown = 1.0;
       totalWeight+= 1.0*puWeight;
       totalWeightUp+= 1.0*puWeightUp;
       totalWeightDown+= 1.0*puWeightDown;
@@ -305,13 +325,19 @@ void selectWm(const TString conf="wm.conf", // input file
 	  genPartArr->Clear();
 	  genBr->GetEntry(ientry);
       genPartBr->GetEntry(ientry);
-      puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      
+      // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
+	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
+	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      puWeight = 1.0;
+	  puWeightUp = 1.0;
+	  puWeightDown = 1.0;
 	  weight*=gen->weight*puWeight;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
 	}
+        scArr->Clear();
+	scBr->GetEntry(ientry);
         
        /* Double_t weight=1;
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
@@ -331,7 +357,7 @@ void selectWm(const TString conf="wm.conf", // input file
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
 
         // trigger requirement               
-        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData)) continue;
+        if (!isMuonTrigger(triggerMenu, info->triggerBits,isData,is13TeV)) continue;
       
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
@@ -367,7 +393,7 @@ void selectWm(const TString conf="wm.conf", // input file
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
 	  if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
           if(!passMuonID(mu))                 continue;  // lepton selection
-          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE,isData)) continue;
+          if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits,isData,is13TeV)) continue;
 
 	  passSel=kTRUE;
 	  goodMuon = mu;
@@ -377,6 +403,14 @@ void selectWm(const TString conf="wm.conf", // input file
 	  /******** We have a W candidate! HURRAY! ********/
 	  nsel+=weight;
           nselvar+=weight*weight;
+          
+    // Loop through the photons to determine the Prefiring scale factor
+    prefireWeight=1;
+    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+	    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+       // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    } 
 	  
           // apply scale and resolution corrections to MC
           Double_t goodMuonpt_corr = goodMuon->pt;
