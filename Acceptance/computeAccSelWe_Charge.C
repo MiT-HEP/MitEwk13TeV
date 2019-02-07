@@ -53,7 +53,8 @@ void computeAccSelWe_Charge(const TString conf,       // input file
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
 		     const Int_t   doScaleCorr,
-		     const Int_t   sigma
+		     const Int_t   sigma,
+             const Bool_t  is13TeV=1
 ) {
   gBenchmark->Start("computeAccSelWe");
 
