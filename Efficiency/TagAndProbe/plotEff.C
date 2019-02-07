@@ -1069,7 +1069,7 @@ void generateHistTemplates(const TString infilename,
                            const vector<Double_t> &ptEdgesv, const vector<Double_t> &etaEdgesv, const vector<Double_t> &phiEdgesv, const vector<Double_t> &npvEdgesv,
 		           const Double_t fitMassLo, const Double_t fitMassHi, const Bool_t doAbsEta, const Int_t charge, const TH1D* puWeights)
 {
-  cout << "Creating histogram templates... "; cout.flush();
+  cout << "Creating histogram templates... " << std::endl; cout.flush();
 
   char hname[50];
   
@@ -1143,6 +1143,8 @@ void generateHistTemplates(const TString infilename,
     failNPV[ibin] = new TH1D(hname,"",Int_t((fitMassHi-fitMassLo)/BIN_SIZE_FAIL),fitMassLo,fitMassHi);
     failNPV[ibin]->SetDirectory(0);
   }
+  
+  std::cout << "blah" << std::endl;
     
   TFile infile(infilename);
   TTree *intree = (TTree*)infile.Get("Events");
@@ -1221,6 +1223,7 @@ void generateHistTemplates(const TString infilename,
     }    
   }
   infile.Close();
+  std::cout << "blah2" << std::endl;
  
   TFile outfile("histTemplates.root", "RECREATE");
   for(UInt_t ibin=0; ibin<ptNbins; ibin++) {
@@ -1624,7 +1627,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   if(xbinLo==-1.566 && xbinHi==-1.4442) return;
 
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
-  m.setBins(10000);
+  m.setBins(60);
 
   char bkgpassname[50];
   char bkgfailname[50];
@@ -2244,8 +2247,52 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   			     RooFit::Minos(RooArgSet(eff)),
   			     RooFit::Save());
 
+    // int nTries = 0;
+    // do {
+      // fitResult = totalPdf.fitTo(*dataCombined,
+				 // NumCPU(4),
+				 // //				 Minimizer("Minuit2","minimize"),
+				 // Minimizer("Minuit2","scan"),
+				 // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 // //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 // RooFit::Minos(),
+				 // RooFit::Strategy(2),
+				 // RooFit::Save());
+                 
+        // // nTries++;
+
+      // fitResult = totalPdf.fitTo(*dataCombined,
+				 // NumCPU(4),
+				 // //				 Minimizer("Minuit2","minimize"),
+				 // Minimizer("Minuit2","migrad"),
+				 // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 // //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 // RooFit::Hesse(),
+				 // RooFit::Strategy(2),
+				 // RooFit::Save());
+       // fitResult = totalPdf.fitTo(*dataCombined,
+				 // NumCPU(4),
+				 // //				 Minimizer("Minuit2","minimize"),
+				 // Minimizer("Minuit2","improve"),
+				 // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 // //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 // RooFit::Minos(),
+				 // RooFit::Strategy(2),
+				 // RooFit::Save());
+				 
+	// fitResult = totalPdf.fitTo(*dataCombined,
+			       // NumCPU(4),
+			       // Minimizer("Minuit2","minimize"),
+			       // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+			       // //			       ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+			       // RooFit::Minos(),
+			       // RooFit::Strategy(2),
+	               // RooFit::Save());
+        // nTries++;
+    // }while((fitResult->status()>0)&&nTries < 10);
+                 
   // Refit w/o MINOS if MINOS errors are strange...
-  if((fabs(eff.getErrorLo())<5e-4) || (eff.getErrorHi()<5e-4))
+  if((fabs(eff.getErrorLo())<5e-4) || (eff.getErrorHi()<5e-4) || fitResult->status()>0)
     fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(), RooFit::Strategy(1), RooFit::Save());
   
   resEff  = eff.getVal();
