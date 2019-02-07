@@ -1,5 +1,9 @@
 #! /bin/bash
 
+OUTPUTDIR5=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_5TeV_Try2_Acceptance
+INPUTDIR5=/eos/cms/store/user/sabrandt/StandardModel/LowPU_5TeV_Try2/
+# OUTPUTDIR13=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_Acceptance_Test_13TeV
+# INPUTDIR13=/eos/cms/store/user/sabrandt/StandardModel/LowPU_13TeV/
 #
 # W->munu
 #
@@ -30,7 +34,8 @@
 #
 #root -l -q computeAccGenZee.C+\(\"zee.conf\",\"Zee\"\)
 #root -l -q computeAccSCZee.C+\(\"zee.conf\",\"Zee\"\)
-#root -l -q computeAccSelZee.C+\(\"zee.conf\",\"Zee\"\)
-root -l -q computeAccSelZeeBinned.C+\(\"zee.conf\",\"Zee\"\)
+# root -l -q computeAccSelZee.C+\(\"zee.conf\",\"${OUTPUTDIR}/Zee\"\)
+root -l -q computeAccSelZeeBinned_Charge.C+\(\"zee.conf\",\"blah\",\"${INPUTDIR5}\",\"${OUTPUTDIR5}/Zee\",25,2.5,0,1,0,0,0\)
+# root -l -q computeAccSelZeeBinned_Charge.C+\(\"zee_13.conf\",\"blah\",\"${INPUTDIR13}\",\"${OUTPUTDIR13}/Zee\",25,2.5,0,1,0,0,1\)
 
 rm *.so *.d

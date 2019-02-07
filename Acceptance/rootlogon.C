@@ -1,11 +1,11 @@
 {    
 
   if(gSystem->Getenv("CMSSW_VERSION")) {
-    TString rfitpath("/afs/cern.ch/cms/slc6_amd64_gcc481/lcg/roofit/5.34.18-cms9/include/");
-    TString path = gSystem->GetIncludePath();
-    path += "-I. -I$ROOTSYS/src -I";
-    path += rfitpath;
-    gSystem->SetIncludePath(path.Data());
+//    TString rfitpath("/afs/cern.ch/cms/slc6_amd64_gcc481/lcg/roofit/5.34.18-cms9/include/");
+//    TString path = gSystem->GetIncludePath();
+//    path += "-I. -I$ROOTSYS/src -I";
+//    path += rfitpath;
+//    gSystem->SetIncludePath(path.Data());
 
     TString str = gSystem->GetMakeSharedLib();
     if (str.Contains("-m32")==0 && str.Contains("-m64")==0) {
@@ -25,7 +25,8 @@
 //    TString path = gSystem->GetIncludePath();
 //    path += " -I./ ";
 //    gSystem->SetIncludePath(path.Data());
-    gROOT->Macro("../EleScale/EnergyScaleCorrection_class.cc+");
+    //gROOT->Macro("../EleScale/EnergyScaleCorrection_class.cc+");
+    gROOT->Macro("../EleScale/EnergyScaleCorrection.cc+");
    }
 
   }
