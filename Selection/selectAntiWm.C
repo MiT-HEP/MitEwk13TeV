@@ -49,6 +49,7 @@
 
 void selectAntiWm(const TString conf="wm.conf", // input file
               const TString outputDir=".",       // output directory
+              const Bool_t  doPU=0,
               const Bool_t is13TeV=1 // flag to toggle between 5 and 13 TeV settings
 ) {
   gBenchmark->Start("selectAntiWm");
@@ -277,12 +278,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
           infoBr->GetEntry(ientry);
           genBr->GetEntry(ientry);
-          // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-          // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-          // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-          puWeight = 1.0;
-          puWeightUp = 1.0;
-          puWeightDown = 1.0;
+          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
           totalWeight+=gen->weight*puWeight; // mine has pu and gen separated
           totalWeightUp+=gen->weight*puWeightUp;
           totalWeightDown+=gen->weight*puWeightDown;
@@ -290,12 +288,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
       }
       else if (not isData){
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-          // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-          // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-          puWeight = 1.0;
-          puWeightUp = 1.0;
-          puWeightDown = 1.0;
+          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
           totalWeight+= 1.0*puWeight;
           totalWeightUp+= 1.0*puWeightUp;
           totalWeightDown+= 1.0*puWeightDown;
@@ -321,12 +316,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
            genPartArr->Clear();
            genBr->GetEntry(ientry);
            genPartBr->GetEntry(ientry);
-           // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-           // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-           // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-           puWeight = 1.0;
-           puWeightUp = 1.0;
-           puWeightDown = 1.0;
+           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
            weight*=gen->weight*puWeight;
            weightUp*=gen->weight*puWeightUp;
            weightDown*=gen->weight*puWeightDown;
