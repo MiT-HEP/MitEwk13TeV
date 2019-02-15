@@ -15,7 +15,7 @@ Bool_t passMuonLooseID(const baconhep::TMuon *muon, const Double_t rho=0);
 Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
 Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho=0);
-Bool_t passAntiTightEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
+Bool_t passAntiEleTightID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
 Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho=0);
 
 Bool_t isMuonTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits,Bool_t isData);
@@ -123,7 +123,7 @@ Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, 
 
 //--------------------------------------------------------------------------------------------------
 Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
-{ // Medium Electron ID for PU20 bx25
+{ // Tight Electron ID from 2015
 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
@@ -163,22 +163,22 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector 
 
 //--------------------------------------------------------------------------------------------------
 
-Bool_t passAntiTightEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
-{
+Bool_t passAntiEleTightID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
+{// Tight Electron ID from 2015
+
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
   if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
-  // conversion rejection
   if(electron->isConv)            return kFALSE;
 
-  Double_t ea = getEffAreaEl(tag.Eta());	
+  Double_t ea = getEffAreaEl(tag.Eta());
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
-  
+
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
-    if(iso < 0.0354*(tag.Pt()))                                      return kFALSE; // regular cut
-//    if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE;
+    // if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
+    if(iso < 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
     if(electron->nMissingHits > 2)                                    return kFALSE;
     if(electron->sieie >= 0.0101)                                     return kFALSE;
     if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
@@ -188,8 +188,8 @@ Bool_t passAntiTightEleID(const baconhep::TElectron *electron,const TLorentzVect
     if(fabs(electron->d0) >= 0.0111)                                  return kFALSE;
     if(fabs(electron->dz) >= 0.0466)                                  return kFALSE;
   } else {
-    if(iso < 0.0646*(tag.Pt()))                                      return kFALSE; // regular cut
-    //if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE;
+    // if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
+    if(iso < 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie            >= 0.0279)                          return kFALSE;
     if(fabs(electron->dPhiIn)     >= 0.0918)                           return kFALSE;
