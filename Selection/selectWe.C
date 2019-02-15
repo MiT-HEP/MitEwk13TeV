@@ -87,6 +87,13 @@ void selectWe(const TString conf="we.conf", // input file
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
+  const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
+  TFile *prefireFile = new TFile(prefireFileName);
+  CCorrUser2D prefirePhotonCorr;
+  if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
+  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  
+  
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
@@ -135,6 +142,7 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
+  Float_t prefireWeight;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
@@ -210,6 +218,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("genVMass",   &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
+    outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",   &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -284,6 +293,7 @@ void selectWe(const TString conf="we.conf", // input file
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
       eventTree->SetBranchAddress("PV",   &vertexArr);       TBranch *vertexBr = eventTree->GetBranch("PV");
+      eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
       
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
@@ -359,6 +369,8 @@ void selectWe(const TString conf="we.conf", // input file
 	//
     electronArr->Clear();
     electronBr->GetEntry(ientry);
+    scArr->Clear();
+	scBr->GetEntry(ientry);
 
 	Int_t nLooseLep=0;
     const baconhep::TElectron *goodEle=0;
@@ -453,6 +465,15 @@ void selectWe(const TString conf="we.conf", // input file
 	  //******* We have a W candidate! HURRAY! ********
 	  nsel+=weight;
       nselvar+=weight*weight;
+      
+      // Loop through the photons to determine the Prefiring scale factor
+      prefireWeight=1;
+      for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+        const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+        // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+      } 
+      
       TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0); TLorentzVector vLep_raw(0,0,0,0);
 	  vLep = vGoodEle;
       vLep_raw.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
