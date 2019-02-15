@@ -167,8 +167,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     
     // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
+    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
     //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
+    Bool_t isRecoil = ((snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWboson);
     // flag to reject Z->mm events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);
     

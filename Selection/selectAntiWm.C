@@ -49,6 +49,7 @@
 
 void selectAntiWm(const TString conf="wm.conf", // input file
               const TString outputDir=".",       // output directory
+	          const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
               const Bool_t  doPU=0,
               const Bool_t is13TeV=1 // flag to toggle between 5 and 13 TeV settings
 ) {
@@ -153,11 +154,11 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
-    //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
+    Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm",TString::kIgnoreCase)==1);
     // flag to reject W->mnu events when selecting wrong flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);
+    //flag to save the info for recoil corrections
+    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor));
     
     CSample* samp = samplev[isam];
 

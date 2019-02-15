@@ -44,6 +44,8 @@
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
+// for prefire correction factors
+#include "CCorrUser2D.hh"
 
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
@@ -183,11 +185,11 @@ void selectAntiWe(const TString conf="we.conf", // input file
     else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "we" -- flag to store GEN W kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
-    //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("we",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
+    Bool_t isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0||snamev[isam].CompareTo("we",TString::kIgnoreCase)==1);
     // flag to reject W->enu events when selecting wrong-flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);
+    //flag to save the info for recoil corrections
+    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
   
     CSample* samp = samplev[isam];
   
