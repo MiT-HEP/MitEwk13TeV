@@ -283,14 +283,14 @@ void fitWm(const TString  outputDir,   // output directory
   //  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
   const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
 
-  // for Puppi, inclusive
+  // for PF, 13 TeV Low PU, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPF_13TeV_noRoch/",directory2.Data()));
   recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPF_13TeV_noRoch/",directory2.Data()));
   recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPF_13TeV_noRoch/",directory2.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
-  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPF_13TeV_noRoch/",directory2.Data()));
+  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPF_13TeV_noRoch/",directory2.Data()));
   recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPF_13TeV_noRoch/",directory2.Data()));
   recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPF_13TeV_noRoch/",directory2.Data()));
   
@@ -1287,10 +1287,12 @@ void fitWm(const TString  outputDir,   // output directory
 //   cewkp.setConstant(kTRUE);
   // RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
   RooRealVar nEWKp("nEWKp","nEWKp",hEWKMetp->Integral(),0,hDataMetp->Integral());
+  nEWKp.setConstant(kTRUE);
   //RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWmunuMetp->Integral()*1.0,0,hAntiDataMetp->Integral());
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.9*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
   RooRealVar dewkp("dewkp","dewkp",0.1,0,5) ;
-  dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWmunuMetp->Integral());
+  // dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWmunuMetp->Integral());
+  dewkp.setVal(0);
   dewkp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
   
@@ -1303,10 +1305,12 @@ void fitWm(const TString  outputDir,   // output directory
 //   cewkm.setConstant(kTRUE);
   // RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
   RooRealVar nEWKm("nEWKm","nEWKm",hEWKMetm->Integral(),0,hDataMetm->Integral());
+  nEWKm.setConstant(kTRUE);
   RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiWmunuMetm->Integral()*1.0,0,hAntiDataMetm->Integral());
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.9*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
-  dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWmunuMetm->Integral());
+  // dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWmunuMetm->Integral());
+  dewkm.setVal(0);
   dewkm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
   
@@ -1585,18 +1589,18 @@ void fitWm(const TString  outputDir,   // output directory
              Import("Select", dataMetp),
              Import("Anti",   antiMetp));
              
-  RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+  // RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constantip),Minos(kTRUE),Save(kTRUE));
-  // RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),ExternalConstraints(RooArgSet(constp,constantip)),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
   
 //   RooDataHist dataMetp2("dataMetp2", "dataMetp2", RooArgSet(pfmet), hDataMetp);
   RooDataHist dataTotalm("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat),
              Import("Select", dataMetm),
              Import("Anti", antiMetm));
   // RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+  // RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
 // RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),ExternalConstraints(constantim),Minos(kTRUE),Save(kTRUE));
-// RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraints(RooArgSet(constm,constantim)),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
+RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
   
   //
   // Use histogram version of fitted PDFs to make ratio plots
@@ -1629,13 +1633,15 @@ void fitWm(const TString  outputDir,   // output directory
   hAntiMetDiff->SetMarkerSize(0.9);
    
   TH1D *hPdfAntiMetp = (TH1D*)(apdfMetp.createHistogram("hPdfAntiMetp", pfmet));
-  hPdfAntiMetp->Scale((nAntiSigp.getVal()+nAntiEWKp.getVal()+nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
+  // hPdfAntiMetp->Scale((nAntiSigp.getVal()+nAntiEWKp.getVal()+nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
+  hPdfAntiMetp->Scale((nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
   TH1D *hAntiMetpDiff = makeDiffHist(hAntiDataMetp,hPdfAntiMetp,"hAntiMetpDiff");
   hAntiMetpDiff->SetMarkerStyle(kFullCircle);
   hAntiMetpDiff->SetMarkerSize(0.9);
     
   TH1D *hPdfAntiMetm = (TH1D*)(apdfMetm.createHistogram("hPdfAntiMetm", pfmet));
-  hPdfAntiMetm->Scale((nAntiSigm.getVal()+nAntiEWKm.getVal()+nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
+  // hPdfAntiMetm->Scale((nAntiSigm.getVal()+nAntiEWKm.getVal()+nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
+  hPdfAntiMetm->Scale((nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
   TH1D *hAntiMetmDiff = makeDiffHist(hAntiDataMetm,hPdfAntiMetm,"hAntiMetmDiff");
   hAntiMetmDiff->SetMarkerStyle(kFullCircle); 
   hAntiMetmDiff->SetMarkerSize(0.9);
@@ -2075,13 +2081,15 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
-    
     Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     Double_t diff = diff0/hData->GetBinContent(ibin);
     if(hData->GetBinContent(ibin) == 0) diff = 0;
-    std::cout << "bin " << ibin << std::endl;
-    std::cout << "data " << hData->GetBinContent(ibin) << std::endl;
-    std::cout << "fits " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "bin # " << ibin << std::endl;
+    std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
+    std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
+    std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
+    std::cout << "diff =  " << diff << std::endl;
 //     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     if(hData->GetBinContent(ibin) == 0) err = 0;
@@ -2091,7 +2099,7 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     //else      hDiff->SetBinContent(ibin,0);
     std::cout << "err = " << err << std::endl;
     hDiff->SetBinContent(ibin,diff);
-    hDiff->SetBinError(ibin,err);   
+    hDiff->SetBinError(ibin,err);  
   }
   std::cout << "bin " << hData->GetNbinsX() + 1 << std::endl;
   std::cout << "data " << hData->GetBinContent(hData->GetNbinsX() + 1) << std::endl;
