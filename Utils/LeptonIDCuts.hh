@@ -326,7 +326,7 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
   // barrel/endcap dependent requirements
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     // barrel
-    if(iso/(tag.pT()) > 0.198+0.506/(tag.Pt()))                                       return kFALSE;
+    if(iso/(tag.Pt()) > 0.198+0.506/(tag.Pt()))                                       return kFALSE;
     if(electron->nMissingHits > 2)                                   return kFALSE;
     if(electron->sieie        > 0.0457)                              return kFALSE;
     if(fabs(electron->dPhiIn) > 0.19)                               return kFALSE;

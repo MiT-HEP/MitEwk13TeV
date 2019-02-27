@@ -90,7 +90,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TFile *prefireFile = new TFile(prefireFileName);
   CCorrUser2D prefirePhotonCorr;
   if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
-  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  else if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
   
   
   //data
