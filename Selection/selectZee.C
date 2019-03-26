@@ -53,6 +53,7 @@ void selectZee(const TString conf="zee.conf", // input file
                const TString outputDir=".",   // output directory
 	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
 	       const Int_t   sigma=0,
+           const Bool_t  doPU=0,
            const Bool_t  is13TeV=1
 ) {
   gBenchmark->Start("selectZee");
@@ -89,7 +90,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TFile *prefireFile = new TFile(prefireFileName);
   CCorrUser2D prefirePhotonCorr;
   if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
-  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  else if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
   
   
   //data
@@ -189,8 +190,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     
     // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
+    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
     //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0));
+    Bool_t isRecoil = ((snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWboson);
     // flag to reject Z->ee events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);  
     
@@ -340,12 +342,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       Double_t totalWeight=0;
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
-      // Double_t puWeight=0;
-      // Double_t puWeightUp=0;
-      // Double_t puWeightDown=0;     
-      Double_t puWeight=1.0;
-      Double_t puWeightUp=1.0;
-      Double_t puWeightDown=1.0;
+      Double_t puWeight=0;
+      Double_t puWeightUp=0;
+      Double_t puWeightDown=0;
 
       if (hasGen) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
@@ -353,10 +352,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	// for(UInt_t ientry=0; ientry<1000; ientry++) {
 	  infoBr->GetEntry(ientry);
 	  genBr->GetEntry(ientry);
-	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
-      // Set the PU Weight to a constant for the Low PU stuff
+	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
 	  totalWeight+=gen->weight*puWeight;
 	  totalWeightUp+=gen->weight*puWeightUp;
 	  totalWeightDown+=gen->weight*puWeightDown;
@@ -365,10 +363,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       else if (not isData){
 	// for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.05); ientry++) {
 	for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	// for(UInt_t ientry=0; ientry<1000; ientry++) {
-	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
 	  totalWeight+= 1.0*puWeight;
 	  totalWeightUp+= 1.0*puWeightUp;
 	  totalWeightDown+= 1.0*puWeightDown;
@@ -394,12 +391,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
 	if(hasGen) {
-	  genPartArr->Clear();
-	  genBr->GetEntry(ientry);
-          genPartBr->GetEntry(ientry);
-	  // puWeight = h_rw->GetBinContent(h_rw->FindBin(info->nPUmean));
-	  // puWeightUp = h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean));
-	  // puWeightDown = h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean));
+      genPartArr->Clear();
+      genBr->GetEntry(ientry);
+      genPartBr->GetEntry(ientry);
+	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
 	  weight*=gen->weight*puWeight;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
