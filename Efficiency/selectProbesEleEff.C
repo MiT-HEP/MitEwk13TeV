@@ -17,6 +17,7 @@
 #include <iomanip>                        // functions to format standard I/O
 #include "TLorentzVector.h"               // 4-vector class
 #include "TRandom.h"
+#include "TH1.h"
 
 #include "../Utils/LeptonCorr.hh"
 
@@ -54,6 +55,45 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   
   Double_t nProbes = 0;
 
+  const float fitMassLo = 60;
+  const float fitMassHi = 120;
+  const int massBin = 60;
+
+  const int muEtaNB = 12;
+  const float muEtaRange[muEtaNB+1] = {-2.5,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.5};
+  const int muPtNB = 8;
+  const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+  
+  
+  // const int muEtaNB = 2;
+  // const float muEtaRange[muEtaNB+1] = {-2.4,0,2.4};
+  // const int muPtNB = 2;
+  // const float muPtRange[muPtNB+1] = {25,40,8000};
+
+  
+    TH1D *h_mll_amcnlo[muEtaNB][muPtNB];
+    TH1D *h_mll_pythia[muEtaNB][muPtNB];
+    TH1D *h_mll_photos[muEtaNB][muPtNB];
+
+      // Set up to load both the photos and pythia extra weighting
+    TFile *inAMCNLO = new TFile(TString("GenReweightMassHist/zee-amc-pyth-mll.root"),"OPEN");
+    TFile *inPhotos = new TFile(TString("GenReweightMassHist/zee-pow-phot-mll.root"),"OPEN");
+    // TH1D * = (TH1F*)f.Get(“h1”);
+    TFile *inPythia = new TFile(TString("GenReweightMassHist/zee-pow-pyth-mll.root"),"OPEN"); 
+    
+  for(int iEtaBin = 0; iEtaBin < muEtaNB; iEtaBin ++){
+    for(int iPtBin = 0; iPtBin < muPtNB; iPtBin ++){
+      h_mll_amcnlo[iEtaBin][iPtBin] = (TH1D*)inAMCNLO->Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));
+      double norm = h_mll_amcnlo[iEtaBin][iPtBin]->Integral(); h_mll_amcnlo[iEtaBin][iPtBin]->Scale(1/norm); norm=0;
+      h_mll_photos[iEtaBin][iPtBin] = (TH1D*)inPhotos->Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));
+      norm = h_mll_photos[iEtaBin][iPtBin]->Integral(); h_mll_photos[iEtaBin][iPtBin]->Scale(1/norm); norm=0;
+      h_mll_pythia[iEtaBin][iPtBin] = (TH1D*)inPythia->Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));
+      norm = h_mll_pythia[iEtaBin][iPtBin]->Integral(); h_mll_pythia[iEtaBin][iPtBin]->Scale(1/norm); norm=0;
+    }
+  }
+
+  
+  
   //
   // Set up output ntuple
   //
@@ -63,7 +103,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   //EffData data;
   //outTree->Branch("Events",&data.mass,"mass/F:pt:eta:phi:weight:q/I:npv/i:npu:pass:runNum:lumiSec:evtNum");
   Float_t mass, pt, eta, phi;
-  Double_t weight;
+  Double_t weight, weightPowPhot, weightPowPyth;
   Int_t q;
   UInt_t npv, npu, passes, runNum, lumiSec, evtNum;
   outTree->Branch("mass",   &mass,   "mass/F");
@@ -78,6 +118,9 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   outTree->Branch("runNum", &runNum, "runNum/i");
   outTree->Branch("lumiSec",&lumiSec,"lumiSec/i");
   outTree->Branch("evtNum", &evtNum, "evtNum/i");
+  outTree->Branch("weightPowPhot", &weightPowPhot, "weightPowPhot/D"); // powheg+photos/amcnlo+pythia weight
+  outTree->Branch("weightPowPyth", &weightPowPyth, "weightPowPyth/D"); // powheg+pythia/amcnlo+pythia weight
+ 
   //
   // Declare input ntuple variables
   //
@@ -88,8 +131,10 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   Float_t scale1fb;
   Float_t genWeight, PUWeight;
   Float_t met, metPhi, sumEt, u1, u2;
+  Float_t genVPt, genVPhi, genVy, genVMass;
   Int_t   q1, q2;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+  Int_t   glepq1, glepq2;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0, *genlep1=0, *genlep2=0;
   TLorentzVector *sc1=0, *sc2=0;
   
   // Read input file and get the TTrees
@@ -115,11 +160,26 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("u2",       &u2);	     // perpendicular component of recoil
   intree->SetBranchAddress("q1",       &q1);	     // charge of tag lepton
   intree->SetBranchAddress("q2",       &q2);	     // charge of probe lepton
+  intree->SetBranchAddress("glepq1",       &glepq1);	     // charge of probe lepton
+  intree->SetBranchAddress("glepq2",       &glepq2);	     // charge of probe lepton
   intree->SetBranchAddress("dilep",    &dilep);      // dilepton 4-vector
   intree->SetBranchAddress("lep1",     &lep1);       // tag lepton 4-vector
   intree->SetBranchAddress("lep2",     &lep2);       // probe lepton 4-vector
+  intree->SetBranchAddress("genlep1",  &genlep1);       // tag lepton 4-vector
+  intree->SetBranchAddress("genlep2",  &genlep2);       // probe lepton 4-vector
   intree->SetBranchAddress("sc1",      &sc1);        // tag Supercluster 4-vector
   intree->SetBranchAddress("sc2",      &sc2);        // probe Supercluster 4-vector 
+  intree->SetBranchAddress("genVPt",   &genVPt);     // generator dilepton pT
+  intree->SetBranchAddress("genVPhi",  &genVPhi);    // generator dilepton pT
+  intree->SetBranchAddress("genVy",    &genVy);      // generator dilepton pT
+  intree->SetBranchAddress("genVMass", &genVMass);   // generator dilepton pT
+  
+  /*
+  	  genVPt   = tvec.Pt();
+	  genVPhi  = tvec.Phi();
+	  genVy    = tvec.Rapidity();
+	  genVMass = tvec.M();
+  */
   
   //
   // loop over events
@@ -240,7 +300,42 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     }
     
     nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
-
+    if(doWeighted){
+     Float_t geneta = -99.;
+     Float_t genpt  = -999.;
+     if(glepq1 > 0){
+       geneta = genlep1->Eta();
+       genpt  = genlep1->Pt();
+     }
+     else{
+       geneta = genlep2->Eta();
+       genpt  = genlep2->Pt();
+     }
+    
+        // here we get the weights for the different gen shit
+        // std::cout << "eta " << eta << "  pt " << pt << "  mass " << genVMass << std::endl; 
+      for(int iEtaBin = 0; iEtaBin < muEtaNB; iEtaBin ++){
+        if(geneta < muEtaRange[iEtaBin] || geneta > muEtaRange[iEtaBin+1]) continue;
+        // std::cout << "eta bin = " << iEtaBin << std::endl;
+        for(int iPtBin = 0; iPtBin < muPtNB; iPtBin ++){
+          if(genpt < muPtRange[iPtBin] || genpt > muPtRange[iPtBin+1]) continue;
+          // std::cout << "pt bin = " << iPtBin << std::endl;
+          for(int iMassBin = 1; iMassBin < h_mll_photos[iEtaBin][iPtBin]->GetNbinsX()+1; iMassBin ++){
+              // std::cout << "stupid Mass iterator " << h_mll_photos[iEtaBin][iPtBin]->GetBinLowEdge(iMassBin) << std::endl;
+              if(genVMass < h_mll_photos[iEtaBin][iPtBin]->GetBinLowEdge(iMassBin)||genVMass > h_mll_photos[iEtaBin][iPtBin]->GetBinLowEdge(iMassBin+1)) continue;
+              // std::cout << "mass bin = " << iMassBin << std::endl;
+                weightPowPhot = h_mll_photos[iEtaBin][iPtBin]->GetBinContent(iMassBin)/h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin);
+                // std::cout << h_mll_photos[iEtaBin][iPtBin]->GetBinContent(iMassBin) << "  " << h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin) << std::endl;
+                // std::cout << "blah = " << weightPowPhot << std::endl;
+                weightPowPyth = h_mll_pythia[iEtaBin][iPtBin]->GetBinContent(iMassBin)/h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin);
+                break;
+            // h_mll_powheg[iEtaBin][iPtBin] = (TH1D*)inPowheg.Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));
+            // h_mll_pythia[iEtaBin][iPtBin] = (TH1D*)inPythia.Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));
+          }
+        }
+      }
+    }
+    
     // Fill tree
     mass    = dilep->M();
     pt      = (effType==eGsfSelEff && !pass) ? sc2->Pt()  : lep2->Pt();
@@ -275,7 +370,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       evtNum  = evtNum;
       outTree->Fill();
     }
-  }  
+  }
   delete infile;
   infile=0, intree=0;	   
 
