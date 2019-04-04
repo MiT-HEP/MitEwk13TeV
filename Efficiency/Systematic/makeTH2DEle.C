@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <fstream>
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -14,123 +15,82 @@
 #include "TStyle.h"
 #include "TMinuit.h"
 
-const int NBpt  = 3;
+// const int NBpt  = 2;
+// const int NBeta = 8;
+// const float ptrange[NBpt+1]   = {25., 40., 8000.};
+// const float etarange[NBeta+1] = {-2.4, -2.1, -1.2, -0.9, 0., 0.9, 1.2, 2.1, 2.4};
+
 const int NBeta = 12;
-const float ptrange[NBpt+1]   = {25., 40., 55, 8000.};
-const float etarange[NBeta+1] = {-2.5, -2.0, -1.566, -1.4442, -1., -0.5, 0, 0.5, 1., 1.4442, 1.566, 2.0, 2.5};
-/*const float GsfSelBkgSys[NBpt*NBeta] = {0.53, 0.40, 0.00, 0.05, 0.15, 0.27, 0.04, 0.14, 0.69, 0.00, 0.38, 0.46,
-			       0.04, 0.46, 0.00, 0.25, 0.13, 0.03, 0.11, 0.00, 0.05, 0.00, 0.21, 0.10,
-			       0.01, 0.73, 0.00, 0.43, 0.19, 0.23, 0.13, 0.30, 0.36, 0.00, 0.36, 0.19};
-*/
-/*
-const float GsfSelSigSys[NBpt*NBeta] = {2.79, 1.08, 1.95, 0.35, 3.35, 1.38, 0.50, 3.50, 2.27, 2.05,
-					0.88, 0.79, 1.09, 0.67, 0.99, 2.14, 0.81, 1.45, 0.60, 0.37,
-					1.96, 1.79, 1.72, 1.72, 1.61, 1.53, 1.39, 0.94, 4.59, 2.17};
-const float GsfSelBkgSys[NBpt*NBeta] = {3.14, 3.57, 3.00, 2.81, 3.49, 2.33, 2.22, 3.29, 1.56, 3.22,
-					1.01, 0.86, 0.66, 0.42, 0.58, 1.16, 0.50, 1.19, 0.78, 0.77,
-					1.35, 0.59, 0.51, 0.47, 0.31, 0.43, 0.21, 0.12, 1.68, 1.05};
-*/
-/*
-const float GsfSelSigSys[NBpt*NBeta] = {1.13, 2.76, 0.00, 2.28, 1.44, 0.06, 2.09, 2.15, 2.81, 0.00, 2.11, 2.42,
-					0.85, 0.60, 0.00, 1.05, 0.90, 0.82, 0.93, 0.69, 0.25, 0.00, 0.14, 2.26,
-					2.03, 1.11, 0.00, 1.03, 1.59, 2.08, 2.72, 1.25, 1.30, 0.00, 1.48, 1.51}; 
+const float etarange[NBeta+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
+const int NBpt = 8;
+const float ptrange[NBpt+1] = {25,30,35,40,45,50,60,80,8000};
 
-const float GsfSelBkgSys[NBpt*NBeta] = {1.38, 0.45, 0.00, 0.05, 0.23, 2.43, 2.14, 2.14, 2.64, 0.00, 0.28, 3.86,
-					0.96, 0.63, 0.00, 0.36, 0.53, 0.62, 0.64, 0.59, 0.20, 0.00, 0.06, 0.89,
-					1.25, 0.34, 0.00, 0.19, 0.42, 0.52, 0.20, 0.31, 0.28, 0.00, 0.98, 1.09};
-*/
-const float GsfSelSigSys[NBpt*NBeta] = {
-0.92, 0.60, 0.0, 1.46, 1.34, 1.22, 1.41, 1.33, 1.31, 0.0, 0.61, 1.49,
-0.82, 0.60, 0.0, 0.88, 0.86, 0.82, 0.79, 0.51, 0.95, 0.0, 0.73, 0.86,
-0.92, 0.91, 0.0, 0.74, 0.65, 0.81, 1.26, 0.50, 0.33, 0.0, 1.40, 0.86
-};
-const float GsfSelBkgSys[NBpt*NBeta] = {
-0.139803
-,
-0.0429305
-,
-0.0
-,
-0.37371
-,
-0.0885377
-,
-0.223254
-,
-0.284145
-,
-0.184749
-,
-0.210978
-,
-0.0
-,
-0.0488517
-,
-0.016769
-,
-0.00057539
-,
-0.0135502
-,
-0.0
-,
-0.0377503
-,
-0.0992257
-,
-0.348544
-,
-0.0313661
-,
-0.0912089
-,
-0.0867867
-,
-0.0
-,
-0.00663507
-,
-0.320048
-,
-1.44093
-,
-0.341554
-,
-0.0
-,
-0.785209
-,
-0.631178
-,
-0.664294
-,
-0.391222
-,
-0.368603
-,
-0.167297
-,
-0.0
-,
-1.1497
-,
-1.25095
-};
+TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
+// TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0//results/";
+TString sigDirMC="_POWxPythia_v1_POWxPhotos_v1/"; // change this once i finish all my shit
+TString sigDirFSR="_aMCxPythia_v1_minloxPythia_v1/";
+TString bkgDir="_aMCxPythia_v1_POWBKG_v1/"; // should be exp vs Powerlaw
 
-void makeTH2DEle(){
+void makeTH2DEle(TString effTypeSig = "GSFSelEff"){
+    // alternate input option is HLTEff
+    vector<double> vSigMCNeg;
+    vector<double> vSigMCPos;
+    vector<double> vSigFSRNeg;
+    vector<double> vSigFSRPos;
+    vector<double> vBkgNeg;
+    vector<double> vBkgPos;
+    
+  for(int i = 0; i < NBeta*NBpt+1; ++i){
+    double value=0;
+    char infilename[200];
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),"Negative/_v2",i);
+    // std::cout << infilename << std::endl;
+    ifstream infile1(infilename); infile1>>value; vSigFSRNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),"Positive/_v2",i);
+    ifstream infile2(infilename); infile2>>value; vSigFSRPos.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),"Negative/_v2",i);
+    ifstream infile3(infilename); infile3>>value; vSigMCNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),"Positive/_v2",i);
+    ifstream infile4(infilename); infile4>>value; vSigMCPos.push_back(value); value=0;    
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),"Negative/_v2",i);
+    ifstream infile5(infilename); infile5>>value; vBkgNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),"Positive/_v2",i);
+    ifstream infile6(infilename); infile6>>value; vBkgPos.push_back(value); value=0; 
+  }
+    
+    char histname[100];
+    sprintf(histname,"h%sSigMCNeg",effTypeSig.Data());
+	TH2D *hSigMCNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sSigMCPos",effTypeSig.Data());
+	TH2D *hSigMCPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sSigFSRNeg",effTypeSig.Data());
+    TH2D *hSigFSRNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sSigFSRPos",effTypeSig.Data());
+    TH2D *hSigFSRPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sBkgNeg",effTypeSig.Data());
+    TH2D *hBkgNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sBkgPos",effTypeSig.Data());
+    TH2D *hBkgPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
 
-	TH2D *h = new TH2D("h","", NBeta, etarange, NBpt, ptrange);
+	for(int ipt=0; ipt<NBpt; ipt++){
 
-	for(int ieta=0; ieta<NBeta; ieta++){
-		if(ieta==2||ieta==9) continue;
-
-		for(int ipt=0; ipt<NBpt; ipt++){
-			h->SetBinContent(ieta+1, ipt+1, 1.+GsfSelSigSys[ipt*NBeta+ieta]*0.01);
+		for(int ieta=0; ieta<NBeta; ieta++){
+			hSigFSRNeg->SetBinContent(ieta+1, ipt+1, 1.+vSigFSRNeg[ipt*NBeta+ieta]);
+			hSigFSRPos->SetBinContent(ieta+1, ipt+1, 1.+vSigFSRPos[ipt*NBeta+ieta]);
+			hSigMCNeg->SetBinContent(ieta+1, ipt+1, 1.+vSigMCNeg[ipt*NBeta+ieta]);
+			hSigMCPos->SetBinContent(ieta+1, ipt+1, 1.+vSigMCPos[ipt*NBeta+ieta]);
+			hBkgNeg->SetBinContent(ieta+1, ipt+1, 1.+vBkgNeg[ipt*NBeta+ieta]);
+			hBkgPos->SetBinContent(ieta+1, ipt+1, 1.+vBkgPos[ipt*NBeta+ieta]);
 		}
 	}
-
-	TFile *f = new TFile("EleGsfSelSigSys.root", "RECREATE");
-	h->Write();
+    char outfilename[100];
+    sprintf(outfilename,"SysUnc_%s.root",effTypeSig.Data());
+	TFile *f = new TFile(outfilename, "RECREATE");
+	hSigFSRNeg->Write();
+	hSigFSRPos->Write();
+	hSigMCNeg->Write();
+	hSigMCPos->Write();
+	hBkgNeg->Write();
+	hBkgPos->Write();
 	f->Close();
 }
