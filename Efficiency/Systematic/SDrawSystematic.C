@@ -66,11 +66,12 @@ void SDrawSystematic(const TString inputFile,
 	float meangaus = abs(h->GetFunction("gaus")->GetParameter(1));
 //	float mean = meangaus < meanhist ? meangaus : meanhist; 
 	//float mean = meantemp > 0? meantemp : -1.*meantemp;
-	float mean = meangaus;
-	float sigma = h->GetFunction("gaus")->GetParameter(2);
+	float mean = meanhist;
+	// float sigma = h->GetFunction("gaus")->GetParameter(2);
+    float sigma = h->GetRMS();
 
 	char outputfile[100];
-	sprintf(outputfile,"%s/%s.txt",outputDir.Data(), outputName.Data());
+	sprintf(outputfile,"%s/%s_2.txt",outputDir.Data(), outputName.Data());
 	ofstream meanfile;
 	meanfile.open(outputfile);
 	meanfile<<mean<<" "<<sigma<<endl;
