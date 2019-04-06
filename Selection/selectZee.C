@@ -154,7 +154,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
+  Int_t   glepq1 = -99;
+  Int_t   glepq2 = -99;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0;
+  TLorentzVector *genlep1=0;
+  TLorentzVector *genlep2=0;
+  
   ///// electron specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
   Float_t pfChIso1, pfGamIso1, pfNeuIso1, pfCombIso1, pfChIso2, pfGamIso2, pfNeuIso2, pfCombIso2;
@@ -253,9 +258,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
+    outTree->Branch("glepq1",         &glepq1,         "glepq1/I");          // charge of tag lepton
+    outTree->Branch("glepq2",         &glepq2,         "glepq2/I");          // charge of probe lepton
     outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
     outTree->Branch("lep1",       "TLorentzVector",  &lep1);     // tag lepton 4-vector
     outTree->Branch("lep2",       "TLorentzVector",  &lep2);     // probe lepton 4-vector
+    outTree->Branch("genlep1",       "TLorentzVector",  &genlep1);     // tag lepton 4-vector
+    outTree->Branch("genlep2",       "TLorentzVector",  &genlep2);     // probe lepton 4-vector
     outTree->Branch("lep1_raw",       "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
     outTree->Branch("lep2_raw",       "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
     ///// electron specific /////
@@ -936,9 +945,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	nselvar+=weight*weight;
 
 	// Perform matching of dileptons to GEN leptons from Z decay
-
-	Int_t glepq1=-99;
-	Int_t glepq2=-99;
+	// Int_t glepq1=-99;
+	// Int_t glepq2=-99;
 	TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
 	TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
 	TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
@@ -952,7 +960,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  
 	  Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
 			    ((glep2) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
-
 	  TLorentzVector tvec=*glep1+*glep2;
 	  genV=new TLorentzVector(0,0,0,0);
 	  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
@@ -960,6 +967,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  genVPhi  = tvec.Phi();
 	  genVy    = tvec.Rapidity();
 	  genVMass = tvec.M();
+      genlep1=new TLorentzVector(0,0,0,0);
+      genlep2=new TLorentzVector(0,0,0,0);
+      genlep1->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+      genlep2->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
 	  delete gvec;
 	  delete glep1;
 	  delete glep2;
@@ -997,7 +1008,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  // genVMass = -999;
 	  //}
 	}
-	
 	if (hasGen) {
 	  id_1      = gen->id_1;
 	  id_2      = gen->id_2;
@@ -1018,7 +1028,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  scalePDF  = -999;
 	  weightPDF = -999;
 	  }
-
 	//
 	// Fill tree
 	//
@@ -1051,7 +1060,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	mvaMetPhi = info->mvaMETphi; 
 	mvaSumEt = 0;
 	TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
-
 	puppiMet = info->puppET;
         puppiMetPhi = info->puppETphi;
 	puppiSumEt = 0;
@@ -1062,7 +1070,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	dilep    = &vDilep;
 	sc1        = &vTagSC;
 	sc2        = &vProbeSC;
-
 	TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
 	TVector2 vU = -1.0*(vMet+vZPt);
 	u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
@@ -1071,19 +1078,19 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	TVector2 vTkU = -1.0*(vTkMet+vZPt);
 	tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-	
 	TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
 	TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
 	mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-        
 	TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
 	TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
 	puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
 	puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
 	outTree->Fill();
 	delete genV;
-	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0, lep1_raw=0, lep2_raw=0;
+    delete genlep1;
+    delete genlep2;
+	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0, lep1_raw=0, lep2_raw=0, genlep1=0, genlep2=0;
       }
       delete infile;
       infile=0, eventTree=0;    

@@ -133,6 +133,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
+    TLorentzVector *genlep1=0;
+  TLorentzVector *genlep2=0;
   ///// muon specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
   Float_t pfChIso1, pfGamIso1, pfNeuIso1, pfCombIso1, pfChIso2, pfGamIso2, pfNeuIso2, pfCombIso2;
@@ -142,6 +144,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   UInt_t nValidHits1, nMatch1, nValidHits2, nMatch2;
   UInt_t typeBits1, typeBits2;
   TLorentzVector *sta1=0, *sta2=0;
+  	Int_t glepq1=-99;
+	Int_t glepq2=-99;
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -231,9 +235,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",          &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of probe lepton
+    outTree->Branch("glepq1",      &glepq1,     "glepq1/I");          // charge of tag lepton
+    outTree->Branch("glepq2",      &glepq2,     "glepq2/I");          // charge of probe lepton
     outTree->Branch("dilep",       "TLorentzVector", &dilep);     // di-lepton 4-vector
     outTree->Branch("lep1",        "TLorentzVector", &lep1);      // tag lepton 4-vector
     outTree->Branch("lep2",        "TLorentzVector", &lep2);      // probe lepton 4-vector
+    outTree->Branch("genlep1",       "TLorentzVector",  &genlep1);     // tag lepton 4-vector
+    outTree->Branch("genlep2",       "TLorentzVector",  &genlep2);     // probe lepton 4-vector
     ///// muon specific /////
     outTree->Branch("trkIso1",     &trkIso1,     "trkIso1/F");       // track isolation of tag lepton
     outTree->Branch("trkIso2",     &trkIso2,     "trkIso2/F");       // track isolation of probe lepton
@@ -558,8 +566,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     
 	// Perform matching of dileptons to GEN leptons from Z decay
 
-	Int_t glepq1=-99;
-	Int_t glepq2=-99;
+	// Int_t glepq1=-99;
+	// Int_t glepq2=-99;
 	TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
 	TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
 	TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
@@ -581,11 +589,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  genVPhi  = tvec.Phi();
 	  genVy    = tvec.Rapidity();
 	  genVMass = tvec.M();
+      genlep1=new TLorentzVector(0,0,0,0);
+      genlep2=new TLorentzVector(0,0,0,0);
+      genlep1->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+      genlep2->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
 
 	  delete gvec;
-	  delete glep1;
-	  delete glep2;
-	  glep1=0; glep2=0; gvec=0;
+	  // delete glep1;
+	  // delete glep2;
+	  // glep1=0; glep2=0; gvec=0;
 	  
 	  if(match1 && match2) {
 	    hasGenMatch = kTRUE;
@@ -705,7 +717,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	
         outTree->Fill();
 	delete genV;
-	genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0;
+    delete genlep1;
+    delete genlep2;
+	genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0, genlep1=0, genlep2=0;
       }
       delete infile;
       infile=0, eventTree=0;    
