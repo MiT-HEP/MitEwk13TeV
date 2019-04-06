@@ -158,7 +158,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     // flag to reject W->mnu events when selecting wrong flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);
     //flag to save the info for recoil corrections
-    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor));
+    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
     
     CSample* samp = samplev[isam];
 
