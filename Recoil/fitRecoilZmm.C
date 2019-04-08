@@ -21,10 +21,7 @@
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
-// #include "../SignalExtraction/rochcor2015r.cc"
-#include "../SignalExtraction/rochcor2015r.h"
-#include "../SignalExtraction/muresolution_run2r.h"
-// #include "../SignalExtraction/muresolution_run2r.cc"
+#include <../Rochester/RoccoR.cc>
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -275,7 +272,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   const Double_t ETA_CUT   = 2.4;
   const Double_t mu_MASS = 0.1057;
 
-  rochcor2015 *rmcor = new rochcor2015();
+  //Setting up rochester corrections
+  RoccoR  rc("../Utils/RoccoR2017.txt");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -424,20 +422,21 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	  // std::cout << "evt  " << evtNum << "  dilep0 " << dilep->Pt() << "  l1a " << lep1->Pt() << "  l2a  " << lep2->Pt() << std::endl;
       // std::cout << "evt  " << evtNum << "  dilep0 " << dilep->Pt() << "  l10 " << mu1.Pt() << "  l20  " << mu2.Pt() << std::endl;
 
-	  // remove the rochester corrections when doing the 13TeV low PU stuff
-      // if(infilename.Contains("data_")) {
-		        // float qter1=1.0;
-      // float qter2=1.0;
-		  // // std::cout << "doing data roch" << std::endl;
-	    // rmcor->momcor_data(mu1,q1,0,qter1);
-	    // rmcor->momcor_data(mu2,q2,0,qter2);
-      // } else {
-		  // // std::cout << " mc corr" << std::endl;
-        // float qter1=1.0;
-        // float qter2=1.0;
-        // rmcor->momcor_mc(mu1,q1,0,qter1);
-        // rmcor->momcor_mc(mu2,q2,0,qter2);
-      // }
+      
+      double SF1=1;
+      double SF2=1;
+      
+     // remove the rochester corrections when doing the 13TeV low PU stuff
+      if(infilename.Contains("data_")) {
+        SF1 = rc.kScaleDT(q1, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
+        SF2 = rc.kScaleDT(q2, mu2.Pt(), mu2.Eta(), mu2.Phi());//s=0, m=0);
+      } else {
+        SF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
+        SF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genlep2->Pt());//, s=0, m=0);
+      }
+      
+      mu1*=SF1;
+      mu2*=SF2;
 	  
 
       TLorentzVector l1, l2, dl;
