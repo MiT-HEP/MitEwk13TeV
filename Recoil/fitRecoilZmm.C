@@ -21,7 +21,7 @@
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
-#include <../Rochester/RoccoR.cc>
+#include <../RochesterCorr/RoccoR.cc>
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -273,7 +273,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   const Double_t mu_MASS = 0.1057;
 
   //Setting up rochester corrections
-  RoccoR  rc("../Utils/RoccoR2017.txt");
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -358,7 +358,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   Float_t ppMet, ppMetPhi, ppSumEt, ppU1, ppU2; // pf type 1
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2; // tk met
   Int_t   q1, q2;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0;
+  TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0, *genlep1=0, *genlep2=0;
 //   Float_t puWeight;
   
 
@@ -397,7 +397,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
     intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
     intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
-  
+    intree->SetBranchAddress("genlep1",	 &genlep1);       // tag lepton 4-vector
+    intree->SetBranchAddress("genlep2",	 &genlep2);       // probe lepton 4-vector 
     if(doElectron) intree->SetBranchAddress("lep1_raw",         &lep1_raw);       // tag lepton 4-vector
     if(doElectron) intree->SetBranchAddress("lep2_raw",         &lep2_raw);       // probe lepton 4-vector
 
