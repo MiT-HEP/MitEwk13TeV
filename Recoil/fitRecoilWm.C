@@ -21,9 +21,11 @@
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
 // #include "../SignalExtraction/rochcor2015r.cc"
-#include "../SignalExtraction/rochcor2015r.h"
-#include "../SignalExtraction/muresolution_run2r.h"
+// #include "../SignalExtraction/rochcor2015r.h"
+// #include "../SignalExtraction/muresolution_run2r.h"
 // #include "../SignalExtraction/muresolution_run2r.cc"
+
+#include <../RochesterCorr/RoccoR.cc>
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -230,7 +232,9 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   const Double_t ETA_CUT = 2.4;
 
   const Double_t mu_MASS = 0.1057;
-  rochcor2015 *rmcor = new rochcor2015();
+  //Setting up rochester corrections
+  // rochcor2015 *rmcor = new rochcor2015();
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -333,7 +337,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   Float_t scale1fb, puWeight, scale1fbUp, scale1fbDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  TLorentzVector *lep=0, *lep_raw=0, *genV = 0;
+  TLorentzVector *lep=0, *lep_raw=0, *genV = 0, *genLep =0;
 
 //   Float_t puWeight;
 //   Float_t scale1fb;
@@ -354,16 +358,17 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("puppiMet",      &met);       // MET
-    intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
-    //    intree->SetBranchAddress("met",      &met);       // MET
-    //    intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
+    // intree->SetBranchAddress("puppiMet",      &met);       // MET
+    // intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
+       intree->SetBranchAddress("met",      &met);       // MET
+       intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
     intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
+    intree->SetBranchAddress("genLep",      &genLep);       // gen lepton 4-vector 
     intree->SetBranchAddress("genV",      &genV);       // lepton 4-vector 
     intree->SetBranchAddress("puWeight",     &puWeight); 
 	if(doElectron) intree->SetBranchAddress("lep_raw",         &lep_raw);       // probe lepton 4-vector
@@ -380,11 +385,14 @@ void fitRecoilWm(TString infoldername,  // input ntuple
       mu.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       // comment out for now 
       // float qter=1.0;
-      // if(infoldername.Contains("data_")) {
-	    // rmcor->momcor_data(mu,q,0,qter);
-      // } else {
-	    // rmcor->momcor_mc(mu,q,0,qter);
-      // } 
+      double SF1=1;
+      if(infoldername.Contains("data_")) {
+	    SF1 = rc.kScaleDT(q, mu.Pt(), mu.Eta(), mu.Phi());
+      } else {
+	    SF1 = rc.kSpreadMC(q, mu.Pt(), mu.Eta(), mu.Phi(), genLep->Pt());
+        // mu*=SF1;
+      } 
+      mu*=SF1;
 
       if(charge== 1 && q<0) continue;
       if(charge==-1 && q>0) continue;

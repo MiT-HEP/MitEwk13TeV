@@ -23,6 +23,8 @@
 
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");
+  gROOT->Macro("CCorrUser2D.cc+");
+ 
 
                
     {
@@ -32,7 +34,8 @@
       gSystem->AddIncludePath("-I../EleScale");
       gInterpreter->AddIncludePath("../EleScale");
       gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
-      gROOT->Macro("EnergyScaleCorrection_class.cc+");
+      // gROOT->Macro("EnergyScaleCorrection_class.cc+"); // commented out to test the new ones
+      gROOT->Macro("EnergyScaleCorrection.cc+");
     }
                      
 

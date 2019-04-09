@@ -180,7 +180,7 @@ Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, 
 }
 
 Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
-{
+{// ele ID from 2015
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
@@ -229,7 +229,8 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+  // keeping these for now, can always remove at later step
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   if(electron->isConv)            return kFALSE;
 
@@ -271,7 +272,8 @@ Bool_t passAntiEleTightID(const baconhep::TElectron *electron,const TLorentzVect
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+  // keeping these for now, can always remove later
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   if(electron->isConv)            return kFALSE;
 
@@ -299,7 +301,7 @@ Bool_t passAntiEleTightID(const baconhep::TElectron *electron,const TLorentzVect
     if(fabs(electron->dPhiIn)     >= 0.0236)                           return kFALSE; // original
     if(fabs(electron->dEtaIn)     >= 0.00501)                         return kFALSE; // original
     // if(fabs(electron->dPhiIn)     < 0.0236)                           return kFALSE; // reverse
-    // if(fabs(electron->dEtaIn)     < 0.00501)                          return kFALSE; // reverse
+    // if(fabs(electron->dEtaIn)     < 0.00501)                          return kFALSE; // reverse 
     // std::cout << "----------------" << std::endl;
     if(electron->hovere           >= 0.0188+2.06/electron->ecalEnergy+0.183*rho/electron->ecalEnergy)         return kFALSE;
     if(fabs(1.0-electron->eoverp) >= 0.0197*(electron->ecalEnergy))   return kFALSE;
@@ -315,7 +317,8 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
   
-  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+  // keeping these for now, can remove later?
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
   
   // conversion rejection
   if(electron->isConv) return kFALSE;
@@ -326,26 +329,26 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
   // barrel/endcap dependent requirements
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     // barrel
-    if(iso/(tag.Pt()) > 0.198+0.506/(tag.Pt()))                                       return kFALSE;
-    if(electron->nMissingHits > 2)                                   return kFALSE;
-    if(electron->sieie        > 0.0457)                              return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.19)                               return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.00814 )                             return kFALSE;
-    if(electron->hovere       > 0.05+2.54/(electron->ecalEnergy)+0.183*rho/(electron->ecalEnergy))  return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.132*(electron->ecalEnergy))    return kFALSE;
-    if(fabs(electron->d0)     > 0.05)                              return kFALSE;
-    if(fabs(electron->dz)     > 0.10)                                return kFALSE;
+    if(iso/(tag.Pt()) >= 0.198+0.506/(tag.Pt()))                                       return kFALSE;
+    if(electron->nMissingHits >= 2)                                   return kFALSE;
+    if(electron->sieie        >= 0.0126)                              return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.148)                               return kFALSE;
+    if(fabs(electron->dEtaIn) >= 0.00463 )                             return kFALSE;
+    if(electron->hovere       >= 0.05+1.16/(electron->ecalEnergy)+0.0324*rho/(electron->ecalEnergy))  return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.209*(electron->ecalEnergy))    return kFALSE;
+    if(fabs(electron->d0)     >= 0.05)                              return kFALSE;
+    if(fabs(electron->dz)     >= 0.10)                                return kFALSE;
   } else {
     // endcap
-    if(iso/(tag.Pt()) > 0.203+0.963/(tag.Pt()))                                   return kFALSE;
-    if(electron->nMissingHits > 3)                                   return kFALSE;
-    if(electron->sieie        > 0.0457)                              return kFALSE;
-    if(fabs(electron->dPhiIn) > 0.19)                               return kFALSE;
-    if(fabs(electron->dEtaIn) > 0.00814)                             return kFALSE;
-    if(electron->hovere       > 0.05+2.54/(electron->ecalEnergy)+0.183*rho/(electron->ecalEnergy))  return kFALSE;
-    if(fabs(1.0-electron->eoverp) > 0.132*(electron->ecalEnergy))    return kFALSE;
-    if(fabs(electron->d0)     > 0.10)                               return kFALSE;
-    if(fabs(electron->dz)     > 0.20)                               return kFALSE;
+    if(iso/(tag.Pt()) >= 0.203+0.963/(tag.Pt()))                                   return kFALSE;
+    if(electron->nMissingHits >= 3)                                   return kFALSE;
+    if(electron->sieie        >= 0.0457)                              return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.19)                               return kFALSE;
+    if(fabs(electron->dEtaIn) >= 0.00814)                             return kFALSE;
+    if(electron->hovere       >= 0.05+2.54/(electron->ecalEnergy)+0.183*rho/(electron->ecalEnergy))  return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.132*(electron->ecalEnergy))    return kFALSE;
+    if(fabs(electron->d0)     >= 0.10)                               return kFALSE;
+    if(fabs(electron->dz)     >= 0.20)                               return kFALSE;
   }
 
   return kTRUE;

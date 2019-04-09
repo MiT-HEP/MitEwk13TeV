@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <fstream>
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -14,11 +15,28 @@
 #include "TStyle.h"
 #include "TMinuit.h"
 
-const int NBpt  = 2;
-const int NBeta = 8;
-const float ptrange[NBpt+1]   = {25., 40., 8000.};
-const float etarange[NBeta+1] = {-2.4, -2.1, -1.2, -0.9, 0., 0.9, 1.2, 2.1, 2.4};
+// const int NBpt  = 2;
+// const int NBeta = 8;
+// const float ptrange[NBpt+1]   = {25., 40., 8000.};
+// const float etarange[NBeta+1] = {-2.4, -2.1, -1.2, -0.9, 0., 0.9, 1.2, 2.1, 2.4};
 
+const int NBeta = 8;
+const float etarange[NBeta+1] = {-2.4,-2.1,-1.2,-0.9,0,0.9,1.2,2.1,2.4};
+const int NBpt = 8;
+const float ptrange[NBpt+1] = {25,30,35,40,45,50,60,80,8000};
+
+// TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
+TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results/TOYS/";
+TString sigDirMC="_POWxPythia_v0_POWxPhotos_v0/";
+TString sigDirFSR="_aMCxPythia_v0_minloxPythia_v0/";
+TString bkgDir="_aMCxPythia_v0_POWBKG_v0/"; // should be exp vs Powerlaw
+
+// TString sigDirMC="_POWxPythia_staFit7_POWxPhotos_staFit7/";
+// TString sigDirFSR="_aMCxPythia_staFit7_minloxPythia_staFit7/";
+// TString bkgDir="_aMCxPythia_staFit7_POWBKG_staFit7/"; // should be exp vs Powerlaw
+
+// const string charges[2] = {"Negative","Positive"};
+const string charges[2] = {"Combined","Combined"};
 
 /* old
 const float StaSigSys[NBpt*NBeta] = {1.00, 1.28, 0.52, 0.69, 1.48, 1.11, 1.00, 0.97,
@@ -38,18 +56,67 @@ const float SITSigSys[NBpt*NBeta] = {0.38, 0.57, 1.25, 0.78, 0.79, 1.00, 0.63, 0
                                      0.46, 0.28, 0.32, 0.29, 0.35, 0.61, 0.21, 0.39};
 const float SITBkgSys[NBpt*NBeta] = {0.03, 0.08, 0.14, 0.11, 0.11, 0.12, 0.07, 0.06,
                                      0.01, 0.00, 0.02, 0.00, 0.00, 0.00, 0.00, 0.01};
-void makeTH2DMu(){
+void makeTH2DMu(TString effTypeSig = "MuStaEff"){
+// void makeTH2DMu(TString effTypeSig = "MuSITEff"){
+    // alternate input option is MuStaEff, HLT should not have fits?MuSITEff
+    vector<double> vSigMCNeg;
+    vector<double> vSigMCPos;
+    vector<double> vSigFSRNeg;
+    vector<double> vSigFSRPos;
+    vector<double> vBkgNeg;
+    vector<double> vBkgPos;
+    
+  for(int i = 0; i < NBeta*NBpt; ++i){
+    double value=0;
+    char infilename[200];
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),charges[0].c_str(),"/FULL_TEST_v0",i);
+    ifstream infile1(infilename); assert (infile1); infile1>>value; vSigFSRNeg.push_back(value); value=0;
+    std::cout << infilename << vSigFSRNeg.back() << std::endl;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),charges[1].c_str(),"/FULL_TEST_v0",i);
+    ifstream infile2(infilename); assert (infile2);infile2>>value; vSigFSRPos.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),charges[0].c_str(),"/FULL_TEST_v0",i);
+    ifstream infile3(infilename); assert (infile3);infile3>>value; vSigMCNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),charges[1].c_str(),"/FULL_TEST_v0",i);
+    ifstream infile4(infilename); assert (infile4);infile4>>value; vSigMCPos.push_back(value); value=0;    
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),charges[0].c_str(),"/FULL_TEST_v0",i);
+    ifstream infile5(infilename); assert (infile5);infile5>>value; vBkgNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),charges[1].c_str(),"/FULL_TEST_v0",i);
+    ifstream infile6(infilename); infile6>>value; vBkgPos.push_back(value); value=0; 
+  }
+    
+    char histname[100];
+    sprintf(histname,"h%sSigMCNeg",effTypeSig.Data());
+	TH2D *hSigMCNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sSigMCPos",effTypeSig.Data());
+	TH2D *hSigMCPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sSigFSRNeg",effTypeSig.Data());
+    TH2D *hSigFSRNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sSigFSRPos",effTypeSig.Data());
+    TH2D *hSigFSRPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sBkgNeg",effTypeSig.Data());
+    TH2D *hBkgNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"h%sBkgPos",effTypeSig.Data());
+    TH2D *hBkgPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
 
-	TH2D *h = new TH2D("h","", NBeta, etarange, NBpt, ptrange);
+	for(int ipt=0; ipt<NBpt; ipt++){
 
-	for(int ieta=0; ieta<NBeta; ieta++){
-
-		for(int ipt=0; ipt<NBpt; ipt++){
-			h->SetBinContent(ieta+1, ipt+1, 1.+SITSigSys[ipt*NBeta+ieta]*0.01);
+		for(int ieta=0; ieta<NBeta; ieta++){
+			hSigFSRNeg->SetBinContent(ieta+1, ipt+1, 1.+vSigFSRNeg[ipt*NBeta+ieta]);
+			hSigFSRPos->SetBinContent(ieta+1, ipt+1, 1.+vSigFSRPos[ipt*NBeta+ieta]);
+			hSigMCNeg->SetBinContent(ieta+1, ipt+1, 1.+vSigMCNeg[ipt*NBeta+ieta]);
+			hSigMCPos->SetBinContent(ieta+1, ipt+1, 1.+vSigMCPos[ipt*NBeta+ieta]);
+			hBkgNeg->SetBinContent(ieta+1, ipt+1, 1.+vBkgNeg[ipt*NBeta+ieta]);
+			hBkgPos->SetBinContent(ieta+1, ipt+1, 1.+vBkgPos[ipt*NBeta+ieta]);
 		}
 	}
-
-	TFile *f = new TFile("MuSITSigSys.root", "RECREATE");
-	h->Write();
+    char outfilename[100];
+    sprintf(outfilename,"SysUnc_%s.root",effTypeSig.Data());
+	TFile *f = new TFile(outfilename, "RECREATE");
+	hSigFSRNeg->Write();
+	hSigFSRPos->Write();
+	hSigMCNeg->Write();
+	hSigMCPos->Write();
+	hBkgNeg->Write();
+	hBkgPos->Write();
 	f->Close();
 }
