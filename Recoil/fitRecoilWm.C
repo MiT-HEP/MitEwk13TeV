@@ -25,7 +25,7 @@
 // #include "../SignalExtraction/muresolution_run2r.h"
 // #include "../SignalExtraction/muresolution_run2r.cc"
 
-#include <../Rochester/RoccoR.cc>
+#include <../RochesterCorr/RoccoR.cc>
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -234,7 +234,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   const Double_t mu_MASS = 0.1057;
   //Setting up rochester corrections
   // rochcor2015 *rmcor = new rochcor2015();
-  RoccoR  rc("../Utils/RoccoR2017.txt");
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -358,10 +358,10 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("puppiMet",      &met);       // MET
-    intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
-    //    intree->SetBranchAddress("met",      &met);       // MET
-    //    intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
+    // intree->SetBranchAddress("puppiMet",      &met);       // MET
+    // intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
+       intree->SetBranchAddress("met",      &met);       // MET
+       intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
@@ -387,12 +387,12 @@ void fitRecoilWm(TString infoldername,  // input ntuple
       // float qter=1.0;
       double SF1=1;
       if(infoldername.Contains("data_")) {
-	    dtSF1 = rc.kScaleDT(q, mu1.Pt(), mu1.Eta(), mu1.Phi());
+	    SF1 = rc.kScaleDT(q, mu.Pt(), mu.Eta(), mu.Phi());
       } else {
-	    SF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genLep->Pt());
-        mu1*=SF1;
+	    SF1 = rc.kSpreadMC(q, mu.Pt(), mu.Eta(), mu.Phi(), genLep->Pt());
+        // mu*=SF1;
       } 
-      mu1*=SF1;
+      mu*=SF1;
 
       if(charge== 1 && q<0) continue;
       if(charge==-1 && q>0) continue;

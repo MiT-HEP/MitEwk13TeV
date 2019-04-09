@@ -250,8 +250,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
      } else {
        //newPuppi, may11
        // ekw_select1.root is ttbar, wz, ww, zz
-       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
        // RAW puppi
        ///eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/rawPuppiNtuples
 

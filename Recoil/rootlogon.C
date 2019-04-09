@@ -30,8 +30,7 @@
   gROOT->Macro("../SignalExtraction/CEffUser1D.cc+");
   gROOT->Macro("../SignalExtraction/CEffUser2D.cc+");
 
-  gROOT->Macro("../SignalExtraction/muresolution_run2r.cc+");
-  gROOT->Macro("../SignalExtraction/rochcor2015r.cc+");
+  gROOT->Macro("../RochesterCorr/RoccoR.cc+");
  
   //gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
   {  
