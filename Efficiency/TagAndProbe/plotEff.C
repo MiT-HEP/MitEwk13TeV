@@ -69,6 +69,7 @@
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
+
 // generate web page
 void makeHTML(const TString outDir);
 void makeHTML(const TString outDir, const TString name, const Int_t n);
@@ -95,7 +96,7 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 // Generate MC-based signal templates
 void generateHistTemplates(const TString infilename,
                            const vector<Double_t> &ptEdgesv, const vector<Double_t> &etaEdgesv, const vector<Double_t> &phiEdgesv, const vector<Double_t> &npvEdgesv,
-		           const Double_t fitMassLo, const Double_t fitMassHi, const Bool_t doAbsEta, const Int_t charge, const TH1D* puWeights); 
+		           const Double_t fitMassLo, const Double_t fitMassHi, const Bool_t doAbsEta, const Int_t charge, const TH1D* puWeights, const int typeCode); 
 void generateDataTemplates(const TString infilename,
                            const vector<Double_t> &ptEdgesv, const vector<Double_t> &etaEdgesv, const vector<Double_t> &phiEdgesv, const vector<Double_t> &npvEdgesv,
 		           const Double_t fitMassLo, const Double_t fitMassHi, const Bool_t doAbsEta, const Int_t charge); 
@@ -145,6 +146,7 @@ void plotEff(const TString conf,            // input binning file
 	     const UInt_t  runNumHi=999999  // upper bound of run range
 ) {
   gBenchmark->Start("plotEff");
+  RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
@@ -344,8 +346,10 @@ void plotEff(const TString conf,            // input binning file
   //
   // Generate histogram templates from MC if necessary
   //
-  if(sigModPass==2 || sigModFail==2) {
-    generateHistTemplates(mcfilename,ptBinEdgesv,etaBinEdgesv,phiBinEdgesv,npvBinEdgesv,fitMassLo,fitMassHi,doAbsEta,charge,puWeights);
+  int doType = 2; // set 5 to be the powheg+pythia and 6 to be powheg+photos
+  if(sigModPass==2 || sigModFail==2 || sigModPass==5 || sigModFail==5 || sigModPass==6 || sigModFail==6) {
+    doType = sigModPass;
+    generateHistTemplates(mcfilename,ptBinEdgesv,etaBinEdgesv,phiBinEdgesv,npvBinEdgesv,fitMassLo,fitMassHi,doAbsEta,charge,puWeights,doType);
   }
   if(sigModPass==4 || sigModFail==4) {
     generateDataTemplates(mcfilename,ptBinEdgesv,etaBinEdgesv,phiBinEdgesv,npvBinEdgesv,fitMassLo,fitMassHi,doAbsEta,charge);
@@ -361,6 +365,7 @@ void plotEff(const TString conf,            // input binning file
   Double_t weight;
   Int_t q;
   UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
+  Double_t weightPowPyth, weightPowPhot;
   eventTree->SetBranchAddress("mass",   &mass);
   eventTree->SetBranchAddress("pt",     &pt);
   eventTree->SetBranchAddress("eta",    &eta);
@@ -373,7 +378,9 @@ void plotEff(const TString conf,            // input binning file
   eventTree->SetBranchAddress("runNum", &runNum);
   eventTree->SetBranchAddress("lumiSec",&lumiSec);
   eventTree->SetBranchAddress("evtNum", &evtNum);
-
+  eventTree->SetBranchAddress("weightPowPyth", &weightPowPyth);
+  eventTree->SetBranchAddress("weightPowPhot", &weightPowPhot);
+  std::cout << "data" << std::endl;
   for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     eventTree->GetEntry(ientry);
     if((q)*charge < 0)    continue;
@@ -383,6 +390,7 @@ void plotEff(const TString conf,            // input binning file
     if(runNum > runNumHi) continue;
     wgt  = weight;
     if(doPU>0) wgt *= puWeights->GetBinContent(npu+1);
+    // wgt*=weightPowPhot;
     
     Int_t ipt=-1;
     for(UInt_t ibin=0; ibin<ptNbins; ibin++)
@@ -433,7 +441,7 @@ void plotEff(const TString conf,            // input binning file
   }  
   delete infile;
   infile=0, eventTree=0;
-
+  std::cout << "done data" << std::endl;
   //
   // Compute efficiencies and make plots 
   // 
@@ -452,7 +460,7 @@ void plotEff(const TString conf,            // input binning file
     
   char lumitext[100]; // lumi label
   sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
-
+  std::cout << "do some fits" << std::endl;
   if(sigModPass==0 && sigModFail==0) {  // probe counting
     
     // efficiency in pT
@@ -1067,7 +1075,7 @@ void makeEffHist2D(TH2D *hEff, TH2D *hErrl, TH2D *hErrh, const vector<TTree*> &p
 //--------------------------------------------------------------------------------------------------
 void generateHistTemplates(const TString infilename,
                            const vector<Double_t> &ptEdgesv, const vector<Double_t> &etaEdgesv, const vector<Double_t> &phiEdgesv, const vector<Double_t> &npvEdgesv,
-		           const Double_t fitMassLo, const Double_t fitMassHi, const Bool_t doAbsEta, const Int_t charge, const TH1D* puWeights)
+		           const Double_t fitMassLo, const Double_t fitMassHi, const Bool_t doAbsEta, const Int_t charge, const TH1D* puWeights, int typeCode)
 {
   cout << "Creating histogram templates... " << std::endl; cout.flush();
 
@@ -1153,6 +1161,7 @@ void generateHistTemplates(const TString infilename,
   Double_t weight;
   Int_t q;
   UInt_t npv, npu, pass, runNum, lumiSec, evtNum;
+  Double_t weightPowPyth, weightPowPhot;
   intree->SetBranchAddress("mass",   &mass);
   intree->SetBranchAddress("pt",     &pt);
   intree->SetBranchAddress("eta",    &eta);
@@ -1165,13 +1174,20 @@ void generateHistTemplates(const TString infilename,
   intree->SetBranchAddress("runNum", &runNum);
   intree->SetBranchAddress("lumiSec",&lumiSec);
   intree->SetBranchAddress("evtNum", &evtNum);
-  
+  intree->SetBranchAddress("weightPowPyth", &weightPowPyth);
+  intree->SetBranchAddress("weightPowPhot", &weightPowPhot);
+  if(weightPowPyth>10||weightPowPyth<0) weightPowPyth=1;
+  if(weightPowPhot>10||weightPowPhot<0) weightPowPhot=1;
+  std::cout << "hello" << std::endl;
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     intree->GetEntry(ientry);
     
     Double_t puWgt=1;
     if(puWeights)
       puWgt = puWeights->GetBinContent(npu+1);
+    if(typeCode==5) puWgt*=weightPowPyth;
+    // std::cout << "weight " << puWgt << "  pyth weight " << weightPowPyth << std::endl;
+    if(typeCode==6) puWgt*=weightPowPhot;
     
     if((q)*charge < 0) continue;
     
@@ -1647,7 +1663,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   Int_t nflpass=0, nflfail=0;
     
   TFile *histfile = 0;
-  if(sigpass==2 || sigfail==2) {
+  if(sigpass==2 || sigfail==2 || sigpass==5 || sigfail==5 || sigpass==6 || sigfail==6) {
     histfile = new TFile("histTemplates.root");
     assert(histfile);
   }
@@ -1698,11 +1714,14 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   CSignalModel     *sigFail = 0;
   CBackgroundModel *bkgFail = 0;
   
+  
+
+  
   if(sigpass==1) {
     sigPass = new CBreitWignerConvCrystalBall(m,kTRUE);
     nflpass += 4;
   
-  } else if(sigpass==2) { 
+  } else if(sigpass==2||sigpass==5||sigpass==6) { 
     char hname[50];
     sprintf(hname,"pass%s_%i",name.Data(),ibin);
     TH1D *h = (TH1D*)histfile->Get(hname);
@@ -1753,11 +1772,12 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   }
 
 
+ RooRealVar *sigmaFail = new RooRealVar("sigmaFail","sigmaFail",0.1,0,1.0);
   if(sigfail==1) {
     sigFail = new CBreitWignerConvCrystalBall(m,kFALSE);
     nflfail += 4;
   
-  } else if(sigfail==2) {
+  } else if(sigfail==2||sigfail==5||sigfail==6) {
     char hname[50];
     sprintf(hname,"fail%s_%i",name.Data(),ibin);
     TH1D *h = (TH1D*)histfile->Get(hname);
@@ -1953,80 +1973,64 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 */
 
 // for alternative iso cone, 0.12
-// for nominal iso cone, 0.15
-/*  }else*/ if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-2.4 && xbinHi==-2.1 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,14.688,38.4373,1.63443,0.890089,-0.0124674,0.00490208);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,350.161,84.9754,2.20028,1.96228,-0.0320498,0.01079);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,160.725,59.0307,1.1749,1.36233,-0.015835,0.00748612);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-0.9 && xbinHi==-0.3 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,79.7773,92.7792,10.1913,2.14619,-0.0782481,0.0118087);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-0.3 && xbinHi==-0.2 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-88.1536,40.6558,4.38496,0.940991,-0.0285021,0.00517186);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-0.2 && xbinHi== 0.0 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-148.153,53.0005,7.34116,1.22898,-0.0473752,0.00676667);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.0 && xbinHi== 0.2 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-53.0383,54.3729,5.33904,1.2581,-0.0369095,0.00691909);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.2 && xbinHi== 0.3 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-17.7026,41.248,2.85444,0.956444,-0.0203918,0.00527155);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.3 && xbinHi== 0.9 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,76.5751,93.4465,10.5841,2.16069,-0.0814634,0.0118835);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.9 && xbinHi== 1.2 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,69.0969,60.033,3.34439,1.38772,-0.027481,0.00763195);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 1.2 && xbinHi== 2.1 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,334.14,85.6047,2.54751,1.97506,-0.0334427,0.0108505);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 2.1 && xbinHi== 2.4 && ybinLo==25 && ybinHi==40  ){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,42.0962,38.015,1.1052,0.879851,-0.0101413,0.00484586);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-2.4 && xbinHi==-2.1 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-50.3944,21.5028,1.342,0.508744,-0.00594804,0.00284998);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-284.695,50.9969,8.17359,1.20505,-0.0406249,0.00674167);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-1.2 && xbinHi==-0.9 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-144.451,35.8615,4.11209,0.846398,-0.0205359,0.0047295);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-0.9 && xbinHi==-0.3 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-341.994,55.7471,9.55779,1.31615,-0.0461556,0.00735736);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-0.3 && xbinHi==-0.2 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-142.544,24.0544,3.53045,0.572755,-0.0175086,0.00321633);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo==-0.2 && xbinHi== 0.0 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-71.9995,32.1319,2.18304,0.760187,-0.00961905,0.00426188);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.0 && xbinHi== 0.2 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-159.72,33.2644,4.2551,0.784839,-0.0209857,0.0043811);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.2 && xbinHi== 0.3 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-111.643,25.1041,2.90704,0.592871,-0.0144992,0.00331016);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.3 && xbinHi== 0.9 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-300.41,57.8766,8.75623,1.36615,-0.0419159,0.00763852);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 0.9 && xbinHi== 1.2 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-169.412,35.74,4.56915,0.845013,-0.0222843,0.0047273);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 1.2 && xbinHi== 2.1 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-226.414,52.1268,6.74502,1.22804,-0.0320565,0.00685594);
-    nflfail += 3;
-  } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==6 && charge==0 && xbinLo== 2.1 && xbinHi== 2.4 && ybinLo==40 && ybinHi==8000){
-    bkgFail = new CQuadratic(m,kFALSE,ibin,-66.9827,21.6348,1.83467,0.509517,-0.00924994,0.00283993);
-    nflfail += 3;
+// {-2.4,-2.1,-1.2,-0.9,0,0.9,1.2,2.1,2.4}; // muon eta binning kms
+/*  }else*/ 
 
+// if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && fabs(xbinLo)>2.0){
+    // bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,0.1); // bin0
+    // std::cout << "setting bins..." << std::endl;
+    // nflfail += 3;
+  // }
+if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==0){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,50.0,16.0,10.0,-0.1,10.0); // bin0
+    std::cout << "setting bins..." << std::endl;
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==1  ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0); // bin1
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==2 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);// bin2
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 &&  ibin==3 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-10.0,5.0,13.0,5.0,-0.1,1.0);// bin3
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==4 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);// bin4
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==5 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);// bin5
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==6  ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);// bin6
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==7  ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);// bin67
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==8){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);// bin8
+    std::cout << "setting bins..." << std::endl;
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==9 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ibin==10 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 &&ibin==11 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 &&ibin==12 ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0&&ibin==13  ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 &&ibin==14  ){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
+  } else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0&&ibin==15){
+    bkgFail = new CQuadratic(m,kFALSE,ibin,-20.0,20.0,16.0,5.0,-0.1,1.0);
+    nflfail += 3;
   } else if(yaxislabel.CompareTo("Sta")==0       && bkgfail==7 && charge==0 && xbinLo==-2.4 && xbinHi==-2.1 && ybinLo==40 && ybinHi==8000) { //12
     bkgFail = new CPower(m,kFALSE,ibin,-0.658153,0.00805732);
     nflfail += 1;
@@ -2110,7 +2114,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
     nflfail += 3;  
 
   } else if(bkgfail==6) {
-    bkgFail = new CQuadratic(m,kFALSE,ibin,0.,0.,0.,0.,0.,0.);
+    bkgFail = new CQuadratic(m,kFALSE,ibin,10.,30.,10.,30.,2.,15.);
     nflfail += 3;
 
   } else if(bkgpass==7) {
@@ -2124,12 +2128,22 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   Double_t NbkgFailMax = doBinned ? histFail.Integral() : failTree->GetEntries();
   Double_t NbkgPassMax = doBinned ? histPass.Integral() : passTree->GetEntries();
   RooRealVar Nsig("Nsig","Signal Yield",NsigMax,0,1.5*NsigMax);
-  RooRealVar eff("eff","Efficiency",0.9,0.0,1.0);
+  RooRealVar eff("eff","Efficiency",0.95,0.0,1.0);
   RooRealVar NbkgPass("NbkgPass","Background count in PASS sample",0.1*NbkgPassMax,0.01,NbkgPassMax);
   if(bkgpass==0) NbkgPass.setVal(0);
   RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);
-
-
+  if(yaxislabel.CompareTo("stand-alone")==0 && fabs(xbinLo) >= 0.9 ) {
+      NbkgFail.setVal(0.98*NbkgFailMax);
+      NbkgFail.setRange(0.9*NbkgFailMax,NbkgFailMax);
+      eff.setVal(0.98);
+  }
+   else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && xbinLo== 1.2 && xbinHi== 2.1 && ybinLo==25 && ybinHi==40  ){
+       NbkgFail.setVal(0.5*NbkgFailMax);
+   }
+  std::cout << NbkgFail.getVal() << std::endl;
+  // if(bkgfail==6) NbkgFail.setVal(0.9*NbkgFailMax);
+std::cout << NbkgFail.getVal() << std::endl;
+std::cout << "-----------------" << std::endl;
 //(2,1,2,2)
 //  if(yaxislabel.CompareTo("GsfSel")==0) {Nsig.setVal(0.8*NsigMax);eff.setVal(0.8);Nsig.setRange(0,2.0*NsigMax);}
  
@@ -2209,6 +2223,8 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 
     modelFail = new RooAddPdf("modelFail","Model for FAIL sample",RooArgList(*(sigFail->model),*(bkgFail->model)),RooArgList(NsigFail,NbkgFail));
   }
+  
+
 
   RooSimultaneous totalPdf("totalPdf","totalPdf",sample);
   totalPdf.addPdf(*modelPass,"Pass");  
@@ -2216,7 +2232,18 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 
   int strategy = 2;
 // for 76X
-  if(yaxislabel.CompareTo("Sta")==0       && charge==0 && xbinLo== 0.0 && xbinHi== 2.4 && ybinLo==25 && ybinHi==8000) strategy = 1;
+ // if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && ybinLo==25 && ybinHi==30) {
+      // strategy = 1;
+  // }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo== 0.0 && xbinHi== 0.9 && ybinLo==30 && ybinHi==35) {
+      strategy = 1;
+  }
+  if(yaxislabel.CompareTo("stand-alone")==0 && charge==0 && xbinLo== 0.0 && xbinHi== 0.9 && ybinLo==35 && ybinHi==40) {
+      strategy = 1;
+  }
+  // if(yaxislabel.CompareTo("stand-alone")==0 && charge==0&& ybinLo==25 && ybinHi==40){
+      // strategy=1;
+  // }
   if(yaxislabel.CompareTo("Sta")==0       && charge==0 && xbinLo==-0.9 && xbinHi==-0.3 && ybinLo==40 && ybinHi==8000) strategy = 1; 
   if(yaxislabel.CompareTo("Sta")==0       && sigpass==1 && charge==0 && xbinLo==-2.4 && xbinHi==-2.1 && ybinLo==25 && ybinHi==40  ) { strategy = 1;}//0
   if(yaxislabel.CompareTo("Sta")==0       && sigpass==1 && charge==0 && xbinLo==-2.1 && xbinHi==-1.2 && ybinLo==25 && ybinHi==40  ) { strategy = 1;}//1
@@ -2247,53 +2274,57 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   			     RooFit::Minos(RooArgSet(eff)),
   			     RooFit::Save());
 
-    // int nTries = 0;
-    // do {
-      // fitResult = totalPdf.fitTo(*dataCombined,
-				 // NumCPU(4),
-				 // //				 Minimizer("Minuit2","minimize"),
-				 // Minimizer("Minuit2","scan"),
-				 // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 // //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 // RooFit::Minos(),
-				 // RooFit::Strategy(2),
-				 // RooFit::Save());
+    int nTries = 0;
+    do {
+      fitResult = totalPdf.fitTo(*dataCombined,
+				 NumCPU(4),
+				 //				 Minimizer("Minuit2","minimize"),
+				 Minimizer("Minuit2","scan"),
+				 // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 RooFit::Minos(),
+				 RooFit::Strategy(2),
+				 RooFit::Save());
                  
-        // // nTries++;
-
-      // fitResult = totalPdf.fitTo(*dataCombined,
-				 // NumCPU(4),
-				 // //				 Minimizer("Minuit2","minimize"),
-				 // Minimizer("Minuit2","migrad"),
-				 // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 // //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 // RooFit::Hesse(),
-				 // RooFit::Strategy(2),
-				 // RooFit::Save());
-       // fitResult = totalPdf.fitTo(*dataCombined,
-				 // NumCPU(4),
-				 // //				 Minimizer("Minuit2","minimize"),
-				 // Minimizer("Minuit2","improve"),
-				 // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 // //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 // RooFit::Minos(),
-				 // RooFit::Strategy(2),
-				 // RooFit::Save());
-				 
-	// fitResult = totalPdf.fitTo(*dataCombined,
-			       // NumCPU(4),
-			       // Minimizer("Minuit2","minimize"),
-			       // // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-			       // //			       ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-			       // RooFit::Minos(),
-			       // RooFit::Strategy(2),
-	               // RooFit::Save());
         // nTries++;
-    // }while((fitResult->status()>0)&&nTries < 10);
+
+      fitResult = totalPdf.fitTo(*dataCombined,
+				 NumCPU(4),
+				 //				 Minimizer("Minuit2","minimize"),
+				 Minimizer("Minuit2","migrad"),
+				 // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 RooFit::Hesse(),
+				 RooFit::Strategy(2),
+				 RooFit::Save());
+       fitResult = totalPdf.fitTo(*dataCombined,
+				 NumCPU(4),
+				 //				 Minimizer("Minuit2","minimize"),
+				 Minimizer("Minuit2","improve"),
+				 // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+				 RooFit::Minos(),
+				 RooFit::Strategy(2),
+				 RooFit::Save());
+				 
+	fitResult = totalPdf.fitTo(*dataCombined,
+			       NumCPU(4),
+			       Minimizer("Minuit2","minimize"),
+			       // ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+			       //			       ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+			       RooFit::Minos(),
+			       RooFit::Strategy(2),
+	               RooFit::Save());
+        nTries++;
+    }while((fitResult->status()>0)&&nTries < 10);
                  
   // Refit w/o MINOS if MINOS errors are strange...
-  if((fabs(eff.getErrorLo())<5e-4) || (eff.getErrorHi()<5e-4) || fitResult->status()>0)
-    fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(), RooFit::Strategy(1), RooFit::Save());
+  if((fabs(eff.getErrorLo())<5e-4) || (eff.getErrorHi()<5e-4) || fitResult->status()!=0){
+    fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(),Minimizer("Minuit2","scan"),RooFit::Strategy(2), RooFit::Save());
+    fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(),Minimizer("Minuit2","migrad"),RooFit::Strategy(2), RooFit::Save());
+    fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(),Minimizer("Minuit2","improve"),RooFit::Strategy(2), RooFit::Save());
+    fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(),Minimizer("Minuit2","minimize"),RooFit::Strategy(2), RooFit::Save());
+  }
   
   resEff  = eff.getVal();
   resErrl = fabs(eff.getErrorLo());
@@ -2507,6 +2538,7 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
   delete bkgFail;        
   delete histfile;
   delete datfile;   
+  delete sigmaFail;
 
 }
 
