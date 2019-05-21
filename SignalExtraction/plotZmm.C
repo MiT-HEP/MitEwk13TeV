@@ -32,7 +32,7 @@
 //helper class to handle rochester corrections
 // // #include <rochcor2015r.h>
 // #include <muresolution_run2r.h>
-#include <../Rochester/RoccoR.cc>
+#include <../RochesterCorr/RoccoR.cc>
 
 #endif
 
@@ -63,8 +63,8 @@ void plotZmm(const TString  inputDir,    // input directory
   vector<Int_t>   typev;
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_v2/Zmumu/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_GenCut/Zmumu/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
   fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
 
@@ -77,122 +77,48 @@ void plotZmm(const TString  inputDir,    // input directory
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
 
+  const bool doRoch = false;
   // efficiency files
  
   const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
   
-  // const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MG/eff.root";
-  // const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MG/eff.root";
-  // const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CT/eff.root";
-  // const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CT/eff.root";
-
-  // const TString dataSelEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  // const TString dataSelEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  // const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  // const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
-
-  // efficiency files 2Bins
-
-  // const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/1MG/eff.root";
-  // const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/1MG/eff.root";
-  // const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/1CT/eff.root";
-  // const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/1CT/eff.root";
-
-  // const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/1MG/eff.root";
-  // const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/1MG/eff.root";
-  // const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/1CT/eff.root";
-  // const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/1CT/eff.root";
-  
-  // const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/1MG/eff.root";
-  // const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/1MG/eff.root";
-  // const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/1CT/eff.root";
-  // const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/1CT/eff.root";
-
 
   
     // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_Efficiency-results/";
-  // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/Zmm/";
-  const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/Zmm/";
-  // const TString dataHLTEffName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString dataHLTEffName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia_v1/Negative/eff.root";
-  // const TString zmmHLTEffName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString zmmHLTEffName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia_v1/Negative/eff.root";
+  const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
+  // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/Zmm/";
+  const TString dataHLTEffName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
 
-  // const TString dataSelEffName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString dataSelEffName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia_v1/Negative/eff.root";
-  // const TString zmmSelEffName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString zmmSelEffName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia_v1/Negative/eff.root";
+  const TString dataSelEffName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEffName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEffName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEffName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
 
-  // const TString dataStaEffName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString dataStaEffName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia_v1/Negative/eff.root";
-  // const TString zmmStaEffName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString zmmStaEffName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia_v1/Negative/eff.root";
-  
-  const TString dataHLTEffName_pos = baseDir1 + "Data/MuHLTEff_v1/Positive/eff.root";
-  const TString dataHLTEffName_neg = baseDir1 + "Data/MuHLTEff_v1/Negative/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir1 + "MC/MuHLTEff_v1/Positive/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir1 + "MC/MuHLTEff_v1/Negative/eff.root";
-
-  const TString dataSelEffName_pos = baseDir1 + "Data/MuSelEff_v1/Positive/eff.root";
-  const TString dataSelEffName_neg = baseDir1 + "Data/MuSelEff_v1/Negative/eff.root";
-  const TString zmmSelEffName_pos  = baseDir1 + "MC/MuSelEff_v1/Positive/eff.root";
-  const TString zmmSelEffName_neg  = baseDir1 + "MC/MuSelEff_v1/Negative/eff.root";
-
-  const TString dataStaEffName_pos = baseDir1 + "Data/MuStaEff_v1/Positive/eff.root";
-  const TString dataStaEffName_neg = baseDir1 + "Data/MuStaEff_v1/Negative/eff.root";
-  const TString zmmStaEffName_pos  = baseDir1 + "MC/MuStaEff_v1/Positive/eff.root";
-  const TString zmmStaEffName_neg  = baseDir1 + "MC/MuStaEff_v1/Negative/eff.root";
-
-  // // efficiency files 2Bins
-
-  // const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/MGpositive/eff.root";
-  // const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/MGnegative/eff.root";
-  // const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/CTpositive/eff.root";
-  // const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/CTnegative/eff.root";
-
-  // const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/MGpositive_FineBin/eff.root";
-  // const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/MGnegative_FineBin/eff.root";
-  // const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
-  // const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
-
-  // const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/MGpositive/eff.root";
-  // const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/MGnegative/eff.root";
-  // const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/CTpositive/eff.root";
-  // const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/CTnegative/eff.root";
-  
+  const TString dataStaEffName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEffName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+ 
     // efficiency files 2Bins
 
-  // const TString dataHLTEff2BinName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString dataHLTEff2BinName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia_v1/Negative/eff.root";
-  // const TString zmmHLTEff2BinName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString zmmHLTEff2BinName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia_v1/Negative/eff.root";
+  const TString dataHLTEff2BinName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEff2BinName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEff2BinName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
 
-  // const TString dataSelEff2BinName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString dataSelEff2BinName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia_v1/Negative/eff.root";
-  // const TString zmmSelEff2BinName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString zmmSelEff2BinName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia_v1/Negative/eff.root";
-
-
-  // const TString dataStaEff2BinName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString dataStaEff2BinName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia_v1/Negative/eff.root";
-  // const TString zmmStaEff2BinName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia_v1/Positive/eff.root";
-  // const TString zmmStaEff2BinName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia_v1/Negative/eff.root";
-  
-    const TString dataHLTEff2BinName_pos = baseDir1 + "Data/MuHLTEff_v1/Positive/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir1 + "Data/MuHLTEff_v1/Negative/eff.root";
-  const TString zmmHLTEff2BinName_pos  = baseDir1 + "MC/MuHLTEff_v1/Positive/eff.root";
-  const TString zmmHLTEff2BinName_neg  = baseDir1 + "MC/MuHLTEff_v1/Negative/eff.root";
-
-  const TString dataSelEff2BinName_pos = baseDir1 + "Data/MuSelEff_v1/Positive/eff.root";
-  const TString dataSelEff2BinName_neg = baseDir1 + "Data/MuSelEff_v1/Negative/eff.root";
-  const TString zmmSelEff2BinName_pos  = baseDir1 + "MC/MuSelEff_v1/Positive/eff.root";
-  const TString zmmSelEff2BinName_neg  = baseDir1 + "MC/MuSelEff_v1/Negative/eff.root";
+  const TString dataSelEff2BinName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEff2BinName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEff2BinName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEff2BinName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
 
 
-  const TString dataStaEff2BinName_pos = baseDir1 + "Data/MuStaEff_v1/Positive/eff.root";
-  const TString dataStaEff2BinName_neg = baseDir1 + "Data/MuStaEff_v1/Negative/eff.root";
-  const TString zmmStaEff2BinName_pos  = baseDir1 + "MC/MuStaEff_v1/Positive/eff.root";
-  const TString zmmStaEff2BinName_neg  = baseDir1 + "MC/MuStaEff_v1/Negative/eff.root";
+  const TString dataStaEff2BinName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEff2BinName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEff2BinName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEff2BinName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
 
   TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
   TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
@@ -555,7 +481,7 @@ void plotZmm(const TString  inputDir,    // input directory
   
   //Setting up rochester corrections
   // rochcor2015 *rmcor = new rochcor2015();
-  RoccoR  rc("../Utils/RoccoR2017.txt");
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
 
   TFile *infile=0;
   TTree *intree=0;
@@ -622,7 +548,8 @@ void plotZmm(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	    weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*prefireWeight*lumi;
+	    weight *= scale1fb*lumi;
       }
       
       // fill Z events passing selection
@@ -641,8 +568,10 @@ void plotZmm(const TString  inputDir,    // input directory
 	  // rmcor->momcor_data(mu1,q1,0,qter1);
 	  // rmcor->momcor_data(mu2,q2,0,qter2);
       // std::cout << "data pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
+      if(doRoch){
       mu1*=dtSF1;
       mu2*=dtSF2;
+      }
       
       // std::cout << "post pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
 
@@ -678,7 +607,7 @@ void plotZmm(const TString  inputDir,    // input directory
 	  if(mass        > MASS_HIGH) continue;
 	  if(l1.Pt()        < PT_CUT)    continue;
 	  if(l2.Pt()        < PT_CUT)    continue;
-
+      
 	  hData->Fill(mass); 
 	  hDataNPV->Fill(npv);
 	  hDataZPt->Fill(pt); 
@@ -708,14 +637,20 @@ void plotZmm(const TString  inputDir,    // input directory
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
 	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
       // std::cout << "MC pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
+      
+      
 	  float qter1=1.0;
 	  float qter2=1.0;
       double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
       double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genlep2->Pt());//, s=0, m=0);
+      if(genlep1->Pt()==0 && genlep2->Pt()==0) {mcSF1=1; mcSF2=1;}// stupid gen shit for ttbar is messed up
 	  // rmcor->momcor_mc(mu1,q1,0,qter1);
 	  // rmcor->momcor_mc(mu2,q2,0,qter2);
+      if(doRoch){
       mu1*=mcSF1;
       mu2*=mcSF2;
+      }
+      // std::cout << "sf " << mcSF1 << "  " << mcSF2 << std::endl;
       // std::cout << "post pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
@@ -747,7 +682,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	  Double_t corrSigShape=1;
 	  Double_t effBkgShapedata;
 	  Double_t corrBkgShape=1;
-
 
 	  if(mll       < MASS_LOW)  continue;
 	  if(mll       > MASS_HIGH) continue;
@@ -994,7 +928,7 @@ void plotZmm(const TString  inputDir,    // input directory
           }
 	  corr2Bin *= eff2Bindata/eff2Binmc; 
 	  
-	
+	// std::cout << evtNum << " " << corr << " " << std::endl;
 	  mass = (l1+l2).M();
 	  pt = (l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
@@ -1003,7 +937,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
 	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
 	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
-
 	  if(typev[ifile]==eZmm) 
 	    {
 	      yield_zmm += weight*corr;
@@ -2047,6 +1980,28 @@ void plotZmm(const TString  inputDir,    // input directory
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;     
+  
+  
+  ofstream txtfile;
+  char txtfname[100];  
+  sprintf(txtfname,"%s/zmm_yields.txt",CPlot::sOutDir.Data());
+  txtfile.open(txtfname);
+  assert(txtfile.is_open());
+  
+  
+  txtfile << "*" << endl;
+  txtfile << "* SUMMARY" << endl;
+  txtfile << "*--------------------------------------------------" << endl;  
+  txtfile << endl;
+
+  txtfile << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  txtfile << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  txtfile << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
+  txtfile << std::endl;
+  txtfile.close();
+  
+  
 
   gBenchmark->Show("plotZmm");
 }

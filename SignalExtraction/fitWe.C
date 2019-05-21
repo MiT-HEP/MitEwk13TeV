@@ -142,16 +142,17 @@ void fitWe(const TString  outputDir,   // output directory
   
   // efficiency files
 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
-  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MGpositive/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MGnegative/eff.root";
-  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CTpositive/eff.root";
-  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CTnegative/eff.root";
+  // const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
+  const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_Efficiency_v1/results/";
+  const TString dataHLTEffName_pos = baseDir + "Zee/Data/HLTEff_v1/Positive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "Zee/Data/HLTEff_v1/Negative/eff.root";
+  const TString zeeHLTEffName_pos  = baseDir + "Zee/MC/HLTEff_v1/Positive/eff.root";
+  const TString zeeHLTEffName_neg  = baseDir + "Zee/MC/HLTEff_v1/Negative/eff.root";
   
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MGpositive/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MGnegative/eff.root";
-  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CTpositive/eff.root";
-  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CTnegative/eff.root";
+  const TString dataGsfSelEffName_pos = baseDir + "Zee/Data/GSFSelEff_v1/Positive/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "Zee/Data/GSFSelEff_v1/Negative/eff.root";
+  const TString zeeGsfSelEffName_pos  = baseDir + "Zee/MC/GSFSelEff_v1/Positive/eff.root";
+  const TString zeeGsfSelEffName_neg  = baseDir + "Zee/MC/GSFSelEff_v1/Negative/eff.root";
 
 //   //efficiency files 2Bins
 // 
@@ -225,18 +226,18 @@ void fitWe(const TString  outputDir,   // output directory
   // ======================= Recoil Corrections ================================
   const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
 //   const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
-  const TString directory("../Recoil");
+  const TString directory2("../Recoil");
 
-  // for Puppi, inclusive
+  // for PF, 13 TeV Low PU, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
-  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPF_lowPU/",directory.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPF_lowPU/",directory.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPF_lowPU/",directory.Data()));
+  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPF_13TeV_noRoch/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPF_13TeV_noRoch/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPF_13TeV_noRoch/",directory2.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
-  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMCPF_lowPU/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPF_lowPU/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPF_lowPU/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPF_13TeV_noRoch/",directory2.Data()));
+  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPF_13TeV_noRoch/",directory2.Data()));
+  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPF_13TeV_noRoch/",directory2.Data()));
   
   // // placeholders until recoil files are fixed
   // RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
@@ -391,24 +392,24 @@ void fitWe(const TString  outputDir,   // output directory
   // fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_fixed/Wenu/ntuples/wz_select.raw.root");  typev.push_back(eEWK);
   // fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_fixed/Wenu/ntuples/zz_select.raw.root");  typev.push_back(eEWK);
   
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/we_select.root");      typev.push_back(eWenu);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/wx_select.root");   typev.push_back(eBKG);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/zxx_select.root");   typev.push_back(eBKG);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/ww_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/wz_select.root");  typev.push_back(eEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Wenu/ntuples/zz_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/we_select.root");      typev.push_back(eWenu);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/wx_select.root");   typev.push_back(eBKG);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/zxx_select.root");   typev.push_back(eBKG);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/top_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/ww_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/wz_select.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/Wenu/ntuples/zz_select.root");  typev.push_back(eEWK);
 
   ///
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/data_select.raw.root"); typev.push_back(eAntiData);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/we_select.root");   typev.push_back(eAntiWenu);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
-  // fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/AntiWenu/ntuples/top_select.root"); typev.push_back(eAntiEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/AntiIso/ntuples/data_select.root"); typev.push_back(eAntiData);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/AntiIso/ntuples/we_select.root");   typev.push_back(eAntiWenu);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/ntuples/zxx_select.root"); typev.push_back(eAntiEWK);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/ntuples/wx_select.root"); typev.push_back(eAntiEWK);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/ntuples/zz_select.root"); typev.push_back(eAntiEWK);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/ntuples/wz_select.root"); typev.push_back(eAntiEWK);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/ntuples/ww_select.root"); typev.push_back(eAntiEWK);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_wPrefire/AntiWenu/ntuples/top_select.root"); typev.push_back(eAntiEWK);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -640,7 +641,7 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
     // loop over events
     //
     // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.05); ientry++) {
+    for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.1); ientry++) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
       
@@ -1060,7 +1061,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 //   nAntiSigp.setConstant(kTRUE);
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.95*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
   RooRealVar dewkp("dewkp","dewkp",0.1,0,1.0) ;
-  dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
+  // dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWenuMetp->Integral());
+  dewkp.setVal(0.0);
   dewkp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
 
@@ -1078,7 +1080,8 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 //   nAntiSigm.setConstant(kTRUE);
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.95*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
-  dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
+  // dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWenuMetm->Integral());
+  dewkm.setVal(0.0);
   dewkm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
 
@@ -1403,15 +1406,15 @@ cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " toler
 
   RooFitResult *fitRes = 0;//pdfMet.fitTo(dataMet,Extended(),Minos(kTRUE),Save(kTRUE)); 
 //   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),ExternalConstraints(constp),Minos(kTRUE),Save(kTRUE));
-  // RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),ExternalConstraints(RooArgSet(constp,constantip)),RooFit::Strategy(2),Save(kTRUE));
-  RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),Minos(kTRUE),RooFit::Strategy(2),Save(kTRUE));
+  // RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constantip),Minos(kTRUE),Save(kTRUE));
 
   
   //RooFitResult *fitResm = pdfTotal.fitTo(dataTotal,Extended(),Minos(kTRUE),Save(kTRUE));
-  // RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),ExternalConstraints(RooArgSet(constm,constantim)),RooFit::Strategy(2),Save(kTRUE));
-  RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),Minos(kTRUE),RooFit::Strategy(2),Save(kTRUE));
+  // RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),ExternalConstraints(constantim),Minos(kTRUE),Save(kTRUE));
 //   RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),Minos(kTRUE),Save(kTRUE));
     
@@ -1950,12 +1953,15 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
-    
     Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     Double_t diff = diff0/hData->GetBinContent(ibin);
     if(hData->GetBinContent(ibin) == 0) diff = 0;
-    std::cout << "data " << hData->GetBinContent(ibin) << std::endl;
-    std::cout << "fits " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "bin # " << ibin << std::endl;
+    std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
+    std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
+    std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
+    std::cout << "diff =  " << diff << std::endl;
 //     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     if(hData->GetBinContent(ibin) == 0) err = 0;
@@ -1965,7 +1971,7 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     //else      hDiff->SetBinContent(ibin,0);
     std::cout << "err = " << err << std::endl;
     hDiff->SetBinContent(ibin,diff);
-    hDiff->SetBinError(ibin,err);   
+    hDiff->SetBinError(ibin,err);  
   }
   
   hDiff->GetYaxis()->SetTitleOffset(0.42);
