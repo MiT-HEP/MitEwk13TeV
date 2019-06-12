@@ -25,8 +25,8 @@
 #include "TLorentzVector.h"           // 4-vector class
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"  
 
@@ -141,9 +141,9 @@ void fitZm(const TString  outputDir,   // output directory
   bool doRecoilplot=false;
   // bool doDiago = false;
   bool doDiago = false;
-  bool doKeys=false;
+  bool doKeys=true;
   bool doEta=false;
-  bool doInclusive=true;
+  bool doInclusive=false;
   bool doToys = false;
   bool doShittyRecoil=false;
 
@@ -199,18 +199,18 @@ void fitZm(const TString  outputDir,   // output directory
   if(doInclusive && !doDiago){
   
     // // PF MET
-  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory2.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()));
   
     // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_bigBin_v1/",directory2.Data()));
     // recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_bigBin_v1/",directory2.Data()));
     // recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_bigBin_v1/",directory2.Data()));
   
   } else if (doInclusive && doDiago){
-      recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()), rec_sig);
-      recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory2.Data()), rec_sig);
-     recoilCorr->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()), rec_sig);
+      recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()), rec_sig);
+      recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G/",directory2.Data()), rec_sig);
+     recoilCorr->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()), rec_sig);
      
            // recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_bigBin_v1/",directory2.Data()), rec_sig);
       // recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_bigBin_v1/",directory2.Data()), rec_sig);
@@ -1002,7 +1002,7 @@ void fitZm(const TString  outputDir,   // output directory
 	          for(int i = 0; i <= hh_diff->GetNbinsX();++i){
         		if(vDilepCor.Mod() > hh_diff->GetBinLowEdge(i) && vDilepCor.Mod() < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
 	          }
-	          double w2 = 1;//  hh_diff->GetBinContent(bin);
+	          double w2 =  hh_diff->GetBinContent(bin);
              double recoilWeight = 1;
 	      if(doKeys) {
                   recoilCorrKeys->CorrectInvCdf(corrMetWithLepton,corrMetPhiLepton,vDilepCor.Mod(),vDilepCor.Phi(),vDilepCor.Mod(),vDilepCor.Phi(),pU1,pU2,0,0,0,doKeys,doDiago);
