@@ -30,8 +30,8 @@
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
 #include "../EleScale/EnergyScaleCorrection_class.hh"
 
@@ -64,9 +64,10 @@ void plotZee(const TString  inputDir,    // input directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  // fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_DataScale_v1/Zee/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
+  fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
+  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_DataScale_v1/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_prefireUnc/Zee/ntuples/zee_select.root");   typev.push_back(eZee);
+  // fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
  
@@ -370,8 +371,8 @@ void plotZee(const TString  inputDir,    // input directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t scale1fb, scale1fbUp, scale1fbDown;
-  Float_t prefireWeight;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
@@ -469,9 +470,12 @@ void plotZee(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
     intree -> SetBranchStatus("prefireWeight",1);
+    intree -> SetBranchStatus("prefireUp",1);
+    intree -> SetBranchStatus("prefireDown",1);
     intree -> SetBranchStatus("scale1fb",1);
     intree -> SetBranchStatus("scale1fbUp",1);
     intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("genVMass",1);
     intree -> SetBranchStatus("q1",1);
     intree -> SetBranchStatus("q2",1);
     intree -> SetBranchStatus("lep1",1);
@@ -485,10 +489,13 @@ void plotZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
-    intree->SetBranchAddress("prefireWeight",   &prefireWeight);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireWeight", &prefireWeight);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireUp",     &prefireUp);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireDown",   &prefireDown);    // prefire weight for 2017 conditions (MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
@@ -507,6 +514,10 @@ void plotZee(const TString  inputDir,    // input directory
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
       
+      // if(typev[ifile]!=eData) {
+        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
+      // }
+      
       float mass = 0;
       float pt = 0;
       float rapidity = 0;
@@ -516,7 +527,10 @@ void plotZee(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	    weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*prefireUp*lumi;
+	    weight *= scale1fb*prefireDown*lumi;
+	    // weight *= scale1fb*lumi;
       }  
       
       // fill Z events passing selection (EleEle2HLT + EleEle1HLT)
@@ -781,7 +795,7 @@ void plotZee(const TString  inputDir,    // input directory
             eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt());
           }
           corr2Bin *= eff2Bindata/eff2Binmc;
-
+    // corr=1;
 	  mass = (l1+l2).M();
 	  pt = (l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
