@@ -26,8 +26,8 @@
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
 //helper class to handle rochester corrections
 // // #include <rochcor2015r.h>
@@ -358,7 +358,7 @@ void plotZmm(const TString  inputDir,    // input directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t scale1fb, scale1fbUp, scale1fbDown;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
   Float_t prefireWeight;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
@@ -504,6 +504,7 @@ void plotZmm(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("scale1fb",1);
     intree -> SetBranchStatus("scale1fbUp",1);
     intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("genVMass",1);
     intree -> SetBranchStatus("q1",1);
     intree -> SetBranchStatus("q2",1);
     intree -> SetBranchStatus("lep1",1);
@@ -521,6 +522,7 @@ void plotZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
@@ -538,6 +540,9 @@ void plotZmm(const TString  inputDir,    // input directory
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
+      // if(typev[ifile]!=eData) {
+        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
+      // }
       
       float mass = 0;
       float pt = 0;
@@ -928,6 +933,7 @@ void plotZmm(const TString  inputDir,    // input directory
           }
 	  corr2Bin *= eff2Bindata/eff2Binmc; 
 	  
+    // corr=1;
 	// std::cout << evtNum << " " << corr << " " << std::endl;
 	  mass = (l1+l2).M();
 	  pt = (l1+l2).Pt();
