@@ -30,14 +30,14 @@
 #include "../Utils/WModels.hh"            // definitions of PDFs for fitting
 #include "../Utils/RecoilCorrector_asym2.hh"
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
-
+// helper class to handle efficiency tables
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
 //helper class to handle rochester corrections
 #include <../RochesterCorr/RoccoR.cc>
 
-// helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+
 
 #endif
 
@@ -111,7 +111,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
 
   Bool_t isData = (fileName.CompareTo("data_select.root")==0);
   std::cout << fileName.CompareTo("data_select.root",TString::kIgnoreCase) << std::endl;
-  Bool_t isRecoil = (fileName.CompareTo("wm_select.raw.root")==0||fileName.CompareTo("wx_select.raw.root")==0||fileName.CompareTo("zxx_select.raw.root")==0);
+  Bool_t isRecoil = (fileName.CompareTo("wm_select.raw.root")==0||fileName.CompareTo("wm0_select.raw.root")==0||fileName.CompareTo("wm1_select.raw.root")==0||fileName.CompareTo("wm2_select.raw.root")==0||fileName.CompareTo("wx_select.raw.root")==0||fileName.CompareTo("zxx_select.raw.root")==0||fileName.CompareTo("wm_select.root")==0||fileName.CompareTo("wm0_select.root")==0||fileName.CompareTo("wm1_select.root")==0||fileName.CompareTo("wm2_select.root")==0||fileName.CompareTo("wx_select.root")==0||fileName.CompareTo("zxx_select.root")==0);
   std::cout << "isData" << isData << std::endl;
 
   if(isData) {doInclusive = false; doKeys = false; doEta = false; doStat = false;}
@@ -124,7 +124,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
  
   // New Recoil Correctors for everything
   RecoilCorrector *rcMainWp    = new  RecoilCorrector("",""); RecoilCorrector *rcMainWm    = new  RecoilCorrector("","");
-  RecoilCorrector *rcStatWp    = new  RecoilCorrector("",""); RecoilCorrector *rcStatWm    = new  RecoilCorrector("","");
+  RecoilCorrector *rcStatW     = new  RecoilCorrector("","");
   RecoilCorrector *rcKeysWp    = new  RecoilCorrector("",""); RecoilCorrector *rcKeysWm    = new  RecoilCorrector("","");
   RecoilCorrector *rcEta05Wp   = new  RecoilCorrector("",""); RecoilCorrector *rcEta05Wm   = new  RecoilCorrector("","");
   RecoilCorrector *rcEta051Wp  = new  RecoilCorrector("",""); RecoilCorrector *rcEta051Wm  = new  RecoilCorrector("","");
@@ -141,13 +141,10 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   } 
   if (doStat){
     int rec_sig = 1;
-    rcStatWp->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory.Data()), rec_sig);
-    rcStatWp->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory.Data()), rec_sig);
-    rcStatWp->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory.Data()), rec_sig);
+    rcStatW->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory.Data()), rec_sig);
+    rcStatW->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G/",directory.Data()), rec_sig);
+    rcStatW->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory.Data()), rec_sig);
     
-    rcStatWm->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory.Data()), rec_sig);
-    rcStatWm->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory.Data()), rec_sig);
-    rcStatWm->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory.Data()), rec_sig);
   } 
   if (doEta){
     rcEta05Wp->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_0-05_v1/",directory.Data()));
@@ -325,8 +322,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-  // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-  for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
+  for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
     intree->GetEntry(ientry);
     if(ientry%100000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
@@ -411,7 +408,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       double mcSF1 = rc.kSpreadMC(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genLep->Pt());
       mu1*=mcSF1;
-      (*lep)*=mcSF1; // is this legit lol
+      // (*lep)*=mcSF1; // is this legit lol
       
       TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
       Double_t lepPt = vLepCor.Mod();
@@ -447,7 +444,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
           }
           if(doStat){
             metCorrStat=corrMet; metCorrStatPhi=corrMetPhi;
-            rcStatWp->CorrectInvCdf(metCorrStat,metCorrStatPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
+            rcStatW->CorrectInvCdf(metCorrStat,metCorrStatPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
           }
 
         } else {
@@ -470,12 +467,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
           }
           if(doStat){
             metCorrStat=corrMet; metCorrStatPhi=corrMetPhi;
-            rcStatWm->CorrectInvCdf(metCorrStat,metCorrStatPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
+            rcStatW->CorrectInvCdf(metCorrStat,metCorrStatPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
           }
         }
+        mtCorr  = sqrt( 2.0 * (lep->Pt()) * (metCorrMain) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metCorrMainPhi))) );
       }
     }
-    relIso = pfCombIso/lep->Pt(); 
+    relIso = pfCombIso/lep_raw->Pt(); 
     effSFweight=corr;
     outTree->Fill(); // add new info per event to the new tree
   }//end of loop over events
@@ -484,8 +482,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   delete rcMainWm;
   delete rcKeysWp;
   delete rcKeysWm;
-  delete rcStatWp;
-  delete rcStatWm;
+  delete rcStatW;
   delete rcEta05Wp;
   delete rcEta051Wp;
   delete rcEta1Wp;
