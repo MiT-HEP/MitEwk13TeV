@@ -15,25 +15,35 @@
 #include "TStyle.h"
 #include "TMinuit.h"
 
-// const int NBpt  = 2;
-// const int NBeta = 8;
-// const float ptrange[NBpt+1]   = {25., 40., 8000.};
-// const float etarange[NBeta+1] = {-2.4, -2.1, -1.2, -0.9, 0., 0.9, 1.2, 2.1, 2.4};
+const int NBpt  = 2;
+const float ptrange[NBpt+1]   = {25., 40., 8000.};
+const int NBeta = 12;
+const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
 
-const int NBeta = 8;
-const float etarange[NBeta+1] = {-2.4,-2.1,-1.2,-0.9,0,0.9,1.2,2.1,2.4};
-const int NBpt = 8;
-const float ptrange[NBpt+1] = {25,30,35,40,45,50,60,80,8000};
+
+// const int NBeta = 12;
+// const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
+// const int NBpt = 8;
+// const float ptrange[NBpt+1] = {25,30,35,40,45,50,60,80,8000};
 
 // TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
-TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results/TOYS/";
-TString sigDirMC="_POWxPythia_v0_POWxPhotos_v0/";
-TString sigDirFSR="_aMCxPythia_v0_minloxPythia_v0/";
-TString bkgDir="_aMCxPythia_v0_POWBKG_v0/"; // should be exp vs Powerlaw
+// TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results/TOYS/";
+TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v1/results/TOYS/";
+TString sigDirFSR="_POWxPythia_v2_POWxPhotos_v2/";
+TString sigDirMC="_aMCxPythia_v2_minloxPythia_v2/";
+// TString bkgDir="_aMCxPythia_v1_POWBKG_v1/"; // should be exp vs Powerlaw
+TString bkgDir="_POWBKG_v2_aMCxPythia_v2/"; // should be exp vs Powerlaw
 
-// TString sigDirMC="_POWxPythia_staFit7_POWxPhotos_staFit7/";
-// TString sigDirFSR="_aMCxPythia_staFit7_minloxPythia_staFit7/";
-// TString bkgDir="_aMCxPythia_staFit7_POWBKG_staFit7/"; // should be exp vs Powerlaw
+TString subfolder="";
+
+// TString sigDirMC="_aMCxPythia_v0_POWBKG_v0/";
+// TString sigDirFSR="_aMCxPythia_v0_POWBKG_v0/";
+// TString bkgDir="_aMCxPythia_v0_POWBKG_v0/"; // should be exp vs Powerlaw
+
+// For the closure tests
+// TString sigDirMC="_aMCxPythia_v0_aMCxPythia_v0/";
+// TString sigDirFSR="_aMCxPythia_v0_aMCxPythia_v0/";
+// TString bkgDir="_aMCxPythia_v0_aMCxPythia_v0/"; 
 
 // const string charges[2] = {"Negative","Positive"};
 const string charges[2] = {"Combined","Combined"};
@@ -59,29 +69,30 @@ const float SITBkgSys[NBpt*NBeta] = {0.03, 0.08, 0.14, 0.11, 0.11, 0.12, 0.07, 0
 void makeTH2DMu(TString effTypeSig = "MuStaEff"){
 // void makeTH2DMu(TString effTypeSig = "MuSITEff"){
     // alternate input option is MuStaEff, HLT should not have fits?MuSITEff
+    bool doAbs=false; 
     vector<double> vSigMCNeg;
     vector<double> vSigMCPos;
     vector<double> vSigFSRNeg;
     vector<double> vSigFSRPos;
-    vector<double> vBkgNeg;
+    vector<double> vBkgNeg; 
     vector<double> vBkgPos;
     
   for(int i = 0; i < NBeta*NBpt; ++i){
     double value=0;
     char infilename[200];
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),charges[0].c_str(),"/FULL_TEST_v0",i);
-    ifstream infile1(infilename); assert (infile1); infile1>>value; vSigFSRNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),subfolder.Data(),charges[0].c_str(),i);
+    ifstream infile1(infilename); assert (infile1); infile1>>value; doAbs?value=fabs(value):value=value;vSigFSRNeg.push_back(value); value=0;
     std::cout << infilename << vSigFSRNeg.back() << std::endl;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),charges[1].c_str(),"/FULL_TEST_v0",i);
-    ifstream infile2(infilename); assert (infile2);infile2>>value; vSigFSRPos.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),charges[0].c_str(),"/FULL_TEST_v0",i);
-    ifstream infile3(infilename); assert (infile3);infile3>>value; vSigMCNeg.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),charges[1].c_str(),"/FULL_TEST_v0",i);
-    ifstream infile4(infilename); assert (infile4);infile4>>value; vSigMCPos.push_back(value); value=0;    
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),charges[0].c_str(),"/FULL_TEST_v0",i);
-    ifstream infile5(infilename); assert (infile5);infile5>>value; vBkgNeg.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),charges[1].c_str(),"/FULL_TEST_v0",i);
-    ifstream infile6(infilename); infile6>>value; vBkgPos.push_back(value); value=0; 
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),subfolder.Data(),charges[1].c_str(),i);
+    ifstream infile2(infilename); assert (infile2);infile2>>value; doAbs?value=fabs(value):value=value;vSigFSRPos.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),subfolder.Data(),charges[0].c_str(),i);
+    ifstream infile3(infilename); assert (infile3);infile3>>value; doAbs?value=fabs(value):value=value;vSigMCNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),subfolder.Data(),charges[1].c_str(),i);
+    ifstream infile4(infilename); assert (infile4);infile4>>value;doAbs?value=fabs(value):value=value;vSigMCPos.push_back(value); value=0;    
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),subfolder.Data(),charges[0].c_str(),i);
+    ifstream infile5(infilename); assert (infile5);infile5>>value; doAbs?value=fabs(value):value=value;vBkgNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),subfolder.Data(),charges[1].c_str(),i);
+    ifstream infile6(infilename); infile6>>value; doAbs?value=fabs(value):value=value;vBkgPos.push_back(value); value=0; 
   }
     
     char histname[100];
