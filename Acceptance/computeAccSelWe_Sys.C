@@ -48,13 +48,14 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWe_Sys(const TString conf,       // input file
-                     const TString outputDir,  // output directory
-		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
-		     const Int_t   doPU,
-		     const Int_t   doScaleCorr,
-		     const Int_t   sigma,
-		     const TString sysFile
+void computeAccSelWe_Sys(const TString conf,            // input file
+			    const TString inputDir, // efficiency main directory
+          const TString outputDir,        // output directory
+			    const Int_t   doPU,
+			    const Int_t   doScaleCorr,
+			    const Int_t   sigma,
+          const TString SysFileGSFSel="SysUnc_GSFSelEff.root",
+          const bool is13TeV=1
 ) {
   gBenchmark->Start("computeAccSelWe");
 
@@ -78,22 +79,32 @@ void computeAccSelWe_Sys(const TString conf,       // input file
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
  
+  const TString dataHLTEffName_pos = inputDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zeeHLTEffName_pos  = inputDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zeeHLTEffName_neg  = inputDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
+  
+  const TString dataGsfSelEffName_pos = inputDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  const TString dataGsfSelEffName_neg = inputDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+  const TString zeeGsfSelEffName_pos  = inputDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  const TString zeeGsfSelEffName_neg  = inputDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+ 
   // efficiency files
-  TString dataHLTEffName(   "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MG/eff.root");
-  TString zeeHLTEffName(    "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CT/eff.root");
-  TString dataGsfSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MG/eff.root");
-  TString zeeGsfSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CT/eff.root");
+  TString dataHLTEffName("");
+  TString zeeHLTEffName("");
+  TString dataGsfSelEffName("");
+  TString zeeGsfSelEffName("");
   if(charge==1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGpositive/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTpositive/eff.root"; 
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGpositive_FineBin/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTpositive/eff.root"; 
+    dataHLTEffName    = dataHLTEffName_pos;
+    zeeHLTEffName     = zeeHLTEffName_pos; 
+    dataGsfSelEffName = dataGsfSelEffName_pos;
+    zeeGsfSelEffName  = zeeGsfSelEffName_pos; 
   }
   if(charge==-1) {
-    dataHLTEffName    = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/MGnegative/eff.root";
-    zeeHLTEffName     = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/CTnegative/eff.root";
-    dataGsfSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/MGnegative_FineBin/eff.root";
-    zeeGsfSelEffName  = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleGsfSelEff/CTnegative/eff.root";
+    dataHLTEffName    = dataHLTEffName_neg;
+    zeeHLTEffName     = zeeHLTEffName_neg;
+    dataGsfSelEffName = dataGsfSelEffName_neg;
+    zeeGsfSelEffName  = zeeGsfSelEffName_neg;
   }
 
   const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
@@ -108,17 +119,17 @@ void computeAccSelWe_Sys(const TString conf,       // input file
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
   TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
-  TFile *f_hlt_data;
-  TFile *f_hlt_mc;
+  // TFile *f_hlt_data;
+  // TFile *f_hlt_mc;
 
-  if(charge==1){
-    f_hlt_data = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
-    f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
-  }
-  if(charge==-1){
-    f_hlt_data = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
-    f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
-  }
+  // if(charge==1){
+    // f_hlt_data = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Positive.root");
+    // f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Positive.root");
+  // }
+  // if(charge==-1){
+    // f_hlt_data = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_Data_Negative.root");
+    // f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
+  // }
 
   TFile *f_sys = TFile::Open(sysFile);
   TH2D  *h_sys = (TH2D*) f_sys->Get("h");

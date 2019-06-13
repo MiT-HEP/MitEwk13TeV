@@ -1,13 +1,18 @@
 #! /bin/bash
 
 
-SFX=_v0
+# SFX=_v0_SMPV
+# SFX=_v1_MuSIT
+# SFX=_v2_MuSIT_Direct
+# SFX=_v2_MuSta_histMean
+SFX=_v2_EleGSF_Direct
+# SFX=_v0_SITabs
 
 # OUTPUTDIR5=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_5TeV_Try2_Acceptance
 # INPUTDIR5=/eos/cms/store/user/sabrandt/StandardModel/LowPU_5TeV_Try2/
 OUTPUTDIR13=.
 # EFFDIR="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results"
-EFFDIR="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results"
+EFFDIR="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results"
 EFFSYSDIR="../Efficiency/Systematic/${SFX}"
 #
 # W->munu
@@ -48,8 +53,17 @@ EFFSYSDIR="../Efficiency/Systematic/${SFX}"
 #root -l -q computeAccSelZmm.C+\(\"zmm.conf\",\"Zmumu\"\)
 #root -l -q computeAccSelZmmBinned.C+\(\"zmm.conf\",\"Zmumu\"\)
 
-root -l -q computeAccSelZmmBinned_Sys.C+\(\"zmm_13.conf\",\"${EFFDIR}/Zmm/\",\"TEST_Zmm_FinalMuSel_doublSIT${SFX}\",0,\"${EFFSYSDIR}/SysUnc_MuSITEff.root\",\"${EFFSYSDIR}/SysUnc_MuStaEff.root\",1\)
 
+# root -l -q computeAccSelWm_Sys.C+\(\"wm0_13.conf\",\"${EFFDIR}/Zmm/\",\"TEST_Wmfile0_pos_test${SFX}\",1,0,\"${EFFSYSDIR}/SysUnc_MuSITEff.root\",\"${EFFSYSDIR}/SysUnc_MuStaEff.root\",1\)
+root -l -q computeAccSelWm_Sys.C+\(\"wm1_13.conf\",\"${EFFDIR}/Zmm/\",\"TEST_Wmfile1_pos_test${SFX}\",1,0,\"${EFFSYSDIR}/SysUnc_MuSITEff.root\",\"${EFFSYSDIR}/SysUnc_MuStaEff.root\",1\)
+# root -l -q computeAccSelWm_Sys.C+\(\"wm2_13.conf\",\"${EFFDIR}/Zmm/\",\"TEST_Wmfile2_pos_test${SFX}\",1,0,\"${EFFSYSDIR}/SysUnc_MuSITEff.root\",\"${EFFSYSDIR}/SysUnc_MuStaEff.root\",1\)
+
+# root -l -q computeAccSelZmmBinned_Sys.C+\(\"zmm_13.conf\",\"${EFFDIR}/Zmm/\",\"TEST_Zmm${SFX}_30GeV\",0,\"${EFFSYSDIR}/SysUnc_MuSITEff.root\",\"${EFFSYSDIR}/SysUnc_MuStaEff.root\",1\)
+# root -l -q computeAccSelZmmBinned_Sys.C+\(\"zmm_13.conf\",\"${EFFDIR}/Zmm/\",\"TEST_Zmm_checkYesMassCutPassing_ignoreSyst_${SFX}\",0,\"${EFFSYSDIR}/SysUnc_MuSITEff.root\",\"${EFFSYSDIR}/SysUnc_MuStaEff.root\",1\)
+
+
+# root -l -q computeAccSelZeeBinned_Sys.C+\(\"zee_13.conf\",\"${EFFDIR}/Zee/\",\"TEST_Zee_checkYesMassCut_inclGap_ignoreSyst_${SFX}\",0,1,0,\"${EFFSYSDIR}/SysUnc_EleGSFSelEff.root\",1\)
+# root -l -q computeAccSelZeeBinned_Sys.C+\(\"zee_13.conf\",\"${EFFDIR}/Zee/\",\"TEST_Zee_GSFPOWPhot_ignoreSyst${SFX}\",0,1,0,\"${EFFSYSDIR}/SysUnc_EleGSFSelEff.root\",1\)
 #
 # Z->ee
 #

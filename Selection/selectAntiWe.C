@@ -104,7 +104,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
   TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
   // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
-  const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
+  // const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
+  const TString corrFiles = "../EleScale/lowPU2017_v1";
 
   // EnergyScaleCorrection_class eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
   EnergyScaleCorrection eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
@@ -404,10 +405,10 @@ void selectAntiWe(const TString conf="we.conf", // input file
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              // eleScale = eleCorr.scaleCorr(info->runNum, eleEt, eleAbsEta, ele->r9);
-              // eleError = eleCorr.scaleCorrUncert(info->runNum, eleEt, eleAbsEta, ele->r9);
-              eleScale = eleCorr.scaleCorr(306155, eleEt, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(306155, eleEt, eleAbsEta, ele->r9);
+              eleScale = eleCorr.scaleCorr(info->runNum, eleEt, eleAbsEta, ele->r9);
+              eleError = eleCorr.scaleCorrUncert(info->runNum, eleEt, eleAbsEta, ele->r9);
+              // eleScale = eleCorr.scaleCorr(306155, eleEt, eleAbsEta, ele->r9);
+              // eleError = eleCorr.scaleCorrUncert(306155, eleEt, eleAbsEta, ele->r9);
               
               if(sigma==0){
                 (vEle) *= eleScale;

@@ -42,11 +42,13 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelWm_Sys(const TString conf,       // input file
-                     const TString outputDir,  // output directory
+          const TString inputDir,
+          const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
-		     const TString sysFile3,
-		     const TString sysFile1
+			    const TString sysFileSIT, // condense these into 1 file per type of eff (pos & neg into 1 file)
+			    const TString sysFileSta,
+          const bool is13TeV=1
 ) {
   gBenchmark->Start("computeAccSelWm");
 
@@ -65,44 +67,55 @@ void computeAccSelWm_Sys(const TString conf,       // input file
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
   
+  // const TString inputDir = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
+  
+  const TString dataHLTEffName_pos = inputDir + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
+
+  const TString dataSelEffName_pos = inputDir + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEffName_neg = inputDir + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
+
+  const TString dataStaEffName_pos = inputDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEffName_neg = inputDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  
   // efficiency files
-  TString dataHLTEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root");
-  TString zmmHLTEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root");
-  TString dataSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root");
-  TString zmmSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root");
-  TString dataTrkEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root");
-  TString zmmTrkEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root");
-  TString dataStaEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root");
-  TString zmmStaEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root");
+  TString dataHLTEffName("");
+  TString zmmHLTEffName( "");
+  TString dataSelEffName("");
+  TString zmmSelEffName( "");
+  TString dataStaEffName("");
+  TString zmmStaEffName( "");
   if(charge==1) {
-    dataHLTEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MGpositive/eff.root";
-    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CTpositive/eff.root";
-    dataSelEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MGpositive_FineBin/eff.root";
-    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CTpositive/eff.root";
-    dataTrkEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGpositive/eff.root";
-    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTpositive/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGpositive/eff.root";
-    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTpositive/eff.root";
+    dataHLTEffName =dataHLTEffName_pos;
+    zmmHLTEffName  = zmmHLTEffName_pos;
+    dataSelEffName =dataSelEffName_pos;
+    zmmSelEffName  = zmmSelEffName_pos;
+    dataStaEffName = dataStaEffName_pos;
+    zmmStaEffName  = zmmStaEffName_pos;
   }
   if(charge==-1) {
-    dataHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MGnegative/eff.root";
-    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CTnegative/eff.root";
-    dataSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MGnegative_FineBin/eff.root";
-    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CTnegative/eff.root";
-    dataTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGnegative/eff.root";
-    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTnegative/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGnegative/eff.root";
-    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTnegative/eff.root";
+    dataHLTEffName = dataHLTEffName_neg;
+    zmmHLTEffName  = zmmHLTEffName_neg;
+    dataSelEffName = dataSelEffName_neg;
+    zmmSelEffName  = zmmSelEffName_neg;
+    dataStaEffName = dataStaEffName_neg;
+    zmmStaEffName  = zmmStaEffName_neg;
   }
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
 
-  TFile *f_sys3 = TFile::Open(sysFile3);
-  TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
-  TFile *f_sys1 = TFile::Open(sysFile1);
-  TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h");
+  // TFile *f_sys3 = TFile::Open(sysFile3);
+  // TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
+  // TFile *f_sys1 = TFile::Open(sysFile1);
+  // TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h");
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -190,31 +203,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     zmmSelEff.loadEff((TH2D*)zmmSelEffFile->Get("hEffEtaPt"),
                       (TH2D*)zmmSelEffFile->Get("hErrlEtaPt"),
                       (TH2D*)zmmSelEffFile->Get("hErrhEtaPt"));
-  }
-  
-  TFile *dataTrkEffFile = new TFile(dataTrkEffName);
-  CEffUser2D dataTrkEff;
-  TH2D *hTrkErr=0, *hTrkErrB=0, *hTrkErrE=0;
-  if(dataTrkEffFile) {
-    dataTrkEff.loadEff((TH2D*)dataTrkEffFile->Get("hEffEtaPt"),
-                       (TH2D*)dataTrkEffFile->Get("hErrlEtaPt"),
-                       (TH2D*)dataTrkEffFile->Get("hErrhEtaPt"));
-    
-    TH2D* h =(TH2D*)dataTrkEffFile->Get("hEffEtaPt");
-    hTrkErr  = new TH2D("hTrkErr", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hTrkErrB = new TH2D("hTrkErrB","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hTrkErrE = new TH2D("hTrkErrE","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  }
-  
-  TFile *zmmTrkEffFile = new TFile(zmmTrkEffName);
-  CEffUser2D zmmTrkEff;
-  if(zmmTrkEffFile) {
-    zmmTrkEff.loadEff((TH2D*)zmmTrkEffFile->Get("hEffEtaPt"),
-                      (TH2D*)zmmTrkEffFile->Get("hErrlEtaPt"),
-                      (TH2D*)zmmTrkEffFile->Get("hErrhEtaPt"));
   }
   
   TFile *dataStaEffFile = new TFile(dataStaEffName);
@@ -305,13 +293,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
         hSelErrE->SetBinContent(ix,iy,0);
       }
     }
-    for(Int_t iy=0; iy<=hTrkErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hTrkErr->GetNbinsX(); ix++) {
-        hTrkErr ->SetBinContent(ix,iy,0);
-        hTrkErrB->SetBinContent(ix,iy,0);
-        hTrkErrE->SetBinContent(ix,iy,0);
-      }
-    }
     for(Int_t iy=0; iy<=hStaErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hStaErr->GetNbinsX(); ix++) {
         hStaErr ->SetBinContent(ix,iy,0);
@@ -321,9 +302,9 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     }    
     
     //
-    // loop over events
-    //    
+    
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      if(ientry%1000000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
     //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
@@ -346,7 +327,8 @@ void computeAccSelWm_Sys(const TString conf,       // input file
       nEvtsv[ifile]+=weight;
       
       // trigger requirement               
-      if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+      // if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+      if (!isMuonTrigger(triggerMenu, info->triggerBits,kFALSE,is13TeV)) continue;
    
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -370,7 +352,8 @@ void computeAccSelWm_Sys(const TString conf,       // input file
         if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
         if(mu->pt < PT_CUT)		    continue;  // lepton pT cut	
         if(!passMuonID(mu))		    continue;  // lepton selection
-	if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+	// if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+  if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE,is13TeV)) continue;
 	
 	if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
 	
@@ -392,17 +375,12 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 	  corr *= effdata/effmc;
 	}
 	if(dataSelEffFile && zmmSelEffFile) {
-	  Double_t effdata = dataSelEff.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));;
+	  Double_t effdata = dataSelEff.getEff(goodMuon->eta, goodMuon->pt);// * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));;
 	  Double_t effmc   = zmmSelEff.getEff(goodMuon->eta, goodMuon->pt);
 	  corr *= effdata/effmc;
 	}
-	if(dataTrkEffFile && zmmTrkEffFile) {
-	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  //corr *= effdata/effmc;
-	}
 	if(dataStaEffFile && zmmStaEffFile) {
-	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
+	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);// * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
 	  Double_t effmc   = zmmStaEff.getEff(goodMuon->eta, goodMuon->pt);
 	  corr *= effdata/effmc;
 	}
@@ -427,20 +405,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 	  hSelErr->Fill(goodMuon->eta,goodMuon->pt,err);
 	  if(isBarrel) hSelErrB->Fill(goodMuon->eta,goodMuon->pt,err);
 	  else         hSelErrE->Fill(goodMuon->eta,goodMuon->pt,err);
-	}
-	if(dataTrkEffFile && zmmTrkEffFile) {
-	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataTrkEff.getErrLow(goodMuon->eta, goodMuon->pt),dataTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmTrkEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  /* if(goodMuon->eta>1.2 && goodMuon->eta<2.1) 
-	    {
-	      err=0.0013;
-	      }*/
-	  hTrkErr->Fill(goodMuon->eta,goodMuon->pt,err);
-	  if(isBarrel) hTrkErrB->Fill(goodMuon->eta,goodMuon->pt,err);
-	  else         hTrkErrE->Fill(goodMuon->eta,goodMuon->pt,err);
 	}
 	if(dataStaEffFile && zmmStaEffFile) {
 	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);
@@ -484,14 +448,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 	err=hSelErr->GetBinContent(ix,iy);  var+=err*err;
 	err=hSelErrB->GetBinContent(ix,iy); varB+=err*err;
 	err=hSelErrE->GetBinContent(ix,iy); varE+=err*err;
-      }
-    }
-    for(Int_t iy=0; iy<=hTrkErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hTrkErr->GetNbinsX(); ix++) {
-        Double_t err;
-	err=hTrkErr->GetBinContent(ix,iy);  var+=0;//err*err;
-        err=hTrkErrB->GetBinContent(ix,iy); varB+=0;//err*err;
-        err=hTrkErrE->GetBinContent(ix,iy); varE+=0;//err*err;
       }
     }
     for(Int_t iy=0; iy<=hStaErr->GetNbinsY(); iy++) {

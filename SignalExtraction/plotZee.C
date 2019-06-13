@@ -30,8 +30,8 @@
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
 #include "../EleScale/EnergyScaleCorrection_class.hh"
 
@@ -65,7 +65,9 @@ void plotZee(const TString  inputDir,    // input directory
   vector<Int_t>   typev;
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
+  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_DataScale_v1/Zee/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_prefireUnc/Zee/ntuples/zee_select.root");   typev.push_back(eZee);
+  // fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
  
@@ -76,35 +78,70 @@ void plotZee(const TString  inputDir,    // input directory
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
-  const Double_t ETA_CUT   = 2.5;
+  const Double_t ETA_CUT   = 2.4;
   
   // efficiency files
 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
-  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MG/eff.root";
-  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CT/eff.root";
+  const TString baseDir1 = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
+// const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/";
+  const TString baseDir = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results/Zee/";
+    const TString dataHLTEffName_pos = baseDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zeeHLTEffName_pos  = baseDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zeeHLTEffName_neg  = baseDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
+
+  const TString dataGsfSelEffName_pos = baseDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  const TString dataGsfSelEffName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+  const TString zeeGsfSelEffName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  const TString zeeGsfSelEffName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+
   
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CT/eff.root";
+   const TString dataHLTEff2BinName_pos = baseDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zeeHLTEff2BinName_pos  = baseDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zeeHLTEff2BinName_neg  = baseDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
 
-  //efficiency files 2Bins
+  const TString dataGsfSelEff2BinName_pos = baseDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  const TString dataGsfSelEff2BinName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+  const TString zeeGsfSelEff2BinName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  const TString zeeGsfSelEff2BinName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataHLTEff2BinName_pos = baseDir + "EleHLTEff/1MG/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir + "EleHLTEff/1MG/eff.root";
-  const TString zeeHLTEff2BinName_pos  = baseDir + "EleHLTEff/1CT/eff.root";
-  const TString zeeHLTEff2BinName_neg  = baseDir + "EleHLTEff/1CT/eff.root";
+
   
-  const TString dataGsfSelEff2BinName_pos = baseDir + "EleGsfSelEff/1MG/eff.root";
-  const TString dataGsfSelEff2BinName_neg = baseDir + "EleGsfSelEff/1MG/eff.root";
-  const TString zeeGsfSelEff2BinName_pos  = baseDir + "EleGsfSelEff/1CT/eff.root";
-  const TString zeeGsfSelEff2BinName_neg  = baseDir + "EleGsfSelEff/1CT/eff.root";
+  // // const TString dataHLTEffName_pos = baseDir + "Zee/Data/HLTEff_v1/Positive/eff.root";
+  // // const TString dataHLTEffName_neg = baseDir + "Zee/Data/HLTEff_v1/Negative/eff.root";
+    // const TString dataHLTEffName_pos = baseDir + "Zee/Data/HLTEff_CBxBW_v1/Positive/eff.root";
+  // const TString dataHLTEffName_neg = baseDir + "Zee/Data/HLTEff_CBxBW_v1/Negative/eff.root";
+  // const TString zeeHLTEffName_pos  = baseDir + "Zee/MC/HLTEff_v1/Positive/eff.root";
+  // const TString zeeHLTEffName_neg  = baseDir + "Zee/MC/HLTEff_v1/Negative/eff.root";
+  
+  // // const TString dataGsfSelEffName_pos = baseDir + "Zee/Data/GSFSelEff_v1/Positive/eff.root";
+  // // const TString dataGsfSelEffName_neg = baseDir + "Zee/Data/GSFSelEff_v1/Negative/eff.root";
+    // const TString dataGsfSelEffName_pos = baseDir + "Zee/Data/GSFSelEff_CBxBW_v1/Positive/eff.root";
+  // const TString dataGsfSelEffName_neg = baseDir + "Zee/Data/GSFSelEff_CBxBW_v1/Negative/eff.root";
+  // const TString zeeGsfSelEffName_pos  = baseDir + "Zee/MC/GSFSelEff_v1/Positive/eff.root";
+  // const TString zeeGsfSelEffName_neg  = baseDir + "Zee/MC/GSFSelEff_v1/Negative/eff.root";
 
-  TString GsfSelEffSignalShapeSys = baseDir + "Results/EleGsfSelSigSys.root";
-  TString GsfSelEffBackgroundShapeSys = baseDir + "Results/EleGsfSelBkgSys.root";
+  // //efficiency files 2Bins
+
+  // // const TString dataHLTEff2BinName_pos = baseDir + "Zee/Data/HLTEff_v1/Positive/eff.root";
+  // // const TString dataHLTEff2BinName_neg = baseDir + "Zee/Data/HLTEff_v1/Negative/eff.root";
+    // const TString dataHLTEff2BinName_pos = baseDir + "Zee/Data/HLTEff_CBxBW_v1/Positive/eff.root";
+  // const TString dataHLTEff2BinName_neg = baseDir + "Zee/Data/HLTEff_CBxBW_v1/Negative/eff.root";
+  // const TString zeeHLTEff2BinName_pos  = baseDir + "Zee/MC/HLTEff_v1/Positive/eff.root";
+  // const TString zeeHLTEff2BinName_neg  = baseDir + "Zee/MC/HLTEff_v1/Negative/eff.root";
+  
+  // // const TString dataGsfSelEff2BinName_pos = baseDir + "Zee/Data/GSFSelEff_v1/Positive/eff.root";
+  // // const TString dataGsfSelEff2BinName_neg = baseDir + "Zee/Data/GSFSelEff_v1/Negative/eff.root";  
+  // const TString dataGsfSelEff2BinName_pos = baseDir + "Zee/Data/GSFSelEff_CBxBW_v1/Positive/eff.root";
+  // const TString dataGsfSelEff2BinName_neg = baseDir + "Zee/Data/GSFSelEff_CBxBW_v1/Negative/eff.root";
+  // const TString zeeGsfSelEff2BinName_pos  = baseDir + "Zee/MC/GSFSelEff_v1/Positive/eff.root";
+  // const TString zeeGsfSelEff2BinName_neg  = baseDir + "Zee/MC/GSFSelEff_v1/Negative/eff.root";
+  
+  
+
+  TString GsfSelEffSignalShapeSys = baseDir1 + "Results/EleGsfSelSigSys.root";
+  TString GsfSelEffBackgroundShapeSys = baseDir1 + "Results/EleGsfSelBkgSys.root";
 
 
   //
@@ -334,7 +371,8 @@ void plotZee(const TString  inputDir,    // input directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t scale1fb, scale1fbUp, scale1fbDown;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
   TLorentzVector *sc1=0, *sc2=0;
@@ -431,9 +469,13 @@ void plotZee(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("category",1);
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
+    intree -> SetBranchStatus("prefireWeight",1);
+    intree -> SetBranchStatus("prefireUp",1);
+    intree -> SetBranchStatus("prefireDown",1);
     intree -> SetBranchStatus("scale1fb",1);
     intree -> SetBranchStatus("scale1fbUp",1);
     intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("genVMass",1);
     intree -> SetBranchStatus("q1",1);
     intree -> SetBranchStatus("q2",1);
     intree -> SetBranchStatus("lep1",1);
@@ -447,9 +489,13 @@ void plotZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
+    intree->SetBranchAddress("prefireWeight", &prefireWeight);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireUp",     &prefireUp);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireDown",   &prefireDown);    // prefire weight for 2017 conditions (MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
@@ -461,11 +507,16 @@ void plotZee(const TString  inputDir,    // input directory
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " percent done with this file." << endl;
       intree->GetEntry(ientry);
 
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
+      
+      // if(typev[ifile]!=eData) {
+        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
+      // }
       
       float mass = 0;
       float pt = 0;
@@ -476,7 +527,10 @@ void plotZee(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	weight *= scale1fb*lumi;
+	    // weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*prefireUp*lumi;
+	    weight *= scale1fb*prefireDown*lumi;
+	    // weight *= scale1fb*lumi;
       }  
       
       // fill Z events passing selection (EleEle2HLT + EleEle1HLT)
@@ -741,7 +795,7 @@ void plotZee(const TString  inputDir,    // input directory
             eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt());
           }
           corr2Bin *= eff2Bindata/eff2Binmc;
-
+    // corr=1;
 	  mass = (l1+l2).M();
 	  pt = (l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
@@ -1365,6 +1419,9 @@ void plotZee(const TString  inputDir,    // input directory
   c->cd(2)->SetTicky(1); 
   TGaxis::SetMaxDigits(3);
   
+  std::cout << "peak dat " << hData->GetBinCenter(hData->GetMaximumBin()) << std::endl;
+  std::cout << "peak zee " << hZee->GetBinCenter(hZee->GetMaximumBin()) << std::endl;
+  
   sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
   CPlot plotZee("zee"+norm,"","",ylabel);
   plotZee.AddHist1D(hData,"data","E");
@@ -1795,7 +1852,29 @@ void plotZee(const TString  inputDir,    // input directory
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;     
+  
+  
+  ofstream txtfile;
+  char txtfname[100];  
+  sprintf(txtfname,"%s/zee_yields.txt",CPlot::sOutDir.Data());
+  txtfile.open(txtfname);
+  assert(txtfile.is_open());
+  
 
+  txtfile << "*" << endl;
+  txtfile << "* SUMMARY" << endl;
+  txtfile << "*--------------------------------------------------" << endl;  
+  txtfile << endl;
+
+  txtfile << " The Zee event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  txtfile << " The Zee expected event yield is " << yield_zee << " +/-" << sqrt(yield_zee_unc) << "." << endl;
+  txtfile << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
+  txtfile << std::endl;
+  txtfile.close();
+  
+  
+  
   gBenchmark->Show("plotZee");
 }
 

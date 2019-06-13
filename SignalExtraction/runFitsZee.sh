@@ -1,11 +1,13 @@
 #! /bin/bash
 
 #ntuple directory
-NTUPDIR=/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency
+NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID
+
+# NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV
 
 # integrated luminosity for data
-LUMI=2318.3
+LUMI=199.2
 
-root -l -q  plotZee.C+\(\"${NTUPDIR}/Ele/ntuples\",\"Zee\",${LUMI}\,0\)
-root -l -q  plotZee.C+\(\"${NTUPDIR}/Ele/ntuples\",\"Zee\",${LUMI}\,1\)
+#root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"Zee\",${LUMI}\,0\)
+root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"TEST_Zee_dataScale_full_v1_blah\",${LUMI}\,1\)
 
