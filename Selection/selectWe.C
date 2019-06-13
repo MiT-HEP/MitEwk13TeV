@@ -103,7 +103,8 @@ void selectWe(const TString conf="we.conf", // input file
   TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
   // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
-  const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
+  // const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
+  const TString corrFiles = "../EleScale/lowPU2017_v1";
 
   // EnergyScaleCorrection_class eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
   EnergyScaleCorrection eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
@@ -404,10 +405,10 @@ void selectWe(const TString conf="we.conf", // input file
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              // eleScale = eleCorr.scaleCorr(info->runNum, eleEt, eleAbsEta, ele->r9);
-              // eleError = eleCorr.scaleCorrUncert(info->runNum, eleEt, eleAbsEta, ele->r9);
-              eleScale = eleCorr.scaleCorr(306155, eleEt, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(306155, eleEt, eleAbsEta, ele->r9);
+              eleScale = eleCorr.scaleCorr(info->runNum, eleEt, eleAbsEta, ele->r9);
+              eleError = eleCorr.scaleCorrUncert(info->runNum, eleEt, eleAbsEta, ele->r9);
+              // eleScale = eleCorr.scaleCorr(306155, eleEt, eleAbsEta, ele->r9);
+              // eleError = eleCorr.scaleCorrUncert(306155, eleEt, eleAbsEta, ele->r9);
               
               
               if(sigma==0){
@@ -432,18 +433,15 @@ void selectWe(const TString conf="we.conf", // input file
               if(sigma==0){
                 // // eleSmear = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 0., 0.);
                 eleSmear = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, 0., 0.);
-                // eleSmear = eleCorr.smearingSigma(306155, eleEt, eleAbsEta, eleR9Prime, gainSeed, 0., 0.);
                 // std::cout << "eleSmear " << eleSmear << std::endl;
                 (vEle) *= 1. + eleSmear * eleRamdom;
               }else if(sigma==1){
                 // float eleSmearEP = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 1., 0.);
                 float eleSmearEP = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, 1., 0.);
-                // float eleSmearEP = eleCorr.smearingSigma(306155, eleEt, eleAbsEta, eleR9Prime, gainSeed, 1., 0.);
                 (vEle) *= 1. + eleSmearEP * eleRamdom;
               }else if(sigma==-1){
                 // float eleSmearEM = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, -1., 0.);
                 float eleSmearEM = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, -1., 0.);
-                // float eleSmearEM = eleCorr.smearingSigma(306155, eleEt, eleAbsEta, eleR9Prime, gainSeed, -1., 0.);
                 (vEle) *= 1.  + eleSmearEM * eleRamdom;
               }
 
