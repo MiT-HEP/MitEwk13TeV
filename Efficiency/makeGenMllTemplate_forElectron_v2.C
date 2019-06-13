@@ -45,15 +45,15 @@ const float fitMassLo = 60;
 const float fitMassHi = 120;
 const int massBin = 60;
 
-// const int muEtaNB = 12;
-// const float muEtaRange[muEtaNB+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
-// const int muPtNB = 8;
-// const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+const int muEtaNB = 12;
+const float muEtaRange[muEtaNB+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
+const int muPtNB = 8;
+const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
 
-  const int muEtaNB = 2;
-  const float muEtaRange[muEtaNB+1] = {-2.4,0,2.4};
-  const int muPtNB = 2;
-  const float muPtRange[muPtNB+1] = {25,40,8000};
+  // const int muEtaNB = 2;
+  // const float muEtaRange[muEtaNB+1] = {-2.4,0,2.4};
+  // const int muPtNB = 2;
+  // const float muPtRange[muPtNB+1] = {25,40,8000};
 
 //=== MAIN MACRO ================================================================================================= 
 
