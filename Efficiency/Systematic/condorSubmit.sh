@@ -20,7 +20,7 @@ FOLDER=Zmm # or Zee
 # CHARGE=Positive
 # CHARGE=Combined # combine pos & neg for the muon standalone nightmare
  
-VERS=_TEST_CHECKCLEANING
+VERS=_v2
 # #CLOSURE 
 # POSTFIX=_aMCxPythia${VERS}
 # POSTFIX_alt=_aMCxPythia${VERS}
