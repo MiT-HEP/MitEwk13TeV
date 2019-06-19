@@ -644,9 +644,9 @@ double RecoilCorrector::getErrorSigma(double iVal,TF1 *iFit,Recoil iType) {
 // ---------------------------------------------------------------------------------------------------------------------------
 // -------------- Setup for the diagonalization steps for the statistical uncertainty ----------------------------------------
 void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, RooAbsReal *&pdfUiCdf, int sigma) {
-  std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-  result->Print();
-  std::cout << "Covariance Matrix quality (3 is Good) = " << result->covQual() << std::endl;
+  // std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+  // result->Print();
+  // std::cout << "Covariance Matrix quality (3 is Good) = " << result->covQual() << std::endl;
   char name[50];
   
   sprintf(name,"u_%i",i);
