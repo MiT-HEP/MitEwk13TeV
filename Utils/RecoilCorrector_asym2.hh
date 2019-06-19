@@ -55,7 +55,7 @@ class RecoilCorrector
 public:
   RecoilCorrector(string iNameZDat, int iSeed=0xDEADBEEF);
   RecoilCorrector(string iNameZDat1, string iPrefix, int iSeed=0xDEADBEEF);
-    
+    // these are used
   void loadRooWorkspacesMCtoCorrectKeys(string iNameFile);
   void loadRooWorkspacesMCtoCorrect(string iNameFile);
   void loadRooWorkspacesMC(string iNameFile);
@@ -63,13 +63,16 @@ public:
   void loadRooWorkspacesDiagMC(string iNameFile, int sigma);
   void loadRooWorkspacesDiagData(string iNameFile, int sigma);
   void loadRooWorkspacesData(string iNameFile);
+  // what's this? 
   void loadFileRatio(string iNameFile);
   
-  void CorrectType0(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
-  void CorrectType2(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
+  // void CorrectType0(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
+  // void CorrectType2(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
   void CorrectInvCdf(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0, bool dokeys=false, bool doDiago=false);
-  void CorrectShitty(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2, double &evtWeight);
-  void CorrectFromToys(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
+  // void CorrectShitty(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2, double &evtWeight);
+  // void CorrectFromToys(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0);
+  // deletable?
+  // delte?
   void addDataFile(std::string iNameDat);
   void addMCFile  (std::string iNameMC);
   void addFileWithGraph  (std::string iNameMC);
@@ -77,11 +80,15 @@ public:
   Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResult *fs);
   TFitResult *fitresPFu1mean, *fitresPFu1sigma1, *fitresPFu1sigma2,  *fitresPFu1sigma0;
   TFitResult *fitresPFu2mean, *fitresPFu2sigma1, *fitresPFu2sigma2,  *fitresPFu2sigma0;
+  
+  // Set up the diagonalized PDF
   void runDiago(RooWorkspace *w, RooFitResult *result,int i, RooAbsReal *&pdfUiCdf, int sigma);
+  
+  // delete?
   void statUnc50nsStyle(RooWorkspace *w,  int i, RooAbsReal *&pdfUiCdf, int sigma);
   
 protected:
-  enum Recoil { 
+  enum Recoil {  // delete?
     PFU1,
     PFU2,
     PFMSU1,
@@ -101,7 +108,7 @@ protected:
   };
   
 
-  
+  // can delete a couple of these
   void readRecoil(std::vector<TF1*> &iU1Fit,std::vector<TF1*> &iU1MRMSFit,std::vector<TF1*> &iU1RMS1Fit,std::vector<TF1*> &iU1RMS2Fit,
           std::vector<TF1*> &iU2Fit,std::vector<TF1*> &iU2MRMSFit,std::vector<TF1*> &iU2RMS1Fit,std::vector<TF1*> &iU2RMS2Fit,
           std::string iFName,std::string iPrefix, int type); 
@@ -115,45 +122,45 @@ protected:
           std::string iFName,std::string iPrefix); 
           
                 
-  void metDistributionType0(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                double iLepPt,double iLepPhi,
-                TGraphErrors *iU1Default,
-                TGraphErrors *iU1RZDatFit, 
-                TGraphErrors *iU1RZDatFit2, 
-                TGraphErrors *iU1MSZDatFit,  
-                TGraphErrors *iU1S1ZDatFit,  
-                TGraphErrors *iU1S2ZDatFit, 
-                TGraphErrors *iU2RZDatFit,
-                TGraphErrors *iU2MSZDatFit, 
-                TGraphErrors *iU2S1ZDatFit,       
-                TGraphErrors *iU2S2ZDatFit,      
-                double &iU1, double &iU2,double iFluc=0,double iScale=0);
+  // void metDistributionType0(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                // double iLepPt,double iLepPhi,
+                // TGraphErrors *iU1Default,
+                // TGraphErrors *iU1RZDatFit, 
+                // TGraphErrors *iU1RZDatFit2, 
+                // TGraphErrors *iU1MSZDatFit,  
+                // TGraphErrors *iU1S1ZDatFit,  
+                // TGraphErrors *iU1S2ZDatFit, 
+                // TGraphErrors *iU2RZDatFit,
+                // TGraphErrors *iU2MSZDatFit, 
+                // TGraphErrors *iU2S1ZDatFit,       
+                // TGraphErrors *iU2S2ZDatFit,      
+                // double &iU1, double &iU2,double iFluc=0,double iScale=0);
                 
                      
-  void metDistributionType2(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                double iLepPt,double iLepPhi,
-                TGraphErrors *iU1Default,
-                TF1 *iU1RZDatFit,  TGraphErrors *iU1RZMCFit,
-                TF1 *iU1MSZDatFit, TGraphErrors *iU1MSZMCFit, 
-                TF1 *iU1S1ZDatFit, TGraphErrors *iU1S1ZMCFit, 
-                TF1 *iU1S2ZDatFit, TGraphErrors *iU1S2ZMCFit, 
-                TF1 *iU2MSZDatFit, TGraphErrors *iU2MSZMCFit,
-                TF1 *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,      
-                TF1 *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit,      
-                double &iU1, double &iU2,double iFluc=0,double iScale=0);
+  // void metDistributionType2(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                // double iLepPt,double iLepPhi,
+                // TGraphErrors *iU1Default,
+                // TF1 *iU1RZDatFit,  TGraphErrors *iU1RZMCFit,
+                // TF1 *iU1MSZDatFit, TGraphErrors *iU1MSZMCFit, 
+                // TF1 *iU1S1ZDatFit, TGraphErrors *iU1S1ZMCFit, 
+                // TF1 *iU1S2ZDatFit, TGraphErrors *iU1S2ZMCFit, 
+                // TF1 *iU2MSZDatFit, TGraphErrors *iU2MSZMCFit,
+                // TF1 *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,      
+                // TF1 *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit,      
+                // double &iU1, double &iU2,double iFluc=0,double iScale=0);
                 
   void metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                 double iLepPt,double iLepPhi,
                 TGraphErrors *iU1Default,
                 double &iU1, double &iU2,double iFluc=0,double iScale=0);
                 
-  void metDistributionShitty(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                double iLepPt,double iLepPhi,
-                double &iU1, double &iU2, double &evtWeight);
+  // void metDistributionShitty(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                // double iLepPt,double iLepPhi,
+                // double &iU1, double &iU2, double &evtWeight);
   
-  void metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                double iLepPt,double iLepPhi,
-                double &iU1, double &iU2,double iFluc=0,double iScale=0);            
+  // void metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                // double iLepPt,double iLepPhi,
+                // double &iU1, double &iU2,double iFluc=0,double iScale=0);            
                 
                 
   Double_t calcErrorGraph(const TGraphErrors *graph, const Double_t x, const Double_t bins[], const Int_t bin);
@@ -162,6 +169,7 @@ protected:
   double triGausPVal    (double iVal, double iFrac2,double iFrac3,double iSimga1,double iSigma2,double iSigma3);
   double diGausPInverse(double iPVal,double iFrac,double iSigma1,double iSigma2);
   
+  // rename this b/c it's a stupid name
   double triGausInvGraphPDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbsReal *pdfDATAcdf, RooAbsPdf *wMC, RooAbsPdf *wDATA, RooRealVar *varDat, RooRealVar *varMC, int bin,double max);
   
   double calculate(int iMet,double iEPt,double iEPhi,double iWPhi,double iU1,double iU2);
@@ -180,6 +188,7 @@ protected:
   
   TCanvas *iC = new TCanvas("C1","C1",800,600); 
   
+  // figure out which of these i can delete (probably all of them actually)
   TRandom1 *fRandom; 
   vector<TGraphErrors*> fF1U1Fit; vector<TGraphErrors*> fF1U1RMSSMFit; vector<TGraphErrors*> fF1U1RMS1Fit; vector<TGraphErrors*> fF1U1RMS2Fit; 
   vector<TGraphErrors*> fF1U2Fit; vector<TGraphErrors*> fF1U2RMSSMFit; vector<TGraphErrors*> fF1U2RMS1Fit; vector<TGraphErrors*> fF1U2RMS2Fit; 
@@ -226,7 +235,9 @@ protected:
   vector<TGraphErrors*> fM1U1U2Corr;     vector<TGraphErrors*> fM2U1U2Corr;
   vector<TGraphErrors*> fM1M2U1Corr;     vector<TGraphErrors*> fM1M2U2Corr;
   vector<TGraphErrors*> fM1M2U1U2Corr;   vector<TGraphErrors*> fM1M2U2U1Corr;
+  // ^ delete ^ probably
   
+  //// don't delete most, check carefully
   RooWorkspace* rooWData[2];
   RooWorkspace* rooWMC[2];
   RooWorkspace* rooWMCtoCorr[2];
@@ -244,28 +255,14 @@ protected:
   RooWorkspace rooWksDataU2;
   RooWorkspace rooWksMCU2;
   
-  // oct2 binning
-  //  std::vector<double> vZPtBins ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-
-  // oct7 binning
-  //  std::vector<double> vZPtBins ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-
-  // may22 binning
-  // bins from 2015 recoil corrections
-  // std::vector<double> vZPtBins = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
   // bins for the low pileup corrections
   std::vector<double> vZPtBins = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300}; // the regular 13 tev 2017 one
   
   // std::vector<double> vZPtBins = {0,2.5,5.0,10,20,30,40,50,60,80,100,125,150,200,250,300}; // rebin to check effect of bin size on statitiscal unc (2017, 13 TeV)
-             // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
- // std::vector<double> vZPtBins = {0,300};
 
   int nBins = vZPtBins.size()-1;
   TH1D **hRatiosU1 = new TH1D*[nBins];
   TH1D **hRatiosU2 = new TH1D*[nBins];
- 
-//   Double_t vZPtBins[] = {0,1,2.5,5.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
-// int nZPtBins = sizeof(vZPtBins)/sizeof(Double_t)-1;
 
 };
 
@@ -286,7 +283,7 @@ RecoilCorrector::RecoilCorrector(string iNameZ, int iSeed) {
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-
+// i think this is deleateble?
 void RecoilCorrector::loadFileRatio(std::string iFName){
   
   std::cout << iFName << std::endl;
@@ -496,36 +493,36 @@ void RecoilCorrector::addFileWithGraph  (std::string iNameMC) {
 }
 
 
-void RecoilCorrector::CorrectType0(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {
-  fJet = njet; if(njet > 2) fJet = 2;
-  if(fJet >= int(fF1U1Fit.size())) fJet = 0;
-  metDistributionType0(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,fF1U1Fit[fJet],
-               fMT1U1Fit     [fJet],
-               fMT1U1Fit2    [fJet],
-               fMT1U1RMSSMFit[fJet],
-               fMT1U1RMS1Fit [fJet],
-               fMT1U1RMS2Fit [fJet],
-               fMT1U2Fit     [fJet],
-               fMT1U2RMSSMFit[fJet],
-               fMT1U2RMS1Fit [fJet],
-               fMT1U2RMS2Fit [fJet], 
-               iU1,iU2,iFluc,iScale);
-}
+// void RecoilCorrector::CorrectType0(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {
+  // fJet = njet; if(njet > 2) fJet = 2;
+  // if(fJet >= int(fF1U1Fit.size())) fJet = 0;
+  // metDistributionType0(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,fF1U1Fit[fJet],
+               // fMT1U1Fit     [fJet],
+               // fMT1U1Fit2    [fJet],
+               // fMT1U1RMSSMFit[fJet],
+               // fMT1U1RMS1Fit [fJet],
+               // fMT1U1RMS2Fit [fJet],
+               // fMT1U2Fit     [fJet],
+               // fMT1U2RMSSMFit[fJet],
+               // fMT1U2RMS1Fit [fJet],
+               // fMT1U2RMS2Fit [fJet], 
+               // iU1,iU2,iFluc,iScale);
+// }
 
-void RecoilCorrector::CorrectType2(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
-  fJet = njet; if(njet > 2) fJet = 2;
-  if(fJet >= int(fF1U1Fit.size())) fJet = 0;
+// void RecoilCorrector::CorrectType2(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
+  // fJet = njet; if(njet > 2) fJet = 2;
+  // if(fJet >= int(fF1U1Fit.size())) fJet = 0;
   
-  metDistributionType2(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,fF1U1Fit[fJet],
-               fD1U1Fit     [fJet],fM1U1Fit     [fJet],
-               fD1U1RMSSMFit[fJet],fM1U1RMSSMFit[fJet],
-               fD1U1RMS1Fit [fJet],fM1U1RMS1Fit [fJet],
-               fD1U1RMS2Fit [fJet],fM1U1RMS2Fit [fJet],
-               fD1U2RMSSMFit[fJet],fM1U2RMSSMFit[fJet],
-               fD1U2RMS1Fit [fJet],fM1U2RMS1Fit [fJet],
-               fD1U2RMS2Fit [fJet],fM1U2RMS2Fit [fJet], 
-               iU1,iU2,iFluc,iScale);
-}
+  // metDistributionType2(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi,fF1U1Fit[fJet],
+               // fD1U1Fit     [fJet],fM1U1Fit     [fJet],
+               // fD1U1RMSSMFit[fJet],fM1U1RMSSMFit[fJet],
+               // fD1U1RMS1Fit [fJet],fM1U1RMS1Fit [fJet],
+               // fD1U1RMS2Fit [fJet],fM1U1RMS2Fit [fJet],
+               // fD1U2RMSSMFit[fJet],fM1U2RMSSMFit[fJet],
+               // fD1U2RMS1Fit [fJet],fM1U2RMS1Fit [fJet],
+               // fD1U2RMS2Fit [fJet],fM1U2RMS2Fit [fJet], 
+               // iU1,iU2,iFluc,iScale);
+// }
 
 void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet, bool useKeys, bool diago) {
   dokeys=useKeys;
@@ -535,16 +532,16 @@ void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, 
   metDistributionInvCdf(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, fF1U1Fit[fJet], iU1,iU2,iFluc,iScale);
 }
 
-void RecoilCorrector::CorrectShitty(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2, double &evtWeight) {
-  metDistributionShitty(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2, evtWeight);
-}
+// void RecoilCorrector::CorrectShitty(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2, double &evtWeight) {
+  // metDistributionShitty(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2, evtWeight);
+// }
 
-void RecoilCorrector::CorrectFromToys(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
-  fJet = njet; if(njet > 2) fJet = 2;
-  if(fJet >= int(fF1U1Fit.size())) fJet = 0; 
+// void RecoilCorrector::CorrectFromToys(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet) {  
+  // fJet = njet; if(njet > 2) fJet = 2;
+  // if(fJet >= int(fF1U1Fit.size())) fJet = 0; 
 
-  metDistributionFromToys(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2,iFluc,iScale);
-}
+  // metDistributionFromToys(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2,iFluc,iScale);
+// }
 
 TF1* RecoilCorrector::getFunc(bool iMC, Recoil iType) { 
   if(fId == 0 || fId == 1) return 0;
@@ -712,153 +709,153 @@ double RecoilCorrector::diGausPInverse(double iPVal,double iFrac,double iSigma1,
 }
 
 // consider deleting this b/c it's super old
-void RecoilCorrector::metDistributionType0(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-        double iLepPt,double iLepPhi,
-        TGraphErrors *iU1Default,
-        TGraphErrors *iU1RZDatFit, 
-        TGraphErrors *iU1RZDatFit2, 
-        TGraphErrors *iU1MSZDatFit,  
-        TGraphErrors *iU1S1ZDatFit,  
-        TGraphErrors *iU1S2ZDatFit, 
-        TGraphErrors *iU2RZDatFit,
-        TGraphErrors *iU2MSZDatFit, 
-        TGraphErrors *iU2S1ZDatFit,                                              
-        TGraphErrors *iU2S2ZDatFit, 
-        double &iU1,double &iU2,double iFluc,double iScale){
+// void RecoilCorrector::metDistributionType0(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+        // double iLepPt,double iLepPhi,
+        // TGraphErrors *iU1Default,
+        // TGraphErrors *iU1RZDatFit, 
+        // TGraphErrors *iU1RZDatFit2, 
+        // TGraphErrors *iU1MSZDatFit,  
+        // TGraphErrors *iU1S1ZDatFit,  
+        // TGraphErrors *iU1S2ZDatFit, 
+        // TGraphErrors *iU2RZDatFit,
+        // TGraphErrors *iU2MSZDatFit, 
+        // TGraphErrors *iU2S1ZDatFit,                                              
+        // TGraphErrors *iU2S2ZDatFit, 
+        // double &iU1,double &iU2,double iFluc,double iScale){
   
-  double pfu1mean   = iU1RZDatFit->Eval(iGenPt);
-  double pfu1mean2   = iU1RZDatFit->Eval(iGenPt);
-  double pfu1sigma1 = iU1S1ZDatFit->Eval(iGenPt);
-  double pfu1sigma2 = iU1S2ZDatFit->Eval(iGenPt);
-  double pfu1sigma0 = iU1MSZDatFit->Eval(iGenPt);
+  // double pfu1mean   = iU1RZDatFit->Eval(iGenPt);
+  // double pfu1mean2   = iU1RZDatFit->Eval(iGenPt);
+  // double pfu1sigma1 = iU1S1ZDatFit->Eval(iGenPt);
+  // double pfu1sigma2 = iU1S2ZDatFit->Eval(iGenPt);
+  // double pfu1sigma0 = iU1MSZDatFit->Eval(iGenPt);
   
-  // why
-  if(iScale!=0 || iFluc!=0) {
-//     pfu1mean   += iScale*dMean(iU1RZDatFit,iGenPt,fitresPFu1mean);
-//     pfu1sigma1 += iFluc*dSigma(iU1S1ZDatFit,iGenPt,fitresPFu1sigma1);
-//     pfu1sigma2 += iFluc*dSigma(iU1S2ZDatFit,iGenPt,fitresPFu1sigma2);
-//     pfu1sigma0 += iFluc*dSigma(iU1MSZDatFit,iGenPt,fitresPFu1sigma0);
-  }
+  // // why
+  // if(iScale!=0 || iFluc!=0) {
+// //     pfu1mean   += iScale*dMean(iU1RZDatFit,iGenPt,fitresPFu1mean);
+// //     pfu1sigma1 += iFluc*dSigma(iU1S1ZDatFit,iGenPt,fitresPFu1sigma1);
+// //     pfu1sigma2 += iFluc*dSigma(iU1S2ZDatFit,iGenPt,fitresPFu1sigma2);
+// //     pfu1sigma0 += iFluc*dSigma(iU1MSZDatFit,iGenPt,fitresPFu1sigma0);
+  // }
   
-  double pfu2mean   = iU2RZDatFit->Eval(iGenPt);
-  double pfu2sigma1 = iU2S1ZDatFit->Eval(iGenPt);
-  double pfu2sigma2 = iU2S2ZDatFit->Eval(iGenPt);
-  double pfu2sigma0 = iU2MSZDatFit->Eval(iGenPt);
+  // double pfu2mean   = iU2RZDatFit->Eval(iGenPt);
+  // double pfu2sigma1 = iU2S1ZDatFit->Eval(iGenPt);
+  // double pfu2sigma2 = iU2S2ZDatFit->Eval(iGenPt);
+  // double pfu2sigma0 = iU2MSZDatFit->Eval(iGenPt);
   
-  if(iScale!=0 || iFluc!=0) {
-//     pfu2mean   += iScale*dMean(iU2RZDatFit,iGenPt,fitresPFu2mean);
-//     pfu2sigma1 += iFluc*dSigma(iU2S1ZDatFit,iGenPt,fitresPFu2sigma1);
-//     pfu2sigma2 += iFluc*dSigma(iU2S2ZDatFit,iGenPt,fitresPFu2sigma2);
-//     pfu2sigma0 += iFluc*dSigma(iU2MSZDatFit,iGenPt,fitresPFu2sigma0);
-  }
+  // if(iScale!=0 || iFluc!=0) {
+// //     pfu2mean   += iScale*dMean(iU2RZDatFit,iGenPt,fitresPFu2mean);
+// //     pfu2sigma1 += iFluc*dSigma(iU2S1ZDatFit,iGenPt,fitresPFu2sigma1);
+// //     pfu2sigma2 += iFluc*dSigma(iU2S2ZDatFit,iGenPt,fitresPFu2sigma2);
+// //     pfu2sigma0 += iFluc*dSigma(iU2MSZDatFit,iGenPt,fitresPFu2sigma0);
+  // }
   
-  double pfu1frac2  = (pfu1sigma0 - pfu1sigma1)/(pfu1sigma2 - pfu1sigma1);
-  double pfu2frac2  = (pfu2sigma0 - pfu2sigma1)/(pfu2sigma2 - pfu2sigma1);
+  // double pfu1frac2  = (pfu1sigma0 - pfu1sigma1)/(pfu1sigma2 - pfu1sigma1);
+  // double pfu2frac2  = (pfu2sigma0 - pfu2sigma1)/(pfu2sigma2 - pfu2sigma1);
   
-// //   TF1 *f1 = new TF1("f1","abs(sin(x)/x)*sqrt(x)",0,10);
+// // //   TF1 *f1 = new TF1("f1","abs(sin(x)/x)*sqrt(x)",0,10);
   
-  double z1 = gRandom->Gaus(0,1);
-  double z2 = gRandom->Gaus(0,1);
+  // double z1 = gRandom->Gaus(0,1);
+  // double z2 = gRandom->Gaus(0,1);
 
-  double pfu1 = (gRandom->Uniform(0,1) < pfu1frac2) ? z1*pfu1sigma2+pfu1mean2 : z1*pfu1sigma1+pfu1mean;
-  double pfu2 = (gRandom->Uniform(0,1) < pfu2frac2) ? z2*pfu2sigma2+pfu2mean : z2*pfu2sigma1+pfu2mean;
+  // double pfu1 = (gRandom->Uniform(0,1) < pfu1frac2) ? z1*pfu1sigma2+pfu1mean2 : z1*pfu1sigma1+pfu1mean;
+  // double pfu2 = (gRandom->Uniform(0,1) < pfu2frac2) ? z2*pfu2sigma2+pfu2mean : z2*pfu2sigma1+pfu2mean;
 
-  iU1 = pfu1;
-  iU2 = pfu2;
-  iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,iU1,iU2);
-  iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,iU1,iU2);
+  // iU1 = pfu1;
+  // iU2 = pfu2;
+  // iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,iU1,iU2);
+  // iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,iU1,iU2);
   
-}
+// }
 
-// Also consider deleting because it's super old
-void RecoilCorrector::metDistributionType2(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                       double iLepPt,double iLepPhi,
-                       TGraphErrors *iU1Default,
-                       TF1 *iU1RZDatFit,  TGraphErrors *iU1RZMCFit,
-                       TF1 *iU1MSZDatFit, TGraphErrors *iU1MSZMCFit, 
-                       TF1 *iU1S1ZDatFit, TGraphErrors *iU1S1ZMCFit, 
-                       TF1 *iU1S2ZDatFit, TGraphErrors *iU1S2ZMCFit, 
-                       TF1 *iU2MSZDatFit, TGraphErrors *iU2MSZMCFit,
-                       TF1 *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,                                              
-                       TF1 *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit, 
-                       double &iU1,double &iU2,double iFluc,double iScale) {
-  double pDefU1    = iU1Default->Eval(iGenPt);
-  double lRescale  = sqrt((TMath::Pi())/2.);             
-  double pDU1       = iU1RZDatFit ->Eval(iGenPt);
+// // Also consider deleting because it's super old
+// void RecoilCorrector::metDistributionType2(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                       // double iLepPt,double iLepPhi,
+                       // TGraphErrors *iU1Default,
+                       // TF1 *iU1RZDatFit,  TGraphErrors *iU1RZMCFit,
+                       // TF1 *iU1MSZDatFit, TGraphErrors *iU1MSZMCFit, 
+                       // TF1 *iU1S1ZDatFit, TGraphErrors *iU1S1ZMCFit, 
+                       // TF1 *iU1S2ZDatFit, TGraphErrors *iU1S2ZMCFit, 
+                       // TF1 *iU2MSZDatFit, TGraphErrors *iU2MSZMCFit,
+                       // TF1 *iU2S1ZDatFit, TGraphErrors *iU2S1ZMCFit,                                              
+                       // TF1 *iU2S2ZDatFit, TGraphErrors *iU2S2ZMCFit, 
+                       // double &iU1,double &iU2,double iFluc,double iScale) {
+  // double pDefU1    = iU1Default->Eval(iGenPt);
+  // double lRescale  = sqrt((TMath::Pi())/2.);             
+  // double pDU1       = iU1RZDatFit ->Eval(iGenPt);
 
-  double pDFrac1    = iU1MSZDatFit->Eval(iGenPt);
-  double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt);
-  double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt);
-  double pDFrac2    = iU2MSZDatFit->Eval(iGenPt);
-  double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt);
-  double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt);
+  // double pDFrac1    = iU1MSZDatFit->Eval(iGenPt);
+  // double pDSigma1_1 = iU1S1ZDatFit->Eval(iGenPt);
+  // double pDSigma1_2 = iU1S2ZDatFit->Eval(iGenPt);
+  // double pDFrac2    = iU2MSZDatFit->Eval(iGenPt);
+  // double pDSigma2_1 = iU2S1ZDatFit->Eval(iGenPt);
+  // double pDSigma2_2 = iU2S2ZDatFit->Eval(iGenPt);
 
-  double pMU1       = iU1RZMCFit  ->Eval(iGenPt);
-  double pMU2       = 0; 
+  // double pMU1       = iU1RZMCFit  ->Eval(iGenPt);
+  // double pMU2       = 0; 
 
-  double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt);
-  double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt);
-  double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt);
-  double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt);
-  double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt);
-  double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt);
+  // double pMFrac1    = iU1MSZMCFit ->Eval(iGenPt);
+  // double pMSigma1_1 = iU1S1ZMCFit ->Eval(iGenPt);
+  // double pMSigma1_2 = iU1S2ZMCFit ->Eval(iGenPt);
+  // double pMFrac2    = iU2MSZMCFit ->Eval(iGenPt);
+  // double pMSigma2_1 = iU2S1ZMCFit ->Eval(iGenPt);
+  // double pMSigma2_2 = iU2S2ZMCFit ->Eval(iGenPt);
 
   
-  //Uncertainty propagation
-  if(iFluc != 0 || iScale != 0) {
-    fId = 0;
-    double lEUR1    = dMean(iU1RZDatFit,iGenPt,fitresPFu1mean);
-    double lEUS1_1  = dSigma(iU1S1ZDatFit,iGenPt,fitresPFu1sigma1);
-    double lEUS1_2  = dSigma(iU1S2ZDatFit,iGenPt,fitresPFu1sigma2);
-    double lEU1Frac = dSigma(iU1MSZDatFit,iGenPt,fitresPFu1sigma0);
-    double lEUS2_1  = dSigma(iU2S1ZDatFit,iGenPt,fitresPFu2sigma1);
-    double lEUS2_2  = dSigma(iU2S2ZDatFit,iGenPt,fitresPFu2sigma2);
-    double lEU2Frac = dSigma(iU2MSZDatFit,iGenPt,fitresPFu2sigma0);
+  // //Uncertainty propagation
+  // if(iFluc != 0 || iScale != 0) {
+    // fId = 0;
+    // double lEUR1    = dMean(iU1RZDatFit,iGenPt,fitresPFu1mean);
+    // double lEUS1_1  = dSigma(iU1S1ZDatFit,iGenPt,fitresPFu1sigma1);
+    // double lEUS1_2  = dSigma(iU1S2ZDatFit,iGenPt,fitresPFu1sigma2);
+    // double lEU1Frac = dSigma(iU1MSZDatFit,iGenPt,fitresPFu1sigma0);
+    // double lEUS2_1  = dSigma(iU2S1ZDatFit,iGenPt,fitresPFu2sigma1);
+    // double lEUS2_2  = dSigma(iU2S2ZDatFit,iGenPt,fitresPFu2sigma2);
+    // double lEU2Frac = dSigma(iU2MSZDatFit,iGenPt,fitresPFu2sigma0);
         
-    //Modify all the different parameters the choice of signs makes it maximal
-    pDU1       = pDU1       + iScale*lEUR1;            //Recoil
-    pDFrac1    = pDFrac1    + iFluc*(lEU1Frac);        //Mean RMS 
-    pDSigma1_1 = pDSigma1_1 + iFluc*lEUS1_1;           //Sigma 1 smalles sigma
-    pDSigma1_2 = pDSigma1_2 + iFluc*lEUS1_2;           //Sigma 2 (Maximal when oppsite sigma 1)
-    pDFrac2    = pDFrac2    + iFluc*(lEU2Frac);        //Mean RMS for U2
-    pDSigma2_1 = pDSigma2_1 + iFluc*lEUS2_1;           //Sigma 1 U2
-    pDSigma2_2 = pDSigma2_2 + iFluc*lEUS2_2;           //Sigma 2 (Maximal when oppsite sigma 1)
-  }
-  pDFrac1           = (pDFrac1-pDSigma1_2)/(pDSigma1_1-pDSigma1_2);
-  pDFrac2           = (pDFrac2-pDSigma2_2)/(pDSigma2_1-pDSigma2_2);
-  pMFrac1           = (pMFrac1-pMSigma1_2)/(pMSigma1_1-pMSigma1_2);
-  pMFrac2           = (pMFrac2-pMSigma2_2)/(pMSigma2_1-pMSigma2_2);
+    // //Modify all the different parameters the choice of signs makes it maximal
+    // pDU1       = pDU1       + iScale*lEUR1;            //Recoil
+    // pDFrac1    = pDFrac1    + iFluc*(lEU1Frac);        //Mean RMS 
+    // pDSigma1_1 = pDSigma1_1 + iFluc*lEUS1_1;           //Sigma 1 smalles sigma
+    // pDSigma1_2 = pDSigma1_2 + iFluc*lEUS1_2;           //Sigma 2 (Maximal when oppsite sigma 1)
+    // pDFrac2    = pDFrac2    + iFluc*(lEU2Frac);        //Mean RMS for U2
+    // pDSigma2_1 = pDSigma2_1 + iFluc*lEUS2_1;           //Sigma 1 U2
+    // pDSigma2_2 = pDSigma2_2 + iFluc*lEUS2_2;           //Sigma 2 (Maximal when oppsite sigma 1)
+  // }
+  // pDFrac1           = (pDFrac1-pDSigma1_2)/(pDSigma1_1-pDSigma1_2);
+  // pDFrac2           = (pDFrac2-pDSigma2_2)/(pDSigma2_1-pDSigma2_2);
+  // pMFrac1           = (pMFrac1-pMSigma1_2)/(pMSigma1_1-pMSigma1_2);
+  // pMFrac2           = (pMFrac2-pMSigma2_2)/(pMSigma2_1-pMSigma2_2);
 
-  double pUX   = iMet*cos(iMPhi) + iLepPt*cos(iLepPhi);
-  double pUY   = iMet*sin(iMPhi) + iLepPt*sin(iLepPhi);
-  double pU    = sqrt(pUX*pUX+pUY*pUY);
-  double pCos  = - (pUX*cos(iGenPhi) + pUY*sin(iGenPhi))/pU;
-  double pSin  =   (pUX*sin(iGenPhi) - pUY*cos(iGenPhi))/pU;
-  double pU1   = pU*pCos;
-  double pU2   = pU*pSin;
-  double pU1Diff  = pU1-pDefU1;
-  double pU2Diff  = pU2;
+  // double pUX   = iMet*cos(iMPhi) + iLepPt*cos(iLepPhi);
+  // double pUY   = iMet*sin(iMPhi) + iLepPt*sin(iLepPhi);
+  // double pU    = sqrt(pUX*pUX+pUY*pUY);
+  // double pCos  = - (pUX*cos(iGenPhi) + pUY*sin(iGenPhi))/pU;
+  // double pSin  =   (pUX*sin(iGenPhi) - pUY*cos(iGenPhi))/pU;
+  // double pU1   = pU*pCos;
+  // double pU2   = pU*pSin;
+  // double pU1Diff  = pU1-pDefU1;
+  // double pU2Diff  = pU2;
 
-  double p1Charge        = pU1Diff/fabs(pU1Diff);
-  double p2Charge        = pU2Diff/fabs(pU2Diff);
-  double pTU1Diff        = pU1Diff;
-  double pU1ValM         = diGausPVal(fabs(pU1Diff),pMFrac1,pMSigma1_1,pMSigma1_2);
-  double pU2ValM         = diGausPVal(fabs(pU2Diff),pMFrac2,pMSigma2_1,pMSigma2_2);
-  double pU1ValD         = diGausPInverse(pU1ValM  ,pDFrac1,pDSigma1_1,pDSigma1_2);
-  double pU2ValD         = diGausPInverse(pU2ValM  ,pDFrac2,pDSigma2_1,pDSigma2_2);
+  // double p1Charge        = pU1Diff/fabs(pU1Diff);
+  // double p2Charge        = pU2Diff/fabs(pU2Diff);
+  // double pTU1Diff        = pU1Diff;
+  // double pU1ValM         = diGausPVal(fabs(pU1Diff),pMFrac1,pMSigma1_1,pMSigma1_2);
+  // double pU2ValM         = diGausPVal(fabs(pU2Diff),pMFrac2,pMSigma2_1,pMSigma2_2);
+  // double pU1ValD         = diGausPInverse(pU1ValM  ,pDFrac1,pDSigma1_1,pDSigma1_2);
+  // double pU2ValD         = diGausPInverse(pU2ValM  ,pDFrac2,pDSigma2_1,pDSigma2_2);
   
-  pU1ValD*=p1Charge;
-  pU2ValD*=p2Charge;
-  pDefU1 *= (pDU1/pMU1);
+  // pU1ValD*=p1Charge;
+  // pU2ValD*=p2Charge;
+  // pDefU1 *= (pDU1/pMU1);
   
-  pU1   = pDefU1             + pU1ValD;
-  pU2   =                      pU2ValD;
-  iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  iU1   = pU1; 
-  iU2   = pU2;
-  return;
-}
+  // pU1   = pDefU1             + pU1ValD;
+  // pU2   =                      pU2ValD;
+  // iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  // iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  // iU1   = pU1; 
+  // iU2   = pU2;
+  // return;
+// }
 
 // The one we actually use, clean it up a bit
 void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
@@ -1024,121 +1021,121 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
 }
 
 
-// What the hell is this? Delete it //////////////////////
-void RecoilCorrector::metDistributionShitty(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                       double iLepPt,double iLepPhi,
-                       double &iU1,double &iU2,double &evtWeight) {
+// // What the hell is this? Delete it //////////////////////
+// void RecoilCorrector::metDistributionShitty(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                       // double iLepPt,double iLepPhi,
+                       // double &iU1,double &iU2,double &evtWeight) {
   
-  //  double pDefU1    = iU1Default->Eval(iGenPt);
-  // std::cout << "hi 2" << std::endl;
-  double iGenPt2 = 0;
-  Int_t nbinsPt = vZPtBins.size()-1;
-  int iBin = -1;
-  for(int i = 0; i < nbinsPt-1; ++i){
-    if(iGenPt > vZPtBins[nbinsPt]){
-      iBin = nbinsPt-1;
-      iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
-      break;
-    }
-    if(vZPtBins[i+1] < iGenPt) continue;
-    if(vZPtBins[i] > iGenPt ) continue;
-    if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
-      iBin = i; 
-      iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
-      break;
-    }
-  }
-  if(iBin<0) return;
-  // std::cout << std::endl;
-      // std::cout << "ibin = " << iBin <<  " pt = " <<  iGenPt <<  "  u1 = " << iU1 << std::endl;
-  double pUX  = iMet*cos(iMPhi) + iLepPt*cos(iLepPhi);
-  double pUY  = iMet*sin(iMPhi) + iLepPt*sin(iLepPhi);
-  double pU   = sqrt(pUX*pUX+pUY*pUY);
-  double pCos = - (pUX*cos(iGenPhi) + pUY*sin(iGenPhi))/pU;
-  double pSin =   (pUX*sin(iGenPhi) - pUY*cos(iGenPhi))/pU;
-  double pU1  = pU*pCos; // U1 in sample to Correct (WMC or ZMC)
-  double pU2  = pU*pSin; // U2 in sample to Correct (WMC or ZMC)
+  // //  double pDefU1    = iU1Default->Eval(iGenPt);
+  // // std::cout << "hi 2" << std::endl;
+  // double iGenPt2 = 0;
+  // Int_t nbinsPt = vZPtBins.size()-1;
+  // int iBin = -1;
+  // for(int i = 0; i < nbinsPt-1; ++i){
+    // if(iGenPt > vZPtBins[nbinsPt]){
+      // iBin = nbinsPt-1;
+      // iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
+      // break;
+    // }
+    // if(vZPtBins[i+1] < iGenPt) continue;
+    // if(vZPtBins[i] > iGenPt ) continue;
+    // if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
+      // iBin = i; 
+      // iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
+      // break;
+    // }
+  // }
+  // if(iBin<0) return;
+  // // std::cout << std::endl;
+      // // std::cout << "ibin = " << iBin <<  " pt = " <<  iGenPt <<  "  u1 = " << iU1 << std::endl;
+  // double pUX  = iMet*cos(iMPhi) + iLepPt*cos(iLepPhi);
+  // double pUY  = iMet*sin(iMPhi) + iLepPt*sin(iLepPhi);
+  // double pU   = sqrt(pUX*pUX+pUY*pUY);
+  // double pCos = - (pUX*cos(iGenPhi) + pUY*sin(iGenPhi))/pU;
+  // double pSin =   (pUX*sin(iGenPhi) - pUY*cos(iGenPhi))/pU;
+  // double pU1  = pU*pCos; // U1 in sample to Correct (WMC or ZMC)
+  // double pU2  = pU*pSin; // U2 in sample to Correct (WMC or ZMC)
 
-  double iU1Bin = 0;
-  if(iBin > 51) return;
-    for(int i = 0; i <= hRatiosU1[iBin]->GetNbinsX();++i){
-        if(iU1 > hRatiosU1[iBin]->GetBinLowEdge(i) && iU1 < hRatiosU1[iBin]->GetBinLowEdge(i+1)){ iU1Bin = i; break; }
-	}
-    // std::cout << "u1Bin = " << iU1Bin << std::endl;
-  evtWeight=hRatiosU1[iBin]->GetBinContent(iU1Bin);
-  // pU1*=hRecoilU2[iBin]->GetBinContent(iU2Bin);
-                       if(evtWeight > 2.0 || evtWeight < 0) {evtWeight=1;}
+  // double iU1Bin = 0;
+  // if(iBin > 51) return;
+    // for(int i = 0; i <= hRatiosU1[iBin]->GetNbinsX();++i){
+        // if(iU1 > hRatiosU1[iBin]->GetBinLowEdge(i) && iU1 < hRatiosU1[iBin]->GetBinLowEdge(i+1)){ iU1Bin = i; break; }
+	// }
+    // // std::cout << "u1Bin = " << iU1Bin << std::endl;
+  // evtWeight=hRatiosU1[iBin]->GetBinContent(iU1Bin);
+  // // pU1*=hRecoilU2[iBin]->GetBinContent(iU2Bin);
+                       // if(evtWeight > 2.0 || evtWeight < 0) {evtWeight=1;}
   
-  // std::cout << "ibin = " << iBin << "  u1Bin = " << iU1Bin << "  evtWeight = " << evtWeight << std::endl;
+  // // std::cout << "ibin = " << iBin << "  u1Bin = " << iU1Bin << "  evtWeight = " << evtWeight << std::endl;
 
-  // pU1   = pU1 + ( pU1ValDzlike - pU1ValMzlike);
-  // pU2   = pU2 + ( pU2ValDzlike - pU2ValMzlike);
-  iMet  = iMet;//calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  iMPhi = iMPhi;//calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  // // pU1   = pU1 + ( pU1ValDzlike - pU1ValMzlike);
+  // // pU2   = pU2 + ( pU2ValDzlike - pU2ValMzlike);
+  // iMet  = iMet;//calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  // iMPhi = iMPhi;//calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
   
-  // std::cout << "u1fin = " << pU1 << ", u2fin = " << pU2 << ", met " << iMet << ", metPhi " << iMPhi  << std::endl;
-  iU1   = iU1; 
-  iU2   = iU2;
+  // // std::cout << "u1fin = " << pU1 << ", u2fin = " << pU2 << ", met " << iMet << ", metPhi " << iMPhi  << std::endl;
+  // iU1   = iU1; 
+  // iU2   = iU2;
 
-  return;
-} ////////////////////// Delete ^
+  // return;
+// } ////////////////////// Delete ^
 
 
-// Also not used ever? Delte
-void RecoilCorrector::metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
-                       double iLepPt,double iLepPhi,
-                       double &iU1,double &iU2,double iFluc,double iScale) {
+// // Also not used ever? Delte
+// void RecoilCorrector::metDistributionFromToys(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
+                       // double iLepPt,double iLepPhi,
+                       // double &iU1,double &iU2,double iFluc,double iScale) {
   
-  double iGenPt2 = 0;
-  Int_t nbinsPt = vZPtBins.size()-1;
-  int iBin = 0;
-  for(int i = 0; i < nbinsPt-1; ++i){
-    if(iGenPt > vZPtBins[nbinsPt]){
-      iBin = nbinsPt-1;
-      iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
-      break;
-    }
-    if(vZPtBins[i+1] < iGenPt) continue;
-    if(vZPtBins[i] > iGenPt ) continue;
-    if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
-      iBin = i; 
-      iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
-      break;
-    }
-  }
+  // double iGenPt2 = 0;
+  // Int_t nbinsPt = vZPtBins.size()-1;
+  // int iBin = 0;
+  // for(int i = 0; i < nbinsPt-1; ++i){
+    // if(iGenPt > vZPtBins[nbinsPt]){
+      // iBin = nbinsPt-1;
+      // iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
+      // break;
+    // }
+    // if(vZPtBins[i+1] < iGenPt) continue;
+    // if(vZPtBins[i] > iGenPt ) continue;
+    // if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
+      // iBin = i; 
+      // iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
+      // break;
+    // }
+  // }
   
-  double pU1 = 0; 
-  double pU2 = 0;
+  // double pU1 = 0; 
+  // double pU2 = 0;
 
 
-  std::stringstream varName;
-  varName.str("");varName << "u_"<<iBin;
-  RooRealVar* myXdU1 =  (RooRealVar*) rooWData[0]->var(varName.str().c_str());
-  RooRealVar* myXmU1 =  (RooRealVar*) rooWMC[0]->var(varName.str().c_str());
-  RooRealVar* myXdU2 =  (RooRealVar*) rooWData[1]->var(varName.str().c_str());
-  RooRealVar* myXmU2 =  (RooRealVar*) rooWMC[1]->var(varName.str().c_str());
-  // std::cout << "blah " << std::endl;
+  // std::stringstream varName;
+  // varName.str("");varName << "u_"<<iBin;
+  // RooRealVar* myXdU1 =  (RooRealVar*) rooWData[0]->var(varName.str().c_str());
+  // RooRealVar* myXmU1 =  (RooRealVar*) rooWMC[0]->var(varName.str().c_str());
+  // RooRealVar* myXdU2 =  (RooRealVar*) rooWData[1]->var(varName.str().c_str());
+  // RooRealVar* myXmU2 =  (RooRealVar*) rooWMC[1]->var(varName.str().c_str());
+  // // std::cout << "blah " << std::endl;
   
-  std::stringstream name;
-  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
-  RooAbsReal *thisCdfDataU1 = rooWData[0]->function(name.str().c_str()); name.str("");
+  // std::stringstream name;
+  // name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
+  // RooAbsReal *thisCdfDataU1 = rooWData[0]->function(name.str().c_str()); name.str("");
 
-  name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
-  RooAbsReal *thisCdfDataU2 = rooWData[1]->function(name.str().c_str()); name.str("");
+  // name << "sig_" << iBin <<"_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
+  // RooAbsReal *thisCdfDataU2 = rooWData[1]->function(name.str().c_str()); name.str("");
 
-  double r1 = ((double) rand() / (RAND_MAX));
-  double r2 = ((double) rand() / (RAND_MAX));
-  pU1=thisCdfDataU1->findRoot(*myXdU1,myXdU1->getMin(),myXdU1->getMax(),r1);
-  pU2=thisCdfDataU2->findRoot(*myXdU2,myXdU2->getMin(),myXdU2->getMax(),r2);
+  // double r1 = ((double) rand() / (RAND_MAX));
+  // double r2 = ((double) rand() / (RAND_MAX));
+  // pU1=thisCdfDataU1->findRoot(*myXdU1,myXdU1->getMin(),myXdU1->getMax(),r1);
+  // pU2=thisCdfDataU2->findRoot(*myXdU2,myXdU2->getMin(),myXdU2->getMax(),r2);
 
-  iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  // iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
+  // iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
   
-  iU1   = pU1; 
-  iU2   = pU2;
+  // iU1   = pU1; 
+  // iU2   = pU2;
   
-  return;
-}
+  // return;
+// }
 // ----------------------------------------------------------------------------------------------------------------------------------------
 // -------------- Utility functions to do basic calculations ---------------
 //-----------------------------------------------------------------------------------------------------------------------------------------
@@ -1265,14 +1262,9 @@ double RecoilCorrector::getErrorSigma(double iVal,TF1 *iFit,Recoil iType) {
 // ---------------------------------------------------------------------------------------------------------------------------
 // -------------- Setup for the diagonalization steps for the statistical uncertainty ----------------------------------------
 void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, RooAbsReal *&pdfUiCdf, int sigma) {
-    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    // std::cout << "run diago" << std::endl; 
-    // std::cout << "result info " << std::endl;
-    result->Print();
-    std::cout << "covariance quality = " << result->covQual() << std::endl;
-    std::cout << "fit status = " << result->status() << std::endl;
-    // TCanvas *c = new TCanvas("c","c",800,800);
-    
+  std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+  result->Print();
+  std::cout << "Covariance Matrix quality (3 is Good) = " << result->covQual() << std::endl;
   char name[50];
   
   sprintf(name,"u_%i",i);
@@ -1350,21 +1342,21 @@ void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, Roo
       // std::cout << "logval = " << varpdf->getLogVal() << "  isfinite " << std::isfinite(varpdf->getLogVal()) << std::endl;
 	  // std::cout << pdfval << std::endl;
 	  if(pdfval < 0 || pdfval > 1||!std::isfinite(pdfval) || std::isnan(pdfval) ||  !std::isfinite(varpdf->getLogVal()) || std::isnan(varpdf->getLogVal())) {
-		  std::cout << "pdf is messed up" << std::endl;
+		  std::cout << "PDF us unphysical. Replacing with original shape." << std::endl;
 		  varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,0,0);
 		  // varpdf = pdf_temp;
           break;
 	  }
   }
-  pdf_temp->Print();
-  varpdf->Print();
+  // pdf_temp->Print();
+  // varpdf->Print();
   // RooRealVar* myX1=w->var("XVar");
   // pdfUiCdf = newpdf->createCdf(*myX1,RooFit::ScanAllCdf());
   // std::cout << "make a CDF" << std::endl;
 
   
   pdfUiCdf = varpdf->createCdf(*myX1);
-  pdfUiCdf->Print();
+  // pdfUiCdf->Print();
   
           // RooPlot *testframe1 = myX1->frame(); 
         // // RooPlot *testframe2 = myX2->frame(); 
@@ -1381,125 +1373,125 @@ void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, Roo
       // std::cout << "logval = " << pdfUiCdf->getLogVal() << "  isfinite " << std::isfinite(pdfUiCdf->getLogVal()) << std::endl;
 	  // std::cout << pdfval << std::endl;
 	  if(pdfval < 0 || pdfval > 1  || std::isnan(pdfval) || !std::isfinite(pdfval)) {
-		  std::cout << "cdf is messed up" << std::endl;
+		  std::cout << "CDF is unphysical. Using the original shape." << std::endl;
 		  varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,0,0);
-          pdfUiCdf = varpdf->createCdf(*myX1);
-          varpdf->Print();
-          pdfUiCdf->Print();
+      pdfUiCdf = varpdf->createCdf(*myX1);
+    // varpdf->Print();
+        // pdfUiCdf->Print();
 		  break;
 	  }
   }
-  pdfUiCdf->Print();
+  // pdfUiCdf->Print();
   // std::cout << "import shit to wksp" << std::endl;
   w->import(*varpdf, RooFit::RecycleConflictNodes(),RooFit::Silence());
   w->import(*pdfUiCdf, RooFit::RecycleConflictNodes(),RooFit::Silence());
   
   // w->Print();
-  std::cout << "done now " << std::endl;
+  // std::cout << "done now " << std::endl;
 
   // delete c;
   return;
 }
 
 
-// Not sure this even works, I think I might just give up on developing it, also delete possibly
-// do shape template by using the PDF values & resetting them to be +/-1 sigma given the roofit results
-void RecoilCorrector::statUnc50nsStyle(RooWorkspace *w, int i, RooAbsReal *&pdfUiCdf, int sigma) {
-  char name[50];
-  sprintf(name,"eig_%i",i);
-  sprintf(name,"sig_%i",i);
-  RooAddPdf* pdf_temp = (RooAddPdf*) w->pdf(name);
-  sprintf(name,"var_%i",i);
-  RooAddPdf *varpdf = new RooAddPdf(*pdf_temp,name);
+// // Not sure this even works, I think I might just give up on developing it, also delete possibly
+// // do shape template by using the PDF values & resetting them to be +/-1 sigma given the roofit results
+// void RecoilCorrector::statUnc50nsStyle(RooWorkspace *w, int i, RooAbsReal *&pdfUiCdf, int sigma) {
+  // char name[50];
+  // sprintf(name,"eig_%i",i);
+  // sprintf(name,"sig_%i",i);
+  // RooAddPdf* pdf_temp = (RooAddPdf*) w->pdf(name);
+  // sprintf(name,"var_%i",i);
+  // RooAddPdf *varpdf = new RooAddPdf(*pdf_temp,name);
 
-  varpdf->Print();
-  RooArgList pdfList = varpdf->pdfList();
-  RooArgList coefList = varpdf->coefList();
-  
-  pdfList.Print();
-  coefList.Print();
-  std::cout << "first" << std::endl;
-  std::cout << "val 3 " << ((RooRealVar*)coefList.at(0))->getVal() << "  val2 " << ((RooRealVar*)coefList.at(1))->getVal() << std::endl;
-
-  RooGaussian *gaus1 = (RooGaussian*) pdfList.at(2);
-  RooGaussian *gaus2 = (RooGaussian*) pdfList.at(1);
-  RooGaussian *gaus3 = (RooGaussian*) pdfList.at(0);
-  gaus1->Print();
-  // sprintf(name,"");
-  RooRealVar mean1("mean1","mean1",0); RooRealVar sigma1("sigma1","sigma1",0);
-  RooArgSet tempSet1(mean1,sigma1);
-  
-  RooRealVar mean2("mean2","mean2",0); RooRealVar sigma2("sigma2","sigma2",0);
-  RooArgSet tempSet2(mean2,sigma2);
-  
-  RooRealVar mean3("mean3","mean3",0); RooRealVar sigma3("sigma3","sigma3",0);
-  RooArgSet tempSet3(mean3,sigma3);
-  // RooRealVar mean("mean1","mean",0);
-  // RooRealVar mean("mean","mean",0);
-  RooArgSet* gaus1Set = (RooArgSet*) gaus1->getParameters(tempSet1); RooArgList gaus1List(*gaus1Set);
-  RooArgSet* gaus2Set = (RooArgSet*) gaus2->getParameters(tempSet2); RooArgList gaus2List(*gaus2Set);
-  RooArgSet* gaus3Set = (RooArgSet*) gaus3->getParameters(tempSet3); RooArgList gaus3List(*gaus3Set);
-  gaus1->Print();
-  gaus2->Print();
-  gaus3->Print();
-  ((RooRealVar*)gaus1List.at(0))->setVal(((RooRealVar*)gaus1List.at(0))->getVal()+sigma*((RooRealVar*)gaus1List.at(0))->getError());
-  ((RooRealVar*)gaus1List.at(1))->setVal(((RooRealVar*)gaus1List.at(1))->getVal()+sigma*((RooRealVar*)gaus1List.at(1))->getError());
-  ((RooRealVar*)gaus2List.at(0))->setVal(((RooRealVar*)gaus2List.at(0))->getVal()+sigma*((RooRealVar*)gaus2List.at(0))->getError());
-  ((RooRealVar*)gaus2List.at(1))->setVal(((RooRealVar*)gaus2List.at(1))->getVal()+sigma*((RooRealVar*)gaus2List.at(1))->getError());
-  ((RooRealVar*)gaus3List.at(0))->setVal(((RooRealVar*)gaus3List.at(0))->getVal()+sigma*((RooRealVar*)gaus3List.at(0))->getError());
-  ((RooRealVar*)gaus3List.at(1))->setVal(((RooRealVar*)gaus3List.at(1))->getVal()+sigma*((RooRealVar*)gaus3List.at(1))->getError());
-  std::cout << "sigma 1 valu3 " << ((RooRealVar*)gaus1List.at(1))->getVal() << std::endl;
-  std::cout << "sigma 1 err up " << ((RooRealVar*)gaus1List.at(1))->getError() << std::endl;
-  std::cout << "sigma 1 err up " << ((RooRealVar*)gaus1List.at(1))->getAsymErrorHi() << std::endl;
-  std::cout << "sigma 1 err lo " << ((RooRealVar*)gaus1List.at(1))->getAsymErrorLo() << std::endl;
-  gaus1->Print();
-  gaus2->Print();
-  gaus3->Print();
-  std::cout << "new pdf  " ;
-  varpdf->Print();
-  
-  std::cout << "orig pdf " << std::endl;
-  pdf_temp->Print();
-  sprintf(name,"u_%i",i);
-  RooRealVar* myX1 = (RooRealVar*) w->var(name);
-  // loop over the values on the x-axis and check if the PDF is positive
-  // if it's not, replace the diagonalized PDF with the original one
-  
-      // std::cout << "logval = " << varpdf->getLogVal() << "  isfinite " << std::isfinite(varpdf->getLogVal()) << std::endl;
-  for(int i = floor(myX1->getMin())+1; i < floor(myX1->getMax());i+=5){
-	  myX1->setVal(i);
-	  double pdfval=varpdf->getVal();
-      // std::cout << "logval = " << varpdf->getLogVal() << "  isfinite " << std::isfinite(varpdf->getLogVal()) << std::endl;
-	  // std::cout << pdfval << std::endl;
-	  if(pdfval <= 0 || pdfval < -100 /*|| !std::isfinite(varpdf->getLogVal()) */|| std::isnan(varpdf->getLogVal())) {
-		  std::cout << "pdf is messed up" << std::endl;
-		  // varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,0,0);
-		  break;
-	  }
-  }
-  // std::cout << "nearly done "<< std::endl;
-  // pdf_temp->Print();
   // varpdf->Print();
-  // RooRealVar* myX1=w->var("XVar");
-  // pdfUiCdf = newpdf->createCdf(*myX1,RooFit::ScanAllCdf());
-  pdfUiCdf = varpdf->createCdf(*myX1);
-  pdfUiCdf->Print();
+  // RooArgList pdfList = varpdf->pdfList();
+  // RooArgList coefList = varpdf->coefList();
   
-    for(int i = floor(myX1->getMin())+1; i < floor(myX1->getMax());i+=5){
-	  myX1->setVal(i);
-	  double pdfval=pdfUiCdf->getVal();
-      // std::cout << "logval = " << pdfUiCdf->getLogVal() << "  isfinite " << std::isfinite(pdfUiCdf->getLogVal()) << std::endl;
-	  // std::cout << pdfval << std::endl;
-	  if(pdfval <= 0 || pdfval < -100 ) {
-		  std::cout << "cdf is messed up" << std::endl;
-		  // varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,0,0);
-		  break;
-	  }
-  }
-  
-  w->import(*varpdf, RooFit::RecycleConflictNodes(),RooFit::Silence());
-  w->import(*pdfUiCdf, RooFit::RecycleConflictNodes(),RooFit::Silence());
-  
-  return;
+  // pdfList.Print();
+  // coefList.Print();
+  // std::cout << "first" << std::endl;
+  // std::cout << "val 3 " << ((RooRealVar*)coefList.at(0))->getVal() << "  val2 " << ((RooRealVar*)coefList.at(1))->getVal() << std::endl;
 
-}
+  // RooGaussian *gaus1 = (RooGaussian*) pdfList.at(2);
+  // RooGaussian *gaus2 = (RooGaussian*) pdfList.at(1);
+  // RooGaussian *gaus3 = (RooGaussian*) pdfList.at(0);
+  // gaus1->Print();
+  // // sprintf(name,"");
+  // RooRealVar mean1("mean1","mean1",0); RooRealVar sigma1("sigma1","sigma1",0);
+  // RooArgSet tempSet1(mean1,sigma1);
+  
+  // RooRealVar mean2("mean2","mean2",0); RooRealVar sigma2("sigma2","sigma2",0);
+  // RooArgSet tempSet2(mean2,sigma2);
+  
+  // RooRealVar mean3("mean3","mean3",0); RooRealVar sigma3("sigma3","sigma3",0);
+  // RooArgSet tempSet3(mean3,sigma3);
+  // // RooRealVar mean("mean1","mean",0);
+  // // RooRealVar mean("mean","mean",0);
+  // RooArgSet* gaus1Set = (RooArgSet*) gaus1->getParameters(tempSet1); RooArgList gaus1List(*gaus1Set);
+  // RooArgSet* gaus2Set = (RooArgSet*) gaus2->getParameters(tempSet2); RooArgList gaus2List(*gaus2Set);
+  // RooArgSet* gaus3Set = (RooArgSet*) gaus3->getParameters(tempSet3); RooArgList gaus3List(*gaus3Set);
+  // gaus1->Print();
+  // gaus2->Print();
+  // gaus3->Print();
+  // ((RooRealVar*)gaus1List.at(0))->setVal(((RooRealVar*)gaus1List.at(0))->getVal()+sigma*((RooRealVar*)gaus1List.at(0))->getError());
+  // ((RooRealVar*)gaus1List.at(1))->setVal(((RooRealVar*)gaus1List.at(1))->getVal()+sigma*((RooRealVar*)gaus1List.at(1))->getError());
+  // ((RooRealVar*)gaus2List.at(0))->setVal(((RooRealVar*)gaus2List.at(0))->getVal()+sigma*((RooRealVar*)gaus2List.at(0))->getError());
+  // ((RooRealVar*)gaus2List.at(1))->setVal(((RooRealVar*)gaus2List.at(1))->getVal()+sigma*((RooRealVar*)gaus2List.at(1))->getError());
+  // ((RooRealVar*)gaus3List.at(0))->setVal(((RooRealVar*)gaus3List.at(0))->getVal()+sigma*((RooRealVar*)gaus3List.at(0))->getError());
+  // ((RooRealVar*)gaus3List.at(1))->setVal(((RooRealVar*)gaus3List.at(1))->getVal()+sigma*((RooRealVar*)gaus3List.at(1))->getError());
+  // std::cout << "sigma 1 valu3 " << ((RooRealVar*)gaus1List.at(1))->getVal() << std::endl;
+  // std::cout << "sigma 1 err up " << ((RooRealVar*)gaus1List.at(1))->getError() << std::endl;
+  // std::cout << "sigma 1 err up " << ((RooRealVar*)gaus1List.at(1))->getAsymErrorHi() << std::endl;
+  // std::cout << "sigma 1 err lo " << ((RooRealVar*)gaus1List.at(1))->getAsymErrorLo() << std::endl;
+  // gaus1->Print();
+  // gaus2->Print();
+  // gaus3->Print();
+  // std::cout << "new pdf  " ;
+  // varpdf->Print();
+  
+  // std::cout << "orig pdf " << std::endl;
+  // pdf_temp->Print();
+  // sprintf(name,"u_%i",i);
+  // RooRealVar* myX1 = (RooRealVar*) w->var(name);
+  // // loop over the values on the x-axis and check if the PDF is positive
+  // // if it's not, replace the diagonalized PDF with the original one
+  
+      // // std::cout << "logval = " << varpdf->getLogVal() << "  isfinite " << std::isfinite(varpdf->getLogVal()) << std::endl;
+  // for(int i = floor(myX1->getMin())+1; i < floor(myX1->getMax());i+=5){
+	  // myX1->setVal(i);
+	  // double pdfval=varpdf->getVal();
+      // // std::cout << "logval = " << varpdf->getLogVal() << "  isfinite " << std::isfinite(varpdf->getLogVal()) << std::endl;
+	  // // std::cout << pdfval << std::endl;
+	  // if(pdfval <= 0 || pdfval < -100 /*|| !std::isfinite(varpdf->getLogVal()) */|| std::isnan(varpdf->getLogVal())) {
+		  // std::cout << "pdf is messed up" << std::endl;
+		  // // varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,0,0);
+		  // break;
+	  // }
+  // }
+  // // std::cout << "nearly done "<< std::endl;
+  // // pdf_temp->Print();
+  // // varpdf->Print();
+  // // RooRealVar* myX1=w->var("XVar");
+  // // pdfUiCdf = newpdf->createCdf(*myX1,RooFit::ScanAllCdf());
+  // pdfUiCdf = varpdf->createCdf(*myX1);
+  // pdfUiCdf->Print();
+  
+    // for(int i = floor(myX1->getMin())+1; i < floor(myX1->getMax());i+=5){
+	  // myX1->setVal(i);
+	  // double pdfval=pdfUiCdf->getVal();
+      // // std::cout << "logval = " << pdfUiCdf->getLogVal() << "  isfinite " << std::isfinite(pdfUiCdf->getLogVal()) << std::endl;
+	  // // std::cout << pdfval << std::endl;
+	  // if(pdfval <= 0 || pdfval < -100 ) {
+		  // // std::cout << "cdf is messed up" << std::endl;
+		  // varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,0,0);
+		  // break;
+	  // }
+  // }
+  
+  // w->import(*varpdf, RooFit::RecycleConflictNodes(),RooFit::Silence());
+  // w->import(*pdfUiCdf, RooFit::RecycleConflictNodes(),RooFit::Silence());
+  
+  // return;
+
+// }
