@@ -139,9 +139,9 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
     //
     // loop over events
     //      
-     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    //for(UInt_t ientry=0; ientry<100; ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0+0.05*eventTree->GetEntries()); ientry++) {
+     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<100; ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.5*eventTree->GetEntries()); ientry++) {
       if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
@@ -185,6 +185,7 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
       // if((*lep1+*lep2).Pt() < 100) continue; 
     
       Double_t weight=gen->weight;
+      // Double_t weight=1;
       nEvtsv[ifile]+=weight;
       nEvtsv_QCD[0]+=weight*gen->lheweight[0];
       nEvtsv_QCD[1]+=weight*gen->lheweight[1];
@@ -192,7 +193,17 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
       nEvtsv_QCD[3]+=weight*gen->lheweight[3];
       nEvtsv_QCD[4]+=weight*gen->lheweight[5];
       nEvtsv_QCD[5]+=weight*gen->lheweight[7];
-      for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+      // nEvtsv_QCD[0]+=weight*gen->lheweight[1];
+      // nEvtsv_QCD[1]+=weight*gen->lheweight[2];
+      // nEvtsv_QCD[2]+=weight*gen->lheweight[3];
+      // nEvtsv_QCD[3]+=weight*gen->lheweight[4];
+      // nEvtsv_QCD[4]+=weight*gen->lheweight[6];
+      // nEvtsv_QCD[5]+=weight*gen->lheweight[8];
+      for(int npdf=0; npdf<NPDF; npdf++) {
+          nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+          // nEvtsv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
+          // std::cout << "e " << nEvtsv[ifile] << "  " <<  nEvtsv_PDF[npdf] << "  " << (nEvtsv[ifile]/nEvtsv_PDF[npdf]-1)*100<< std::endl;
+      }
       
       
       if(lep1->Pt() < PT_CUT)         continue;
@@ -219,7 +230,17 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
       nSelv_QCD[3]+=weight*gen->lheweight[3];
       nSelv_QCD[4]+=weight*gen->lheweight[5];
       nSelv_QCD[5]+=weight*gen->lheweight[7];
-      for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+      // nSelv_QCD[0]+=weight*gen->lheweight[1];
+      // nSelv_QCD[1]+=weight*gen->lheweight[2];
+      // nSelv_QCD[2]+=weight*gen->lheweight[3];
+      // nSelv_QCD[3]+=weight*gen->lheweight[4];
+      // nSelv_QCD[4]+=weight*gen->lheweight[6];
+      // nSelv_QCD[5]+=weight*gen->lheweight[8];
+      for(int npdf=0; npdf<NPDF; npdf++) {
+          nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+          // nSelv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
+          // std::cout << "s " << nSelv[ifile] << "  " << nSelv_PDF[npdf] << "  " << (nSelv[ifile]/nSelv_PDF[npdf]-1)*100<<  std::endl;
+      }
       
     }
     
@@ -232,20 +253,30 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
 
     std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
     
-    
+    double sumCheck=0;
+    double sqCheck = 0;
+    double maxPDF = 0;
     for(int npdf=0; npdf<NPDF; npdf++){
         accv_PDF.push_back(nSelv_PDF[npdf]/nEvtsv_PDF[npdf]);     
+        std::cout << "accv _pdf" << npdf << "  = " << accv_PDF[npdf] << std::endl;
         accErrv_PDF.push_back(sqrt(accv_PDF[npdf]*(1.-accv_PDF[npdf])/nEvtsv_PDF[npdf]));
         std::cout << "nselvpdf " << nSelv_PDF[npdf] << "  nevtsvpdf " << nEvtsv_PDF[npdf] << " ratio " << nSelv_PDF[npdf]/nEvtsv_PDF[npdf] << std::endl;
         std::cout << "accv " << accv[ifile] << "  accvpdf " << accv_PDF[npdf] << std::endl;
         std::cout << "diff " << accv_PDF[npdf]-accv[ifile] << "  pct diff " << 100*(accv_PDF[npdf]-accv[ifile])/accv[ifile] << std::endl;
         // a = sum(((acc_i-accTot)/accTot)^2)
         // unc = sqrt(a/NPDF)
-        accv_uncPDF+=(accv_PDF[npdf]-accv[ifile])*(accv_PDF[npdf]-accv[ifile])/(NPDF*accv[ifile]*accv[ifile]);
+        double pctDiff = (accv_PDF[npdf]-accv[ifile])/accv[ifile];
+        accv_uncPDF+=pctDiff*pctDiff;
+        sumCheck+=fabs(pctDiff);
+        sqCheck+=accv_uncPDF;
+        (fabs(pctDiff)>maxPDF)?maxPDF=fabs(pctDiff):maxPDF=maxPDF;
         accv_uncPDF_num+=(nSelv_PDF[npdf]-nSelv[ifile])*(nSelv_PDF[npdf]-nSelv[ifile])/(NPDF*nSelv[ifile]*nSelv[ifile]);
         accv_uncPDF_dnm+=(nEvtsv_PDF[npdf]-nEvtsv[ifile])*(nEvtsv_PDF[npdf]-nEvtsv[ifile])/(NPDF*nEvtsv[ifile]*nEvtsv[ifile]);
     }
-    accv_uncPDF=sqrt(accv_uncPDF);
+    std::cout << "wum check " << sumCheck << std::endl;
+    std::cout << "sq check " << sqCheck << std::endl;
+    std::cout << "maxpdf  " << maxPDF << std::endl;
+    accv_uncPDF=sqrt(accv_uncPDF/NPDF);
     accv_uncPDF_num=sqrt(accv_uncPDF_num);
     accv_uncPDF_dnm=sqrt(accv_uncPDF_dnm);
     for(int nqcd=0; nqcd<NQCD; nqcd++){
