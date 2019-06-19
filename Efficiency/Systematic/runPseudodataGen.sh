@@ -2,25 +2,29 @@
 # FILEDIR="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency"
 # binnum=$1
 # FILEDIR=/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_Efficiency_v1/results/
-FILEDIR=/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results
+FILEDIR=/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results
 # POSTFIX=_v1
 # POSTFIX=_CBxBW_v1
-POSTFIX=_POWxPythia_v1
-POSTFIX_alt=_POWxPhotos_v1
+# POSTFIX=_POWxPythia_v1
+# POSTFIX_alt=_POWxPhotos_v1
+POSTFIX=_aMCxPythia_v0
+POSTFIX_alt=_aMCxPythia_v0
 #
 # CMSSW_BASE="/afs/cern.ch/work/x/xniu/public/Lumi/Ele/CMSSW_7_6_3_patch2/src/"
 TOP="$PWD"
 #
 BINVAR=etapt
-FOLDER=Zmm
-EFFTYPE=MuSITEff #MuHLTEff, MuSelEff, MuStaEff
+# FOLDER=Zmm
+FOLDER=Zee
+# EFFTYPE=MuSITEff #MuHLTEff, MuSelEff, MuStaEff
+EFFTYPE=EleGSFSelEff #MuHLTEff, MuSelEff, MuStaEff
 NBINS=2 #Muons have 63 bins
 CHARGE=Negative
-NTOYS=30
+NTOYS=100
 binnum=1
 toynum=0
 # FILEDIR1=${FILEDIR}/${FOLDER}/Data/${EFFTYPE}_aMCxPythia${POSTFIX}/${CHARGE}/plots/
-OUTPUTDIR=${FILEDIR}/${EFFTYPE}${POSTFIX}${POSTFIX_alt}_origtest/${CHARGE}/
+OUTPUTDIR=${FILEDIR}/TOYS/${EFFTYPE}${POSTFIX}${POSTFIX_alt}/TEST_DEBUG3/${CHARGE}/
 # STAGEDIR=${TOP}/${EFFTYPE}/${CHARGE}/Step2Output/${POSTFIX}v${POSTFIX_alt}/
 STAGEDIR=./
 SIG_FILE=${FILEDIR}/${FOLDER}/Data/${EFFTYPE}${POSTFIX_alt}/${CHARGE}/plots/
@@ -40,7 +44,7 @@ mkdir -p ${OUTPUTDIR}/
 # # echo \"${BINVAR}_${binnum}\"
 # echo " ACTUALLY DOING MACRO NOW" 
 
-root -l -b -q toyGenAndPull.C+\(\"${SIG_FILE}\",\"${BKG_FILE}\",\"${MAS_FILE}\",\"${BINVAR}_${binnum}\",\"${OUTPUTDIR}_asimov\",\"pull_${binnum}\",${binnum},${binnum},${NTOYS}\)
+root -l -b -q toyGenAndPull.C+\(\"${SIG_FILE}\",\"${BKG_FILE}\",\"${MAS_FILE}\",\"${BINVAR}_${binnum}\",\"${OUTPUTDIR}\",\"pull_${binnum}\",${binnum},${binnum},${NTOYS}\)
 # root -l -b -q makePseudoData.C+\(\"${BKG_FILE}\",\"${BKG_FILE}\",\"${BINVAR}_${binnum}\",\"${STAGEDIR}\",1,${binnum},${NTOYS}\)
 # # mkdir ${FILEDIR}/${EFFTYPE}${POSTFIX_CB}
 # #### Loop to gather data from each of the toys

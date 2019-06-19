@@ -4,9 +4,9 @@ exe=./runStep2Step3.sh
 PU=`echo "${2}"`
 ID=`echo "${3}"`
 # NBINS=96 #96 bins for muon channels
-NBINS=24 #96 bins for STANDALONE MUON channels
+NBINS=1 #96 bins for STANDALONE MUON channels
 # NBINS=96 #96 bins for electron channels
-NTOYS=1000 # should be default 1000
+NTOYS=100 # should be default 1000
 # EFFTYPE=MuSITEff
 EFFTYPE=MuStaEff
 # EFFTYPE=EleGSFSelEff
@@ -20,7 +20,7 @@ FOLDER=Zmm # or Zee
 # CHARGE=Positive
 # CHARGE=Combined # combine pos & neg for the muon standalone nightmare
  
-VERS=_v2
+VERS=_TEST_CHECKCLEANING
 # #CLOSURE 
 # POSTFIX=_aMCxPythia${VERS}
 # POSTFIX_alt=_aMCxPythia${VERS}
