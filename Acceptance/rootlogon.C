@@ -25,8 +25,8 @@
   gROOT->Macro("../Utils/MitStyleRemix.cc++");
   gROOT->Macro("CCorrUser2D.cc+");
  
-  gROOT->Macro("CEffUser1D.cc+");
-  gROOT->Macro("CEffUser2D.cc+");
+  gROOT->Macro("../Utils/CEffUser1D.cc+");
+  gROOT->Macro("../Utils/CEffUser2D.cc+");
                
     {
      //TString path = gSystem->GetIncludePath();
