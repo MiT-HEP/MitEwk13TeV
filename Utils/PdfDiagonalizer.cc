@@ -9,9 +9,7 @@ PdfDiagonalizer::PdfDiagonalizer(const char *name, RooWorkspace *w, RooFitResult
     int n = parameters_.getSize();
     
     TMatrixDSym cov(result.covarianceMatrix());
-    std::cout << "covariance " << std::endl;
     TMatrixDSymEigen eigen(cov);
-    std::cout << "eigenvecs " << std::endl;
 
     const TMatrixD& vectors = eigen.GetEigenVectors();
     const TVectorD& values  = eigen.GetEigenValues();
@@ -48,7 +46,6 @@ PdfDiagonalizer::PdfDiagonalizer(const char *name, RooWorkspace *w, RooFitResult
 
 RooAbsPdf *PdfDiagonalizer::diagonalize(RooAbsPdf &pdf)
 {
-  std::cout << "start diagonalize function " << std::endl;
   if (!pdf.dependsOn(parameters_)) return 0;
 
   // now do the customization
@@ -61,7 +58,6 @@ RooAbsPdf *PdfDiagonalizer::diagonalize(RooAbsPdf &pdf)
 
   RooAbsPdf *ret = dynamic_cast<RooAbsPdf *>(custom.build());
   ret->SetName((std::string(pdf.GetName()) + "_" + name_).c_str());
-  std::cout << "print doDiago pdf value" << std::endl;
   ret->Print();
   return ret;
 }
