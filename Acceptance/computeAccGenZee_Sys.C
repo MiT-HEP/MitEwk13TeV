@@ -234,19 +234,30 @@ void computeAccGenZee_Sys(const TString conf,             // input file
     std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
     
     
+    double sumCheck=0;
+    double sqCheck = 0;
+    double maxPDF = 0;
     for(int npdf=0; npdf<NPDF; npdf++){
         accv_PDF.push_back(nSelv_PDF[npdf]/nEvtsv_PDF[npdf]);     
+        std::cout << "accv _pdf" << npdf << "  = " << accv_PDF[npdf] << std::endl;
         accErrv_PDF.push_back(sqrt(accv_PDF[npdf]*(1.-accv_PDF[npdf])/nEvtsv_PDF[npdf]));
         std::cout << "nselvpdf " << nSelv_PDF[npdf] << "  nevtsvpdf " << nEvtsv_PDF[npdf] << " ratio " << nSelv_PDF[npdf]/nEvtsv_PDF[npdf] << std::endl;
         std::cout << "accv " << accv[ifile] << "  accvpdf " << accv_PDF[npdf] << std::endl;
         std::cout << "diff " << accv_PDF[npdf]-accv[ifile] << "  pct diff " << 100*(accv_PDF[npdf]-accv[ifile])/accv[ifile] << std::endl;
         // a = sum(((acc_i-accTot)/accTot)^2)
         // unc = sqrt(a/NPDF)
-        accv_uncPDF+=(accv_PDF[npdf]-accv[ifile])*(accv_PDF[npdf]-accv[ifile])/(NPDF*accv[ifile]*accv[ifile]);
+        double pctDiff = (accv_PDF[npdf]-accv[ifile])/accv[ifile];
+        accv_uncPDF+=pctDiff*pctDiff;
+        sumCheck+=fabs(pctDiff);
+        sqCheck+=accv_uncPDF;
+        (fabs(pctDiff)>maxPDF)?maxPDF=fabs(pctDiff):maxPDF=maxPDF;
         accv_uncPDF_num+=(nSelv_PDF[npdf]-nSelv[ifile])*(nSelv_PDF[npdf]-nSelv[ifile])/(NPDF*nSelv[ifile]*nSelv[ifile]);
         accv_uncPDF_dnm+=(nEvtsv_PDF[npdf]-nEvtsv[ifile])*(nEvtsv_PDF[npdf]-nEvtsv[ifile])/(NPDF*nEvtsv[ifile]*nEvtsv[ifile]);
     }
-    accv_uncPDF=sqrt(accv_uncPDF);
+    std::cout << "wum check " << sumCheck << std::endl;
+    std::cout << "sq check " << sqCheck << std::endl;
+    std::cout << "maxpdf  " << maxPDF << std::endl;
+    accv_uncPDF=sqrt(accv_uncPDF/NPDF);
     accv_uncPDF_num=sqrt(accv_uncPDF_num);
     accv_uncPDF_dnm=sqrt(accv_uncPDF_dnm);
     for(int nqcd=0; nqcd<NQCD; nqcd++){

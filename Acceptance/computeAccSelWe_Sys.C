@@ -38,11 +38,12 @@
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
-#include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
+// #include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear
+#include "../EleScale/EnergyScaleCorrection.h" //EGMSmear
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 #endif
 
 
@@ -51,6 +52,7 @@
 void computeAccSelWe_Sys(const TString conf,            // input file
 			    const TString inputDir, // efficiency main directory
           const TString outputDir,        // output directory
+		      const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 			    const Int_t   doPU,
 			    const Int_t   doScaleCorr,
 			    const Int_t   sigma,
@@ -58,13 +60,13 @@ void computeAccSelWe_Sys(const TString conf,            // input file
           const bool is13TeV=1
 ) {
   gBenchmark->Start("computeAccSelWe");
-
+  const int gainSeed = 12;
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
 
   const Double_t PT_CUT     = 25;
-  const Double_t ETA_CUT    = 2.5;
+  const Double_t ETA_CUT    = 2.4;
   const Double_t ELE_MASS = 0.000511;
 
   const Double_t ETA_BARREL = 1.4442;
@@ -107,9 +109,11 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     zeeGsfSelEffName  = zeeGsfSelEffName_neg;
   }
 
-  const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+  // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
+    const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
 
-  EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+  // EnergyScaleCorrection_class eleCorr( corrFiles.Data()); eleCorr.doScale= true; eleCorr.doSmearings =true;
+  EnergyScaleCorrection eleCorr( corrFiles.Data());
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
@@ -118,6 +122,15 @@ void computeAccSelWe_Sys(const TString conf,            // input file
   TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
   TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
   TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
+  
+  TFile *fSysGSFSel = TFile::Open(SysFileGSFSel);
+  TH2D  *hSysGSFSelSigFSRNeg = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigFSRNeg");
+  TH2D  *hSysGSFSelSigFSRPos = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigFSRPos"); 
+  TH2D  *hSysGSFSelSigMCNeg  = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigMCNeg"); 
+  TH2D  *hSysGSFSelSigMCPos  = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigMCPos"); 
+  TH2D  *hSysGSFSelBkgNeg    = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffBkgNeg"); 
+  TH2D  *hSysGSFSelBkgPos    = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffBkgPos"); 
+
 
   // TFile *f_hlt_data;
   // TFile *f_hlt_mc;
@@ -131,8 +144,8 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     // f_hlt_mc   = TFile::Open("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/EleHLTEff/Nominal/EleTriggerTF1_MC_Negative.root");
   // }
 
-  TFile *f_sys = TFile::Open(sysFile);
-  TH2D  *h_sys = (TH2D*) f_sys->Get("h");
+  // TFile *f_sys = TFile::Open(sysFile);
+  // TH2D  *h_sys = (TH2D*) f_sys->Get("h");
  
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -239,6 +252,10 @@ void computeAccSelWe_Sys(const TString conf,            // input file
   vector<Double_t> nSelCorrVarv, nSelBCorrVarv, nSelECorrVarv;
   vector<Double_t> accCorrv, accBCorrv, accECorrv;
   vector<Double_t> accErrCorrv, accErrBCorrv, accErrECorrv;
+  vector<Double_t> nSelCorrvFSR, nSelCorrvMC, nSelCorrvBkg;
+  vector<Double_t> nSelCorrVarvFSR, nSelCorrVarvMC, nSelCorrVarvBkg;
+  vector<Double_t> accCorrvFSR, accCorrvMC, accCorrvBkg;
+  vector<Double_t> accErrCorrvFSR, accErrCorrvMC, accErrCorrvBkg;
 
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
  
@@ -268,6 +285,12 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     nSelCorrVarv.push_back(0);
     nSelBCorrVarv.push_back(0);
     nSelECorrVarv.push_back(0);
+    nSelCorrvFSR.push_back(0);
+    nSelCorrVarvFSR.push_back(0);
+    nSelCorrvMC.push_back(0);
+    nSelCorrVarvMC.push_back(0);
+    nSelCorrvBkg.push_back(0);
+    nSelCorrVarvBkg.push_back(0);
     
     for(Int_t iy=0; iy<=hHLTErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hHLTErr->GetNbinsX(); ix++) {
@@ -288,6 +311,7 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 //      if(ientry==10000) break;
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
@@ -306,7 +330,9 @@ void computeAccSelWe_Sys(const TString conf,            // input file
       nEvtsv[ifile]+=weight;
       
       // trigger requirement                
-      if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE)) continue;
+      // if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE)) continue;
+      
+      if (!isEleTrigger(triggerMenu, info->triggerBits, kFALSE, is13TeV)) continue;     
       
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -344,17 +370,21 @@ void computeAccSelWe_Sys(const TString conf,            // input file
             }
 
             double eleRamdom = gRandom->Gaus(0,1);
-            eleSmear = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 0., 0.);
-            float eleSmearEP = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 1., 0.);
-            float eleSmearEM = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, -1., 0.);
 
             if(sigma==0){
+              // // eleSmear = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 0., 0.);
+              eleSmear = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, 0., 0.);
               (vEle) *= 1. + eleSmear * eleRamdom;
             }else if(sigma==1){
+              // float eleSmearEP = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 1., 0.);
+              float eleSmearEP = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, 1., 0.);
               (vEle) *= 1. + eleSmearEP * eleRamdom;
             }else if(sigma==-1){
+              // float eleSmearEM = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, -1., 0.);
+              float eleSmearEM = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, -1., 0.);
               (vEle) *= 1.  + eleSmearEM * eleRamdom;
             }
+
         }
 
         
@@ -373,90 +403,111 @@ void computeAccSelWe_Sys(const TString conf,            // input file
 //        if(fabs(ele->scEta) > ETA_CUT && fabs(ele->eta) > ETA_CUT)       continue;  // lepton |eta| cut
 //        if(ele->pt < PT_CUT && ele->scEt < PT_CUT)  	     continue;  // lepton pT cut
 //        if(!passEleID(ele,info->rhoIso))     continue;  // lepton selection
-        if(vEle.Pt()           < PT_CUT)     continue;  // lepton pT cut
-        if(fabs(vEle.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-        if(!passEleID(ele, vEle, info->rhoIso))     continue;  // lepton selection
+  if(vEle.Pt()           < PT_CUT)     continue;  // lepton pT cut
+  if(fabs(vEle.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
+  if(!passEleTightID(ele, vEle, info->rhoIso))     continue;  // lepton selection
 
-	if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, kFALSE)) continue;
-        //if(!(ele->hltMatchBits[trigObjHLT])) continue;  // check trigger matching
+	// if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, kFALSE)) continue;
+  if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, kFALSE, is13TeV)) continue;
 
 	if(charge!=0 && ele->q!=charge) continue;  // check charge (if necessary)
-        
-	passSel=kTRUE;
-        goodEle = ele;  
-	vElefinal = vEle;
-      }
+    passSel=kTRUE;
+    goodEle = ele;  
+    vElefinal = vEle;
+  }
       
-      if(passSel) {
+  if(passSel) {
         
-	/******** We have a W candidate! HURRAY! ********/
-        Bool_t isBarrel = (fabs(vElefinal.Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+    /******** We have a W candidate! HURRAY! ********/
+    Bool_t isBarrel = (fabs(vElefinal.Eta())<ETA_BARREL) ? kTRUE : kFALSE;
 
-        Double_t corr=1;
-        if(dataHLTEffFile && zeeHLTEffFile) {
-//          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-//          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+    Double_t effdata, effmc;
+    Double_t corr=1;
+    Double_t effdataFSR, effdataMC, effdataBkg;
 
-	  char funcname[20];
-	  sprintf(funcname, "fitfcn_%d", getEtaBinLabel(vElefinal.Eta()));
-	  TF1 *fdt = (TF1*)f_hlt_data->Get(funcname);
-	  TF1 *fmc = (TF1*)f_hlt_mc  ->Get(funcname);
-	  Double_t effdata = fdt->Eval(TMath::Min(vElefinal.Pt(),119.0));
-	  Double_t effmc   = fmc->Eval(TMath::Min(vElefinal.Pt(),119.0));
-	  delete fdt;
-	  delete fmc;
+    effdata=1; effmc=1;
+    Double_t corrFSR=1;
+    Double_t corrMC=1;
+    Double_t corrBkg=1;
+    effdataFSR=1; effdataMC=1; effdataBkg=1;  
 
-	  corr *= effdata/effmc;
-        }
-        if(dataGsfSelEffFile && zeeGsfSelEffFile) {
-          Double_t effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * h_sys->GetBinContent(h_sys->GetXaxis()->FindBin(vElefinal.Eta()), h_sys->GetYaxis()->FindBin(vElefinal.Pt()));
-          Double_t effmc   = zeeGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          corr *= effdata/effmc;
-        }
-
-        if(dataHLTEffFile && zeeHLTEffFile) {
-          Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          Double_t errdata = TMath::Max(dataHLTEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()),dataHLTEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
-          Double_t errmc   = TMath::Max(zeeHLTEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()), zeeHLTEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
-          Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-          hHLTErr->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
-          if(isBarrel) hHLTErrB->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
-          else         hHLTErrE->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
-        }
-        if(dataGsfSelEffFile && zeeGsfSelEffFile) {
-          Double_t effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          Double_t effmc   = zeeGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
-          Double_t errdata = TMath::Max(dataGsfSelEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()),dataGsfSelEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
-          Double_t errmc   = TMath::Max(zeeGsfSelEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()), zeeGsfSelEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
-          Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-          hGsfSelErr->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
-          if(isBarrel) hGsfSelErrB->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
-          else         hGsfSelErrE->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
-        }
+    effdata *= (1.-dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt()));
+    effmc   *= (1.-zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt()));
+      
+    effdata = 1.-effdata;
+    effmc   = 1.-effmc;
+    corrFSR *= effdata/effmc; // alternate fsr model
+    corrMC *= effdata/effmc; // alternate mc gen model
+    corrBkg *= effdata/effmc; // alternate bkg model
+    corr *= effdata/effmc;
         
-	nSelv[ifile]+=weight;
-	nSelCorrv[ifile]+=weight*corr;
-	nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+    if(charge>0) {
+      effdataFSR *= dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * hSysGSFSelSigFSRPos->GetBinContent(hSysGSFSelSigFSRPos->GetXaxis()->FindBin(vElefinal.Eta()), hSysGSFSelSigFSRPos->GetYaxis()->FindBin(vElefinal.Pt()));
+      effdataMC *= dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * hSysGSFSelSigMCPos->GetBinContent(hSysGSFSelSigMCPos->GetXaxis()->FindBin(vElefinal.Eta()), hSysGSFSelSigMCPos->GetYaxis()->FindBin(vElefinal.Pt()));
+      effdataBkg *= dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * hSysGSFSelBkgPos->GetBinContent(hSysGSFSelBkgPos->GetXaxis()->FindBin(vElefinal.Eta()), hSysGSFSelBkgPos->GetYaxis()->FindBin(vElefinal.Pt()));
+    } else {
+      effdataFSR *= dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * hSysGSFSelSigFSRNeg->GetBinContent(hSysGSFSelSigFSRNeg->GetXaxis()->FindBin(vElefinal.Eta()), hSysGSFSelSigFSRNeg->GetYaxis()->FindBin(vElefinal.Pt()));
+      effdataMC *= dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * hSysGSFSelSigMCNeg->GetBinContent(hSysGSFSelSigMCNeg->GetXaxis()->FindBin(vElefinal.Eta()), hSysGSFSelSigMCNeg->GetYaxis()->FindBin(vElefinal.Pt()));
+      effdataBkg *= dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt()) * hSysGSFSelBkgNeg->GetBinContent(hSysGSFSelBkgNeg->GetXaxis()->FindBin(vElefinal.Eta()), hSysGSFSelBkgNeg->GetYaxis()->FindBin(vElefinal.Pt()));
+    }
+          
+    effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+    effmc   = zeeGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+    
+    corrFSR *= effdataFSR/effmc; // alternate fsr model
+    corrMC *= effdataMC/effmc; // alternate mc gen model
+    corrBkg *= effdataBkg/effmc; // alternate bkg model
+    corr *= effdata/effmc; // orig
+
+    if(dataHLTEffFile && zeeHLTEffFile) {
+      Double_t effdata = dataHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+      Double_t effmc   = zeeHLTEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+      Double_t errdata = TMath::Max(dataHLTEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()),dataHLTEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+      Double_t errmc   = TMath::Max(zeeHLTEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()), zeeHLTEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+      Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+      hHLTErr->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+      if(isBarrel) hHLTErrB->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+      else         hHLTErrE->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+    }
+    if(dataGsfSelEffFile && zeeGsfSelEffFile) {
+      Double_t effdata = dataGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+      Double_t effmc   = zeeGsfSelEff.getEff(vElefinal.Eta(), vElefinal.Pt());
+      Double_t errdata = TMath::Max(dataGsfSelEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()),dataGsfSelEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+      Double_t errmc   = TMath::Max(zeeGsfSelEff.getErrLow(vElefinal.Eta(), vElefinal.Pt()), zeeGsfSelEff.getErrHigh(vElefinal.Eta(), vElefinal.Pt()));
+      Double_t err     = corr*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
+      hGsfSelErr->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+      if(isBarrel) hGsfSelErrB->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+      else         hGsfSelErrE->Fill(vElefinal.Eta(),vElefinal.Pt(),err);
+    }
+        
+    nSelv[ifile]+=weight;
+    nSelCorrv[ifile]+=weight*corr;
+    nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+    nSelCorrvFSR[ifile]+=weight*corrFSR;
+	  nSelCorrvMC[ifile]+=weight*corrMC;
+	  nSelCorrvBkg[ifile]+=weight*corrBkg;
+    nSelCorrVarvFSR[ifile]+=weight*weight*corrFSR*corrFSR;
+	  nSelCorrVarvMC[ifile]+=weight*weight*corrMC*corrMC;
+	  nSelCorrVarvBkg[ifile]+=weight*weight*corrBkg*corrBkg;
 
   	if(isBarrel) { 
-	  nSelBv[ifile]+=weight;
-	  nSelBCorrv[ifile]+=weight*corr;
-	  nSelBCorrVarv[ifile]+=weight*weight*corr*corr;
+      nSelBv[ifile]+=weight;
+      nSelBCorrv[ifile]+=weight*corr;
+      nSelBCorrVarv[ifile]+=weight*weight*corr*corr;
 	  	
-	} else { 
-	  nSelEv[ifile]+=weight;
-	  nSelECorrv[ifile]+=weight*corr;
-	  nSelECorrVarv[ifile]+=weight*weight*corr*corr;
-	}
-      }
+    } else { 
+      nSelEv[ifile]+=weight;
+      nSelECorrv[ifile]+=weight*corr;
+      nSelECorrVarv[ifile]+=weight*weight*corr*corr;
     }
+    }
+  }
     
     Double_t var=0, varB=0, varE=0;
     for(Int_t iy=0; iy<=hHLTErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hHLTErr->GetNbinsX(); ix++) {
         Double_t err;
-	err=hHLTErr->GetBinContent(ix,iy);  var+=err*err;
+        err=hHLTErr->GetBinContent(ix,iy);  var+=err*err;
         err=hHLTErrB->GetBinContent(ix,iy); varB+=err*err;
         err=hHLTErrE->GetBinContent(ix,iy); varE+=err*err;
       }
@@ -465,15 +516,20 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     for(Int_t iy=0; iy<=hGsfSelErr->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hGsfSelErr->GetNbinsX(); ix++) {
         Double_t err;
-	err=hGsfSelErr->GetBinContent(ix,iy);  var+=err*err;
-	err=hGsfSelErrB->GetBinContent(ix,iy); varB+=err*err;
-	err=hGsfSelErrE->GetBinContent(ix,iy); varE+=err*err;
+        err=hGsfSelErr->GetBinContent(ix,iy);  var+=err*err;
+        err=hGsfSelErrB->GetBinContent(ix,iy); varB+=err*err;
+        err=hGsfSelErrE->GetBinContent(ix,iy); varE+=err*err;
       }
     }
 
     nSelCorrVarv[ifile]+=var;
     nSelBCorrVarv[ifile]+=varB;
     nSelECorrVarv[ifile]+=varE;
+    nSelCorrVarvFSR[ifile]+=var;
+    nSelCorrVarvMC[ifile]+=var;
+    nSelCorrVarvBkg[ifile]+=var;
+    
+    
     
     // compute acceptances
     accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(sqrt(accv[ifile]*(1.+accv[ifile])/nEvtsv[ifile]));
@@ -483,6 +539,11 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]);   accErrCorrv.push_back(accCorrv[ifile]*sqrt(nSelCorrVarv[ifile]/nSelCorrv[ifile]/nSelCorrv[ifile] + 1./nEvtsv[ifile]));
     accBCorrv.push_back(nSelBCorrv[ifile]/nEvtsv[ifile]); accErrBCorrv.push_back(accBCorrv[ifile]*sqrt(nSelBCorrVarv[ifile]/nSelBCorrv[ifile]/nSelBCorrv[ifile] + 1./nEvtsv[ifile]));
     accECorrv.push_back(nSelECorrv[ifile]/nEvtsv[ifile]); accErrECorrv.push_back(accECorrv[ifile]*sqrt(nSelECorrVarv[ifile]/nSelECorrv[ifile]/nSelECorrv[ifile] + 1./nEvtsv[ifile]));
+    
+    accCorrvFSR.push_back(nSelCorrvFSR[ifile]/nEvtsv[ifile]); accErrCorrvFSR.push_back(accCorrvFSR[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvFSR[ifile]*nSelCorrvFSR[ifile]) + 1./nEvtsv[ifile]));
+    accCorrvMC.push_back(nSelCorrvMC[ifile]/nEvtsv[ifile]);   accErrCorrvMC.push_back(accCorrvMC[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvMC[ifile]*nSelCorrvMC[ifile]) + 1./nEvtsv[ifile]));
+    accCorrvBkg.push_back(nSelCorrvBkg[ifile]/nEvtsv[ifile]); accErrCorrvBkg.push_back(accCorrvBkg[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvBkg[ifile]*nSelCorrvBkg[ifile]) + 1./nEvtsv[ifile]));
+    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); accErrCorrv.push_back(accCorrv[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
     
     delete infile;
     infile=0, eventTree=0;  
@@ -520,6 +581,13 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     cout << "  ==eff corr==> " << accECorrv[ifile] << " +/- " << accErrECorrv[ifile] << endl;
     cout << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     cout << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
+    cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
+    cout << "  ==pct diff (FSR) ==> " << 100*(accCorrvFSR[ifile]-accCorrv[ifile])/accCorrv[ifile] <<  endl;
+    cout << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
+    cout << "  ==pct diff (MC) ==> " << 100*(accCorrvMC[ifile]-accCorrv[ifile])/accCorrv[ifile]  << endl;
+    cout << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
+    cout << "  ==pct diff (bkg) ==> " << 100*(accCorrvBkg[ifile]-accCorrv[ifile])/accCorrv[ifile] << endl;
     cout << endl;
   }
   
@@ -551,6 +619,13 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     txtfile << "  ==eff corr==> " << accECorrv[ifile] << " +/- " << accErrECorrv[ifile] << endl;
     txtfile << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     txtfile << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
+    txtfile << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    txtfile << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
+    txtfile << "  ==pct diff (FSR) ==> " << 100*(accCorrvFSR[ifile]-accCorrv[ifile])/accCorrv[ifile]  << endl;
+    txtfile << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
+    txtfile << "  ==pct diff (MC) ==> " << 100*(accCorrvMC[ifile]-accCorrv[ifile])/accCorrv[ifile]   <<endl;
+    txtfile << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
+    txtfile << "  ==pct diff (bkg) ==> " << 100*(accCorrvBkg[ifile]-accCorrv[ifile])/accCorrv[ifile]  << endl;
     txtfile << endl;
   }
   txtfile.close();  

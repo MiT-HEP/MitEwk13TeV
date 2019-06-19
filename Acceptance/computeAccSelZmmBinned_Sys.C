@@ -37,8 +37,8 @@
 #include "../Utils/MyTools.hh"      // various helper functions
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 #endif
 
 //=== MAIN MACRO ================================================================================================= 
@@ -69,20 +69,20 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   // efficiency files
   // const TString inputDir = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/Zmm/";
   
-  const TString dataHLTEffName_pos = inputDir + "Data/MuHLTEff_aMCxPythia_v0/Positive/eff.root";
-  const TString dataHLTEffName_neg = inputDir + "Data/MuHLTEff_aMCxPythia_v0/Negative/eff.root";
-  const TString zmmHLTEffName_pos  = inputDir + "MC/MuHLTEff_aMCxPythia_v0/Positive/eff.root";
-  const TString zmmHLTEffName_neg  = inputDir + "MC/MuHLTEff_aMCxPythia_v0/Negative/eff.root";
+  const TString dataHLTEffName_pos = inputDir + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = inputDir + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEffName_pos  = inputDir + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEffName_neg  = inputDir + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataSelEffName_pos = inputDir + "Data/MuSITEff_aMCxPythia_v0/Positive/eff.root";
-  const TString dataSelEffName_neg = inputDir + "Data/MuSITEff_aMCxPythia_v0/Negative/eff.root";
-  const TString zmmSelEffName_pos  = inputDir + "MC/MuSITEff_aMCxPythia_v0/Positive/eff.root";
-  const TString zmmSelEffName_neg  = inputDir + "MC/MuSITEff_aMCxPythia_v0/Negative/eff.root";
+  const TString dataSelEffName_pos = inputDir + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEffName_neg = inputDir + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEffName_pos  = inputDir + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEffName_neg  = inputDir + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataStaEffName_pos = inputDir + "Data/MuStaEff_aMCxPythia_v0/Combined/eff.root";
-  const TString dataStaEffName_neg = inputDir + "Data/MuStaEff_aMCxPythia_v0/Combined/eff.root";
-  const TString zmmStaEffName_pos  = inputDir + "MC/MuStaEff_aMCxPythia_v0/Combined/eff.root";
-  const TString zmmStaEffName_neg  = inputDir + "MC/MuStaEff_aMCxPythia_v0/Combined/eff.root";
+  const TString dataStaEffName_pos = inputDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEffName_neg = inputDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_pos  = inputDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_neg  = inputDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
 
   // uncertainty files
   TFile *fSysSIT = TFile::Open(sysFileSIT);
@@ -244,7 +244,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   TTree *eventTree=0;
    
   // Variables to store acceptances and uncertainties (per input file)
-  vector<Double_t> nEvtsv, nSelv;
+  vector<Double_t> nEvtsv, nSelv, nAllv;
   vector<Double_t> nSelCorrv, nSelCorrVarv;
   vector<Double_t> accv, accCorrv;
   vector<Double_t> accErrv, accErrCorrv;
@@ -271,6 +271,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     eventTree->SetBranchAddress("Muon",          &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");   
     eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
 
+    nAllv.push_back(0);
     nEvtsv.push_back(0);
     nSelv.push_back(0);
     nSelCorrv.push_back(0);
@@ -285,22 +286,26 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     //
     // loop over events
     //      
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.01*eventTree->GetEntries()); ientry++) {
-      if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+    // for(UInt_t ientry=895100; ientry<895102; ientry++) {
+      if(ientry%1000000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
-
+      // if(info->evtNum!=6768167)continue;
       Int_t glepq1=-99;
       Int_t glepq2=-99;
+      bool alreadyDid=false;
 
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
+      
+      nAllv[ifile]+=gen->weight;
       TLorentzVector *vec=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&glepq1,&glepq2,1);
-      if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
+      if((vec->M()<MASS_LOW || vec->M()>MASS_HIGH)) continue;
       delete vec; delete lep1; delete lep2;
 
       vertexArr->Clear();
@@ -357,8 +362,8 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
 	      Double_t corrMC=1;
 	      Double_t corrBkg=1;
 	  
-	  effdata=1; effmc=1;    
-	  effdataFSR=1; effdataMC=1; effdataBkg=1;  
+	      effdata=1; effmc=1;    
+	      effdataFSR=1; effdataMC=1; effdataBkg=1;  
           if(mu1->q>0) { 
             effdata *= (1.-dataHLTEff_pos.getEff(mu1->eta, mu1->pt)); 
             effmc   *= (1.-zmmHLTEff_pos.getEff(mu1->eta, mu1->pt)); 
@@ -386,7 +391,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
             effdataMC  *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * hSysSITSigMCPos->GetBinContent(hSysSITSigMCPos->GetXaxis()->FindBin(mu1->eta), hSysSITSigMCPos->GetYaxis()->FindBin(mu1->pt));
             effdataBkg *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * hSysSITBkgPos->GetBinContent(hSysSITBkgPos->GetXaxis()->FindBin(mu1->eta), hSysSITBkgPos->GetYaxis()->FindBin(mu1->pt));
             effdata *= dataSelEff_pos.getEff(mu1->eta, mu1->pt); // original
-            // std::cout << "original " << effdata << "  unc " << effdataFSR << std::endl;
+            // std::cout << "original " << effdata << "  unc " << effdataFSR << "  ratio " << effdata/effdataFSR << std::endl;
             effmc   *= zmmSelEff_pos.getEff(mu1->eta, mu1->pt);
           } else {
             effdataFSR *= dataSelEff_neg.getEff(mu1->eta, mu1->pt) * hSysSITSigFSRNeg->GetBinContent(hSysSITSigFSRNeg->GetXaxis()->FindBin(mu1->eta), hSysSITSigFSRNeg->GetYaxis()->FindBin(mu1->pt));
@@ -413,6 +418,8 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
           corrMC *= effdataMC/effmc; // alternate mc gen model
           corrBkg *= effdataBkg/effmc; // alternate bkg model
           corr *= effdata/effmc; // orig
+    
+    // std::cout << "corr/corrFSR1  " << (corr/corrFSR-1)*100 << std::endl;
     
           effdata=1; effmc=1;
 	     effdataFSR=1; effdataMC=1; effdataBkg=1;  
@@ -447,6 +454,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
           corrBkg *= effdataBkg/effmc;
           corr *= effdata/effmc;
     
+    // std::cout << "corr/corrFSR2  " << (corr/corrFSR-1)*100 << std::endl;
 	  // scale factor uncertainties                                                                                                                                         
 	  // STANDALONE
           if(mu1->q>0) {
@@ -556,7 +564,9 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
             Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
             hHLTErr_neg->Fill(mu2->eta, mu2->pt, errHLT);
           }
-	  
+          if(alreadyDid) continue;
+          alreadyDid=true;
+	  // std::cout << info->evtNum << " " << corr << " " << std::endl;
 	  nSelv[ifile]    +=weight;
 	  nSelCorrvFSR[ifile]+=weight*corrFSR;
 	  nSelCorrvMC[ifile]+=weight*corrMC;
@@ -666,6 +676,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     cout << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
     cout << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
     cout << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
+    cout << "  fraction passing gen cut: " << nEvtsv[ifile] << " / " << nAllv[ifile] << " = " << nEvtsv[ifile]/nAllv[ifile] << endl;
     cout << endl;
   }
   
@@ -693,6 +704,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     txtfile << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
     txtfile << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
     txtfile << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
+    txtfile << "  fraction passing gen cut: " << nEvtsv[ifile] << " / " << nAllv[ifile] << " = " << nEvtsv[ifile]/nAllv[ifile] << endl;
     txtfile << endl;
   }
   txtfile.close();
