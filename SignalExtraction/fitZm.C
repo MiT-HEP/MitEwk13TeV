@@ -140,10 +140,10 @@ void fitZm(const TString  outputDir,   // output directory
   // bool doRecoilplot=true;
   bool doRecoilplot=false;
   // bool doDiago = false;
-  bool doDiago = false;
-  bool doKeys=true;
+  bool doDiago = true;
+  bool doKeys=false;
   bool doEta=false;
-  bool doInclusive=false;
+  bool doInclusive=true;
   bool doToys = false;
   bool doShittyRecoil=false;
 
@@ -198,19 +198,28 @@ void fitZm(const TString  outputDir,   // output directory
   
   if(doInclusive && !doDiago){
   
-    // // PF MET
-  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G/",directory2.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()));
+  
+   recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()));
+    // // PF MET w/ 2 gaussians
+  // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()));
+  // recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G/",directory2.Data()));
+  // recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()));
   
     // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_bigBin_v1/",directory2.Data()));
     // recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_bigBin_v1/",directory2.Data()));
     // recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_bigBin_v1/",directory2.Data()));
   
   } else if (doInclusive && doDiago){
-      recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()), rec_sig);
-      recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G/",directory2.Data()), rec_sig);
-     recoilCorr->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()), rec_sig);
+    
+       recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()), rec_sig);
+  recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_3G_v1/",directory2.Data()), rec_sig);
+  recoilCorr->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()), rec_sig);
+  
+      // recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()), rec_sig);
+      // recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_2G_v1/",directory2.Data()), rec_sig);
+     // recoilCorr->loadRooWorkspacesDiagMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_2G/",directory2.Data()), rec_sig);
      
            // recoilCorr->loadRooWorkspacesDiagMCtoCorrect(Form("%s/LowPU2017ID_13TeV_ZmmMCPF_bigBin_v1/",directory2.Data()), rec_sig);
       // recoilCorr->loadRooWorkspacesDiagData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF_bigBin_v1/",directory2.Data()), rec_sig);
@@ -569,22 +578,22 @@ void fitZm(const TString  outputDir,   // output directory
   
   // double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
   // // double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300};
-  double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50.0};
+  // double bins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50.0};
   // double bins[] = {0,2,5,10,20,30,40,50,60,70,80,90,100,125,150,175,200};
-  // double bins[] = {0,5,10,15,20,25,30,40,50,60,70,80,100};
+  double bins[] = {0,5,10,15,20,25,30,40,50,60,70,80,100};
 // double bins[] ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100/*,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300*/};
 //     double bins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100};// ={0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};// {0,2.5,5,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100/*,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200*/};
   int nbins = sizeof(bins)/sizeof(double)-1; // calculate the number of bins
   
-  TH2F *hU1vsZpt_rsp = new TH2F("hU1vsZpt_rsp","",nbins, bins,400,-12.0,12.0); // Get resp. & res. for Parallel component from this
+  TH2F *hU1vsZpt_rsp = new TH2F("hU1vsZpt_rsp","",nbins, bins,400,-20.0,20.0); // Get resp. & res. for Parallel component from this
   TH2F *hU1vsZpt = new TH2F("hU1vsZpt","",nbins, bins,400, -500,300);
   TH2F *hU2vsZpt = new TH2F("hU2vsZpt","",nbins, bins,300,-500,300); // Get resp. & res. for perpendicular component from this
   
-  TH2F *hU1vsZpt_rsp_MC = new TH2F("hU1vsZpt_rsp_MC","",nbins, bins,400,-12.0,12.0); // Get resp. & res. for Parallel component from this
+  TH2F *hU1vsZpt_rsp_MC = new TH2F("hU1vsZpt_rsp_MC","",nbins, bins,400,-20.0,20.0); // Get resp. & res. for Parallel component from this
   TH2F *hU1vsZpt_MC = new TH2F("hU1vsZpt_MC","",nbins, bins,400, -500,300);
   TH2F *hU2vsZpt_MC = new TH2F("hU2vsZpt_MC","",nbins, bins,300,-500,300); // Get resp. & res. for perpendicular component from this
   
-  TH2F *hU1vsZpt_rsp_MC_raw = new TH2F("hU1vsZpt_rsp_MC_raw","",nbins, bins,400,-12.0,12.0); // Get resp. & res. for Parallel component from this
+  TH2F *hU1vsZpt_rsp_MC_raw = new TH2F("hU1vsZpt_rsp_MC_raw","",nbins, bins,400,-20.0,20.0); // Get resp. & res. for Parallel component from this
   TH2F *hU1vsZpt_MC_raw = new TH2F("hU1vsZpt_MC_raw","",nbins, bins,400, -500,300);
   TH2F *hU2vsZpt_MC_raw = new TH2F("hU2vsZpt_MC_raw","",nbins, bins,300,-500,300); // Get resp. & res. for perpendicular component from this
   
@@ -738,7 +747,7 @@ void fitZm(const TString  outputDir,   // output directory
     // loop over events
     //
     // for(UInt_t ientry=0; ientry<500; ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.1); ientry++) {
+    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.01); ientry++) {
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
 
@@ -902,7 +911,7 @@ void fitZm(const TString  outputDir,   // output directory
           hDataRecoilp->Fill(pU);
           hDataMetp->Fill(corrMetWithLepton);
 	     // hDataMassp->Fill(dilep->M());
-	     hDataMassp->Fill((mu1+mu2).M());
+	         hDataMassp->Fill((mu1+mu2).M());
           hU1vsZpt_rsp->Fill(vDilepCor.Mod(),pU1/vDilepCor.Mod());
           hU1vsZpt->Fill(vDilepCor.Mod(),pU1);
           hU2vsZpt->Fill(vDilepCor.Mod(),pU2);
@@ -910,6 +919,7 @@ void fitZm(const TString  outputDir,   // output directory
           // hU1vsZpt->Fill(genVPt,pU1);
           // hU2vsZpt->Fill(genVPt,pU2);
           hDataZpt->Fill(vDilepCor.Mod());
+          // if(vDilepCor.Mod()<1.0) std::cout << "mu1.Pt " << mu1.Pt() << "  mu2.Pt " <<   mu2.Pt() << "  dilep "  << vDilepCor.Mod()  << " rsp " << pU1/vDilepCor.Mod() << std::endl;
         }
         else    { hDataMetm->Fill(corrMetPhiLepton); }
       } else if(typev[ifile]==eAntiData) {
@@ -933,7 +943,7 @@ void fitZm(const TString  outputDir,   // output directory
 
 
 		// remove roch cor for low PU
-        double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
+      double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
       double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genlep2->Pt());//, s=0, m=0);
 	  // rmcor->momcor_mc(mu1,q1,0,qter1);
 	  // rmcor->momcor_mc(mu2,q2,0,qter2);
@@ -1058,20 +1068,24 @@ void fitZm(const TString  outputDir,   // output directory
               
 	      if(typev[ifile]==eZmumu)
 		{
-			  // hU1vsZpt_rsp_MC_raw->Fill(vDilepCor.Mod(),u1/vDilepCor.Mod(),weight);
-              // hU1vsZpt_MC_raw->Fill(vDilepCor.Mod(),u1,weight);
-              // hU2vsZpt_MC_raw->Fill(vDilepCor.Mod(),u2,weight);
+			  hU1vsZpt_rsp_MC_raw->Fill(vDilepCor.Mod(),u1/vDilepCor.Mod(),weight);
+              hU1vsZpt_MC_raw->Fill(vDilepCor.Mod(),u1,weight);
+              hU2vsZpt_MC_raw->Fill(vDilepCor.Mod(),u2,weight);
               
-              hU1vsZpt_rsp_MC_raw->Fill(genVPt,u1/genVPt,weight);
-              hU1vsZpt_MC_raw->Fill(genVPt,u1,weight);
-              hU2vsZpt_MC_raw->Fill(genVPt,u2,weight);
+              // hU1vsZpt_rsp_MC_raw->Fill(genVPt,u1/genVPt,weight);
+              // hU1vsZpt_MC_raw->Fill(genVPt,u1,weight);
+              // hU2vsZpt_MC_raw->Fill(genVPt,u2,weight);
+
+              
 
               // hU1vsZpt_rsp_MC->Fill(dilep->Pt(),pU1/dilep->Pt(),weight);
               // hU1vsZpt_MC->Fill(dilep->Pt(),pU1,weight);
               // hU2vsZpt_MC->Fill(dilep->Pt(),pU2,weight);
-			 hU1vsZpt_rsp_MC->Fill(vDilepCor.Mod(),pU1/vDilepCor.Mod(),weight*recoilWeight);
+			      hU1vsZpt_rsp_MC->Fill(vDilepCor.Mod(),pU1/vDilepCor.Mod(),weight*recoilWeight);
             hU1vsZpt_MC->Fill(vDilepCor.Mod(),pU1,weight*recoilWeight);
             hU2vsZpt_MC->Fill(vDilepCor.Mod(),pU2,weight*recoilWeight);
+            
+            // if(vDilepCor.Mod()<1.0) std::cout << "mu1.Pt " << mu1.Pt() << "  mu2.Pt " <<   mu2.Pt() << "  dilep "  << vDilepCor.Mod() << "  gen lep " << genVPt << " rsp " << pU1/vDilepCor.Mod() << std::endl;
 			
 		  // hWmunuMetp->Fill(abs(pU2),weight*w2);
 		  // hWmunuRecoilp->Fill(abs(pU1),weight*w2);			
@@ -1178,7 +1192,7 @@ void fitZm(const TString  outputDir,   // output directory
   // RooRealVar nQCDp("nQCDp","nQCDp",25000.,0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.01,0,5) ;
   cewkp.setVal(hEWKMetp->Integral()/hWmunuMetp->Integral());
-  cewkp.setVal(0);
+  // cewkp.setVal(0);
   cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
   RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",0.05*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
@@ -1264,6 +1278,10 @@ void fitZm(const TString  outputDir,   // output directory
   RooDataHist wmunuRecoilp("wmunuRecoilp","wmunuRecoilp",RooArgSet(pfmet),hWmunuRecoilp); RooHistPdf pdfWmpRecoil("wmprec","wmprec",pfmet,wmunuRecoilp,1);
   RooDataHist wmunuZpt("wmunuZpt","wmunuZpt",RooArgSet(pfmet),hWmunuZpt); RooHistPdf pdfWmZpt("wmzpt","wmzpt",pfmet,wmunuZpt,1);
   RooDataHist wmunuMassp("wmunuMassp","wmunuMassp",RooArgSet(pfmet2),hWmunuMassp); RooHistPdf pdfWmpMass("wmpmass","wmpmass",pfmet2,wmunuMassp,1);
+  
+  // RooDataHist ewkRecoilp("ewkRecoilp","ewkRecoilp",RooArgSet(pfmet),hEWKRecoilp); RooHistPdf pdfEWKpRecoil("ewkprec","ewkprec",pfmet,ewkRecoilp,1);
+  // RooDataHist ewkZpt("ewkZpt","ewkZpt",RooArgSet(pfmet),hEWKZpt); RooHistPdf pdfEWKZpt("ewkzpt","ewkzpt",pfmet,ewkZpt,1);
+  // RooDataHist ewkMassp("ewkMassp","ewkMassp",RooArgSet(pfmet2),hEWKMassp); RooHistPdf pdfEWKpMass("ewkpmass","ewkpmass",pfmet2,ewkMassp,1);
    
   // EWK+top PDFs
   RooDataHist ewkMet ("ewkMET", "ewkMET", RooArgSet(pfmet),hEWKMet);  RooHistPdf pdfEWK ("ewk", "ewk", pfmet,ewkMet, 1);
@@ -1275,16 +1293,20 @@ void fitZm(const TString  outputDir,   // output directory
   RooDataHist ewkMassp("ewkMassp","ewkMassp",RooArgSet(pfmet2),hEWKMassp); RooHistPdf pdfEWKpMass("ewkpmass","ewkpmass",pfmet2,ewkMassp,1); 
   // Signal + Background PDFs
   RooAddPdf pdfMet ("pdfMet", "pdfMet", RooArgList(pdfWm,pdfEWK),   RooArgList(nSig,nEWK));  
-  // RooAddPdf pdfMetp("pdfMetp","pdfMetp",RooArgList(pdfWmp,pdfEWKp),RooArgList(nSigp,nEWKp));
-  RooAddPdf pdfMetp("pdfMetp","pdfMetp",RooArgList(pdfWmp),RooArgList(nSigp));
+  RooAddPdf pdfMetp("pdfMetp","pdfMetp",RooArgList(pdfWmp,pdfEWKp),RooArgList(nSigp,nEWKp));
+  // RooAddPdf pdfMetp("pdfMetp","pdfMetp",RooArgList(pdfWmp),RooArgList(nSigp));
   RooAddPdf pdfMetm("pdfMetm","pdfMetm",RooArgList(pdfWmm,pdfEWKm),RooArgList(nSigm,nEWKm));
   
   
   // RooAddPdf pdfRecoilp("pdRecoilp","pdfRecoilp",RooArgList(pdfWmpRecoil,pdfEWKpRecoil),RooArgList(nSigRp,nEWKRp));
   // RooAddPdf pdfZpt("pdfZpt","pdfZpt",RooArgList(pdfWmZpt,pdfEWKZpt),RooArgList(nSigZp,nEWKZp)); 
-  RooAddPdf pdfRecoilp("pdRecoilp","pdfRecoilp",RooArgList(pdfWmpRecoil),RooArgList(nSigRp));
-  RooAddPdf pdfMassp("pdfMassp","pdfMassp",RooArgList(pdfWmpMass),RooArgList(nSigMp));
+  // RooAddPdf pdfRecoilp("pdRecoilp","pdfRecoilp",RooArgList(pdfWmpRecoil),RooArgList(nSigRp));
+  // RooAddPdf pdfMassp("pdfMassp","pdfMassp",RooArgList(pdfWmpMass),RooArgList(nSigMp));
   RooAddPdf pdfZpt("pdfZpt","pdfZpt",RooArgList(pdfWmZpt),RooArgList(nSigZp));
+  
+  RooAddPdf pdfRecoilp("pdRecoilp","pdfRecoilp",RooArgList(pdfWmpRecoil,pdfEWKpRecoil),RooArgList(nSigRp, nEWKRp));
+  RooAddPdf pdfMassp("pdfMassp","pdfMassp",RooArgList(pdfWmpMass,pdfEWKpMass),RooArgList(nSigMp, nEWKMp));
+  // RooAddPdf pdfZpt("pdfZpt","pdfZpt",RooArgList(pdfWmZpt,pdfEWKZpt),RooArgList(nSigZp, nEWKZp));
  
   //
   // Perform fits
@@ -1624,6 +1646,31 @@ void fitZm(const TString  outputDir,   // output directory
 	  double mean=0; double rms=0;
 	  sprintf(name2,"%f < Z pT < %f",hU2vsZpt->GetXaxis()->GetBinLowEdge(i),hU2vsZpt->GetXaxis()->GetBinLowEdge(i+1));
 	  
+    sprintf(name1,"response_U1_bin%d",i);
+	  TH1D* hU1vsZpt_rsp_pfy = hU1vsZpt_rsp->ProjectionY("hU1vsZpt_rsp_pfy",i,i);
+	  TH1D* hU1vsZpt_rsp_MC_pfy = hU1vsZpt_rsp_MC->ProjectionY("hU1vsZpt_rsp_MC_pfy",i,i);
+	  TH1D* hU1vsZpt_rsp_MC_raw_pfy = hU1vsZpt_rsp_MC_raw->ProjectionY("hU1vsZpt_rsp_MC_raw_pfy",i,i);
+	  mean=hU1vsZpt_rsp_pfy->GetMean(); rms=hU1vsZpt_rsp_pfy->GetRMS();
+	  hU1vsZpt_rsp_pfy->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
+	  hU1vsZpt_rsp_MC_pfy->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
+	  hU1vsZpt_rsp_MC_raw_pfy->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
+	  hU1vsZpt_rsp_pfy->Scale(1/hU1vsZpt_rsp_pfy->Integral());
+	  hU1vsZpt_rsp_MC_pfy->Scale(1/hU1vsZpt_rsp_MC_pfy->Integral());
+	  hU1vsZpt_rsp_MC_raw_pfy->Scale(1/hU1vsZpt_rsp_MC_raw_pfy->Integral());
+	  CPlot corrResp_par(name1,name2,"U_{#parallel}","Nevents");
+      corrResp_par.AddHist1D(hU1vsZpt_rsp_pfy        ,"Data"  ,"", kBlack ); // Draw data with closed circles
+      corrResp_par.AddHist1D(hU1vsZpt_rsp_MC_raw_pfy ,"MC w/o Recoil Corr" ,"", kBlue   ,20);
+      corrResp_par.AddHist1D(hU1vsZpt_rsp_MC_pfy     ,"MC w/ Recoil Corr","", kRed ,34); // Draw MC with open circles
+      // corrResp_prp.SetYRange(0.0, 50.0);
+      corrResp_par.Draw(c2,kTRUE,format);
+      sprintf(name1,"hRecoilU1_bin%d",i);
+      TH1D *hU1Diff_Rsp = (TH1D*) hU1vsZpt_rsp_pfy->Clone(name1);
+      hU1Diff_Rsp->Divide(hU1vsZpt_rsp_MC_raw_pfy);
+      hU1Diff_Rsp->Write();
+      std::cout << "bin" << i << "  raw mean " << hU1vsZpt_rsp_MC_raw_pfy->GetMean() << "  raw rms " << hU1vsZpt_rsp_MC_raw_pfy->GetRMS() << std::endl;
+      std::cout << "bin" << i << "  par mean " << hU1vsZpt_rsp_MC_pfy->GetMean() << "  par rms " << hU1vsZpt_rsp_MC_pfy->GetRMS() << std::endl;
+      std::cout << "bin" << i << "  dat mean " << hU1vsZpt_rsp_pfy->GetMean() << "  dat rms " << hU1vsZpt_rsp_pfy->GetRMS() << std::endl;
+    
 	  sprintf(name1,"resolution_U1_bin%d",i);
 	  TH1D* hU1vsZpt_pfy = hU1vsZpt->ProjectionY("hU1vsZpt_pfy",i,i);
 	  TH1D* hU1vsZpt_MC_pfy = hU1vsZpt_MC->ProjectionY("hU1vsZpt_MC_pfy",i,i);
@@ -1635,12 +1682,12 @@ void fitZm(const TString  outputDir,   // output directory
 	  hU1vsZpt_pfy->Scale(1/hU1vsZpt_pfy->Integral());
 	  hU1vsZpt_MC_pfy->Scale(1/hU1vsZpt_MC_pfy->Integral());
 	  hU1vsZpt_MC_raw_pfy->Scale(1/hU1vsZpt_MC_raw_pfy->Integral());
-	  CPlot corrResp_par(name1,name2,"U_{#parallel}","Nevents");
-      corrResp_par.AddHist1D(hU1vsZpt_pfy        ,"Data"  ,"", kBlack ); // Draw data with closed circles
-      corrResp_par.AddHist1D(hU1vsZpt_MC_raw_pfy ,"MC w/o Recoil Corr" ,"", kBlue   ,20);
-      corrResp_par.AddHist1D(hU1vsZpt_MC_pfy     ,"MC w/ Recoil Corr","", kRed ,34); // Draw MC with open circles
+	  CPlot corrReso_par(name1,name2,"U_{#parallel}","Nevents");
+      corrReso_par.AddHist1D(hU1vsZpt_pfy        ,"Data"  ,"", kBlack ); // Draw data with closed circles
+      corrReso_par.AddHist1D(hU1vsZpt_MC_raw_pfy ,"MC w/o Recoil Corr" ,"", kBlue   ,20);
+      corrReso_par.AddHist1D(hU1vsZpt_MC_pfy     ,"MC w/ Recoil Corr","", kRed ,34); // Draw MC with open circles
       // corrResp_prp.SetYRange(0.0, 50.0);
-      corrResp_par.Draw(c2,kTRUE,format);
+      corrReso_par.Draw(c2,kTRUE,format);
       sprintf(name1,"hRecoilU1_bin%d",i);
       TH1D *hU1Diff = (TH1D*) hU1vsZpt_pfy->Clone(name1);
       hU1Diff->Divide(hU1vsZpt_MC_raw_pfy);
@@ -1661,15 +1708,15 @@ void fitZm(const TString  outputDir,   // output directory
 	  hU2vsZpt_pfy->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
 	  hU2vsZpt_MC_pfy->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
 	  hU2vsZpt_MC_raw_pfy->GetXaxis()->SetRangeUser(mean-4*rms,mean+4*rms);
-	  CPlot corrResp_prp(name1,name2,"U_{#perp}","Nevents");
+	  CPlot corrReso_prp(name1,name2,"U_{#perp}","Nevents");
 	  hU2vsZpt_pfy->Scale(1/hU2vsZpt_pfy->Integral());
 	  hU2vsZpt_MC_pfy->Scale(1/hU2vsZpt_MC_pfy->Integral());
 	  hU2vsZpt_MC_raw_pfy->Scale(1/hU2vsZpt_MC_raw_pfy->Integral());
-      corrResp_prp.AddHist1D(hU2vsZpt_pfy        ,"Data"  ,"", kBlack ); // Draw data with closed circles
-      corrResp_prp.AddHist1D(hU2vsZpt_MC_raw_pfy ,"MC w/o Recoil Corr" ,"", kBlue   ,20);
-      corrResp_prp.AddHist1D(hU2vsZpt_MC_pfy     ,"MC w/ Recoil Corr","", kRed ,34); // Draw MC with open circles
-      // corrResp_prp.SetYRange(0.0, 50.0);
-      corrResp_prp.Draw(c2,kTRUE,format);
+      corrReso_prp.AddHist1D(hU2vsZpt_pfy        ,"Data"  ,"", kBlack ); // Draw data with closed circles
+      corrReso_prp.AddHist1D(hU2vsZpt_MC_raw_pfy ,"MC w/o Recoil Corr" ,"", kBlue   ,20);
+      corrReso_prp.AddHist1D(hU2vsZpt_MC_pfy     ,"MC w/ Recoil Corr","", kRed ,34); // Draw MC with open circles
+      // corrReso_prp.SetYRange(0.0, 50.0);
+      corrReso_prp.Draw(c2,kTRUE,format);
       
       sprintf(name1,"hRecoilU2_bin%d",i);
       TH1D *hU2Diff = (TH1D*) hU2vsZpt_pfy->Clone(name1);
