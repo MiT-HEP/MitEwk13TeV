@@ -9,29 +9,11 @@ LUMI5=294.4 # Low PU 5 TeV 2017 ele trigger
 
 # LUMI2=199.270 # not used in Low PU atm
 
-# root -l -q plotResiduals.C+\(\"Zmm_lumi9_Wlike_ErrorBand_all\",${LUMI_9},0\) 
-#root -l -q plotResidualsEle.C+\(\"Zee_ErrorBand_Wlike_all_zoom\",${LUMI},0\) &
-#sleep 100
-#root -l -q fitWe.C+\(\"Wenu_default\",${LUMI},${LUMI},0\) #central
+NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV_wRecoil
 
-# root -l -q fitZm.C+\(\"Zmm_pf_lowPU13_pt25_rebin_fits_plotZeeMCwithZmmMC_lowPU_scEleCorr\",$LUMI,0\);
-# root -l -q fitZm.C+\(\"Zmm_newNtuple_LepEffSFs\",$LUMI,0\);
-# root -l -q fitZm.C+\(\"Zmm_13TeVMC_5TeVData_raw\",$LUMI,0\);
-# root -l -q fitZe.C+\(\"Zee_13TeV_2017EleID\",$LUMI13,0\);
+root -l -q fitWm_2d_v2.C+\(\"TEST_June18_Wptweight\",\"${NTUPLEDIR}\",\"Wmunu\",$LUMI13,$LUMI13\);
+# root -l -q fitWlikeZm.C+\(\"TEST_WlikeZm_Inclusive_3G_ptRW\",$LUMI13,$LUMI13\);
 
-# root -l -q fitZm.C+\(\"TEST_Zmm_13TeV_incl_bigBin_v1\",$LUMI13,0\);
-# root -l -q fitZm.C+\(\"TEST_Zmm_13TeV_2017ID_Eff_v2\",$LUMI13,0\);
-# root -l -q fitWlikeZm.C+\(\"TEST_Zmm_Wlike_incl_v0\",$LUMI13,0\);
-
-# root -l -q fitZm.C+\(\"Zmm_5TeV_Try2_NoPrefire\",$LUMI5,0\);
-# root -l -q fitZe.C+\(\"Zee_13TeV_AllCorr_noPrefire_fixLUMI\",$LUMI13,0\);
-# root -l -q fitZe.C+\(\"Zee_5TeV_Try2_WithPrefire_EE\",$LUMI5,0\);
-
-# root -l -q fitWm.C+\(\"TEST_Wm13_Independent_Pepe1_constEWK_v2\",$LUMI13,$LUMI13,0\);
-
-root -l -q fitWm_lumis_2d.C+\(\"TEST_Wm13_MET_IndepPepe2_gap02\",$LUMI13,$LUMI13,0\);
-# root -l -q fitWm_lumis_2d.C+\(\"TEST_Wm13_mT_25_v2_full\",$LUMI13,$LUMI13,0\);
-# root -l -q fitWe.C+\(\"Wenu_checkBkgShape_Fits_wSig\",$LUMI13,$LUMI13,0\);
-# root -l -q plotResiduals.C+\(\"TEST_Zmm_bigBin_Stat_v_Centr\",$LUMI13,0\);
+# root -l -q plotResiduals.C+\(\"TEST_2019June18_CheckFixedStaUnc_2GausStat_Keys_Eta_unzoom\",${LUMI13}\); 
 
 #rm *.so *.d

@@ -9,5 +9,5 @@ NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID
 LUMI=199.2
 
 #root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"Zee\",${LUMI}\,0\)
-root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"TEST_Zee_dataScale_full_v1_blah\",${LUMI}\,1\)
+root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"TEST_Zee_ReRun_CheckYield_PrefireDown\",${LUMI}\,1\)
 
