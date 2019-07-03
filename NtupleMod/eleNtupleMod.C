@@ -115,6 +115,15 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   const TString dataGsfSelEff2BinName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
   const TString zeeGsfSelEff2BinName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
   const TString zeeGsfSelEff2BinName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+  
+  // Efficiency Uncertainties
+  TFile *fSysGSFSel = TFile::Open(SysFileGSFSel);
+  TH2D  *hSysGSFSelSigFSRNeg = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigFSRNeg");
+  TH2D  *hSysGSFSelSigFSRPos = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigFSRPos"); 
+  TH2D  *hSysGSFSelSigMCNeg  = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigMCNeg"); 
+  TH2D  *hSysGSFSelSigMCPos  = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffSigMCPos"); 
+  TH2D  *hSysGSFSelBkgNeg    = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffBkgNeg"); 
+  TH2D  *hSysGSFSelBkgPos    = (TH2D*) fSysGSFSel->Get("hEleGSFSelEffBkgPos"); 
 
 
   Bool_t isData = (fileName.CompareTo("data_select.root")==0);
@@ -361,7 +370,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
   // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
     intree->GetEntry(ientry);
-    if(ientry%1000000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+    if(ientry%100000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
     // vector containing raw lepton info for correcting MET
     TVector2 vLepRaw((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));

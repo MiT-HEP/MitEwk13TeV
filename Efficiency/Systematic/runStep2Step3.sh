@@ -3,18 +3,19 @@
 # efftype=$2
 # binvar=$3
 ClusterID=$1
-binnum=$2
-NTOYS=$3
-FOLDER=$4
-EFFTYPE=$5
-CHARGE=$6
-POSTFIX=$7
-POSTFIX_alt=$8
+jobsnshit=$2
+binnum=$3
+NTOYS=$4
+FOLDER=$5
+EFFTYPE=$6
+CHARGE=$7
+POSTFIX=$8
+POSTFIX_alt=$9
 
 WORKDIR="/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV"
 # FILEDIR="/afs/cern.ch/work/s/sabrandt/public/LowPU_13TeV_Efficiency_v1/results"
 # FILEDIR="/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results"
-FILEDIR="/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results"
+FILEDIR="/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v1/results"
 
 CMSSW_BASE="/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/"
 TOP="/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/"
@@ -38,7 +39,7 @@ echo "running job w Cluster ID ${ClusterID}, binnum ${binnum}, NTOYS ${NTOYS}, F
 # TOP="$PWD"
 #
 BINVAR=etapt # probably don't need to change
-OUTPUTDIR=${FILEDIR}/TOYS/${EFFTYPE}${POSTFIX}${POSTFIX_alt}/${CHARGE}/FULL_TEST_v0
+OUTPUTDIR=${FILEDIR}/TOYS/${EFFTYPE}${POSTFIX}${POSTFIX_alt}/${CHARGE}/
 # STAGEDIR=${TOP}/${EFFTYPE}/${CHARGE}/Step2Output/${POSTFIX}v${POSTFIX_alt}
 STAGEDIR=.
 # FOLDER=Zmm
@@ -56,9 +57,9 @@ cd $TOP
 mkdir -p ${OUTPUTDIR}
 # mkdir -p ${TOP}/${EFFTYPE}/${CHARGE}/Step2Output/${POSTFIX}v${POSTFIX_alt}
 #TOP="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency"
-
+# root -l toyGenAndPull.C+
 root -l -b << EOF
-gSystem->Load("${WORKDIR}/Efficiency/Systematic/RooCMSShape_cc.so")
+gSystem->Load("${WORKDIR}/Utils/RooCMSShape_cc.so")
 gSystem->Load("${WORKDIR}/Efficiency/Systematic/toyGenAndPull_C.so")
 toyGenAndPull("${DIR1}","${DIR2}","${DIR2}","${BINVAR}_${binnum}","${OUTPUTDIR}","pull_${binnum}",${binnum},${binnum},${NTOYS})
 .q

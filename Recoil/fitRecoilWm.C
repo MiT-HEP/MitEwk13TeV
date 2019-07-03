@@ -17,6 +17,7 @@
 #include <TGraphErrors.h>             // graph class
 #include "TLorentzVector.h"           // 4-vector class
 
+#include "../Utils/MyTools.hh"            // various helper functions
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
@@ -228,9 +229,11 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 //   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
 
   
+  // bool doMTCut = true;
   const Double_t PT_CUT  = 25;
   const Double_t ETA_CUT = 2.4;
 
+  // const Double_t MT_CUT = 50;
   const Double_t mu_MASS = 0.1057;
   //Setting up rochester corrections
   // rochcor2015 *rmcor = new rochcor2015();
@@ -442,6 +445,9 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 		  Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 - vLepCor1).Mod();
 		  Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 - vLepCor1).Phi();
 		  // corrMetWithLepton and mu corrected for rochCorr 
+          
+          // double mt     = sqrt( 2.0 * (mu.Pt()) * (corrMetWithLepton) * (1.0-cos(toolbox::deltaPhi(mu.Phi(),corrMetWithLeptonPhi))) );
+          // // if(doMTCut&&(mt<MT_CUT)) continue;
 		  double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + mu.Pt()*cos(lep->Phi());
 		  double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + mu.Pt()*sin(lep->Phi());
 		  double pU   = sqrt(pUX*pUX+pUY*pUY);
@@ -1312,37 +1318,37 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 //       sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
 //     } 
 
-/*
+
     if(ibin>0) {
-      // stephanie initial values
-      mean1.setVal((hv[ibin-1]->GetMean()));
-      mean2.setVal((hv[ibin-1]->GetMean()));
-      mean3.setVal((hv[ibin-1]->GetMean()));
-      sigma1.setMin(0.5);
-      sigma1.setMax(1.5*(hv[ibin-1]->GetRMS()));
-      sigma1.setVal(0.3*(hv[ibin-1]->GetRMS()));
-      sigma2.setMin(0.5);
-      sigma2.setMax(1.8*(hv[ibin-1]->GetRMS()));
-      sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
-      sigma3.setMin(0.5);
-      sigma3.setMax(5.0*(hv[ibin-1]->GetRMS()));
-      sigma3.setVal(1.5*(hv[ibin-1]->GetRMS()));
+      // // stephanie initial values
+      // mean1.setVal((hv[ibin-1]->GetMean()));
+      // mean2.setVal((hv[ibin-1]->GetMean()));
+      // mean3.setVal((hv[ibin-1]->GetMean()));
+      // sigma1.setMin(0.5);
+      // sigma1.setMax(1.5*(hv[ibin-1]->GetRMS()));
+      // sigma1.setVal(0.3*(hv[ibin-1]->GetRMS()));
+      // sigma2.setMin(0.5);
+      // sigma2.setMax(1.8*(hv[ibin-1]->GetRMS()));
+      // sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
+      // sigma3.setMin(0.5);
+      // sigma3.setMax(5.0*(hv[ibin-1]->GetRMS()));
+      // sigma3.setVal(1.5*(hv[ibin-1]->GetRMS()));
      
-//      if( ibin == 40 || ibin == 44 || ibin == 27 || ibin == 47){
-//         mean1.setVal(hv[ibin]->GetMean());
-//         mean2.setVal(hv[ibin]->GetMean());
-//         mean3.setVal(hv[ibin]->GetMean());
-// 
-//         sigma1.setMin(0.1*(hv[ibin]->GetRMS()));
-//         sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-//         sigma1.setVal(0.5*(hv[ibin-1]->GetRMS()));
-//         sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-//         sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-//         sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
-//         sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-//         sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-//         sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
-//       } 
+     if( ibin == 38 || ibin == 30){
+        mean1.setVal(hv[ibin]->GetMean());
+        mean2.setVal(hv[ibin]->GetMean());
+        mean3.setVal(hv[ibin]->GetMean());
+
+        sigma1.setMin(0.1*(hv[ibin]->GetRMS()));
+        sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
+        sigma1.setVal(0.5*(hv[ibin-1]->GetRMS()));
+        sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
+        sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
+        sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
+        sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
+        sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
+        sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
+      } 
       
 //       if( ibin == 55){
 //         mean1.setVal(hv[ibin]->GetMean());
@@ -1375,7 +1381,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 //         sigma3.setVal(4.0*(hv[ibin-1]->GetRMS()));
 //       }
     }
-*/
+
     
     //
     // Define formula for overall width (sigma0)

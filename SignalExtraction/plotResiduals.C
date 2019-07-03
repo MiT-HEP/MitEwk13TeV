@@ -209,7 +209,7 @@ void plotResiduals(const TString  outputDir,   // output directory
   fnamev.push_back(inputName);
   inputName = "./TEST_Zm"+lumiSec+"_Eta_2G_ZptReweight/Zmumu_pdfTemplates.root";
   fnamev.push_back(inputName);
-  inputName = "./TEST_Zm"+lumiSec+"_StatUnc_2G_ZptReweight/Zmumu_pdfTemplates.root";
+  inputName = "./TEST_Zm"+lumiSec+"m_StatFixed_PlotCheck/Zmumu_pdfTemplates.root";
   fnamev.push_back(inputName);
   
   int nShapes = fnamev.size();
@@ -371,8 +371,8 @@ void plotResiduals(const TString  outputDir,   // output directory
   Int_t ratioColor   = kGray+2;
   
   
-  // double ymax = 0.2;
-  double ymax = 0.1;
+  // double ymax = 0.1;
+  double ymax = 0.5;
   //
   // Dummy histograms for TLegend
   // (I can't figure out how to properly pass RooFit objects...)

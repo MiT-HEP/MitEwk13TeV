@@ -22,7 +22,7 @@
 
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");  
-  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
+//  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
 
   //gROOT->Macro("RooVoigtianShape.cc+");
   //gROOT->Macro("RooCMSShape.cc+");
@@ -32,18 +32,18 @@
 
 //  gROOT->Macro("muresolution_run2r.cc+");
   //gROOT->Macro("rochcor2015r.cc+");
-  gROOT->Macro("../RochesterCorr/RoccoR.cc+");
+ // gROOT->Macro("../RochesterCorr/RoccoR.cc+");
  
   //gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
-  {  
-    //TString path = gSystem->GetIncludePath();
-    //path += " -I../EleScale/ ";
-    //gSystem->SetIncludePath(path.Data());
-    gSystem->AddIncludePath("-I../EleScale");
-    gInterpreter->AddIncludePath("../EleScale");
-    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
-    gROOT->Macro("EnergyScaleCorrection_class.cc+");
-  }
+  //{  
+   // //TString path = gSystem->GetIncludePath();
+   // //path += " -I../EleScale/ ";
+    ////gSystem->SetIncludePath(path.Data());
+   // gSystem->AddIncludePath("-I../EleScale");
+  //  gInterpreter->AddIncludePath("../EleScale");
+  //  gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+  //  gROOT->Macro("EnergyScaleCorrection_class.cc+");
+ // }
 
   }
                

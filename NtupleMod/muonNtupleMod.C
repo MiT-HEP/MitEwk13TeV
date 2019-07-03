@@ -45,7 +45,10 @@
 
 void muonNtupleMod(const TString  outputDir,   // output directory 
                    const TString  inputDir,    // input directory
-                   const TString  fileName    // both the input and output final file name i.e. data_select.root
+                   const TString  fileName,    // both the input and output final file name i.e. data_select.root
+                   const TString  sysFileSIT, // constains the uncertainty info for selection/id/trk efficiency
+                   const TString  sysFileSta,  // contains the alternate shape info for standalone efficiencies
+                   const TString  sysFileSta_Alt // alternate file to get the direct comparison for the one shape
 ) {
   gBenchmark->Start("fitWm");
 
@@ -107,6 +110,26 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   const TString zmmStaEffName_pos  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
   const TString zmmStaEffName_neg  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
 
+  // Include the uncertainty maps for the efficiencies
+  // uncertainty files
+  TFile *fSysSIT = TFile::Open(sysFileSIT);
+  TFile *fSysSta = TFile::Open(sysFileSta);
+  TFile *fSysSta2 = TFile::Open(sysFileSta_Alt);
+
+  TH2D  *hSysSITSigFSRNeg = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRNeg");
+  TH2D  *hSysSITSigFSRPos = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRPos"); 
+  TH2D  *hSysSITSigMCNeg  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCNeg"); 
+  TH2D  *hSysSITSigMCPos  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCPos"); 
+  TH2D  *hSysSITBkgNeg    = (TH2D*) fSysSIT->Get("hMuSITEffBkgNeg"); 
+  TH2D  *hSysSITBkgPos    = (TH2D*) fSysSIT->Get("hMuSITEffBkgPos"); 
+  
+  // fsr needs to come from the 
+  TH2D  *hSysStaSigFSRNeg = (TH2D*) fSysSta2->Get("hMuStaEffSigFSRNeg");
+  TH2D  *hSysStaSigFSRPos = (TH2D*) fSysSta2->Get("hMuStaEffSigFSRPos"); 
+  TH2D  *hSysStaSigMCNeg  = (TH2D*) fSysSta->Get("hMuStaEffSigMCNeg"); 
+  TH2D  *hSysStaSigMCPos  = (TH2D*) fSysSta->Get("hMuStaEffSigMCPos"); 
+  TH2D  *hSysStaBkgNeg    = (TH2D*) fSysSta->Get("hMuStaEffBkgNeg"); 
+  TH2D  *hSysStaBkgPos    = (TH2D*) fSysSta->Get("hMuStaEffBkgPos"); 
 
 
   Bool_t isData = (fileName.CompareTo("data_select.root")==0);
@@ -292,6 +315,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   Double_t metCorrLep=0, metCorrMain=0, metCorrEta=0, metCorrStat=0, metCorrKeys=0, mtCorr=0;
   Double_t metCorrLepPhi=0, metCorrMainPhi=0, metCorrEtaPhi=0, metCorrStatPhi=0, metCorrKeysPhi=0;
   Double_t totalEvtWeight=1, effSFweight=1, relIso=0;
+  Double_t evtWeightSysFSR=1,evtWeightSysMC=1,evtWeightSysBkg=1;
   TLorentzVector *lep_raw=0;
   outFile->cd();
   outTree->Branch("metCorrLep",      &metCorrLep,       "metCorrLep/d");      // corrected MET with only lepton corrections
@@ -307,6 +331,9 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   outTree->Branch("relIso",          &relIso,           "relIso/d");          // scaled isolation variable that needs calculation
   outTree->Branch("mtCorr",          &mtCorr,           "mtCorr/d");          // corrected MET with keys corrections
   outTree->Branch("totalEvtWeight",  &totalEvtWeight,   "totalEvtWeight/d");  // total event weight
+  outTree->Branch("evtWeightSysFSR",  &evtWeightSysFSR,  "evtWeightSysFSR/d");  // total event weight
+  outTree->Branch("evtWeightSysMC",   &evtWeightSysMC,   "evtWeightSysMC/d");  // total event weight
+  outTree->Branch("evtWeightSysBkg",  &evtWeightSysBkg,  "evtWeightSysBkg/d");  // total event weight
   outTree->Branch("effSFweight",     &effSFweight,      "effSFweight/d");     // scale factors weight
   outTree->Branch("lep_raw",         "TLorentzVector",  &lep_raw);            // uncorrected lepton vector
   
@@ -322,8 +349,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-  for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
+   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+  //for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
     intree->GetEntry(ientry);
     if(ientry%100000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
@@ -334,8 +361,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     double pU1         = 0;  //--
     double pU2         = 0;  //--
 
-    Double_t effdata =1, effmc=1;
+    // data/MC scale factor corrections
+    Double_t effdata, effmc;
+    Double_t effdataFSR, effdataMC, effdataBkg;
     Double_t corr=1;
+    Double_t corrFSR=1;
+    Double_t corrMC=1;
+    Double_t corrBkg=1;
 
     if(fabs(lep->Eta()) > ETA_CUT) continue;
       
@@ -343,6 +375,9 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   //   Calculate the Efficiency SF Correction weight
   // ----------------------------------------------------------------------------------------
 
+    // HLT efficiency. 
+    // HLT doesn't have associated systematic uncertainties
+    effdata=1;effmc=1;
     if(q>0) {
       effdata *= (1.-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())); 
       effmc   *= (1.-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())); 
@@ -353,30 +388,66 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     effdata = 1.-effdata;
     effmc   = 1.-effmc;
     corr *= effdata/effmc;
-  
+    corrFSR *= effdata/effmc;
+    corrMC  *= effdata/effmc;
+    corrBkg *= effdata/effmc;
+    
+    // if(lep->Pt() < 25) continue;
+   
+    // std::cout << q << std::endl;
     effdata=1; effmc=1;
-    // effSigShapedata=1;
-    // effBkgShapedata=1;
+    effdataMC=1; effdataBkg=1; effdataFSR=1; 
     if(q>0) {
+      effdataFSR *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * hSysSITSigFSRPos->GetBinContent(hSysSITSigFSRPos->GetXaxis()->FindBin(lep->Eta()), hSysSITSigFSRPos->GetYaxis()->FindBin(lep->Pt()));
+      effdataMC *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt())  * hSysSITSigMCPos->GetBinContent(hSysSITSigMCPos->GetXaxis()->FindBin(lep->Eta()), hSysSITSigMCPos->GetYaxis()->FindBin(lep->Pt()));
+      effdataBkg *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * hSysSITBkgPos->GetBinContent(hSysSITBkgPos->GetXaxis()->FindBin(lep->Eta()), hSysSITBkgPos->GetYaxis()->FindBin(lep->Pt()));
       effdata *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
     } else {
+      effdataFSR *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * hSysSITSigFSRNeg->GetBinContent(hSysSITSigFSRNeg->GetXaxis()->FindBin(lep->Eta()), hSysSITSigFSRNeg->GetYaxis()->FindBin(lep->Pt())); 
+      effdataMC *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt())  * hSysSITSigMCNeg->GetBinContent(hSysSITSigMCNeg->GetXaxis()->FindBin(lep->Eta()), hSysSITSigMCNeg->GetYaxis()->FindBin(lep->Pt())); 
+      effdataBkg *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * hSysSITBkgNeg->GetBinContent(hSysSITBkgNeg->GetXaxis()->FindBin(lep->Eta()), hSysSITBkgNeg->GetYaxis()->FindBin(lep->Pt())); 
       effdata *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
     }
+    // std::cout << "fsr " << effdataFSR << std::endl;
+    std::cout << "-----------------------" << std::endl;
+    std::cout << "fsr " << effdataFSR << std::endl;
+    std::cout << "mc " << effdataMC << std::endl;
+    std::cout << "bkg " << effdataBkg << std::endl;
+    std::cout << lep->Pt() << "  " << lep->Eta() << std::endl;
     corr *= effdata/effmc;
+    corrFSR *= effdataFSR/effmc;
+    corrMC  *= effdataMC/effmc;
+    corrBkg *= effdataBkg/effmc;
     
     effdata=1; effmc=1;
+    effdataFSR=1; effdataMC=1; effdataBkg=1; 
     // effSigShapedata=1;
     // effBkgShapedata=1;
-    if(q>0) { 
+    if(q>0) {
+      effdataFSR *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * hSysStaSigFSRPos->GetBinContent(hSysStaSigFSRPos->GetXaxis()->FindBin(lep->Eta()), hSysStaSigFSRPos->GetYaxis()->FindBin(lep->Pt())); 
+      effdataMC *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * hSysStaSigMCPos->GetBinContent(hSysStaSigMCPos->GetXaxis()->FindBin(lep->Eta()), hSysStaSigMCPos->GetYaxis()->FindBin(lep->Pt())); 
+      effdataBkg *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * hSysStaBkgPos->GetBinContent(hSysStaBkgPos->GetXaxis()->FindBin(lep->Eta()), hSysStaBkgPos->GetYaxis()->FindBin(lep->Pt())); 
       effdata *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
     } else {
+      effdataFSR *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * hSysStaSigFSRNeg->GetBinContent(hSysStaSigFSRNeg->GetXaxis()->FindBin(lep->Eta()), hSysStaSigFSRNeg->GetYaxis()->FindBin(lep->Pt())); 
+      effdataMC *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * hSysStaSigMCNeg->GetBinContent(hSysStaSigMCNeg->GetXaxis()->FindBin(lep->Eta()), hSysStaSigMCNeg->GetYaxis()->FindBin(lep->Pt())); 
+      effdataBkg *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * hSysStaBkgNeg->GetBinContent(hSysStaBkgNeg->GetXaxis()->FindBin(lep->Eta()), hSysStaBkgNeg->GetYaxis()->FindBin(lep->Pt())); 
       effdata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
     }
+    std::cout << "fsr " << effdataFSR << std::endl;
+    std::cout << "mc " << effdataMC << std::endl;
+    std::cout << "bkg " << effdataBkg << std::endl;
+    std::cout << lep->Pt() << "  " << lep->Eta() << std::endl;
     corr *= effdata/effmc; 
+    corrFSR *= effdataFSR/effmc;
+    corrMC  *= effdataMC/effmc;
+    corrBkg *= effdataBkg/effmc;
+    
+
     
     if(isData){
       // Apply the Rochester Corrections to data
@@ -401,6 +472,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       mtCorr=mt;
     } else {
       totalEvtWeight=corr*scale1fb*prefireWeight;
+      evtWeightSysFSR=corrFSR*scale1fb*prefireWeight;
+      evtWeightSysMC =corrMC*scale1fb*prefireWeight;
+      evtWeightSysBkg=corrBkg*scale1fb*prefireWeight;
+      
+      // std::cout << "weights and alternates" << totalEvtWeight << "  " << evtWeightSysFSR << "  " << evtWeightSysMC << "  " << evtWeightSysBkg << std::endl;
         
 
       // Do some Rochester corrections for MC
@@ -408,7 +484,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       double mcSF1 = rc.kSpreadMC(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genLep->Pt());
       mu1*=mcSF1;
-      // (*lep)*=mcSF1; // is this legit lol
+      (*lep)*=mcSF1; // is this legit lol
       
       TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
       Double_t lepPt = vLepCor.Mod();
