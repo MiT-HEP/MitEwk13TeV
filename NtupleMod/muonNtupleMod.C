@@ -349,8 +349,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-  // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-  for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
+   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+  //for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.01; ientry+=iterator) {
     intree->GetEntry(ientry);
     if(ientry%100000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
