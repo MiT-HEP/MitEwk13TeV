@@ -23,20 +23,21 @@
 
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");
+  gROOT->Macro("../EleScale/EnergyScaleCorrection.cc++");
   gROOT->Macro("CCorrUser2D.cc+");
  
 
                
-    {
-     //TString path = gSystem->GetIncludePath();
-     //path += " -I../EleScale/ ";
-     //gSystem->SetIncludePath(path.Data());
-      gSystem->AddIncludePath("-I../EleScale");
-      gInterpreter->AddIncludePath("../EleScale");
-      gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
-      // gROOT->Macro("EnergyScaleCorrection_class.cc+"); // commented out to test the new ones
-      gROOT->Macro("EnergyScaleCorrection.cc+");
-    }
+    // {
+     // //TString path = gSystem->GetIncludePath();
+     // //path += " -I../EleScale/ ";
+     // //gSystem->SetIncludePath(path.Data());
+      // gSystem->AddIncludePath("-I../EleScale");
+      // gInterpreter->AddIncludePath("../EleScale");
+      // gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+      // // gROOT->Macro("EnergyScaleCorrection_class.cc+"); // commented out to test the new ones
+      // gROOT->Macro("EnergyScaleCorrection.cc+");
+    // }
                      
 
   // Show which process needs debugging
