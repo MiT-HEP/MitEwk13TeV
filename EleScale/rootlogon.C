@@ -16,6 +16,6 @@
     TString path = gSystem->GetIncludePath();
     path += " -I./ ";
     gSystem->SetIncludePath(path.Data());
-    gROOT->Macro("EnergyScaleCorrection_class.cc+");
+    gROOT->Macro("../EnergyScaleCorrection.cc+");
   }
 }
