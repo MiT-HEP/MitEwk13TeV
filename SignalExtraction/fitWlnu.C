@@ -100,7 +100,7 @@ const Double_t METMAX  = 150;
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitWm_2d_v2(const TString  outputDir,   // output directory 
+void fitWlnu(const TString  outputDir,   // output directory 
                 const TString ntupleDir,
                 const TString flav,
                 const Double_t lumi,        // integrated luminosity (/fb)'
@@ -120,6 +120,14 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   bool doTemplate = true;
 
   double yscale=0.5;
+  
+  // vector<char[50]> uncShapeNames = {};
+  enum{eta,keys,stat};
+  enum{mc,fsr,bkg};
+  const string vUncRec[]={"eta","keys","stat"};
+  const string vUncEff[]={"mc","fsr","bkg"};
+  int nUncRec = sizeof(vUncRec)/sizeof(vUncRec[0]);
+  int nUncEff = sizeof(vUncEff)/sizeof(vUncEff[0]);
   
   // Double_t vIsoBins[] = {0.0,0.20,0.30,0.40,0.50,0.60,0.70};
   Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
@@ -181,22 +189,22 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   vector<Int_t>   typev;
   
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/wm_select.raw.root"));  typev.push_back(eWlnu);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
 
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
-  fnamev.push_back(ntupleDir+TString("_wStat_2G/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -270,47 +278,172 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   TH1D **hDataMetm2d  = new TH1D*[nIsoBins];// hAntiDataMetm->Sumw2();  
   TH1D **hDataMetp2d  = new TH1D*[nIsoBins];// hAntiDataMetp->Sumw2();
   // TH1D **hAntiWlnuMetIsoBins   = new TH1D*[5];// hAntiWlnuMet->Sumw2();
+  // these are the uncorrected shapes
   TH1D **hWlnuMetp2d  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
   TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  // All teh uncertainties? 
+  // this is an array of arrays of histograms // first index is iso bin, 2nd is uncertainty shape
+  TH1D ***hWlnuMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnuMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  
+  TH1D ***hEWKMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  
+  TH1D ***hWxMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  
+  TH1D ***hZxxMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  ////////////////////////////////////////////////////////////////////////////////////////
+  TH1D ***hWlnuMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnuMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  
+  TH1D ***hEWKMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  
+  TH1D ***hWxMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  
+  TH1D ***hZxxMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  
+  TH1D ***hDibMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  TH1D ***hDibMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  
+  TH1D ***hTtbMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  TH1D ***hTtbMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  
+  // do a loop to create the second array
+  for(int i=0; i < nIsoBins; ++i){
+    // w signal recoil
+    hWlnuMetp2dUncRecU[i] = new TH1D*[nUncRec];
+    hWlnuMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    
+    hWlnuMetp2dUncRecD[i] = new TH1D*[nUncRec];
+    hWlnuMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    
+    // w signal efficiency 
+    hWlnuMetp2dUncEffU[i] = new TH1D*[nUncEff];
+    hWlnuMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    
+    hWlnuMetp2dUncEffD[i] = new TH1D*[nUncEff];
+    hWlnuMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    
+    // ewk total recoil
+    hEWKMetp2dUncRecU[i] = new TH1D*[nUncRec];
+    hEWKMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    
+    hEWKMetp2dUncRecD[i] = new TH1D*[nUncRec];
+    hEWKMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    
+    // ewk total efficiency
+    hEWKMetp2dUncEffU[i] = new TH1D*[nUncEff];
+    hEWKMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    
+    hEWKMetp2dUncEffD[i] = new TH1D*[nUncEff];
+    hEWKMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    
+    // wx  recoil
+    hWxMetp2dUncRecU[i] = new TH1D*[nUncRec];
+    hWxMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    
+    hWxMetp2dUncRecD[i] = new TH1D*[nUncRec];
+    hWxMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    
+    // wx  efficiency
+    hWxMetp2dUncEffU[i] = new TH1D*[nUncEff];
+    hWxMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    
+    hWxMetp2dUncEffD[i] = new TH1D*[nUncEff];
+    hWxMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    
+    // zxx recoil
+    hZxxMetp2dUncRecU[i] = new TH1D*[nUncRec];
+    hZxxMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    
+    hZxxMetp2dUncRecD[i] = new TH1D*[nUncRec];
+    hZxxMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    
+    // zxx efficiency
+    hZxxMetp2dUncEffU[i] = new TH1D*[nUncEff];
+    hZxxMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    
+    hZxxMetp2dUncEffD[i] = new TH1D*[nUncEff];
+    hZxxMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    
+    // diboson efficiency
+    hDibMetp2dUncEffU[i] = new TH1D*[nUncEff];
+    hDibMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    
+    hDibMetp2dUncEffD[i] = new TH1D*[nUncEff];
+    hDibMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    
+    // ttbar efficiency
+    hTtbMetp2dUncEffU[i] = new TH1D*[nUncEff];
+    hTtbMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    
+    hTtbMetp2dUncEffD[i] = new TH1D*[nUncEff];
+    hTtbMetm2dUncEffD[i] = new TH1D*[nUncEff];
+  }
   // Eta-binned unc 
-  TH1D **hWlnuMetp2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // Keys unc
-  TH1D **hWlnuMetp2dKeys  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2dKeys  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // Stat Unc
-  TH1D **hWlnuMetp2dStat  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2dStat  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-    // Eta-binned unc 
-  TH1D **hWlnuMetp2dEtaD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2dEtaD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // Keys unc
-  TH1D **hWlnuMetp2dKeysD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2dKeysD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // Stat Unc
-  TH1D **hWlnuMetp2dStatD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2dStatD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  // TH1D **hWlnuMetp2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  // TH1D **hWlnuMetm2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  // // Keys unc
+  // TH1D **hWlnuMetp2dKeys  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  // TH1D **hWlnuMetm2dKeys  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  // // Stat Unc
+  // TH1D **hWlnuMetp2dStat  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  // TH1D **hWlnuMetm2dStat  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+    // // Eta-binned unc 
+  // TH1D **hWlnuMetp2dEtaD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  // TH1D **hWlnuMetm2dEtaD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  // // Keys unc
+  // TH1D **hWlnuMetp2dKeysD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  // TH1D **hWlnuMetm2dKeysD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  // // Stat Unc
+  // TH1D **hWlnuMetp2dStatD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  // TH1D **hWlnuMetm2dStatD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
   // TH1D **hAntiEWKMetIsoBins    = new TH1D*[5];// hAntiEWKMet->Sumw2();
   TH1D **hEWKMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hEWKMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   // eta binned
-  TH1D **hEWKMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hEWKMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // keys
-  TH1D **hEWKMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hEWKMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // stat unc
-  TH1D **hEWKMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hEWKMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // eta binned
-  TH1D **hEWKMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hEWKMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // keys
-  TH1D **hEWKMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hEWKMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // stat unc
-  TH1D **hEWKMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hEWKMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // TH1D **hEWKMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hEWKMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // keys
+  // TH1D **hEWKMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hEWKMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // stat unc
+  // TH1D **hEWKMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hEWKMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // eta binned
+  // TH1D **hEWKMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hEWKMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // keys
+  // TH1D **hEWKMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hEWKMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // stat unc
+  // TH1D **hEWKMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hEWKMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   
   TH1D **hDibMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
@@ -322,45 +455,45 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   TH1D **hWxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hWxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   // eta binned
-  TH1D **hWxMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hWxMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // keys unc
-  TH1D **hWxMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hWxMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // stat unc
-  TH1D **hWxMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hWxMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // TH1D **hWxMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hWxMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // keys unc
+  // TH1D **hWxMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hWxMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // stat unc
+  // TH1D **hWxMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hWxMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
-  // eta binned
-  TH1D **hWxMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hWxMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // keys unc
-  TH1D **hWxMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hWxMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // stat unc
-  TH1D **hWxMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hWxMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // eta binned
+  // TH1D **hWxMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hWxMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // keys unc
+  // TH1D **hWxMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hWxMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // stat unc
+  // TH1D **hWxMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hWxMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   TH1D **hZxxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hZxxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   // eta binned unc
-  TH1D **hZxxMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hZxxMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // keys unc
-  TH1D **hZxxMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hZxxMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // stat unc
-  TH1D **hZxxMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hZxxMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-    // eta binned unc
-  TH1D **hZxxMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hZxxMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // keys unc
-  TH1D **hZxxMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hZxxMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // stat unc
-  TH1D **hZxxMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D **hZxxMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // TH1D **hZxxMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hZxxMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // keys unc
+  // TH1D **hZxxMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hZxxMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // stat unc
+  // TH1D **hZxxMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hZxxMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+    // // eta binned unc
+  // TH1D **hZxxMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hZxxMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // keys unc
+  // TH1D **hZxxMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hZxxMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+  // // stat unc
+  // TH1D **hZxxMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  // TH1D **hZxxMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   
   TH1D **hMetpIsoValues = new TH1D*[nIsoBins];
@@ -373,21 +506,8 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
     hWlnuMetp2d[i]  = new TH1D(("hWlnuMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hWlnuMetm2d[i]  = new TH1D(("hWlnuMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     
-    hWlnuMetp2dEta[i]   = new TH1D(("hWlnuMetpBin" +std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hWlnuMetm2dEta[i]   = new TH1D(("hWlnuMetmBin" +std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hWlnuMetp2dKeys[i]  = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hWlnuMetm2dKeys[i]  = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hWlnuMetp2dStat[i]  = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hWlnuMetm2dStat[i]  = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX);
-    
     hEWKMetp2d[i]      = new TH1D(("hEwkMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hEWKMetm2d[i]      = new TH1D(("hEwkMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-    hEWKMetp2dEta[i]   = new TH1D(("hEwkMetpBin" +std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hEWKMetm2dEta[i]   = new TH1D(("hEwkMetmBin" +std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hEWKMetp2dKeys[i]  = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hEWKMetm2dKeys[i]  = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hEWKMetp2dStat[i]  = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hEWKMetm2dStat[i]  = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX);
 	
 	  hDibMetp2d[i]  = new TH1D(("hDibMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hDibMetm2d[i]  = new TH1D(("hDibMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
@@ -397,21 +517,50 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
 	
   	hWxMetp2d[i]      = new TH1D(("hWxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hWxMetm2d[i]      = new TH1D(("hWxMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-    hWxMetp2dEta[i]   = new TH1D(("hWxMetpBin" +std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hWxMetm2dEta[i]   = new TH1D(("hWxMetmBin" +std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hWxMetp2dKeys[i]  = new TH1D(("hWxMetpBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hWxMetm2dKeys[i]  = new TH1D(("hWxMetmBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hWxMetp2dStat[i]  = new TH1D(("hWxMetpBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hWxMetm2dStat[i]  = new TH1D(("hWxMetmBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX);
 	
 	  hZxxMetp2d[i]      = new TH1D(("hZxxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hZxxMetm2d[i]      = new TH1D(("hZxxMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-    hZxxMetp2dEta[i]   = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hZxxMetm2dEta[i]   = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_etaUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hZxxMetp2dKeys[i]  = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hZxxMetm2dKeys[i]  = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_keysUp").c_str(),"",  NBINS,METMIN,METMAX);
-    hZxxMetp2dStat[i]  = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX); 
-    hZxxMetm2dStat[i]  = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_statUp").c_str(),"",  NBINS,METMIN,METMAX);
+    
+    // Create a loop over the # of uncertainty shapes to produce the uncertainty histograms for the "up" shapes
+    // Do the recoil ones here
+    for(int j = 0; j < nUncRec; ++j){
+      // w signal
+      hWlnuMetp2dUncRecU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnuMetm2dUncRecU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // ewk total
+      hEWKMetp2dUncRecU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKMetm2dUncRecU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // wx
+      hWxMetp2dUncRecU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxMetm2dUncRecU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // zxx
+      hZxxMetp2dUncRecU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxMetm2dUncRecU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+    }
+    
+    for(int j=0; j < nUncEff; ++j){
+      hWlnuMetp2dUncEffU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnuMetm2dUncEffU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      hEWKMetp2dUncEffU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKMetm2dUncEffU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      hWxMetp2dUncEffU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxMetm2dUncEffU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+  
+      hZxxMetp2dUncEffU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxMetm2dUncEffU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      hDibMetp2dUncEffU[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hDibMetm2dUncEffU[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+  
+      hTtbMetp2dUncEffU[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hTtbMetm2dUncEffU[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+    }
 
 	  hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
     hMetmIsoValues[i] = new TH1D(("hMetmIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
@@ -450,6 +599,8 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   Double_t metCorrLep, metCorrMain, metCorrEta, metCorrStat, metCorrKeys, mtCorr;
   Double_t metCorrLepPhi, metCorrMainPhi, metCorrEtaPhi, metCorrStatPhi, metCorrKeysPhi;
   Double_t totalEvtWeight=1, effSFweight=1, relIso;
+  Double_t evtWeightSysFSR=1, evtWeightSysMC=1, evtWeightSysBkg=1;
+  
     
   
   TFile *infile=0;
@@ -476,8 +627,11 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genVy",    &genVy);   // GEN W boson phi (signal MC)
     intree->SetBranchAddress("genLepPt",   &genLepPt);    // GEN lepton pT (signal MC)
     intree->SetBranchAddress("genLepPhi",  &genLepPhi);   // GEN lepton phi (signal MC)
-    intree->SetBranchAddress("prefireWeight", &prefireWeight);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("totalEvtWeight",&totalEvtWeight);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("prefireWeight",  &prefireWeight);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("totalEvtWeight", &totalEvtWeight);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("evtWeightSysFSR",&evtWeightSysFSR);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("evtWeightSysMC", &evtWeightSysMC);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("evtWeightSysBkg",&evtWeightSysBkg);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fb",      &scale1fb);  // MC weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",    &scale1fbUp);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",  &scale1fbDown);  // event weight per 1/fb (MC)
@@ -496,6 +650,7 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
     intree->SetBranchAddress("mtCorr",       &mtCorr);        // transverse mass
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
+    intree->SetBranchAddress("lep_raw",      &lep_raw);       // lepton 4-vector
     intree->SetBranchAddress("genLep",      &genLep);       // lepton 4-vector
     intree->SetBranchAddress("genV",         &genV);       // lepton 4-vector
     intree->SetBranchAddress("pfChIso",      &pfChIso);
@@ -526,13 +681,18 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
             // }
             // double w2 = 1.0;//hh_diff->GetBinContent(bin);
       // std::cout << " pass PT " << std::endl;
-      if(lep->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
+      if(lep_raw->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
       if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
           
       // set up the event weights for the MC reweighting
       Double_t weight=totalEvtWeight*lumi;
-      Double_t weight2=totalEvtWeight*lumi2;    
+      Double_t wgtFsr=evtWeightSysFSR*lumi;
+      Double_t wgtBkg=evtWeightSysBkg*lumi;
+      Double_t wgtMC=evtWeightSysMC*lumi;
+      
+      // std::cout << weight << "  " << wgtFsr << "  " << wgtBkg << "" << wgtMC <<  " pt " << lep->Pt() << "  eta " <<  lep->Eta()<< std::endl;
+      // Double_t weight=totalEvtWeight*lumi2;    
       
         // std::cout << typev[ifile]<< std::endl;
       if(typev[ifile]==eData) {
@@ -574,25 +734,33 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
         for(int i = 0; i <= hh_diff->GetNbinsX();++i){
           if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
         }
-        double w2 =  hh_diff->GetBinContent(bin);
-        weight*=w2;
+        // double w2 =  hh_diff->GetBinContent(bin);
+        // weight*=w2;
         hWlnuMet->Fill(metCorrMain,weight);
         if(q>0){
           hMuonEtaMCp->Fill(fabs(lep->Eta()),weight);
           hWlnuMetpPhi->Fill(metCorrMainPhi);
           doMET ? hWlnuMetp->Fill(metCorrMain,weight) : hWlnuMetp->Fill(mtCorr,weight);
           doMET ? hWlnuMetp2d[0]    ->Fill(metCorrMain, weight) : hWlnuMetp2d[0]    ->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dEta[0] ->Fill(metCorrEta,  weight) : hWlnuMetp2dEta[0] ->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dKeys[0]->Fill(metCorrKeys, weight) : hWlnuMetp2dKeys[0]->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dStat[0]->Fill(metCorrStat, weight) : hWlnuMetp2dStat[0]->Fill(mtCorr, weight);
+          doMET ? hWlnuMetp2dUncRecU[0][eta] ->Fill(metCorrEta ,  weight) : hWlnuMetp2dUncRecU[0][eta] ->Fill(mtCorr, weight);
+          doMET ? hWlnuMetp2dUncRecU[0][keys]->Fill(metCorrKeys,  weight) : hWlnuMetp2dUncRecU[0][keys]->Fill(mtCorr, weight);
+          doMET ? hWlnuMetp2dUncRecU[0][stat]->Fill(metCorrStat,  weight) : hWlnuMetp2dUncRecU[0][stat]->Fill(mtCorr, weight);
+          doMET ? hWlnuMetp2dUncEffU[0][fsr] ->Fill(metCorrMain,  wgtFsr) : hWlnuMetp2dUncEffU[0][fsr] ->Fill(mtCorr, wgtFsr);
+          doMET ? hWlnuMetp2dUncEffU[0][bkg] ->Fill(metCorrMain,  wgtBkg) : hWlnuMetp2dUncEffU[0][bkg] ->Fill(mtCorr, wgtBkg);
+          doMET ? hWlnuMetp2dUncEffU[0][mc]  ->Fill(metCorrMain,  wgtMC ) : hWlnuMetp2dUncEffU[0][mc]  ->Fill(mtCorr, wgtMC );
+          // // doMET ? hWlnuMetp2dKeys[0]->Fill(metCorrKeys, weight) : hWlnuMetp2dKeys[0]->Fill(mtCorr, weight);
+          // doMET ? hWlnuMetp2dStat[0]->Fill(metCorrStat, weight) : hWlnuMetp2dStat[0]->Fill(mtCorr, weight);
         } else {
           hMuonEtaMCm->Fill(fabs(lep->Eta()),weight);
           hWlnuMetmPhi->Fill(metCorrMainPhi);
           doMET ? hWlnuMetm->Fill(metCorrMain,weight) : hWlnuMetm->Fill(mtCorr,weight);
           doMET ? hWlnuMetm2d[0]    ->Fill(metCorrMain,weight) : hWlnuMetm2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dEta[0] ->Fill(metCorrEta, weight) : hWlnuMetm2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dKeys[0]->Fill(metCorrKeys,weight) : hWlnuMetm2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dStat[0]->Fill(metCorrStat,weight) : hWlnuMetm2dStat[0]->Fill(mtCorr,weight);
+          doMET ? hWlnuMetm2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hWlnuMetm2dUncRecU[0][eta] ->Fill(mtCorr,weight);
+          doMET ? hWlnuMetm2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hWlnuMetm2dUncRecU[0][keys]->Fill(mtCorr,weight);
+          doMET ? hWlnuMetm2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hWlnuMetm2dUncRecU[0][stat]->Fill(mtCorr,weight);
+          doMET ? hWlnuMetm2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hWlnuMetm2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
+          doMET ? hWlnuMetm2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hWlnuMetm2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
+          doMET ? hWlnuMetm2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hWlnuMetm2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC);
         }
       } else if(typev[ifile]==eWx) {
         // std::cout << "doing Wx" << std::endl;
@@ -600,47 +768,44 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
         if(q>0){
           doMET ? hEWKMetp->Fill(metCorrMain,weight) : hEWKMetp->Fill(mtCorr,weight);
           doMET ? hWxMetp2d[0]     ->Fill(metCorrMain,weight) : hWxMetp2d[0]     ->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dEta[0]  ->Fill(metCorrEta, weight) : hWxMetp2dEta[0]  ->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dKeys[0] ->Fill(metCorrKeys,weight) : hWxMetp2dKeys[0] ->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dStat[0] ->Fill(metCorrStat,weight) : hWxMetp2dStat[0] ->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2d[0]    ->Fill(metCorrMain,weight) : hEWKMetp2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2dEta[0] ->Fill(metCorrEta, weight) : hEWKMetp2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2dKeys[0]->Fill(metCorrKeys,weight) : hEWKMetp2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2dStat[0]->Fill(metCorrStat,weight) : hEWKMetp2dStat[0]->Fill(mtCorr,weight);
+          doMET ? hWxMetp2dUncRecU[0][eta] ->Fill(metCorrEta ,weight) : hWxMetp2dUncRecU[0][eta] ->Fill(mtCorr,weight);
+          doMET ? hWxMetp2dUncRecU[0][keys]->Fill(metCorrKeys,weight) : hWxMetp2dUncRecU[0][keys]->Fill(mtCorr,weight);
+          doMET ? hWxMetp2dUncRecU[0][stat]->Fill(metCorrStat,weight) : hWxMetp2dUncRecU[0][stat]->Fill(mtCorr,weight);
+          doMET ? hWxMetp2dUncEffU[0][fsr] ->Fill(metCorrMain,wgtFsr) : hWxMetp2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
+          doMET ? hWxMetp2dUncEffU[0][bkg] ->Fill(metCorrMain,wgtBkg) : hWxMetp2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
+          doMET ? hWxMetp2dUncEffU[0][mc]  ->Fill(metCorrMain,wgtMC ) : hWxMetp2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC );
         } else {
           doMET ? hEWKMetm->Fill(metCorrMain,weight): hEWKMetm->Fill(mtCorr,weight);
           doMET ? hWxMetm2d[0]     ->Fill(metCorrMain,weight) : hWxMetm2d[0] ->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dEta[0]  ->Fill(metCorrEta, weight) : hWxMetm2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dKeys[0] ->Fill(metCorrKeys,weight) : hWxMetm2dKeys[0] ->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dStat[0] ->Fill(metCorrStat,weight) : hWxMetm2dStat[0] ->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2d[0]    ->Fill(metCorrMain,weight) : hEWKMetm2d[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2dEta[0] ->Fill(metCorrEta, weight) : hEWKMetm2dEta[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2dKeys[0]->Fill(metCorrKeys,weight) : hEWKMetm2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2dStat[0]->Fill(metCorrStat,weight) : hEWKMetm2dStat[0]->Fill(mtCorr,weight);
+          doMET ? hWxMetm2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hWxMetm2dUncRecU[0][eta] ->Fill(mtCorr,weight);
+          doMET ? hWxMetm2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hWxMetm2dUncRecU[0][keys]->Fill(mtCorr,weight);
+          doMET ? hWxMetm2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hWxMetm2dUncRecU[0][stat]->Fill(mtCorr,weight);
+          doMET ? hWxMetm2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hWxMetm2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
+          doMET ? hWxMetm2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hWxMetm2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
+          doMET ? hWxMetm2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hWxMetm2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
         }
       } else if(typev[ifile]==eZxx){
         // std::cout << "doing Zxx" << std::endl;
         doMET ? hEWKMet->Fill(metCorrMain,weight) : hEWKMet->Fill(mtCorr,weight);
         if(q>0){
+          
  				  doMET ? hEWKMetp->Fill(metCorrMain,weight) : hEWKMetp->Fill(mtCorr,weight);
           doMET ? hZxxMetp2d[0]    ->Fill(metCorrMain,weight) : hZxxMetp2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dEta[0] ->Fill(metCorrEta, weight) : hZxxMetp2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dKeys[0]->Fill(metCorrKeys,weight) : hZxxMetp2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dStat[0]->Fill(metCorrStat,weight) : hZxxMetp2dStat[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2d[0]    ->Fill(metCorrMain,weight) : hEWKMetp2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2dEta[0] ->Fill(metCorrEta, weight) : hEWKMetp2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2dKeys[0]->Fill(metCorrKeys,weight) : hEWKMetp2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2dStat[0]->Fill(metCorrStat,weight) : hEWKMetp2dStat[0]->Fill(mtCorr,weight);
+          doMET ? hZxxMetp2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hZxxMetp2dUncRecU[0][eta] ->Fill(mtCorr,weight);
+          doMET ? hZxxMetp2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hZxxMetp2dUncRecU[0][keys]->Fill(mtCorr,weight);
+          doMET ? hZxxMetp2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hZxxMetp2dUncRecU[0][stat]->Fill(mtCorr,weight);
+          doMET ? hZxxMetp2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hZxxMetp2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
+          doMET ? hZxxMetp2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hZxxMetp2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
+          doMET ? hZxxMetp2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hZxxMetp2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC );
         } else {
           doMET ? hEWKMetm->Fill(metCorrMain,weight) :  hEWKMetm->Fill(mtCorr,weight);
           doMET ? hZxxMetm2d[0]    ->Fill(metCorrMain,weight) : hZxxMetm2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dEta[0] ->Fill(metCorrEta, weight) : hZxxMetm2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dKeys[0]->Fill(metCorrKeys,weight) : hZxxMetm2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dStat[0]->Fill(metCorrStat,weight) : hZxxMetm2dStat[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2d[0]    ->Fill(metCorrMain,weight) : hEWKMetm2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2dEta[0] ->Fill(metCorrEta, weight) : hEWKMetm2dEta[0] ->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2dKeys[0]->Fill(metCorrKeys,weight) : hEWKMetm2dKeys[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2dStat[0]->Fill(metCorrStat,weight) : hEWKMetm2dStat[0]->Fill(mtCorr,weight);
+          doMET ? hZxxMetm2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hZxxMetm2dUncRecU[0][eta] ->Fill(mtCorr,weight);
+          doMET ? hZxxMetm2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hZxxMetm2dUncRecU[0][keys]->Fill(mtCorr,weight);
+          doMET ? hZxxMetm2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hZxxMetm2dUncRecU[0][stat]->Fill(mtCorr,weight);
+          doMET ? hZxxMetm2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hZxxMetm2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
+          doMET ? hZxxMetm2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hZxxMetm2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
+          doMET ? hZxxMetm2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hZxxMetm2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC );
         }
       } else if(typev[ifile]==eDib) {
         // std::cout << "doing Dibosons" << std::endl;
@@ -649,11 +814,15 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
           // std::cout << "filling dib + " << std::endl;
           doMET ? hEWKMetp->Fill(metCorrLep,weight) : hEWKMetp->Fill(mtCorr,weight);
           doMET ? hDibMetp2d[0]->Fill(metCorrLep,weight) : hDibMetp2d[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2d[0]->Fill(metCorrLep,weight) : hEWKMetp2d[0]->Fill(mtCorr,weight);
+          doMET ? hDibMetp2dUncEffU[0][fsr]->Fill(metCorrLep,wgtFsr) : hDibMetp2dUncEffU[0][fsr]->Fill(mtCorr,wgtFsr);
+          doMET ? hDibMetp2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hDibMetp2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
+          doMET ? hDibMetp2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hDibMetp2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
         } else {
           doMET ? hEWKMetm->Fill(metCorrLep,weight) : hEWKMetm->Fill(mtCorr,weight);
           doMET ? hDibMetm2d[0]->Fill(metCorrLep,weight) : hDibMetm2d[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2d[0]->Fill(metCorrLep,weight) : hEWKMetm2d[0]->Fill(mtCorr,weight);
+          doMET ? hDibMetm2dUncEffU[0][fsr]->Fill(metCorrLep,wgtFsr) : hDibMetm2dUncEffU[0][fsr]->Fill(mtCorr,wgtFsr);
+          doMET ? hDibMetm2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hDibMetm2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
+          doMET ? hDibMetm2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hDibMetm2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
         }
       } else if(typev[ifile]==eTtb) {
         // std::cout << "doing TTBar" << std::endl;
@@ -661,122 +830,168 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
         if(q>0){
           doMET ? hEWKMetp->Fill(metCorrLep,weight) : hEWKMetp->Fill(mtCorr,weight);
           doMET ? hTtbMetp2d[0]->Fill(metCorrLep,weight) : hTtbMetp2d[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetp2d[0]->Fill(metCorrLep,weight) : hEWKMetp2d[0]->Fill(mtCorr,weight);
+          doMET ? hTtbMetp2dUncEffU[0][fsr]->Fill(metCorrLep,weight) : hTtbMetp2dUncEffU[0][fsr]->Fill(mtCorr,weight);
+          doMET ? hTtbMetp2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hTtbMetp2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
+          doMET ? hTtbMetp2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hTtbMetp2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
         } else {
           doMET ? hEWKMetm->Fill(metCorrLep,weight) : hEWKMetm->Fill(mtCorr,weight);
-          doMET ? hTtbMetm2d[0]->Fill(metCorrLep,weight) : hTtbMetm2d[0]->Fill(mtCorr,weight);
-          doMET ? hEWKMetm2d[0]->Fill(metCorrLep,weight) : hEWKMetm2d[0]->Fill(mtCorr,weight);
+          doMET ? hTtbMetm2dUncEffU[0][fsr]->Fill(metCorrLep,wgtFsr) : hTtbMetm2dUncEffU[0][fsr]->Fill(mtCorr,wgtFsr);
+          doMET ? hTtbMetm2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hTtbMetm2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
+          doMET ? hTtbMetm2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hTtbMetm2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
         }
       } else if(typev[ifile]==eAntiWlnu){
-        hAntiWlnuMet->Fill(metCorrMain,weight2);
+        hAntiWlnuMet->Fill(metCorrMain,weight);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0) {              
-              doMET ? hAntiWlnuMetp->Fill(metCorrMain,weight2) : hAntiWlnuMetp->Fill(mtCorr,weight2);
-              doMET ? hWlnuMetp2d[it]    ->Fill(metCorrMain, weight2) : hWlnuMetp2d[it]    ->Fill(mtCorr, weight2);
-              doMET ? hWlnuMetp2dEta[it] ->Fill(metCorrEta,  weight2) : hWlnuMetp2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hWlnuMetp2dKeys[it]->Fill(metCorrKeys, weight2) : hWlnuMetp2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hWlnuMetp2dStat[it]->Fill(metCorrStat, weight2) : hWlnuMetp2dStat[it]->Fill(mtCorr, weight2);
+              doMET ? hAntiWlnuMetp->Fill(metCorrMain,weight) : hAntiWlnuMetp->Fill(mtCorr,weight);
+              doMET ? hWlnuMetp2d[it]    ->Fill(metCorrMain, weight) : hWlnuMetp2d[it]    ->Fill(mtCorr, weight);
+              doMET ? hWlnuMetp2dUncRecU[it][eta] ->Fill(metCorrEta ,  weight) : hWlnuMetp2dUncRecU[it][eta] ->Fill(mtCorr, weight);
+              doMET ? hWlnuMetp2dUncRecU[it][keys]->Fill(metCorrKeys,  weight) : hWlnuMetp2dUncRecU[it][keys]->Fill(mtCorr, weight);
+              doMET ? hWlnuMetp2dUncRecU[it][stat]->Fill(metCorrStat,  weight) : hWlnuMetp2dUncRecU[it][stat]->Fill(mtCorr, weight);
+              doMET ? hWlnuMetp2dUncEffU[it][fsr] ->Fill(metCorrMain,  wgtFsr) : hWlnuMetp2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
+              doMET ? hWlnuMetp2dUncEffU[it][bkg] ->Fill(metCorrMain,  wgtBkg) : hWlnuMetp2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
+              doMET ? hWlnuMetp2dUncEffU[it][mc]  ->Fill(metCorrMain,  wgtMC ) : hWlnuMetp2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
             } else {
-              doMET ? hAntiWlnuMetm->Fill(metCorrMain,weight2) : hAntiWlnuMetm->Fill(mtCorr,weight2);
-              doMET ? hWlnuMetm2d[it]    ->Fill(metCorrMain, weight2) : hWlnuMetm2d[it]    ->Fill(mtCorr, weight2);
-              doMET ? hWlnuMetm2dEta[it] ->Fill(metCorrEta,  weight2) : hWlnuMetm2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hWlnuMetm2dKeys[it]->Fill(metCorrKeys, weight2) : hWlnuMetm2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hWlnuMetm2dStat[it]->Fill(metCorrStat, weight2) : hWlnuMetm2dStat[it]->Fill(mtCorr, weight2);
+              doMET ? hAntiWlnuMetm->Fill(metCorrMain,weight) : hAntiWlnuMetm->Fill(mtCorr,weight);
+              doMET ? hWlnuMetm2d[it]    ->Fill(metCorrMain, weight) : hWlnuMetm2d[it]    ->Fill(mtCorr, weight);
+              doMET ? hWlnuMetm2dUncRecU[it][eta] ->Fill(metCorrEta , weight) : hWlnuMetm2dUncRecU[it][eta] ->Fill(mtCorr,weight);
+              doMET ? hWlnuMetm2dUncRecU[it][keys]->Fill(metCorrKeys, weight) : hWlnuMetm2dUncRecU[it][keys]->Fill(mtCorr,weight);
+              doMET ? hWlnuMetm2dUncRecU[it][stat]->Fill(metCorrStat, weight) : hWlnuMetm2dUncRecU[it][stat]->Fill(mtCorr,weight);
+              doMET ? hWlnuMetm2dUncEffU[it][fsr] ->Fill(metCorrMain, wgtFsr) : hWlnuMetm2dUncEffU[it][fsr] ->Fill(mtCorr,wgtFsr);
+              doMET ? hWlnuMetm2dUncEffU[it][bkg] ->Fill(metCorrMain, wgtBkg) : hWlnuMetm2dUncEffU[it][bkg] ->Fill(mtCorr,wgtBkg);
+              doMET ? hWlnuMetm2dUncEffU[it][mc]  ->Fill(metCorrMain, wgtMC ) : hWlnuMetm2dUncEffU[it][mc]  ->Fill(mtCorr,wgtMC );
             }
           }
         }
       } else if(typev[ifile]==eAntiWx){
-        doMET ? hAntiEWKMet->Fill(metCorrMain,weight2) : hAntiEWKMet->Fill(mtCorr,weight2);
+        doMET ? hAntiEWKMet->Fill(metCorrMain,weight) : hAntiEWKMet->Fill(mtCorr,weight);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              doMET ? hAntiEWKMetp->Fill(metCorrMain,weight2) :  hAntiEWKMetp->Fill(mtCorr,weight2);
-              doMET ? hWxMetp2d[it]     ->Fill(metCorrMain, weight2) : hWxMetp2d[it]     ->Fill(mtCorr, weight2);
-              doMET ? hWxMetp2dEta[it]  ->Fill(metCorrEta,  weight2) : hWxMetp2dEta[it]  ->Fill(mtCorr, weight2);
-              doMET ? hWxMetp2dKeys[it] ->Fill(metCorrKeys, weight2) : hWxMetp2dKeys[it] ->Fill(mtCorr, weight2);
-              doMET ? hWxMetp2dStat[it] ->Fill(metCorrStat, weight2) : hWxMetp2dStat[it] ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2d[it]    ->Fill(metCorrMain, weight2) : hEWKMetp2d[it]    ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2dEta[it] ->Fill(metCorrEta,  weight2) : hEWKMetp2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2dKeys[it]->Fill(metCorrKeys, weight2) : hEWKMetp2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2dStat[it]->Fill(metCorrStat, weight2) : hEWKMetp2dStat[it]->Fill(mtCorr, weight2);
+              doMET ? hAntiEWKMetp->Fill(metCorrMain,weight) :  hAntiEWKMetp->Fill(mtCorr,weight);
+              doMET ? hWxMetp2d[it]     ->Fill(metCorrMain, weight) : hWxMetp2d[it]     ->Fill(mtCorr, weight);
+              doMET ? hWxMetp2dUncRecU[it][eta] ->Fill(metCorrEta,  weight) : hWxMetp2dUncRecU[it][eta] ->Fill(mtCorr, weight);
+              doMET ? hWxMetp2dUncRecU[it][keys]->Fill(metCorrKeys, weight) : hWxMetp2dUncRecU[it][keys]->Fill(mtCorr, weight);
+              doMET ? hWxMetp2dUncRecU[it][stat]->Fill(metCorrStat, weight) : hWxMetp2dUncRecU[it][stat]->Fill(mtCorr, weight);
+              doMET ? hWxMetp2dUncEffU[it][fsr] ->Fill(metCorrKeys, wgtFsr) : hWxMetp2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
+              doMET ? hWxMetp2dUncEffU[it][bkg] ->Fill(metCorrKeys, wgtBkg) : hWxMetp2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
+              doMET ? hWxMetp2dUncEffU[it][mc]  ->Fill(metCorrKeys, wgtMC ) : hWxMetp2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
             } else {
-              doMET ? hAntiEWKMetm->Fill(metCorrMain,weight2) : hAntiEWKMetm->Fill(mtCorr,weight2);
-              doMET ? hWxMetm2d[it]     ->Fill(metCorrMain, weight2) : hWxMetm2d[it]     ->Fill(mtCorr, weight2);
-              doMET ? hWxMetm2dEta[it]  ->Fill(metCorrEta,  weight2) : hWxMetm2dEta[it]  ->Fill(mtCorr, weight2);
-              doMET ? hWxMetm2dKeys[it] ->Fill(metCorrKeys, weight2) : hWxMetm2dKeys[it] ->Fill(mtCorr, weight2);
-              doMET ? hWxMetm2dStat[it] ->Fill(metCorrStat, weight2) : hWxMetm2dStat[it] ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2d[it]    ->Fill(metCorrMain, weight2) : hEWKMetm2d[it]    ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2dEta[it] ->Fill(metCorrEta,  weight2) : hEWKMetm2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2dKeys[it]->Fill(metCorrKeys, weight2) : hEWKMetm2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2dStat[it]->Fill(metCorrStat, weight2) : hEWKMetm2dStat[it]->Fill(mtCorr, weight2);
+              doMET ? hAntiEWKMetm->Fill(metCorrMain,weight) : hAntiEWKMetm->Fill(mtCorr,weight);
+              doMET ? hWxMetm2d[it]     ->Fill(metCorrMain, weight) : hWxMetm2d[it]     ->Fill(mtCorr, weight);
+              doMET ? hWxMetm2dUncRecU[it][eta] ->Fill(metCorrEta ,  weight) : hWxMetm2dUncRecU[it][eta] ->Fill(mtCorr, weight);
+              doMET ? hWxMetm2dUncRecU[it][keys]->Fill(metCorrKeys,  weight) : hWxMetm2dUncRecU[it][keys]->Fill(mtCorr, weight);
+              doMET ? hWxMetm2dUncRecU[it][stat]->Fill(metCorrStat,  weight) : hWxMetm2dUncRecU[it][stat]->Fill(mtCorr, weight);
+              doMET ? hWxMetm2dUncEffU[it][fsr] ->Fill(metCorrMain,  wgtFsr) : hWxMetm2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
+              doMET ? hWxMetm2dUncEffU[it][bkg] ->Fill(metCorrMain,  wgtBkg) : hWxMetm2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
+              doMET ? hWxMetm2dUncEffU[it][mc]  ->Fill(metCorrMain,  wgtMC ) : hWxMetm2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
             }
             break;
           }
         }
       } else if(typev[ifile]==eAntiZxx){
-        doMET ? hAntiEWKMet->Fill(metCorrMain,weight2) : hAntiEWKMet->Fill(mtCorr,weight2);
+        doMET ? hAntiEWKMet->Fill(metCorrMain,weight) : hAntiEWKMet->Fill(mtCorr,weight);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              hAntiEWKMetp->Fill(metCorrMain,weight2); 
-              doMET ? hZxxMetp2d[it]    ->Fill(metCorrMain, weight2) : hZxxMetp2d[it]->Fill(mtCorr, weight2);
-              doMET ? hZxxMetp2dEta[it] ->Fill(metCorrEta,  weight2) : hZxxMetp2dEta[it]->Fill(mtCorr, weight2);
-              doMET ? hZxxMetp2dKeys[it]->Fill(metCorrKeys, weight2) : hZxxMetp2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hZxxMetp2dStat[it]->Fill(metCorrStat, weight2) : hZxxMetp2dStat[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2d[it]    ->Fill(metCorrMain, weight2) : hEWKMetp2d[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2dEta[it] ->Fill(metCorrEta,  weight2) : hEWKMetp2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2dKeys[it]->Fill(metCorrKeys, weight2) : hEWKMetp2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2dStat[it]->Fill(metCorrStat, weight2) : hEWKMetp2dStat[it]->Fill(mtCorr, weight2);
+              hAntiEWKMetp->Fill(metCorrMain,weight); 
+              doMET ? hZxxMetp2d[it]    ->Fill(metCorrMain, weight) : hZxxMetp2d[it]->Fill(mtCorr, weight);
+              doMET ? hZxxMetp2dUncRecU[it][eta] ->Fill(metCorrEta,  weight) : hZxxMetp2dUncRecU[it][eta] ->Fill(mtCorr, weight);
+              doMET ? hZxxMetp2dUncRecU[it][keys]->Fill(metCorrEta,  weight) : hZxxMetp2dUncRecU[it][keys]->Fill(mtCorr, weight);
+              doMET ? hZxxMetp2dUncRecU[it][stat]->Fill(metCorrEta,  weight) : hZxxMetp2dUncRecU[it][stat]->Fill(mtCorr, weight);
+              doMET ? hZxxMetp2dUncEffU[it][fsr] ->Fill(metCorrEta,  wgtFsr) : hZxxMetp2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
+              doMET ? hZxxMetp2dUncEffU[it][bkg] ->Fill(metCorrEta,  wgtBkg) : hZxxMetp2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
+              doMET ? hZxxMetp2dUncEffU[it][mc]  ->Fill(metCorrEta,  wgtMC ) : hZxxMetp2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
             } else {
-              hAntiEWKMetm->Fill(metCorrMain,weight2); 
-              doMET ? hZxxMetm2d[it]    ->Fill(metCorrMain, weight2) : hZxxMetm2d[it]    ->Fill(mtCorr, weight2);
-              doMET ? hZxxMetm2dEta[it] ->Fill(metCorrEta,  weight2) : hZxxMetm2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hZxxMetm2dKeys[it]->Fill(metCorrKeys, weight2) : hZxxMetm2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hZxxMetm2dStat[it]->Fill(metCorrStat, weight2) : hZxxMetm2dStat[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2d[it]    ->Fill(metCorrMain, weight2) : hEWKMetm2d[it]    ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2dEta[it] ->Fill(metCorrEta,  weight2) : hEWKMetm2dEta[it] ->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2dKeys[it]->Fill(metCorrKeys, weight2) : hEWKMetm2dKeys[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2dStat[it]->Fill(metCorrStat, weight2) : hEWKMetm2dStat[it]->Fill(mtCorr, weight2);
+              hAntiEWKMetm->Fill(metCorrMain,weight); 
+              doMET ? hZxxMetm2d[it]    ->Fill(metCorrMain, weight) : hZxxMetm2d[it]    ->Fill(mtCorr, weight);
+              doMET ? hZxxMetm2dUncRecU[it][eta] ->Fill(metCorrEta ,  weight) : hZxxMetm2dUncRecU[it][eta] ->Fill(mtCorr, weight);
+              doMET ? hZxxMetm2dUncRecU[it][keys]->Fill(metCorrKeys,  weight) : hZxxMetm2dUncRecU[it][keys]->Fill(mtCorr, weight);
+              doMET ? hZxxMetm2dUncRecU[it][stat]->Fill(metCorrStat,  weight) : hZxxMetm2dUncRecU[it][stat]->Fill(mtCorr, weight);
+              doMET ? hZxxMetm2dUncEffU[it][fsr] ->Fill(metCorrMain,  wgtFsr) : hZxxMetm2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
+              doMET ? hZxxMetm2dUncEffU[it][bkg] ->Fill(metCorrMain,  wgtBkg) : hZxxMetm2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
+              doMET ? hZxxMetm2dUncEffU[it][mc]  ->Fill(metCorrMain,  wgtMC ) : hZxxMetm2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
             }
           }
         }
       } else if(typev[ifile]==eAntiDib){
-        doMET ? hAntiEWKMet->Fill(metCorrLep,weight2) : hAntiEWKMet->Fill(mtCorr,weight2);
+        doMET ? hAntiEWKMet->Fill(metCorrLep,weight) : hAntiEWKMet->Fill(mtCorr,weight);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              hAntiEWKMetp->Fill(metCorrLep,weight2); 
-              doMET ? hDibMetp2d[it]->Fill(metCorrLep, weight2) : hDibMetp2d[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2d[it]->Fill(metCorrLep, weight2) : hEWKMetp2d[it]->Fill(mtCorr, weight2);
+              hAntiEWKMetp->Fill(metCorrLep,weight); 
+              doMET ? hDibMetp2d[it]->Fill(metCorrLep, weight) : hDibMetp2d[it]->Fill(mtCorr, weight);
+              doMET ? hDibMetp2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hDibMetp2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
+              doMET ? hDibMetp2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hDibMetp2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
+              doMET ? hDibMetp2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hDibMetp2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
             } else {
-              hAntiEWKMetm->Fill(metCorrLep,weight2); 
-              doMET ? hDibMetm2d[it]->Fill(metCorrLep, weight2) : hDibMetm2d[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2d[it]->Fill(metCorrLep, weight2) : hEWKMetm2d[it]->Fill(mtCorr, weight2);
+              hAntiEWKMetm->Fill(metCorrLep,weight); 
+              doMET ? hDibMetm2d[it]->Fill(metCorrLep, weight) : hDibMetm2d[it]->Fill(mtCorr, weight);
+              doMET ? hDibMetm2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hDibMetm2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
+              doMET ? hDibMetm2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hDibMetm2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
+              doMET ? hDibMetm2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hDibMetm2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
             }
           }
         }
       } else if(typev[ifile]==eAntiTtb){
-        doMET ? hAntiEWKMet->Fill(metCorrLep,weight2) : hAntiEWKMet->Fill(mtCorr,weight2);
+        doMET ? hAntiEWKMet->Fill(metCorrLep,weight) : hAntiEWKMet->Fill(mtCorr,weight);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              hAntiEWKMetp->Fill(metCorrLep,weight2); 
-              doMET ? hTtbMetp2d[it]->Fill(metCorrLep, weight2) : hTtbMetp2d[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetp2d[it]->Fill(metCorrLep, weight2) : hEWKMetp2d[it]->Fill(mtCorr, weight2);
+              hAntiEWKMetp->Fill(metCorrLep,weight); 
+              doMET ? hTtbMetp2d[it]->Fill(metCorrLep, weight) : hTtbMetp2d[it]->Fill(mtCorr, weight);
+              doMET ? hTtbMetp2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hTtbMetp2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
+              doMET ? hTtbMetp2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hTtbMetp2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
+              doMET ? hTtbMetp2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hTtbMetp2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
             } else {
-              hAntiEWKMetm->Fill(metCorrLep,weight2); 
-              doMET ? hTtbMetm2d[it]->Fill(metCorrLep, weight2) : hTtbMetm2d[it]->Fill(mtCorr, weight2);
-              doMET ? hEWKMetm2d[it]->Fill(metCorrLep, weight2) : hEWKMetm2d[it]->Fill(mtCorr, weight2);
+              hAntiEWKMetm->Fill(metCorrLep,weight); 
+              doMET ? hTtbMetm2d[it]->Fill(metCorrLep, weight) : hTtbMetm2d[it]->Fill(mtCorr, weight);
+              doMET ? hTtbMetm2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hTtbMetm2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
+              doMET ? hTtbMetm2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hTtbMetm2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
+              doMET ? hTtbMetm2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hTtbMetm2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
             }
           }
         }
       } else if(typev[ifile]==eAntiQCD) {
-        hAntiQCDMet->Fill(metCorrLep,weight2);
-        q>0 ? hAntiQCDMetp->Fill(metCorrLep,weight2) : hAntiQCDMetm->Fill(metCorrLep,weight2); 
+        hAntiQCDMet->Fill(metCorrLep,weight);
+        q>0 ? hAntiQCDMetp->Fill(metCorrLep,weight) : hAntiQCDMetm->Fill(metCorrLep,weight); 
       }
     }
   }
+  
+  for(int it = 0; it < nIsoBins; it++){
+    
+    hEWKMetp2d[it]->Add(hTtbMetp2d[it],1);
+    hEWKMetp2d[it]->Add(hDibMetp2d[it],1);
+    hEWKMetp2d[it]->Add(hZxxMetp2d[it],1);
+    hEWKMetp2d[it]->Add(hWxMetp2d[it],1);
+    
+    hEWKMetm2d[it]->Add(hTtbMetm2d[it],1);
+    hEWKMetm2d[it]->Add(hDibMetm2d[it],1);
+    hEWKMetm2d[it]->Add(hZxxMetm2d[it],1);
+    hEWKMetm2d[it]->Add(hWxMetm2d[it],1);
+    
+    for(int j=0; j< nUncEff; j++){
+      hEWKMetp2dUncEffU[it][j]->Add(hTtbMetp2dUncEffU[it][j],1);
+      hEWKMetp2dUncEffU[it][j]->Add(hDibMetp2dUncEffU[it][j],1);
+      hEWKMetp2dUncEffU[it][j]->Add(hZxxMetp2dUncEffU[it][j],1);
+      hEWKMetp2dUncEffU[it][j]->Add(hWxMetp2dUncEffU[it][j],1);
+      
+      hEWKMetm2dUncEffU[it][j]->Add(hTtbMetm2dUncEffU[it][j],1);
+      hEWKMetm2dUncEffU[it][j]->Add(hDibMetm2dUncEffU[it][j],1);
+      hEWKMetm2dUncEffU[it][j]->Add(hZxxMetm2dUncEffU[it][j],1);
+      hEWKMetm2dUncEffU[it][j]->Add(hWxMetm2dUncEffU[it][j],1);
+    }
+    for(int j=0; j < nUncRec; j++){
+      hEWKMetp2dUncRecU[it][j]->Add(hZxxMetp2dUncRecU[it][j],1);
+      hEWKMetp2dUncRecU[it][j]->Add(hWxMetp2dUncRecU[it][j],1);
+      
+      hEWKMetm2dUncRecU[it][j]->Add(hZxxMetm2dUncRecU[it][j],1);
+      hEWKMetm2dUncRecU[it][j]->Add(hWxMetm2dUncRecU[it][j],1);
+    }
+  }
+  
   delete infile;
   infile=0, intree=0;   
    
@@ -1168,111 +1383,245 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   sprintf(plotname,"%s/compareWithCorrection.png",CPlot::sOutDir.Data());
   c2->SaveAs(plotname); c2->Clear();
   
+  // jesus i should have made 2-d vectors and a giant loop
   for(int j=0; j < nIsoBins; ++j){
-    sprintf(nname,"hWlnuMetpBin%d_etaDown",j);
-    // clone the up shape and subtract the main shape
-    TH1D *hh_diff =  (TH1D*)hWlnuMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    hWlnuMetp2dEtaD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // W+ signal shape "down" uncertainty shapes
+    TH1D *hh_diff;
+    for(int k=0; k < nUncRec; ++k){
+      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnuMetp2dUncRecD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnuMetm2dUncRecD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKMetp2dUncRecD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKMetm2dUncRecD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWxMetpBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hWxMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxMetp2dUncRecD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWxMetmBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hWxMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxMetm2dUncRecD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxMetp2dUncRecD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vUncRec[k].c_str());
+      hh_diff =  (TH1D*)hZxxMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxMetm2dUncRecD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+    }
     
-    sprintf(nname,"hWlnuMetpBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hWlnuMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    hWlnuMetp2dKeysD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    for(int k=0; k < nUncEff; ++k){
+      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnuMetp2dUncEffD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnuMetm2dUncEffD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKMetp2dUncEffD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKMetm2dUncEffD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWxMetpBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hWxMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxMetp2dUncEffD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWxMetmBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hWxMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxMetm2dUncEffD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxMetp2dUncEffD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hZxxMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxMetm2dUncEffD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hDibMetpBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hDibMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hDibMetp2d[j],-1);
+      hDibMetp2dUncEffD[j][k] = (TH1D*) hDibMetp2d[j]->Clone(nname); hDibMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hDibMetmBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hDibMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hDibMetm2d[j],-1);
+      hDibMetm2dUncEffD[j][k] = (TH1D*) hDibMetm2d[j]->Clone(nname); hDibMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hTtbMetpBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
+      hTtbMetp2dUncEffD[j][k] = (TH1D*) hTtbMetp2d[j]->Clone(nname); hTtbMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hTtbMetmBin%d_%sDown",j,vUncEff[k].c_str());
+      hh_diff =  (TH1D*)hTtbMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetm2d[j],-1);
+      hTtbMetm2dUncEffD[j][k] = (TH1D*) hTtbMetm2d[j]->Clone(nname); hTtbMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+    }
     
-    sprintf(nname,"hWlnuMetpBin%d_statDown",j);
-    hh_diff =  (TH1D*)hWlnuMetp2dStat[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    hWlnuMetp2dStatD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dStatD[j]->Add(hh_diff,-1);// delete hh_diff;
+    // TH1D *hh_diff =  (TH1D*)hWlnuMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+    // hWlnuMetp2dEtaD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetpBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+    // hWlnuMetp2dKeysD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetpBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetp2dStat[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+    // hWlnuMetp2dStatD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dStatD[j]->Add(hh_diff,-1);// delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetpBin%d_mcDown",j);
+    // // clone the up shape and subtract the main shape
+    // hh_diff =  (TH1D*)hWlnuMetp2dEffMC[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+    // hWlnuMetp2dEffMCD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetpBin%d_bkgDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetp2dEffBkg[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+    // hWlnuMetp2dEffBkgD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetpBin%d_fsrDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetp2dEffFsr[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+    // hWlnuMetp2dEffFsrD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEffFsrD[j]->Add(hh_diff,-1);// delete hh_diff;
     //////////////////////////
     //------------------------------------------------------------
-    sprintf(nname,"hEWKMetpBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hEWKMetp2dEta[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    hEWKMetp2dEtaD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hEWKMetpBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hEWKMetp2dEta[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+    // hEWKMetp2dEtaD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hEWKMetpBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hEWKMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    hEWKMetp2dKeysD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hEWKMetpBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hEWKMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+    // hEWKMetp2dKeysD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hEWKMetpBin%d_statDown",j);
-    hh_diff =  (TH1D*)hEWKMetp2dStat[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    hEWKMetp2dStatD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hEWKMetpBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hEWKMetp2dStat[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+    // hEWKMetp2dStatD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hEWKMetpBin%d_mcDown",j);
+    // hh_diff =  (TH1D*)hEWKMetp2dEffMC[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+    // hEWKMetp2dEffMCD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hEWKMetpBin%d_bkgDown",j);
+    // hh_diff =  (TH1D*)hEWKMetp2dEffBkg[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+    // hEWKMetp2dEffBkgD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hEWKMetpBin%d_fsrDown",j);
+    // hh_diff =  (TH1D*)hEWKMetp2dEffFsr[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+    // hEWKMetp2dEffFsrD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEffFsrD[j]->Add(hh_diff,-1); //delete hh_diff;
     ////////////////////////////
     //------------------------------------------------------------
-    sprintf(nname,"hWxMetpBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hWxMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-    hWxMetp2dEtaD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWxMetpBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hWxMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+    // hWxMetp2dEtaD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hWxMetpBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hWxMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-    hWxMetp2dKeysD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWxMetpBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hWxMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+    // hWxMetp2dKeysD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hWxMetpBin%d_statDown",j);
-    hh_diff =  (TH1D*)hWxMetp2dStat[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-    hWxMetp2dStatD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    /////////////////////
-    //------------------------------------------------------------
-    sprintf(nname,"hZxxMetpBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hZxxMetp2dEta[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-    hZxxMetp2dEtaD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWxMetpBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hWxMetp2dStat[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+    // hWxMetp2dStatD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // /////////////////////
+    // //------------------------------------------------------------
+    // sprintf(nname,"hZxxMetpBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hZxxMetp2dEta[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+    // hZxxMetp2dEtaD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hZxxMetpBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hZxxMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-    hZxxMetp2dKeysD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hZxxMetpBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hZxxMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+    // hZxxMetp2dKeysD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hZxxMetpBin%d_statDown",j);
-    hh_diff =  (TH1D*)hZxxMetp2dStat[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-    hZxxMetp2dStatD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hZxxMetpBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hZxxMetp2dStat[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+    // hZxxMetp2dStatD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
     // ==============================================================================================================
     // ---------------------   W-   ------------------------------------
-        // clone the up shape and subtract the main shape
-    sprintf(nname,"hWlnuMetmBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hWlnuMetm2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    hWlnuMetm2dEtaD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+        // // clone the up shape and subtract the main shape
+    // sprintf(nname,"hWlnuMetmBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetm2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+    // hWlnuMetm2dEtaD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hWlnuMetmBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hWlnuMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    hWlnuMetm2dKeysD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWlnuMetmBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+    // hWlnuMetm2dKeysD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hWlnuMetmBin%d_statDown",j);
-    hh_diff =  (TH1D*)hWlnuMetm2dStat[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    hWlnuMetm2dStatD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dStatD[j]->Add(hh_diff,-1);// delete hh_diff;
-    //////////////////////////
+    // sprintf(nname,"hWlnuMetmBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetm2dStat[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+    // hWlnuMetm2dStatD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dStatD[j]->Add(hh_diff,-1);// delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetmBin%d_mcDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetm2dEffMC[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+    // hWlnuMetm2dEffMCD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetmBin%d_bkgDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetm2dEffBkg[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+    // hWlnuMetm2dEffBkgD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hWlnuMetmBin%d_fsrDown",j);
+    // hh_diff =  (TH1D*)hWlnuMetm2dEffFsr[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+    // hWlnuMetm2dEffFsrD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEffFsrD[j]->Add(hh_diff,-1);// delete hh_diff;
+    // //////////////////////////
     //------------------------------------------------------------
-    sprintf(nname,"hEWKMetmBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hEWKMetm2dEta[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    hEWKMetm2dEtaD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hEWKMetmBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hEWKMetm2dEta[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+    // hEWKMetm2dEtaD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hEWKMetmBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hEWKMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    hEWKMetm2dKeysD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hEWKMetmBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hEWKMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+    // hEWKMetm2dKeysD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hEWKMetmBin%d_statDown",j);
-    hh_diff =  (TH1D*)hEWKMetm2dStat[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    hEWKMetm2dStatD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hEWKMetmBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hEWKMetm2dStat[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+    // hEWKMetm2dStatD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hEWKMetmBin%d_mcDown",j);
+    // hh_diff =  (TH1D*)hEWKMetm2dEffMC[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+    // hEWKMetm2dEffMCD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hEWKMetmBin%d_bkgDown",j);
+    // hh_diff =  (TH1D*)hEWKMetm2dEffBkg[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+    // hEWKMetm2dEffBkgD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
+    
+    // sprintf(nname,"hEWKMetmBin%d_fsrDown",j);
+    // hh_diff =  (TH1D*)hEWKMetm2dEffFsr[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+    // hEWKMetm2dEffFsrD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEffFsrD[j]->Add(hh_diff,-1); //delete hh_diff;
     ////////////////////////////
     //------------------------------------------------------------
-    sprintf(nname,"hWxMetmBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hWxMetm2dEta[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-    hWxMetm2dEtaD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWxMetmBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hWxMetm2dEta[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+    // hWxMetm2dEtaD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hWxMetmBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hWxMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-    hWxMetm2dKeysD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWxMetmBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hWxMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+    // hWxMetm2dKeysD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hWxMetmBin%d_statDown",j);
-    hh_diff =  (TH1D*)hWxMetm2dStat[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-    hWxMetm2dStatD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    /////////////////////
-    //------------------------------------------------------------
-    sprintf(nname,"hZxxMetmBin%d_etaDown",j);
-    hh_diff =  (TH1D*)hZxxMetm2dEta[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-    hZxxMetm2dEtaD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hWxMetmBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hWxMetm2dStat[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+    // hWxMetm2dStatD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // /////////////////////
+    // //------------------------------------------------------------
+    // sprintf(nname,"hZxxMetmBin%d_etaDown",j);
+    // hh_diff =  (TH1D*)hZxxMetm2dEta[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+    // hZxxMetm2dEtaD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hZxxMetmBin%d_keysDown",j);
-    hh_diff =  (TH1D*)hZxxMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-    hZxxMetm2dKeysD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hZxxMetmBin%d_keysDown",j);
+    // hh_diff =  (TH1D*)hZxxMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+    // hZxxMetm2dKeysD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
     
-    sprintf(nname,"hZxxMetmBin%d_statDown",j);
-    hh_diff =  (TH1D*)hZxxMetm2dStat[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-    hZxxMetm2dStatD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
+    // sprintf(nname,"hZxxMetmBin%d_statDown",j);
+    // hh_diff =  (TH1D*)hZxxMetm2dStat[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+    // hZxxMetm2dStatD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
       
   }
   
@@ -1300,38 +1649,38 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
       makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2d[j],zxxMetp_,pdfZxxp_,pfmet,j,""); 
       
       //============== Recoil Up Shapes =====================
-      makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dEta[j] ,WlnuMetpEta_ ,pdfWepEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dKeys[j],WlnuMetpKeys_,pdfWepKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dStat[j],WlnuMetpStat_,pdfWepStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dEta[j] ,WlnuMetpEta_ ,pdfWepEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dKeys[j],WlnuMetpKeys_,pdfWepKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dStat[j],WlnuMetpStat_,pdfWepStat_,pfmet,j,"_statUp");
 
-      makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dEta[j] ,ewkMetpEta_ ,pdfEWKpEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dKeys[j],ewkMetpKeys_,pdfEWKpKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dStat[j],ewkMetpStat_,pdfEWKpStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dEta[j] ,ewkMetpEta_ ,pdfEWKpEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dKeys[j],ewkMetpKeys_,pdfEWKpKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dStat[j],ewkMetpStat_,pdfEWKpStat_,pfmet,j,"_statUp");
       
-      makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dEta[j]  ,wxMetpEta_ ,pdfWxpEta_  ,pfmet,j,"_etaUp");
-      makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dKeys[j] ,wxMetpKeys_ ,pdfWxpKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dStat[j] ,wxMetpStat_ ,pdfWxpStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dEta[j]  ,wxMetpEta_ ,pdfWxpEta_  ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dKeys[j] ,wxMetpKeys_ ,pdfWxpKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dStat[j] ,wxMetpStat_ ,pdfWxpStat_,pfmet,j,"_statUp");
       
-      makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dEta[j] ,zxxMetpEta_ ,pdfZxxpEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dKeys[j],zxxMetpKeys_,pdfZxxpKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dStat[j],zxxMetpStat_,pdfZxxpStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dEta[j] ,zxxMetpEta_ ,pdfZxxpEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dKeys[j],zxxMetpKeys_,pdfZxxpKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dStat[j],zxxMetpStat_,pdfZxxpStat_,pfmet,j,"_statUp");
       
       //============= Recoil Down Shapes ====================
-      makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dEtaD[j] ,WlnuMetpEtaD_ ,pdfWepEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dKeysD[j],WlnuMetpKeysD_,pdfWepKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dStatD[j],WlnuMetpStatD_,pdfWepStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dEtaD[j] ,WlnuMetpEtaD_ ,pdfWepEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dKeysD[j],WlnuMetpKeysD_,pdfWepKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dStatD[j],WlnuMetpStatD_,pdfWepStatD_,pfmet,j,"_statDown");
 
-      makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dEtaD[j] ,ewkMetpEtaD_ ,pdfEWKpEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dKeysD[j],ewkMetpKeysD_,pdfEWKpKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dStatD[j],ewkMetpStatD_,pdfEWKpStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dEtaD[j] ,ewkMetpEtaD_ ,pdfEWKpEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dKeysD[j],ewkMetpKeysD_,pdfEWKpKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dStatD[j],ewkMetpStatD_,pdfEWKpStatD_,pfmet,j,"_statDown");
       
-      makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dEtaD[j]  ,wxMetpEtaD_ ,pdfWxpEtaD_  ,pfmet,j,"_etaDown");
-      makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dKeysD[j] ,wxMetpKeysD_ ,pdfWxpKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dStatD[j] ,wxMetpStatD_ ,pdfWxpStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dEtaD[j]  ,wxMetpEtaD_ ,pdfWxpEtaD_  ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dKeysD[j] ,wxMetpKeysD_ ,pdfWxpKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dStatD[j] ,wxMetpStatD_ ,pdfWxpStatD_,pfmet,j,"_statDown");
       
-      makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dEtaD[j] ,zxxMetpEtaD_ ,pdfZxxpEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dKeysD[j],zxxMetpKeysD_,pdfZxxpKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dStatD[j],zxxMetpStatD_,pdfZxxpStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dEtaD[j] ,zxxMetpEtaD_ ,pdfZxxpEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dKeysD[j],zxxMetpKeysD_,pdfZxxpKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dStatD[j],zxxMetpStatD_,pdfZxxpStatD_,pfmet,j,"_statDown");
       
       j==0?makeDataHistPdf("qcdMETp","qcdp",hIsoBinQCDp,qcdMetp_,pdfQCDp_,pfmet,j,""):makeDataHistPdf("qcdMETp","qcdp",hDataMetp2d[j],qcdMetp_,pdfQCDp_,pfmet,j,"");
 	  // ----------------------------------------- W- ---------------------------------
@@ -1343,37 +1692,37 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
       makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2d[j],zxxMetm_,pdfZxxm_,pfmet,j,"");
       
       //============== Recoil Up Shapes
-      makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dEta[j] ,WlnuMetmEta_ ,pdfWemEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dKeys[j],WlnuMetmKeys_,pdfWemKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dStat[j],WlnuMetmStat_,pdfWemStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dEta[j] ,WlnuMetmEta_ ,pdfWemEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dKeys[j],WlnuMetmKeys_,pdfWemKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dStat[j],WlnuMetmStat_,pdfWemStat_,pfmet,j,"_statUp");
       
-      makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dEta[j] ,ewkMetmEta_ ,pdfEWKmEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dKeys[j],ewkMetmKeys_,pdfEWKmKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dStat[j],ewkMetmStat_,pdfEWKmStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dEta[j] ,ewkMetmEta_ ,pdfEWKmEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dKeys[j],ewkMetmKeys_,pdfEWKmKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dStat[j],ewkMetmStat_,pdfEWKmStat_,pfmet,j,"_statUp");
       
-      makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dEta[j] ,wxMetmEta_ ,pdfWxmEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dKeys[j],wxMetmKeys_,pdfWxmKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dStat[j],wxMetmStat_,pdfWxmStat_,pfmet,j,"_statUp");
+      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dEta[j] ,wxMetmEta_ ,pdfWxmEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dKeys[j],wxMetmKeys_,pdfWxmKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dStat[j],wxMetmStat_,pdfWxmStat_,pfmet,j,"_statUp");
       
-      makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dEta[j] ,zxxMetmEta_ ,pdfZxxmEta_ ,pfmet,j,"_etaUp");
-      makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dKeys[j],zxxMetmKeys_,pdfZxxmKeys_,pfmet,j,"_keysUp");
-      makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dStat[j],zxxMetmStat_,pdfZxxmStat_,pfmet,j,"_statUp");
-      //============== Recoil Down Shapes
-      makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dEtaD[j] ,WlnuMetmEtaD_ ,pdfWemEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dKeysD[j],WlnuMetmKeysD_,pdfWemKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dStatD[j],WlnuMetmStatD_,pdfWemStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dEta[j] ,zxxMetmEta_ ,pdfZxxmEta_ ,pfmet,j,"_etaUp");
+      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dKeys[j],zxxMetmKeys_,pdfZxxmKeys_,pfmet,j,"_keysUp");
+      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dStat[j],zxxMetmStat_,pdfZxxmStat_,pfmet,j,"_statUp");
+      // //============== Recoil Down Shapes
+      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dEtaD[j] ,WlnuMetmEtaD_ ,pdfWemEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dKeysD[j],WlnuMetmKeysD_,pdfWemKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dStatD[j],WlnuMetmStatD_,pdfWemStatD_,pfmet,j,"_statDown");
       
-      makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dEtaD[j] ,ewkMetmEtaD_ ,pdfEWKmEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dKeysD[j],ewkMetmKeysD_,pdfEWKmKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dStatD[j],ewkMetmStatD_,pdfEWKmStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dEtaD[j] ,ewkMetmEtaD_ ,pdfEWKmEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dKeysD[j],ewkMetmKeysD_,pdfEWKmKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dStatD[j],ewkMetmStatD_,pdfEWKmStatD_,pfmet,j,"_statDown");
       
-      makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dEtaD[j] ,wxMetmEtaD_ ,pdfWxmEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dKeysD[j],wxMetmKeysD_,pdfWxmKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dStatD[j],wxMetmStatD_,pdfWxmStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dEtaD[j] ,wxMetmEtaD_ ,pdfWxmEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dKeysD[j],wxMetmKeysD_,pdfWxmKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dStatD[j],wxMetmStatD_,pdfWxmStatD_,pfmet,j,"_statDown");
       
-      makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dEtaD[j] ,zxxMetmEtaD_ ,pdfZxxmEtaD_ ,pfmet,j,"_etaDown");
-      makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dKeysD[j],zxxMetmKeysD_,pdfZxxmKeysD_,pfmet,j,"_keysDown");
-      makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dStatD[j],zxxMetmStatD_,pdfZxxmStatD_,pfmet,j,"_statDown");
+      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dEtaD[j] ,zxxMetmEtaD_ ,pdfZxxmEtaD_ ,pfmet,j,"_etaDown");
+      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dKeysD[j],zxxMetmKeysD_,pdfZxxmKeysD_,pfmet,j,"_keysDown");
+      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dStatD[j],zxxMetmStatD_,pdfZxxmStatD_,pfmet,j,"_statDown");
       
       std::cout << "do QCD" << std::endl;
       j==0?makeDataHistPdf("qcdMetm","qcdm",hIsoBinQCDm,qcdMetm_,pdfQCDm_,pfmet,j,""):makeDataHistPdf("qcdMetm","qcdm",hDataMetm2d[j],qcdMetm_,pdfQCDm_,pfmet,j,"");
@@ -1689,69 +2038,135 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
     hIsoBinQCDp->Write();
     hIsoBinQCDm->Write();
     
-    hWlnuMetp2dEta[j]->Write();
-    hWlnuMetp2dKeys[j]->Write();
-    hWlnuMetp2dStat[j]->Write();
+    for(int k=0; k < nUncRec; k++){
+      hWlnuMetp2dUncRecU[j][k]->Write();
+      hWlnuMetm2dUncRecU[j][k]->Write();
+      
+      hWlnuMetp2dUncRecD[j][k]->Write();
+      hWlnuMetm2dUncRecD[j][k]->Write();
+      
+      hEWKMetp2dUncRecU[j][k]->Write();
+      hEWKMetm2dUncRecU[j][k]->Write();
+      
+      hEWKMetp2dUncRecD[j][k]->Write();
+      hEWKMetm2dUncRecD[j][k]->Write();
+      
+      hWxMetp2dUncRecU[j][k]->Write();
+      hWxMetm2dUncRecU[j][k]->Write();
+      
+      hWxMetp2dUncRecD[j][k]->Write();
+      hWxMetm2dUncRecD[j][k]->Write();
+      
+      hZxxMetp2dUncRecU[j][k]->Write();
+      hZxxMetm2dUncRecU[j][k]->Write();
+      
+      hZxxMetp2dUncRecD[j][k]->Write();
+      hZxxMetm2dUncRecD[j][k]->Write();
+      
+    }
     
-    hWlnuMetp2dEtaD[j]->Write();
-    hWlnuMetp2dKeysD[j]->Write();
-    hWlnuMetp2dStatD[j]->Write();
+    for(int k=0; k < nUncEff; k++){
+      hWlnuMetp2dUncEffU[j][k]->Write();
+      hWlnuMetm2dUncEffU[j][k]->Write();
+      
+      hWlnuMetp2dUncEffD[j][k]->Write();
+      hWlnuMetm2dUncEffD[j][k]->Write();
+      
+      hEWKMetp2dUncEffU[j][k]->Write();
+      hEWKMetm2dUncEffU[j][k]->Write();
+      
+      hEWKMetp2dUncEffD[j][k]->Write();
+      hEWKMetm2dUncEffD[j][k]->Write();
+      
+      hWxMetp2dUncEffU[j][k]->Write();
+      hWxMetm2dUncEffU[j][k]->Write();
+      
+      hWxMetp2dUncEffD[j][k]->Write();
+      hWxMetm2dUncEffD[j][k]->Write();
+      
+      hZxxMetp2dUncEffU[j][k]->Write();
+      hZxxMetm2dUncEffU[j][k]->Write();
+      
+      hZxxMetp2dUncEffD[j][k]->Write();
+      hZxxMetm2dUncEffD[j][k]->Write();
+      
+      hDibMetp2dUncEffU[j][k]->Write();
+      hDibMetm2dUncEffU[j][k]->Write();
+      
+      hDibMetp2dUncEffD[j][k]->Write();
+      hDibMetm2dUncEffD[j][k]->Write();
+      
+      hTtbMetp2dUncEffU[j][k]->Write();
+      hTtbMetm2dUncEffU[j][k]->Write();
+      
+      hTtbMetp2dUncEffD[j][k]->Write();
+      hTtbMetm2dUncEffD[j][k]->Write();
+    }
     
-    hEWKMetp2dEta[j]->Write();
-    hEWKMetp2dKeys[j]->Write();
-    hEWKMetp2dStat[j]->Write();
     
-    hEWKMetp2dEtaD[j]->Write();
-    hEWKMetp2dKeysD[j]->Write();
-    hEWKMetp2dStatD[j]->Write();
+    // hWlnuMetp2dEta[j]->Write();
+    // hWlnuMetp2dKeys[j]->Write();
+    // hWlnuMetp2dStat[j]->Write();
     
-    hZxxMetp2dEta[j]->Write();
-    hZxxMetp2dKeys[j]->Write();
-    hZxxMetp2dStat[j]->Write();
+    // hWlnuMetp2dEtaD[j]->Write();
+    // hWlnuMetp2dKeysD[j]->Write();
+    // hWlnuMetp2dStatD[j]->Write();
     
-    hZxxMetp2dEtaD[j]->Write();
-    hZxxMetp2dKeysD[j]->Write();
-    hZxxMetp2dStatD[j]->Write();
+    // hEWKMetp2dEta[j]->Write();
+    // hEWKMetp2dKeys[j]->Write();
+    // hEWKMetp2dStat[j]->Write();
     
-    hWxMetp2dEta[j]->Write();
-    hWxMetp2dKeys[j]->Write();
-    hWxMetp2dStat[j]->Write();
+    // hEWKMetp2dEtaD[j]->Write();
+    // hEWKMetp2dKeysD[j]->Write();
+    // hEWKMetp2dStatD[j]->Write();
     
-    hWxMetp2dEtaD[j]->Write();
-    hWxMetp2dKeysD[j]->Write();
-    hWxMetp2dStatD[j]->Write();
+    // hZxxMetp2dEta[j]->Write();
+    // hZxxMetp2dKeys[j]->Write();
+    // hZxxMetp2dStat[j]->Write();
     
-    hWlnuMetm2dEta[j]->Write();
-    hWlnuMetm2dKeys[j]->Write();
-    hWlnuMetm2dStat[j]->Write();
+    // hZxxMetp2dEtaD[j]->Write();
+    // hZxxMetp2dKeysD[j]->Write();
+    // hZxxMetp2dStatD[j]->Write();
     
-    hWlnuMetm2dEtaD[j]->Write();
-    hWlnuMetm2dKeysD[j]->Write();
-    hWlnuMetm2dStatD[j]->Write();
+    // hWxMetp2dEta[j]->Write();
+    // hWxMetp2dKeys[j]->Write();
+    // hWxMetp2dStat[j]->Write();
     
-    hEWKMetm2dEta[j]->Write();
-    hEWKMetm2dKeys[j]->Write();
-    hEWKMetm2dStat[j]->Write();
+    // hWxMetp2dEtaD[j]->Write();
+    // hWxMetp2dKeysD[j]->Write();
+    // hWxMetp2dStatD[j]->Write();
     
-    hEWKMetm2dEtaD[j]->Write();
-    hEWKMetm2dKeysD[j]->Write();
-    hEWKMetm2dStatD[j]->Write();
+    // // hWlnuMetm2dEta[j]->Write();
+    // // hWlnuMetm2dKeys[j]->Write();
+    // // hWlnuMetm2dStat[j]->Write();
     
-    hZxxMetm2dEta[j]->Write();
-    hZxxMetm2dKeys[j]->Write();
-    hZxxMetm2dStat[j]->Write();
+    // // hWlnuMetm2dEtaD[j]->Write();
+    // // hWlnuMetm2dKeysD[j]->Write();
+    // // hWlnuMetm2dStatD[j]->Write();
     
-    hZxxMetm2dEtaD[j]->Write();
-    hZxxMetm2dKeysD[j]->Write();
-    hZxxMetm2dStatD[j]->Write();
+    // hEWKMetm2dEta[j]->Write();
+    // hEWKMetm2dKeys[j]->Write();
+    // hEWKMetm2dStat[j]->Write();
     
-    hWxMetm2dEta[j]->Write();
-    hWxMetm2dKeys[j]->Write();
-    hWxMetm2dStat[j]->Write();
+    // hEWKMetm2dEtaD[j]->Write();
+    // hEWKMetm2dKeysD[j]->Write();
+    // hEWKMetm2dStatD[j]->Write();
     
-    hWxMetm2dEtaD[j]->Write();
-    hWxMetm2dKeysD[j]->Write();
-    hWxMetm2dStatD[j]->Write();
+    // hZxxMetm2dEta[j]->Write();
+    // hZxxMetm2dKeys[j]->Write();
+    // hZxxMetm2dStat[j]->Write();
+    
+    // hZxxMetm2dEtaD[j]->Write();
+    // hZxxMetm2dKeysD[j]->Write();
+    // hZxxMetm2dStatD[j]->Write();
+    
+    // hWxMetm2dEta[j]->Write();
+    // hWxMetm2dKeys[j]->Write();
+    // hWxMetm2dStat[j]->Write();
+    
+    // hWxMetm2dEtaD[j]->Write();
+    // hWxMetm2dKeysD[j]->Write();
+    // hWxMetm2dStatD[j]->Write();
     
     
   }
@@ -1759,168 +2174,168 @@ void fitWm_2d_v2(const TString  outputDir,   // output directory
   histFile->Close();
 
 
-  RooWorkspace combine_workspace("combine_workspace");
-  combine_workspace.import(dataMet);
-  combine_workspace.import(dataMetp);
-  combine_workspace.import(dataMetm);
-  combine_workspace.import(pepe2Pdf_qcdp_norm);
-  combine_workspace.import(pepe2Pdf_qcdm_norm);
+  // RooWorkspace combine_workspace("combine_workspace");
+  // combine_workspace.import(dataMet);
+  // combine_workspace.import(dataMetp);
+  // combine_workspace.import(dataMetm);
+  // combine_workspace.import(pepe2Pdf_qcdp_norm);
+  // combine_workspace.import(pepe2Pdf_qcdm_norm);
 
-  combine_workspace.import(pdfWm);
-  combine_workspace.import(pdfWmp);
-  combine_workspace.import(pdfWmm);
-  combine_workspace.import(pdfEWK);
-  combine_workspace.import(pdfEWKp);
-  combine_workspace.import(pdfEWKm);
-//   combine_workspace.import(*(qcd.model));
-//   combine_workspace.import(*(qcdp.model));
-//   combine_workspace.import(*(qcdm.model));
+  // combine_workspace.import(pdfWm);
+  // combine_workspace.import(pdfWmp);
+  // combine_workspace.import(pdfWmm);
+  // combine_workspace.import(pdfEWK);
+  // combine_workspace.import(pdfEWKp);
+  // combine_workspace.import(pdfEWKm);
+// //   combine_workspace.import(*(qcd.model));
+// //   combine_workspace.import(*(qcdp.model));
+// //   combine_workspace.import(*(qcdm.model));
 
-  combine_workspace.import(pdfQCD);
-  combine_workspace.import(pdfQCDp);
-  combine_workspace.import(pdfQCDm);
+  // combine_workspace.import(pdfQCD);
+  // combine_workspace.import(pdfQCDp);
+  // combine_workspace.import(pdfQCDm);
   
-  combine_workspace.import(antiMet);
-  combine_workspace.import(antiMetp);
-  combine_workspace.import(antiMetm);
-  combine_workspace.import(pepe2Pdf_aqcdp_norm);
-  combine_workspace.import(pepe2Pdf_aqcdm_norm);
+  // combine_workspace.import(antiMet);
+  // combine_workspace.import(antiMetp);
+  // combine_workspace.import(antiMetm);
+  // combine_workspace.import(pepe2Pdf_aqcdp_norm);
+  // combine_workspace.import(pepe2Pdf_aqcdm_norm);
   
-  combine_workspace.import(apdfWm);
-  combine_workspace.import(apdfWmp);
-  combine_workspace.import(apdfWmm);
-  combine_workspace.import(apdfEWK);
-  combine_workspace.import(apdfEWKp);
-  combine_workspace.import(apdfEWKm);
-  combine_workspace.import(*(aqcd.model));
-  //combine_workspace.import(qcdpn);
-  combine_workspace.import(*(aqcdp.model));
-  combine_workspace.import(*(aqcdm.model));
+  // combine_workspace.import(apdfWm);
+  // combine_workspace.import(apdfWmp);
+  // combine_workspace.import(apdfWmm);
+  // combine_workspace.import(apdfEWK);
+  // combine_workspace.import(apdfEWKp);
+  // combine_workspace.import(apdfEWKm);
+  // combine_workspace.import(*(aqcd.model));
+  // //combine_workspace.import(qcdpn);
+  // combine_workspace.import(*(aqcdp.model));
+  // combine_workspace.import(*(aqcdm.model));
 
-  sprintf(nname,"%s/Wlnu_pdfTemplates.root",CPlot::sOutDir.Data());
-  combine_workspace.writeToFile(nname);
+  // sprintf(nname,"%s/Wlnu_pdfTemplates.root",CPlot::sOutDir.Data());
+  // combine_workspace.writeToFile(nname);
   
   
-   // separate file for the binned workspace just so i don't fuck up the original one
-  RooWorkspace binned_workspace("binned_workspace");
-  // loop through the number of bins, import the appropriate pdf for each one
-  for(int j = 0; j < nIsoBins; ++j){
-      // binned_workspace.import(dataMet);
-      binned_workspace.import(*dataMetpHist_[j]);
-      binned_workspace.import(*dataMetmHist_[j]);
-	  // QCD normalization RooRealVars
-      binned_workspace.import(*pepe2Pdf_qcdp_norms_[j]);
-      binned_workspace.import(*pepe2Pdf_qcdm_norms_[j]);
-	  // QCD shapes
-      // binned_workspace.import(*(qcd.model));
-      binned_workspace.import(*(qcdp_[j]->model));
-      binned_workspace.import(*(qcdm_[j]->model));
-      std::cout << "importing   " << qcdm_[j]->model->GetName() << std::endl;
-	  //The DataHist
-	  // combine_workspace.import(*wenuMet_[j]);
-	  binned_workspace.import(*WlnuMetp_[j]);
-	  binned_workspace.import(*WlnuMetm_[j]);
-      // binned_workspace.import(pdfWe);
-      // binned_workspace.import(*pdfWep_[j]);
-      // binned_workspace.import(*pdfWem_[j]);
-	  // The DataHist
-	  // combine_workspace.import(*ewkMet_[j]);
-	  binned_workspace.import(*ewkMetp_[j]);
-	  binned_workspace.import(*ewkMetm_[j]);
+   // // separate file for the binned workspace just so i don't fuck up the original one
+  // RooWorkspace binned_workspace("binned_workspace");
+  // // loop through the number of bins, import the appropriate pdf for each one
+  // for(int j = 0; j < nIsoBins; ++j){
+      // // binned_workspace.import(dataMet);
+      // binned_workspace.import(*dataMetpHist_[j]);
+      // binned_workspace.import(*dataMetmHist_[j]);
+	  // // QCD normalization RooRealVars
+      // binned_workspace.import(*pepe2Pdf_qcdp_norms_[j]);
+      // binned_workspace.import(*pepe2Pdf_qcdm_norms_[j]);
+	  // // QCD shapes
+      // // binned_workspace.import(*(qcd.model));
+      // binned_workspace.import(*(qcdp_[j]->model));
+      // binned_workspace.import(*(qcdm_[j]->model));
+      // std::cout << "importing   " << qcdm_[j]->model->GetName() << std::endl;
+	  // //The DataHist
+	  // // combine_workspace.import(*wenuMet_[j]);
+	  // binned_workspace.import(*WlnuMetp_[j]);
+	  // binned_workspace.import(*WlnuMetm_[j]);
+      // // binned_workspace.import(pdfWe);
+      // // binned_workspace.import(*pdfWep_[j]);
+      // // binned_workspace.import(*pdfWem_[j]);
+	  // // The DataHist
+	  // // combine_workspace.import(*ewkMet_[j]);
+	  // binned_workspace.import(*ewkMetp_[j]);
+	  // binned_workspace.import(*ewkMetm_[j]);
       
-    binned_workspace.import(*wxMetp_[j]);
-	  binned_workspace.import(*wxMetm_[j]);
+    // binned_workspace.import(*wxMetp_[j]);
+	  // binned_workspace.import(*wxMetm_[j]);
       
-    binned_workspace.import(*zxxMetp_[j]);
-	  binned_workspace.import(*zxxMetm_[j]);
+    // binned_workspace.import(*zxxMetp_[j]);
+	  // binned_workspace.import(*zxxMetm_[j]);
       
-    binned_workspace.import(*ttbMetp_[j]);
-	  binned_workspace.import(*ttbMetm_[j]);
+    // binned_workspace.import(*ttbMetp_[j]);
+	  // binned_workspace.import(*ttbMetm_[j]);
       
-    binned_workspace.import(*dibMetp_[j]);
-	  binned_workspace.import(*dibMetm_[j]);
+    // binned_workspace.import(*dibMetp_[j]);
+	  // binned_workspace.import(*dibMetm_[j]);
     
-    binned_workspace.import(*WlnuMetpEta_[j]);
-	  binned_workspace.import(*WlnuMetmEta_[j]);
-    binned_workspace.import(*WlnuMetpKeys_[j]);
-	  binned_workspace.import(*WlnuMetmKeys_[j]);
-    binned_workspace.import(*WlnuMetpStat_[j]);
-	  binned_workspace.import(*WlnuMetmStat_[j]);
+    // binned_workspace.import(*WlnuMetpEta_[j]);
+	  // binned_workspace.import(*WlnuMetmEta_[j]);
+    // binned_workspace.import(*WlnuMetpKeys_[j]);
+	  // binned_workspace.import(*WlnuMetmKeys_[j]);
+    // binned_workspace.import(*WlnuMetpStat_[j]);
+	  // binned_workspace.import(*WlnuMetmStat_[j]);
     
-    binned_workspace.import(*WlnuMetpEtaD_[j]);
-	  binned_workspace.import(*WlnuMetmEtaD_[j]);
-    binned_workspace.import(*WlnuMetpKeysD_[j]);
-	  binned_workspace.import(*WlnuMetmKeysD_[j]);
-    binned_workspace.import(*WlnuMetpStatD_[j]);
-	  binned_workspace.import(*WlnuMetmStatD_[j]);
+    // binned_workspace.import(*WlnuMetpEtaD_[j]);
+	  // binned_workspace.import(*WlnuMetmEtaD_[j]);
+    // binned_workspace.import(*WlnuMetpKeysD_[j]);
+	  // binned_workspace.import(*WlnuMetmKeysD_[j]);
+    // binned_workspace.import(*WlnuMetpStatD_[j]);
+	  // binned_workspace.import(*WlnuMetmStatD_[j]);
     
-    binned_workspace.import(*ewkMetpEta_[j]);
-	  binned_workspace.import(*ewkMetmEta_[j]);
-    binned_workspace.import(*ewkMetpKeys_[j]);
-	  binned_workspace.import(*ewkMetmKeys_[j]);
-    binned_workspace.import(*ewkMetpStat_[j]);
-	  binned_workspace.import(*ewkMetmStat_[j]);
+    // binned_workspace.import(*ewkMetpEta_[j]);
+	  // binned_workspace.import(*ewkMetmEta_[j]);
+    // binned_workspace.import(*ewkMetpKeys_[j]);
+	  // binned_workspace.import(*ewkMetmKeys_[j]);
+    // binned_workspace.import(*ewkMetpStat_[j]);
+	  // binned_workspace.import(*ewkMetmStat_[j]);
     
-    binned_workspace.import(*ewkMetpEtaD_[j]);
-	  binned_workspace.import(*ewkMetmEtaD_[j]);
-    binned_workspace.import(*ewkMetpKeysD_[j]);
-	  binned_workspace.import(*ewkMetmKeysD_[j]);
-    binned_workspace.import(*ewkMetpStatD_[j]);
-	  binned_workspace.import(*ewkMetmStatD_[j]);
+    // binned_workspace.import(*ewkMetpEtaD_[j]);
+	  // binned_workspace.import(*ewkMetmEtaD_[j]);
+    // binned_workspace.import(*ewkMetpKeysD_[j]);
+	  // binned_workspace.import(*ewkMetmKeysD_[j]);
+    // binned_workspace.import(*ewkMetpStatD_[j]);
+	  // binned_workspace.import(*ewkMetmStatD_[j]);
     
-    binned_workspace.import(*wxMetpEta_[j]);
-	  binned_workspace.import(*wxMetmEta_[j]);
-    binned_workspace.import(*wxMetpKeys_[j]);
-	  binned_workspace.import(*wxMetmKeys_[j]);
-    binned_workspace.import(*wxMetpStat_[j]);
-	  binned_workspace.import(*wxMetmStat_[j]);
+    // binned_workspace.import(*wxMetpEta_[j]);
+	  // binned_workspace.import(*wxMetmEta_[j]);
+    // binned_workspace.import(*wxMetpKeys_[j]);
+	  // binned_workspace.import(*wxMetmKeys_[j]);
+    // binned_workspace.import(*wxMetpStat_[j]);
+	  // binned_workspace.import(*wxMetmStat_[j]);
     
-    binned_workspace.import(*wxMetpEtaD_[j]);
-	  binned_workspace.import(*wxMetmEtaD_[j]);
-    binned_workspace.import(*wxMetpKeysD_[j]);
-	  binned_workspace.import(*wxMetmKeysD_[j]);
-    binned_workspace.import(*wxMetpStatD_[j]);
-	  binned_workspace.import(*wxMetmStatD_[j]);
+    // binned_workspace.import(*wxMetpEtaD_[j]);
+	  // binned_workspace.import(*wxMetmEtaD_[j]);
+    // binned_workspace.import(*wxMetpKeysD_[j]);
+	  // binned_workspace.import(*wxMetmKeysD_[j]);
+    // binned_workspace.import(*wxMetpStatD_[j]);
+	  // binned_workspace.import(*wxMetmStatD_[j]);
     
-    binned_workspace.import(*zxxMetpEta_[j]);
-	  binned_workspace.import(*zxxMetmEta_[j]);
-    binned_workspace.import(*zxxMetpKeys_[j]);
-	  binned_workspace.import(*zxxMetmKeys_[j]);
-    binned_workspace.import(*zxxMetpStat_[j]);
-	  binned_workspace.import(*zxxMetmStat_[j]);
+    // binned_workspace.import(*zxxMetpEta_[j]);
+	  // binned_workspace.import(*zxxMetmEta_[j]);
+    // binned_workspace.import(*zxxMetpKeys_[j]);
+	  // binned_workspace.import(*zxxMetmKeys_[j]);
+    // binned_workspace.import(*zxxMetpStat_[j]);
+	  // binned_workspace.import(*zxxMetmStat_[j]);
     
-    binned_workspace.import(*zxxMetpEtaD_[j]);
-	  binned_workspace.import(*zxxMetmEtaD_[j]);
-    binned_workspace.import(*zxxMetpKeysD_[j]);
-	  binned_workspace.import(*zxxMetmKeysD_[j]);
-    binned_workspace.import(*zxxMetpStatD_[j]);
-	  binned_workspace.import(*zxxMetmStatD_[j]);
+    // binned_workspace.import(*zxxMetpEtaD_[j]);
+	  // binned_workspace.import(*zxxMetmEtaD_[j]);
+    // binned_workspace.import(*zxxMetpKeysD_[j]);
+	  // binned_workspace.import(*zxxMetmKeysD_[j]);
+    // binned_workspace.import(*zxxMetpStatD_[j]);
+	  // binned_workspace.import(*zxxMetmStatD_[j]);
     
-	  //The Pdfs
-      // binned_workspace.import(pdfEWK);
-      // binned_workspace.import(*pdfEWKp_[j]);
-      // binned_workspace.import(*pdfEWKm_[j]);
+	  // //The Pdfs
+      // // binned_workspace.import(pdfEWK);
+      // // binned_workspace.import(*pdfEWKp_[j]);
+      // // binned_workspace.import(*pdfEWKm_[j]);
 	  
-	  binned_workspace.import(*hDataMetp2d[j]);
-	  binned_workspace.import(*hDataMetm2d[j]);
-	  binned_workspace.import(*hWlnuMetp2d[j]);
-	  binned_workspace.import(*hWlnuMetm2d[j]);
-	  binned_workspace.import(*hEWKMetp2d[j]);
-	  binned_workspace.import(*hEWKMetm2d[j]);
-    binned_workspace.import(*hWxMetp2d[j]);
-	  binned_workspace.import(*hWxMetm2d[j]);
-    binned_workspace.import(*hZxxMetp2d[j]);
-	  binned_workspace.import(*hZxxMetm2d[j]);
-    binned_workspace.import(*hDibMetp2d[j]);
-	  binned_workspace.import(*hDibMetm2d[j]);
-    binned_workspace.import(*hTtbMetp2d[j]);
-	  binned_workspace.import(*hTtbMetm2d[j]);
 	  // binned_workspace.import(*hDataMetp2d[j]);
+	  // binned_workspace.import(*hDataMetm2d[j]);
+	  // binned_workspace.import(*hWlnuMetp2d[j]);
+	  // binned_workspace.import(*hWlnuMetm2d[j]);
+	  // binned_workspace.import(*hEWKMetp2d[j]);
+	  // binned_workspace.import(*hEWKMetm2d[j]);
+    // binned_workspace.import(*hWxMetp2d[j]);
+	  // binned_workspace.import(*hWxMetm2d[j]);
+    // binned_workspace.import(*hZxxMetp2d[j]);
+	  // binned_workspace.import(*hZxxMetm2d[j]);
+    // binned_workspace.import(*hDibMetp2d[j]);
+	  // binned_workspace.import(*hDibMetm2d[j]);
+    // binned_workspace.import(*hTtbMetp2d[j]);
+	  // binned_workspace.import(*hTtbMetm2d[j]);
+	  // // binned_workspace.import(*hDataMetp2d[j]);
 	  
 
-  }// end of loop, now save the workspace
-  sprintf(nname, "%s/Wlnu_pdfTemplates_binned.root",CPlot::sOutDir.Data());
-  binned_workspace.writeToFile(nname);
+  // // }// end of loop, now save the workspace
+  // sprintf(nname, "%s/Wlnu_pdfTemplates_binned.root",CPlot::sOutDir.Data());
+  // binned_workspace.writeToFile(nname);
   
   
 
