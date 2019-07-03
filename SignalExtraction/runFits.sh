@@ -9,9 +9,10 @@ LUMI5=294.4 # Low PU 5 TeV 2017 ele trigger
 
 # LUMI2=199.270 # not used in Low PU atm
 
-NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV_wRecoil
+NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil_wStat_2G_eff
+OUT=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/SignalExtraction
 
-root -l -q fitWm_2d_v2.C+\(\"TEST_June18_Wptweight\",\"${NTUPLEDIR}\",\"Wmunu\",$LUMI13,$LUMI13\);
+root -l -q fitWlnu.C+\(\"${OUT}/TEST_June24_AllShapes\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
 # root -l -q fitWlikeZm.C+\(\"TEST_WlikeZm_Inclusive_3G_ptRW\",$LUMI13,$LUMI13\);
 
 # root -l -q plotResiduals.C+\(\"TEST_2019June18_CheckFixedStaUnc_2GausStat_Keys_Eta_unzoom\",${LUMI13}\); 
