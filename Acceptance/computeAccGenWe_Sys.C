@@ -285,14 +285,23 @@ void computeAccGenWe_Sys(const TString conf,       // input file
   }
   accTot=accNum/accDnm;
   
+  char txtfnamePDFs[100];
+  sprintf(txtfnamePDFs,"%s/pdf_vars.txt",outputDir.Data());
+  ofstream txtfile1;
+  txtfile1.open(txtfnamePDFs);
+  txtfile1 << accTot << std::endl;
   for(int ipdf=0; ipdf < NPDF; ipdf++){
     accv_PDF[ipdf]=accv_PDF[ipdf]/accDnm;
     std::cout << "accv " << accTot << "  accvpdf " << accv_PDF[ipdf] << std::endl;
     std::cout << "diff " << accv_PDF[ipdf]-accTot << "  pct diff " << 100*(accv_PDF[ipdf]-accTot)/accTot    << std::endl;
     accv_uncPDF+=(accv_PDF[ipdf]-accTot)*(accv_PDF[ipdf]-accTot)/(NPDF*accTot*accTot);
+    txtfile1 << accv_PDF[ipdf] << std::endl;
   }
+  txtfile1.close();
+  
   
   accv_uncPDF=sqrt(accv_uncPDF);
+
 
   for(int ifile=0;ifile<NFILES;ifile++){
     accv_QCD.push_back(0);
@@ -301,13 +310,19 @@ void computeAccGenWe_Sys(const TString conf,       // input file
       // accv_uncQCD+=(accv_QCD[iqcd]-accv[ifile])*(accv_QCD[iqcd]-accv[ifile])/(NQCD*accv[ifile]*accv[ifile]);
     }
   }
-  
+    
+  sprintf(txtfnamePDFs,"%s/qcd_vars.txt",outputDir.Data());
+  ofstream txtfile2;
+  txtfile2.open(txtfnamePDFs);
+  txtfile2 << accTot << std::endl;
   for(int iqcd=0; iqcd<NQCD; iqcd++){
     std::cout << "accvQCD " << accv_QCD[iqcd] << "  accNorm " << accTot << std::endl;
     if(fabs(accv_QCD[iqcd]-accTot)/(accTot) > accv_uncQCD) accv_uncQCD = fabs(accv_QCD[iqcd]-accTot)/(accTot);
     // if(fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile] > accv_uncQCD_num) accv_uncQCD_num = fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile];
     // if(fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile] > accv_uncQCD_dnm) accv_uncQCD_dnm = fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile];
+    txtfile2 << accv_QCD[iqcd] << std::endl;
   }
+  txtfile2.close();
 
   delete gen;
   

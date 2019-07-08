@@ -139,10 +139,10 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
     //
     // loop over events
     //      
-     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     // for(UInt_t ientry=0; ientry<100; ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.5*eventTree->GetEntries()); ientry++) {
-      if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+    // for(UInt_t ientry=0; ientry<(uint)(0.5*eventTree->GetEntries()); ientry++) {
+      if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
@@ -253,6 +253,12 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
 
     std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
     
+  char txtfnamePDFs[100];
+  sprintf(txtfnamePDFs,"%s/pdf_vars.txt",outputDir.Data());
+  ofstream txtfile1;
+  txtfile1.open(txtfnamePDFs);
+  txtfile1 << accv[0] << std::endl;
+    
     double sumCheck=0;
     double sqCheck = 0;
     double maxPDF = 0;
@@ -272,13 +278,20 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
         (fabs(pctDiff)>maxPDF)?maxPDF=fabs(pctDiff):maxPDF=maxPDF;
         accv_uncPDF_num+=(nSelv_PDF[npdf]-nSelv[ifile])*(nSelv_PDF[npdf]-nSelv[ifile])/(NPDF*nSelv[ifile]*nSelv[ifile]);
         accv_uncPDF_dnm+=(nEvtsv_PDF[npdf]-nEvtsv[ifile])*(nEvtsv_PDF[npdf]-nEvtsv[ifile])/(NPDF*nEvtsv[ifile]*nEvtsv[ifile]);
+        txtfile1 << accv_PDF[npdf] << std::endl;
     }
+    txtfile1.close();
     std::cout << "wum check " << sumCheck << std::endl;
     std::cout << "sq check " << sqCheck << std::endl;
     std::cout << "maxpdf  " << maxPDF << std::endl;
     accv_uncPDF=sqrt(accv_uncPDF/NPDF);
     accv_uncPDF_num=sqrt(accv_uncPDF_num);
     accv_uncPDF_dnm=sqrt(accv_uncPDF_dnm);
+    // char txtfnamePDFs[100];
+  sprintf(txtfnamePDFs,"%s/qcd_vars.txt",outputDir.Data());
+  ofstream txtfile2;
+  txtfile2.open(txtfnamePDFs);
+  txtfile2 << accv[0] << std::endl;
     for(int nqcd=0; nqcd<NQCD; nqcd++){
         accv_QCD.push_back(nSelv_QCD[nqcd]/nEvtsv_QCD[nqcd]);
         // std::cout << "nselvqcd " << nSelv_QCD[nqcd] << "  nevtsvqcd " << nEvtsv_QCD[nqcd] << " ratio " << nSelv_QCD[nqcd]/nEvtsv_QCD[nqcd] << std::endl;
@@ -291,7 +304,9 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
         if(fabs(accv_QCD[nqcd]-accv[ifile])/(accv[ifile]) > accv_uncQCD) accv_uncQCD = fabs(accv_QCD[nqcd]-accv[ifile])/(accv[ifile]);
         if(fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile] > accv_uncQCD_num) accv_uncQCD_num = fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile];
         if(fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile] > accv_uncQCD_dnm) accv_uncQCD_dnm = fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile];
+        txtfile2 << accv_QCD[nqcd] << std::endl;
     }
+    txtfile2.close();
 
     
     delete infile;

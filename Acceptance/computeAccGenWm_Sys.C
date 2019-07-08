@@ -153,7 +153,7 @@ void computeAccGenWm_Sys(const TString conf,             // input file
     // loop over events
     //    
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
       if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
@@ -267,6 +267,7 @@ void computeAccGenWm_Sys(const TString conf,             // input file
   double accTot=0;
   double accNum=0, accDnm=0;
   std::cout << "here" << std::endl;
+
   
   
   for(int i=0;i<NPDF;++i) {accv_PDF.push_back(0);}
@@ -283,17 +284,29 @@ void computeAccGenWm_Sys(const TString conf,             // input file
   }
   accTot=accNum/accDnm;
   
+    
+  
+  char txtfnamePDFs[100];
+  sprintf(txtfnamePDFs,"%s/pdf_vars.txt",outputDir.Data());
+  ofstream txtfile1;
+  txtfile1.open(txtfnamePDFs);
+  txtfile1 << accTot << std::endl;
   for(int ipdf=0; ipdf < NPDF; ipdf++){
     accv_PDF[ipdf]=accv_PDF[ipdf]/accDnm;
     std::cout << "accv " << accTot << "  accvpdf " << accv_PDF[ipdf] << std::endl;
     std::cout << "diff " << accv_PDF[ipdf]-accTot << "  pct diff " << 100*(accv_PDF[ipdf]-accTot)/accTot    << std::endl;
     accv_uncPDF+=(accv_PDF[ipdf]-accTot)*(accv_PDF[ipdf]-accTot)/(NPDF*accTot*accTot);
+    txtfile1 << accv_PDF[ipdf] << std::endl;
   }
+  txtfile1.close();
   
   accv_uncPDF=sqrt(accv_uncPDF);
 
   
-  
+  sprintf(txtfnamePDFs,"%s/qcd_vars.txt",outputDir.Data());
+  ofstream txtfile2;
+  txtfile2.open(txtfnamePDFs);
+  txtfile2 << accTot << std::endl;
   for(int ifile=0;ifile<NFILES;ifile++){
     std::cout << "file -------------- " << ifile << std::endl;
     accv_QCD.push_back(0);
@@ -307,9 +320,9 @@ void computeAccGenWm_Sys(const TString conf,             // input file
   for(int iqcd=0; iqcd<NQCD; iqcd++){
     std::cout << fabs(accv_QCD[iqcd]-accTot)/(accTot) << std::endl;
     if(fabs(accv_QCD[iqcd]-accTot)/(accTot) > accv_uncQCD) accv_uncQCD = fabs(accv_QCD[iqcd]-accTot)/(accTot);
-    // if(fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile] > accv_uncQCD_num) accv_uncQCD_num = fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile];
-    // if(fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile] > accv_uncQCD_dnm) accv_uncQCD_dnm = fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile];
+    txtfile2 << accv_QCD[iqcd] << std::endl;
   }
+  txtfile2.close();
 
   delete gen;
   
