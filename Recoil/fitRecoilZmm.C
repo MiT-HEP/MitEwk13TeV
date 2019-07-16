@@ -50,7 +50,7 @@ using namespace std;
 
 bool doLikelihoodScan=false;
 
-bool do_keys=false;
+// bool do_keys=false;
 bool do_5TeV=false;
 bool doLog=false; // true for data; false for MC
 bool doElectron=false;
@@ -157,7 +157,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 		Double_t *chi2Arr,   Double_t *chi2ErrArr,
                 RooWorkspace *workspace,
 		const char *outputname,
-		int etaBinCategory);
+		int etaBinCategory, bool do_keys);
                 
 void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
                 const Int_t model, const Bool_t sigOnly,
@@ -185,7 +185,8 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
                   std::string metName = "pf",
                   TString outputDir="./", // output directory
                   Double_t lumi=1,
-		  int etaBinCategory=0 // 0 is inclusive, 1 is fabs(eta)<=0.5,  2 is fabs(eta)=[0.5,1], 3 is fabs(eta)>=1
+		  int etaBinCategory=0, // 0 is inclusive, 1 is fabs(eta)<=0.5,  2 is fabs(eta)=[0.5,1], 3 is fabs(eta)>=1
+      bool do_keys=0
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -207,7 +208,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   // full binning
    // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
    
-   Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300}; // regular ones for 13 TeV 2017 
+   // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300}; // regular ones for 13 TeV 2017 
+   Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; // regular ones for 5 TeV 2017 
+   
    // Double_t ptbins[] = {0,2.5,5.0,10,20,30,40,50,60,80,100,125,150,200,250,300}; // rebin to check effect of bin size on statitiscal unc (2017, 13 TeV)
 
   // nov5 5TeV
@@ -245,27 +248,27 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   // comment this part out until we have the correct MC Samples for the background
   // 13 TeV low pu
   // not doin any of the backgrounds
-   if(!do_5TeV) {
-     if(doElectron) {
-       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
-     } else {
-       //newPuppi, may11
-       // ekw_select1.root is ttbar, wz, ww, zz
-       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-       fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
-       // RAW puppi
-       ///eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/rawPuppiNtuples
+   // if(!do_5TeV) {
+     // if(doElectron) {
+       // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE);
+       // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+     // } else {
+       // //newPuppi, may11
+       // // ekw_select1.root is ttbar, wz, ww, zz
+       // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+       // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
+       // // RAW puppi
+       // ///eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/rawPuppiNtuples
 
-     }
-     // used for nov26
-     //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-     //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
-   }
-   if(do_5TeV) {
-     fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-     fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
-   }
+     // }
+     // // used for nov26
+     // //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+     // //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+   // }
+   // if(do_5TeV) {
+     // // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+     // // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
+   // }
   //
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
@@ -444,62 +447,46 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
       TLorentzVector l1, l2, dl;
       l1.SetPtEtaPhiM(mu1.Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
       l2.SetPtEtaPhiM(mu2.Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-	  Double_t eleCorr1=0.0;
-	  Double_t eleCorr2=0.0;
-	  // // if(!infilename.Contains("data_") && doFootprint){
-        // for (Int_t i=0; i<nBinsFP; i++) {
-          // if( l1.Eta()>lower[i] && l1.Eta()<upper[i] ) {
-            // eleCorr1=fpcorr[i];
-          // }
-        // }//footprint?
-        // for (Int_t i=0; i<nBinsFP; i++) {
-          // if( l2.Eta()>lower[i] && l2.Eta()<upper[i] ) {
-            // eleCorr2=fpcorr[i];
-          // }
-        // }
-	  // // }
-	  l1*=(1+eleCorr1);
-	  l2*=(1+eleCorr2);
 	  
 	  
       // dl=l1+l2;
       dl=mu1+mu2;
       double mll=dl.M();
-      double etall=dl.Eta();
+      double etall=dl.Rapidity();
       double ptll=dl.Pt();
 	  
     // std::cout << "evt  " << evtNum << "  dilep " << dl.Pt() << "  l1 " << mu1.Pt() << "  l2  " << mu2.Pt() << std::endl;
 	  
       if(doElectron) {
-	mll=dilep->M();
-	etall=dilep->Eta();
-	ptll=dilep->Pt();
+        mll=dilep->M();
+        etall=dilep->Eta();
+        ptll=dilep->Pt();
       }
 
 
       // need to gain stat on the ttbar BKG
       if(!isBkgv[ifile]) {
-	if(category!=1 && category!=2 && category != 3)                continue;
-	if(mll < MASS_LOW || mll > MASS_HIGH)            continue;
+        if(category!=1 && category!=2 && category != 3)                continue;
+        if(mll < MASS_LOW || mll > MASS_HIGH)            continue;
       }
       if(doElectron) {
-	if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
+        if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
       } else {
-	if(l1.Pt()          < PT_CUT  || l2.Pt()          < PT_CUT)  continue;
+        if(l1.Pt()          < PT_CUT  || l2.Pt()          < PT_CUT)  continue;
       }
       if(fabs(lep1->Eta()) > ETA_CUT || fabs(lep2->Eta()) > ETA_CUT) continue;
 
       // need to gain stat on the ttbar BKG
       if(!isBkgv[ifile]) {
-	if(!infilename.Contains("data_")) {
-	  if(etaBinCategory==1 && fabs(genVy)>0.5) continue;
-	  if(etaBinCategory==2 && (fabs(genVy)<=0.5 || fabs(genVy)>=1 )) continue;
-	  if(etaBinCategory==3 && fabs(genVy)<1) continue;
-	} else {
-	  if(etaBinCategory==1 && fabs(etall)>0.5) continue;
-	  if(etaBinCategory==2 && (fabs(etall)<=0.5 || fabs(etall)>=1 )) continue;
-	  if(etaBinCategory==3 && fabs(etall)<1) continue;
-	}
+        if(!infilename.Contains("data_")) {
+          if(etaBinCategory==1 && fabs(genVy)>0.5) continue;
+          if(etaBinCategory==2 && (fabs(genVy)<=0.5 || fabs(genVy)>=1 )) continue;
+          if(etaBinCategory==3 && fabs(genVy)<1) continue;
+        } else {
+          if(etaBinCategory==1 && fabs(etall)>0.5) continue;
+          if(etaBinCategory==2 && (fabs(etall)<=0.5 || fabs(etall)>=1 )) continue;
+          if(etaBinCategory==3 && fabs(etall)<1) continue;
+        }
       }
 
       Int_t ipt=-1;
@@ -516,39 +503,39 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
       double pU2=u2;
 
       if(doElectron) {
-	TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
-	TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
+        TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
+        TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
 
-	TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
-	TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
+        TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+        TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
 
-	TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-	Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
-	Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
-	double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dilep->Pt()*cos(dilep->Phi());
-	double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dilep->Pt()*sin(dilep->Phi());
-	double pU   = sqrt(pUX*pUX+pUY*pUY);
-	double pCos = - (pUX*cos(dilep->Phi()) + pUY*sin(dilep->Phi()))/pU;
-	double pSin =   (pUX*sin(dilep->Phi()) - pUY*cos(dilep->Phi()))/pU;
-	pU1   = pU*pCos; // U1 in data
-	pU2   = pU*pSin; // U2 in data
+        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
+        Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
+        double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dilep->Pt()*cos(dilep->Phi());
+        double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dilep->Pt()*sin(dilep->Phi());
+        double pU   = sqrt(pUX*pUX+pUY*pUY);
+        double pCos = - (pUX*cos(dilep->Phi()) + pUY*sin(dilep->Phi()))/pU;
+        double pSin =   (pUX*sin(dilep->Phi()) - pUY*cos(dilep->Phi()))/pU;
+        pU1   = pU*pCos; // U1 in data
+        pU2   = pU*pSin; // U2 in data
       } else {
-	TVector2 vLepRaw1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
-	TVector2 vLepRaw2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
+        TVector2 vLepRaw1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+        TVector2 vLepRaw2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
 
-	TVector2 vLepCor1((l1.Pt())*cos(l1.Phi()),(l1.Pt())*sin(l1.Phi()));
-	TVector2 vLepCor2((l2.Pt())*cos(l2.Phi()),(l2.Pt())*sin(l2.Phi()));
+        TVector2 vLepCor1((l1.Pt())*cos(l1.Phi()),(l1.Pt())*sin(l1.Phi()));
+        TVector2 vLepCor2((l2.Pt())*cos(l2.Phi()),(l2.Pt())*sin(l2.Phi()));
 
-	TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-	Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
-	Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
-	double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dl.Pt()*cos(dl.Phi());
-	double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dl.Pt()*sin(dl.Phi());
-	double pU   = sqrt(pUX*pUX+pUY*pUY);
-	double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
-	double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
-	pU1   = pU*pCos; // U1 in data
-	pU2   = pU*pSin; // U2 in data
+        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+        Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
+        Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
+        double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dl.Pt()*cos(dl.Phi());
+        double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dl.Pt()*sin(dl.Phi());
+        double pU   = sqrt(pUX*pUX+pUY*pUY);
+        double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
+        double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
+        pU1   = pU*pCos; // U1 in data
+        pU2   = pU*pSin; // U2 in data
       }
 	  
       if(isBkgv[ifile]) {
@@ -682,7 +669,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	     pfu1chi2,   pfu1chi2Err,
 	     &pdfsU1,
 	     outpdfname,
-	     etaBinCategory);
+	     etaBinCategory, do_keys);
           
   std::cout << "writing" << std::endl;
 
@@ -706,7 +693,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	     pfu2chi2,   pfu2chi2Err,
 	     &pdfsU2,
 	     outpdfname,
-	     etaBinCategory);
+	     etaBinCategory, do_keys);
 
   pdfsU2.writeToFile(outpdfname,kFALSE);
 
@@ -1313,7 +1300,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 		Double_t *chi2Arr,   Double_t *chi2ErrArr,
 		RooWorkspace *wksp,
 		const char *outputname,
-		int etaBinCategory
+		int etaBinCategory, bool do_keys
 ) {
   char lumi[50];
   char pname[50];
@@ -1999,6 +1986,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
       c->SaveAs(Form("%s_%d_dataset.png",plabel,ibin));
 
       name.str("");
+
+      pdf_keys.plotOn(frame,LineColor(kRed)) ;
 
       //      wksp->import(lDataSet[ibin]);
       wksp->import(pdf_keys);
