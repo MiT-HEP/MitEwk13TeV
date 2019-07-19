@@ -67,6 +67,9 @@
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
+void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, vector<double> wgtLum,double mtCorr);
+void fillWeights(bool doMET,TH1D** h,vector<double> met, int nWeight,vector<double> wgtLum,double mtCorr);
+
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
@@ -94,9 +97,9 @@ const  Int_t linecolorQCD = kViolet+2;
 const  Int_t fillcolorQCD = kViolet-5;
 const  Int_t ratioColor   = kGray+2;
 
-const Int_t    NBINS   = 75;
+const Int_t    NBINS   = 50;
 const Double_t METMIN  = 0;
-const Double_t METMAX  = 150;
+const Double_t METMAX  = 100;
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -121,13 +124,16 @@ void fitWlnu(const TString  outputDir,   // output directory
 
   double yscale=0.5;
   
-  // vector<char[50]> uncShapeNames = {};
-  enum{eta,keys,stat};
-  enum{mc,fsr,bkg};
-  const string vUncRec[]={"eta","keys","stat"};
-  const string vUncEff[]={"mc","fsr","bkg"};
-  int nUncRec = sizeof(vUncRec)/sizeof(vUncRec[0]);
-  int nUncEff = sizeof(vUncEff)/sizeof(vUncEff[0]);
+  // Control the types of uncertainties
+  enum{no,cent,eta,keys,rochu,rochd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
+  const string vMET[]={"no","main","eta","keys","rochu","rochd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"};
+  int nMET = sizeof(vMET)/sizeof(vMET[0]);
+  // int ns=nMET-nNV;
+  // front half should be nMET-nNV
+  
+  enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
+  const string vWeight[]={"main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
+  int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
   
   // Double_t vIsoBins[] = {0.0,0.20,0.30,0.40,0.50,0.60,0.70};
   Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
@@ -189,7 +195,14 @@ void fitWlnu(const TString  outputDir,   // output directory
   vector<Int_t>   typev;
   
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
+  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_newRecoils/Wmunu/ntuples/wparts/wm0_select.raw.root");  typev.push_back(eWlnu);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_TESTADDSHAPE/Wmunu/ntuples/data_select.root");  typev.push_back(eData);
+  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_TESTADDSHAPE/Wmunu/ntuples/wm0_select.raw.root");  typev.push_back(eWlnu);
+  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_newRecoils/Wmunu/ntuples/wparts/wm1_select.raw.root");  typev.push_back(eWlnu);
+  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_newRecoils/Wmunu/ntuples/wparts/wm2_select.raw.root");  typev.push_back(eWlnu);
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
@@ -203,7 +216,9 @@ void fitWlnu(const TString  outputDir,   // output directory
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm0_select.root")); typev.push_back(eAntiWlnu);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm1_select.root")); typev.push_back(eAntiWlnu);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm2_select.root")); typev.push_back(eAntiWlnu);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
 
 
@@ -283,127 +298,127 @@ void fitWlnu(const TString  outputDir,   // output directory
   TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
   // All teh uncertainties? 
   // this is an array of arrays of histograms // first index is iso bin, 2nd is uncertainty shape
-  TH1D ***hWlnuMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  TH1D ***hWlnuMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnuMetp2dMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnuMetp2dMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
   
-  TH1D ***hEWKMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
-  TH1D ***hEWKMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKMetp2dMETU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dMETU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKMetp2dMETD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dMETD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
   
-  TH1D ***hWxMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
-  TH1D ***hWxMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxMetp2dMETU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dMETU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxMetp2dMETD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dMETD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
   
-  TH1D ***hZxxMetp2dUncRecU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dUncRecU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
-  TH1D ***hZxxMetp2dUncRecD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dUncRecD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxMetp2dMETU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dMETU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxMetp2dMETD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dMETD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
   ////////////////////////////////////////////////////////////////////////////////////////
-  TH1D ***hWlnuMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  TH1D ***hWlnuMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnuMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnuMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnuMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
   
-  TH1D ***hEWKMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
-  TH1D ***hEWKMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
   
-  TH1D ***hWxMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
-  TH1D ***hWxMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
   
-  TH1D ***hZxxMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
-  TH1D ***hZxxMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
   
-  TH1D ***hDibMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
-  TH1D ***hDibMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
-  TH1D ***hDibMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
-  TH1D ***hDibMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  TH1D ***hDibMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  TH1D ***hDibMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
   
-  TH1D ***hTtbMetp2dUncEffU  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
-  TH1D ***hTtbMetm2dUncEffU  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
-  TH1D ***hTtbMetp2dUncEffD  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
-  TH1D ***hTtbMetm2dUncEffD  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  TH1D ***hTtbMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  TH1D ***hTtbMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
   
   // do a loop to create the second array
   for(int i=0; i < nIsoBins; ++i){
     // w signal recoil
-    hWlnuMetp2dUncRecU[i] = new TH1D*[nUncRec];
-    hWlnuMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    hWlnuMetp2dMETU[i] = new TH1D*[nMET];
+    hWlnuMetm2dMETU[i] = new TH1D*[nMET];
     
-    hWlnuMetp2dUncRecD[i] = new TH1D*[nUncRec];
-    hWlnuMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    hWlnuMetp2dMETD[i] = new TH1D*[nMET];
+    hWlnuMetm2dMETD[i] = new TH1D*[nMET];
     
     // w signal efficiency 
-    hWlnuMetp2dUncEffU[i] = new TH1D*[nUncEff];
-    hWlnuMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    hWlnuMetp2dWeightU[i] = new TH1D*[nWeight];
+    hWlnuMetm2dWeightU[i] = new TH1D*[nWeight];
     
-    hWlnuMetp2dUncEffD[i] = new TH1D*[nUncEff];
-    hWlnuMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    hWlnuMetp2dWeightD[i] = new TH1D*[nWeight];
+    hWlnuMetm2dWeightD[i] = new TH1D*[nWeight];
     
     // ewk total recoil
-    hEWKMetp2dUncRecU[i] = new TH1D*[nUncRec];
-    hEWKMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    hEWKMetp2dMETU[i] = new TH1D*[nMET];
+    hEWKMetm2dMETU[i] = new TH1D*[nMET];
     
-    hEWKMetp2dUncRecD[i] = new TH1D*[nUncRec];
-    hEWKMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    hEWKMetp2dMETD[i] = new TH1D*[nMET];
+    hEWKMetm2dMETD[i] = new TH1D*[nMET];
     
     // ewk total efficiency
-    hEWKMetp2dUncEffU[i] = new TH1D*[nUncEff];
-    hEWKMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    hEWKMetp2dWeightU[i] = new TH1D*[nWeight];
+    hEWKMetm2dWeightU[i] = new TH1D*[nWeight];
     
-    hEWKMetp2dUncEffD[i] = new TH1D*[nUncEff];
-    hEWKMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    hEWKMetp2dWeightD[i] = new TH1D*[nWeight];
+    hEWKMetm2dWeightD[i] = new TH1D*[nWeight];
     
     // wx  recoil
-    hWxMetp2dUncRecU[i] = new TH1D*[nUncRec];
-    hWxMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    hWxMetp2dMETU[i] = new TH1D*[nMET];
+    hWxMetm2dMETU[i] = new TH1D*[nMET];
     
-    hWxMetp2dUncRecD[i] = new TH1D*[nUncRec];
-    hWxMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    hWxMetp2dMETD[i] = new TH1D*[nMET];
+    hWxMetm2dMETD[i] = new TH1D*[nMET];
     
     // wx  efficiency
-    hWxMetp2dUncEffU[i] = new TH1D*[nUncEff];
-    hWxMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    hWxMetp2dWeightU[i] = new TH1D*[nWeight];
+    hWxMetm2dWeightU[i] = new TH1D*[nWeight];
     
-    hWxMetp2dUncEffD[i] = new TH1D*[nUncEff];
-    hWxMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    hWxMetp2dWeightD[i] = new TH1D*[nWeight];
+    hWxMetm2dWeightD[i] = new TH1D*[nWeight];
     
     // zxx recoil
-    hZxxMetp2dUncRecU[i] = new TH1D*[nUncRec];
-    hZxxMetm2dUncRecU[i] = new TH1D*[nUncRec];
+    hZxxMetp2dMETU[i] = new TH1D*[nMET];
+    hZxxMetm2dMETU[i] = new TH1D*[nMET];
     
-    hZxxMetp2dUncRecD[i] = new TH1D*[nUncRec];
-    hZxxMetm2dUncRecD[i] = new TH1D*[nUncRec];
+    hZxxMetp2dMETD[i] = new TH1D*[nMET];
+    hZxxMetm2dMETD[i] = new TH1D*[nMET];
     
     // zxx efficiency
-    hZxxMetp2dUncEffU[i] = new TH1D*[nUncEff];
-    hZxxMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    hZxxMetp2dWeightU[i] = new TH1D*[nWeight];
+    hZxxMetm2dWeightU[i] = new TH1D*[nWeight];
     
-    hZxxMetp2dUncEffD[i] = new TH1D*[nUncEff];
-    hZxxMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    hZxxMetp2dWeightD[i] = new TH1D*[nWeight];
+    hZxxMetm2dWeightD[i] = new TH1D*[nWeight];
     
     // diboson efficiency
-    hDibMetp2dUncEffU[i] = new TH1D*[nUncEff];
-    hDibMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    hDibMetp2dWeightU[i] = new TH1D*[nWeight];
+    hDibMetm2dWeightU[i] = new TH1D*[nWeight];
     
-    hDibMetp2dUncEffD[i] = new TH1D*[nUncEff];
-    hDibMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    hDibMetp2dWeightD[i] = new TH1D*[nWeight];
+    hDibMetm2dWeightD[i] = new TH1D*[nWeight];
     
     // ttbar efficiency
-    hTtbMetp2dUncEffU[i] = new TH1D*[nUncEff];
-    hTtbMetm2dUncEffU[i] = new TH1D*[nUncEff];
+    hTtbMetp2dWeightU[i] = new TH1D*[nWeight];
+    hTtbMetm2dWeightU[i] = new TH1D*[nWeight];
     
-    hTtbMetp2dUncEffD[i] = new TH1D*[nUncEff];
-    hTtbMetm2dUncEffD[i] = new TH1D*[nUncEff];
+    hTtbMetp2dWeightD[i] = new TH1D*[nWeight];
+    hTtbMetm2dWeightD[i] = new TH1D*[nWeight];
   }
   // Eta-binned unc 
   // TH1D **hWlnuMetp2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
@@ -523,42 +538,42 @@ void fitWlnu(const TString  outputDir,   // output directory
     
     // Create a loop over the # of uncertainty shapes to produce the uncertainty histograms for the "up" shapes
     // Do the recoil ones here
-    for(int j = 0; j < nUncRec; ++j){
+    for(int j = 0; j < nMET; ++j){
       // w signal
-      hWlnuMetp2dUncRecU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWlnuMetm2dUncRecU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnuMetp2dMETU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnuMetm2dMETU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
       // ewk total
-      hEWKMetp2dUncRecU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hEWKMetm2dUncRecU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKMetp2dMETU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKMetm2dMETU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
       // wx
-      hWxMetp2dUncRecU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWxMetm2dUncRecU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxMetp2dMETU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxMetm2dMETU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
       // zxx
-      hZxxMetp2dUncRecU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hZxxMetm2dUncRecU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vUncRec[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxMetp2dMETU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxMetm2dMETU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
     }
     
-    for(int j=0; j < nUncEff; ++j){
-      hWlnuMetp2dUncEffU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWlnuMetm2dUncEffU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+    for(int j=0; j < nWeight; ++j){
+      hWlnuMetp2dWeightU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnuMetm2dWeightU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
-      hEWKMetp2dUncEffU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hEWKMetm2dUncEffU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKMetp2dWeightU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKMetm2dWeightU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
-      hWxMetp2dUncEffU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWxMetm2dUncEffU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxMetp2dWeightU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxMetm2dWeightU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
   
-      hZxxMetp2dUncEffU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hZxxMetm2dUncEffU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxMetp2dWeightU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxMetm2dWeightU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
-      hDibMetp2dUncEffU[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hDibMetm2dUncEffU[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hDibMetp2dWeightU[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hDibMetm2dWeightU[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
   
-      hTtbMetp2dUncEffU[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hTtbMetm2dUncEffU[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_"+vUncEff[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hTtbMetp2dWeightU[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hTtbMetm2dWeightU[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
     }
 
@@ -596,11 +611,16 @@ void fitWlnu(const TString  outputDir,   // output directory
   Int_t   q;
   TLorentzVector *lep=0, *lep_raw=0, *genV=0, *genLep=0;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
-  Double_t metCorrLep, metCorrMain, metCorrEta, metCorrStat, metCorrKeys, mtCorr;
-  Double_t metCorrLepPhi, metCorrMainPhi, metCorrEtaPhi, metCorrStatPhi, metCorrKeysPhi;
-  Double_t totalEvtWeight=1, effSFweight=1, relIso;
-  Double_t evtWeightSysFSR=1, evtWeightSysMC=1, evtWeightSysBkg=1;
-  
+  Double_t mtCorr;
+  // Double_t (*metVars)[no], (*metVars)[cent], (*metVars)[eta], metCorrStat, (*metVars)[keys], mtCorr;
+  // Double_t (*metVarsPhi)[no], (*metVarsPhi)[cent], (*metVarsPhi)[eta], metCorrStatPhi, (*metVarsPhi)[keys];
+  Double_t effSFweight=1, relIso;
+  // Double_t (*evtWeight)SysFSR=1, (*evtWeight)SysMC=1, (*evtWeight)SysBkg=1,totalEvtWeight=1, ;
+
+
+  vector<Double_t>  *metVars=0, *metVarsPhi=0;
+  vector<Double_t>  *evtWeight=0;
+  vector<Double_t>  *lheweight=0;
     
   
   TFile *infile=0;
@@ -627,37 +647,41 @@ void fitWlnu(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genVy",    &genVy);   // GEN W boson phi (signal MC)
     intree->SetBranchAddress("genLepPt",   &genLepPt);    // GEN lepton pT (signal MC)
     intree->SetBranchAddress("genLepPhi",  &genLepPhi);   // GEN lepton phi (signal MC)
-    intree->SetBranchAddress("prefireWeight",  &prefireWeight);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("totalEvtWeight", &totalEvtWeight);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("evtWeightSysFSR",&evtWeightSysFSR);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("evtWeightSysMC", &evtWeightSysMC);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("evtWeightSysBkg",&evtWeightSysBkg);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fb",      &scale1fb);  // MC weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fbUp",    &scale1fbUp);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fbDown",  &scale1fbDown);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("metCorrLep",      &metCorrLep);     // MET including lepton scale/smear
-    intree->SetBranchAddress("metCorrLepPhi",   &metCorrLepPhi);  // MET phi including lepton scale/smear
-    intree->SetBranchAddress("metCorrMain",     &metCorrMain);     // MET including lepton scale/smear (w/ main recoil corrs)
-    intree->SetBranchAddress("metCorrMainPhi",  &metCorrMainPhi);  // MET phi including lepton scale/smear (w/ main recoil corrs)
-    intree->SetBranchAddress("metCorrEta",      &metCorrEta);      // MET including lepton scale/smear (w/ eta recoil corrs)
-    intree->SetBranchAddress("metCorrEtaPhi",   &metCorrEtaPhi);   // MET phi including lepton scale/smear  (w/ eta recoil corrs)
-    intree->SetBranchAddress("metCorrStat",     &metCorrStat);     // MET including lepton scale/smear (w/ stat unc recoil corrs)
-    intree->SetBranchAddress("metCorrStatPhi",  &metCorrStatPhi);  // MET phi including lepton scale/smear (w/ stat unc recoil corrs)
-    intree->SetBranchAddress("metCorrKeys",     &metCorrKeys);     // MET including lepton scale/smear (w/ keyspdf recoil corrs)
-    intree->SetBranchAddress("metCorrKeysPhi",  &metCorrKeysPhi);  // MET phi including lepton scale/smear (w/ keyspdf recoil corrs)
-    intree->SetBranchAddress("sumEt",        &sumEt);     // Sum ET
-    intree->SetBranchAddress("mt",           &mt);        // transverse mass
-    intree->SetBranchAddress("mtCorr",       &mtCorr);        // transverse mass
-    intree->SetBranchAddress("q",        &q);         // lepton charge
-    intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
-    intree->SetBranchAddress("lep_raw",      &lep_raw);       // lepton 4-vector
-    intree->SetBranchAddress("genLep",      &genLep);       // lepton 4-vector
-    intree->SetBranchAddress("genV",         &genV);       // lepton 4-vector
-    intree->SetBranchAddress("pfChIso",      &pfChIso);
-    intree->SetBranchAddress("pfGamIso",     &pfGamIso);
-    intree->SetBranchAddress("pfNeuIso",     &pfNeuIso);
-    intree->SetBranchAddress("pfCombIso",    &pfCombIso);       // lepton 4-vector
-    intree->SetBranchAddress("relIso",       &relIso);       // relative isolation for the lepton
+    intree->SetBranchAddress("prefireWeight",  &prefireWeight);  // eventwgtLum[main] per 1/fb (MC)
+    // intree->SetBranchAddress("totalEvtWeight", &totalEvtWeight);  // eventwgtLum[main] per 1/fb (MC)
+    // intree->SetBranchAddress("(*evtWeight)SysFSR",&(*evtWeight)SysFSR);  // eventwgtLum[main] per 1/fb (MC)
+    // intree->SetBranchAddress("(*evtWeight)SysMC", &(*evtWeight)SysMC);  // eventwgtLum[main] per 1/fb (MC)
+    // intree->SetBranchAddress("(*evtWeight)SysBkg",&(*evtWeight)SysBkg);  // eventwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("scale1fb",      &scale1fb);  // MCwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("scale1fbUp",    &scale1fbUp);  // eventwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("scale1fbDown",  &scale1fbDown);  // eventwgtLum[main] per 1/fb (MC)
+    // intree->SetBranchAddress("(*metVars)[no]",      &(*metVars)[no]);     // MET including lepton scale/smear
+    // intree->SetBranchAddress("(*metVarsPhi)[no]",   &(*metVarsPhi)[no]);  // MET phi including lepton scale/smear
+    // intree->SetBranchAddress("(*metVars)[cent]",     &(*metVars)[cent]);     // MET including lepton scale/smear (w/ main recoil corrs)
+    // intree->SetBranchAddress("(*metVarsPhi)[cent]",  &(*metVarsPhi)[cent]);  // MET phi including lepton scale/smear (w/ main recoil corrs)
+    // intree->SetBranchAddress("(*metVars)[eta]",      &(*metVars)[eta]);      // MET including lepton scale/smear (w/ eta recoil corrs)
+    // intree->SetBranchAddress("(*metVarsPhi)[eta]",   &(*metVarsPhi)[eta]);   // MET phi including lepton scale/smear  (w/ eta recoil corrs)
+    // intree->SetBranchAddress("metCorrStat",     &metCorrStat);     // MET including lepton scale/smear (w/ stat unc recoil corrs)
+    // intree->SetBranchAddress("metCorrStatPhi",  &metCorrStatPhi);  // MET phi including lepton scale/smear (w/ stat unc recoil corrs)
+    // intree->SetBranchAddress("(*metVars)[keys]",     &(*metVars)[keys]);     // MET including lepton scale/smear (w/ keyspdf recoil corrs)
+    // intree->SetBranchAddress("(*metVarsPhi)[keys]",  &(*metVarsPhi)[keys]);  // MET phi including lepton scale/smear (w/ keyspdf recoil corrs)
+    intree->SetBranchAddress("sumEt",         &sumEt);     // Sum ET
+    intree->SetBranchAddress("mt",            &mt);        // transverse mass
+    intree->SetBranchAddress("mtCorr",        &mtCorr);        // transverse mass
+    intree->SetBranchAddress("q",             &q);         // lepton charge
+    intree->SetBranchAddress("lep",           &lep);       // lepton 4-vector
+    intree->SetBranchAddress("lep_raw",       &lep_raw);       // lepton 4-vector
+    intree->SetBranchAddress("genLep",        &genLep);       // lepton 4-vector
+    intree->SetBranchAddress("genV",          &genV);       // lepton 4-vector
+    intree->SetBranchAddress("pfChIso",       &pfChIso);
+    intree->SetBranchAddress("pfGamIso",      &pfGamIso);
+    intree->SetBranchAddress("pfNeuIso",      &pfNeuIso);
+    intree->SetBranchAddress("pfCombIso",     &pfCombIso);       // lepton 4-vector
+    intree->SetBranchAddress("relIso",        &relIso);       // relative isolation for the lepton
+    intree->SetBranchAddress("evtWeight",     &evtWeight); // eventwgtLum[main] vector
+    intree->SetBranchAddress("metVars",       &metVars);            // contains the different met variations
+    intree->SetBranchAddress("metVarsPhi",    &metVarsPhi);         // met phi for variations
+    // intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
   
     UInt_t iterator=15;
     // UInt_t iterator=1;
@@ -670,7 +694,8 @@ void fitWlnu(const TString  outputDir,   // output directory
     // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.1); ientry++) {
     // for(UInt_t ientry=0; ientry<((int)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
-      if(ientry%100000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+      // if(ientry%100000==0) 
+        cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
 // figure out later what to do
         // if(typev[ifile]==eWlnu || typev[ifile]==eWx || typev[ifile]==eZxx) {
@@ -684,45 +709,50 @@ void fitWlnu(const TString  outputDir,   // output directory
       if(lep_raw->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
       if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
-          
-      // set up the event weights for the MC reweighting
-      Double_t weight=totalEvtWeight*lumi;
-      Double_t wgtFsr=evtWeightSysFSR*lumi;
-      Double_t wgtBkg=evtWeightSysBkg*lumi;
-      Double_t wgtMC=evtWeightSysMC*lumi;
+       // std::cout << "blah" << std::endl;
+      // set up the eventwgtLum[main]s for the MC reweighting
+      std::cout << "blah" << std::endl;
+      vector<double> wgtLum;
+      // std::cout << "blah" << std::endl;
+      for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt]));
+      // std::cout << "blablhlh" << std::endl;
+      // Double_twgtLum[main]=totalEvtWeight*lumi;
+      // Double_t wgtLum[k]=(*evtWeight)SysFSR*lumi;
+      // Double_t wgtLum[k]=(*evtWeight)SysBkg*lumi;
+      // Double_t wgtLum[k]=(*evtWeight)SysMC*lumi;
       
-      // std::cout << weight << "  " << wgtFsr << "  " << wgtBkg << "" << wgtMC <<  " pt " << lep->Pt() << "  eta " <<  lep->Eta()<< std::endl;
-      // Double_t weight=totalEvtWeight*lumi2;    
+      // std::cout <<wgtLum[main] << "  " << wgtLum[k] << "  " << wgtLum[k] << "" << wgtLum[k] <<  " pt " << lep->Pt() << "  eta " <<  lep->Eta()<< std::endl;
+      // Double_twgtLum[main]=totalEvtWeight*lumi2;    
       
         // std::cout << typev[ifile]<< std::endl;
       if(typev[ifile]==eData) {
-        hDataMet->Fill(metCorrLep);
+        hDataMet->Fill((*metVars)[no]);
         if(q>0) {
-          doMET ? hDataMetp->Fill(metCorrLep) : hDataMetp->Fill(mtCorr);
-          hDataMetpPhi->Fill(metCorrLepPhi);
+          doMET ? hDataMetp->Fill((*metVars)[no]) : hDataMetp->Fill(mtCorr);
+          hDataMetpPhi->Fill((*metVarsPhi)[no]);
           hMuonEtaDatap->Fill(fabs(lep->Eta()));
-          doMET ? hDataMetp2d[0]->Fill(metCorrLep) : hDataMetp2d[0]->Fill(mtCorr);
+          doMET ? hDataMetp2d[0]->Fill((*metVars)[no]) : hDataMetp2d[0]->Fill(mtCorr);
           hMetpIsoValues[0]->Fill(relIso);
         } else {
-          doMET ? hDataMetm->Fill(metCorrLep) : hDataMetm->Fill(mtCorr);
+          doMET ? hDataMetm->Fill((*metVars)[no]) : hDataMetm->Fill(mtCorr);
           hMuonEtaDatam->Fill(fabs(lep->Eta()));
-          hDataMetmPhi->Fill(metCorrLepPhi);
-          doMET ? hDataMetm2d[0]->Fill(metCorrLep) : hDataMetm2d[0]->Fill(mtCorr);
+          hDataMetmPhi->Fill((*metVarsPhi)[no]);
+          doMET ? hDataMetm2d[0]->Fill((*metVars)[no]) : hDataMetm2d[0]->Fill(mtCorr);
           hMetmIsoValues[0]->Fill(relIso);
         }
       } else if(typev[ifile]==eAntiData) {
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
-            hAntiDataMet->Fill(metCorrLep);
+            hAntiDataMet->Fill((*metVars)[no]);
             if(q>0) { 
-              doMET ? hAntiDataMetp->Fill(metCorrLep) : hAntiDataMetp->Fill(mtCorr);
+              doMET ? hAntiDataMetp->Fill((*metVars)[no]) : hAntiDataMetp->Fill(mtCorr);
               hMuonEtaAntiDatap->Fill(fabs(lep->Eta()));
-              doMET ? hDataMetp2d[it]->Fill(metCorrLep) : hDataMetp2d[it]->Fill(mtCorr);
+              doMET ? hDataMetp2d[it]->Fill((*metVars)[no]) : hDataMetp2d[it]->Fill(mtCorr);
               hMetpIsoValues[it]->Fill(relIso);
             } else { 
-              doMET ? hAntiDataMetm->Fill(metCorrLep) : hAntiDataMetm->Fill(mtCorr);
+              doMET ? hAntiDataMetm->Fill((*metVars)[no]) : hAntiDataMetm->Fill(mtCorr);
               hMuonEtaAntiDatap->Fill(fabs(lep->Eta()));
-              doMET ? hDataMetm2d[it]->Fill(metCorrLep) : hDataMetm2d[it]->Fill(mtCorr);
+              doMET ? hDataMetm2d[it]->Fill((*metVars)[no]) : hDataMetm2d[it]->Fill(mtCorr);
               hMetmIsoValues[it]->Fill(relIso);
               break;
             }
@@ -731,231 +761,271 @@ void fitWlnu(const TString  outputDir,   // output directory
       } else if(typev[ifile]==eWlnu ) {
         // std::cout << "doing signal" << std::endl;
         int bin=0;
-        for(int i = 0; i <= hh_diff->GetNbinsX();++i){
-          if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
-        }
+        // for(int i = 0; i <= hh_diff->GetNbinsX();++i){
+          // if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
+        // }
         // double w2 =  hh_diff->GetBinContent(bin);
-        // weight*=w2;
-        hWlnuMet->Fill(metCorrMain,weight);
+        //wgtLum[main]*=w2;
+        hWlnuMet->Fill((*metVars)[cent],wgtLum[main]);
         if(q>0){
-          hMuonEtaMCp->Fill(fabs(lep->Eta()),weight);
-          hWlnuMetpPhi->Fill(metCorrMainPhi);
-          doMET ? hWlnuMetp->Fill(metCorrMain,weight) : hWlnuMetp->Fill(mtCorr,weight);
-          doMET ? hWlnuMetp2d[0]    ->Fill(metCorrMain, weight) : hWlnuMetp2d[0]    ->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dUncRecU[0][eta] ->Fill(metCorrEta ,  weight) : hWlnuMetp2dUncRecU[0][eta] ->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dUncRecU[0][keys]->Fill(metCorrKeys,  weight) : hWlnuMetp2dUncRecU[0][keys]->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dUncRecU[0][stat]->Fill(metCorrStat,  weight) : hWlnuMetp2dUncRecU[0][stat]->Fill(mtCorr, weight);
-          doMET ? hWlnuMetp2dUncEffU[0][fsr] ->Fill(metCorrMain,  wgtFsr) : hWlnuMetp2dUncEffU[0][fsr] ->Fill(mtCorr, wgtFsr);
-          doMET ? hWlnuMetp2dUncEffU[0][bkg] ->Fill(metCorrMain,  wgtBkg) : hWlnuMetp2dUncEffU[0][bkg] ->Fill(mtCorr, wgtBkg);
-          doMET ? hWlnuMetp2dUncEffU[0][mc]  ->Fill(metCorrMain,  wgtMC ) : hWlnuMetp2dUncEffU[0][mc]  ->Fill(mtCorr, wgtMC );
-          // // doMET ? hWlnuMetp2dKeys[0]->Fill(metCorrKeys, weight) : hWlnuMetp2dKeys[0]->Fill(mtCorr, weight);
-          // doMET ? hWlnuMetp2dStat[0]->Fill(metCorrStat, weight) : hWlnuMetp2dStat[0]->Fill(mtCorr, weight);
+          hMuonEtaMCp->Fill(fabs(lep->Eta()),wgtLum[main]);
+          hWlnuMetpPhi->Fill((*metVarsPhi)[cent]);
+          doMET ? hWlnuMetp->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWlnuMetp2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hWlnuMetp2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hWlnuMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k =eta; k < nMET; k++){
+            // doMET ? hWlnuMetp2dMETU[0][k] ->Fill((*metVars)[k] , wgtLum[main]) : hWlnuMetp2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
+          // }
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hWlnuMetp2dWeightU[0][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hWlnuMetp2dWeightU[0][k] ->Fill(mtCorr, wgtLum[k]);
+          // }
+          // // doMET ? hWlnuMetp2dKeys[0]->Fill((*metVars)[keys],wgtLum[main]) : hWlnuMetp2dKeys[0]->Fill(mtCorr,wgtLum[main]);
+          // doMET ? hWlnuMetp2dStat[0]->Fill(metCorrStat,wgtLum[main]) : hWlnuMetp2dStat[0]->Fill(mtCorr,wgtLum[main]);
         } else {
-          hMuonEtaMCm->Fill(fabs(lep->Eta()),weight);
-          hWlnuMetmPhi->Fill(metCorrMainPhi);
-          doMET ? hWlnuMetm->Fill(metCorrMain,weight) : hWlnuMetm->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2d[0]    ->Fill(metCorrMain,weight) : hWlnuMetm2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hWlnuMetm2dUncRecU[0][eta] ->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hWlnuMetm2dUncRecU[0][keys]->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hWlnuMetm2dUncRecU[0][stat]->Fill(mtCorr,weight);
-          doMET ? hWlnuMetm2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hWlnuMetm2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
-          doMET ? hWlnuMetm2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hWlnuMetm2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
-          doMET ? hWlnuMetm2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hWlnuMetm2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC);
+          hMuonEtaMCm->Fill(fabs(lep->Eta()),wgtLum[main]);
+          hWlnuMetmPhi->Fill((*metVarsPhi)[cent]);
+          doMET ? hWlnuMetm->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWlnuMetm2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm2d[0]    ->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hWlnuMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k =2; k < nMET; k++){
+            // doMET ? hWlnuMetm2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWlnuMetm2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
+          // }
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hWlnuMetm2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hWlnuMetm2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
+          // }
         }
       } else if(typev[ifile]==eWx) {
         // std::cout << "doing Wx" << std::endl;
-        doMET ? hEWKMet->Fill(metCorrMain,weight) : hEWKMet->Fill(mtCorr,weight);
+        doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
-          doMET ? hEWKMetp->Fill(metCorrMain,weight) : hEWKMetp->Fill(mtCorr,weight);
-          doMET ? hWxMetp2d[0]     ->Fill(metCorrMain,weight) : hWxMetp2d[0]     ->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dUncRecU[0][eta] ->Fill(metCorrEta ,weight) : hWxMetp2dUncRecU[0][eta] ->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dUncRecU[0][keys]->Fill(metCorrKeys,weight) : hWxMetp2dUncRecU[0][keys]->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dUncRecU[0][stat]->Fill(metCorrStat,weight) : hWxMetp2dUncRecU[0][stat]->Fill(mtCorr,weight);
-          doMET ? hWxMetp2dUncEffU[0][fsr] ->Fill(metCorrMain,wgtFsr) : hWxMetp2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
-          doMET ? hWxMetp2dUncEffU[0][bkg] ->Fill(metCorrMain,wgtBkg) : hWxMetp2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
-          doMET ? hWxMetp2dUncEffU[0][mc]  ->Fill(metCorrMain,wgtMC ) : hWxMetp2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWxMetp2d[0]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetp2d[0]     ->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hWxMetp2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hWxMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k =eta; k < nMET; k++){
+            // doMET ? hWxMetp2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWxMetp2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
+          // }
+          // for(int k=mc; k < nWeight; k++){
+          // doMET ? hWxMetp2dWeightU[0][k] ->Fill((*metVars)[cent],wgtLum[k]) : hWxMetp2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
+          // }
         } else {
-          doMET ? hEWKMetm->Fill(metCorrMain,weight): hEWKMetm->Fill(mtCorr,weight);
-          doMET ? hWxMetm2d[0]     ->Fill(metCorrMain,weight) : hWxMetm2d[0] ->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hWxMetm2dUncRecU[0][eta] ->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hWxMetm2dUncRecU[0][keys]->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hWxMetm2dUncRecU[0][stat]->Fill(mtCorr,weight);
-          doMET ? hWxMetm2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hWxMetm2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
-          doMET ? hWxMetm2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hWxMetm2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
-          doMET ? hWxMetm2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hWxMetm2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetm->Fill((*metVars)[cent],wgtLum[main]): hEWKMetm->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWxMetm2d[0]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetm2d[0] ->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hWxMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hWxMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k =eta; k < nMET; k++){
+            // doMET ? hWxMetm2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWxMetm2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
+          // }
+          // for(int k=mc; k < nWeight; k++){
+          // doMET ? hWxMetm2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hWxMetm2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
+          // }
         }
       } else if(typev[ifile]==eZxx){
         // std::cout << "doing Zxx" << std::endl;
-        doMET ? hEWKMet->Fill(metCorrMain,weight) : hEWKMet->Fill(mtCorr,weight);
+        doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
-          
- 				  doMET ? hEWKMetp->Fill(metCorrMain,weight) : hEWKMetp->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2d[0]    ->Fill(metCorrMain,weight) : hZxxMetp2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hZxxMetp2dUncRecU[0][eta] ->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hZxxMetp2dUncRecU[0][keys]->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hZxxMetp2dUncRecU[0][stat]->Fill(mtCorr,weight);
-          doMET ? hZxxMetp2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hZxxMetp2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
-          doMET ? hZxxMetp2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hZxxMetp2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
-          doMET ? hZxxMetp2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hZxxMetp2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC );
+ 				  doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
+          doMET ? hZxxMetp2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hZxxMetp2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hZxxMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k =eta; k < nMET; k++){
+            // doMET ? hZxxMetp2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hZxxMetp2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
+          // }
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hZxxMetp2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hZxxMetp2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
+          // }
         } else {
-          doMET ? hEWKMetm->Fill(metCorrMain,weight) :  hEWKMetm->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2d[0]    ->Fill(metCorrMain,weight) : hZxxMetm2d[0]    ->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dUncRecU[0][eta] ->Fill(metCorrEta , weight) : hZxxMetm2dUncRecU[0][eta] ->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dUncRecU[0][keys]->Fill(metCorrKeys, weight) : hZxxMetm2dUncRecU[0][keys]->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dUncRecU[0][stat]->Fill(metCorrStat, weight) : hZxxMetm2dUncRecU[0][stat]->Fill(mtCorr,weight);
-          doMET ? hZxxMetm2dUncEffU[0][fsr] ->Fill(metCorrMain, wgtFsr) : hZxxMetm2dUncEffU[0][fsr] ->Fill(mtCorr,wgtFsr);
-          doMET ? hZxxMetm2dUncEffU[0][bkg] ->Fill(metCorrMain, wgtBkg) : hZxxMetm2dUncEffU[0][bkg] ->Fill(mtCorr,wgtBkg);
-          doMET ? hZxxMetm2dUncEffU[0][mc]  ->Fill(metCorrMain, wgtMC ) : hZxxMetm2dUncEffU[0][mc]  ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetm->Fill((*metVars)[cent],wgtLum[main]) :  hEWKMetm->Fill(mtCorr,wgtLum[main]);
+          doMET ? hZxxMetm2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetm2d[0]    ->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hZxxMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hZxxMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k =eta; k < nMET; k++){
+            // doMET ? hZxxMetm2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hZxxMetm2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
+          // }
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hZxxMetm2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hZxxMetm2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
+          // }
         }
       } else if(typev[ifile]==eDib) {
         // std::cout << "doing Dibosons" << std::endl;
-        doMET ? hEWKMet->Fill(metCorrLep,weight) : hEWKMet->Fill(mtCorr,weight);
+        doMET ? hEWKMet->Fill((*metVars)[no],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
           // std::cout << "filling dib + " << std::endl;
-          doMET ? hEWKMetp->Fill(metCorrLep,weight) : hEWKMetp->Fill(mtCorr,weight);
-          doMET ? hDibMetp2d[0]->Fill(metCorrLep,weight) : hDibMetp2d[0]->Fill(mtCorr,weight);
-          doMET ? hDibMetp2dUncEffU[0][fsr]->Fill(metCorrLep,wgtFsr) : hDibMetp2dUncEffU[0][fsr]->Fill(mtCorr,wgtFsr);
-          doMET ? hDibMetp2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hDibMetp2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
-          doMET ? hDibMetp2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hDibMetp2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetp->Fill((*metVars)[no],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
+          doMET ? hDibMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[0]->Fill(mtCorr,wgtLum[main]);
+          // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hDibMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hDibMetp2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[k]) : hDibMetp2dWeightU[0][k]->Fill(mtCorr,wgtLum[k]);
+          // }
         } else {
-          doMET ? hEWKMetm->Fill(metCorrLep,weight) : hEWKMetm->Fill(mtCorr,weight);
-          doMET ? hDibMetm2d[0]->Fill(metCorrLep,weight) : hDibMetm2d[0]->Fill(mtCorr,weight);
-          doMET ? hDibMetm2dUncEffU[0][fsr]->Fill(metCorrLep,wgtFsr) : hDibMetm2dUncEffU[0][fsr]->Fill(mtCorr,wgtFsr);
-          doMET ? hDibMetm2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hDibMetm2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
-          doMET ? hDibMetm2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hDibMetm2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hEWKMetm->Fill(mtCorr,wgtLum[main]);
+          doMET ? hDibMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[0]->Fill(mtCorr,wgtLum[main]);
+          // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hDibMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hDibMetm2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[k]) : hDibMetm2dWeightU[0][k]->Fill(mtCorr,wgtLum[k]);
+          // }
         }
       } else if(typev[ifile]==eTtb) {
         // std::cout << "doing TTBar" << std::endl;
-        doMET ? hEWKMet->Fill(metCorrLep,weight) : hEWKMet->Fill(mtCorr,weight);
+        doMET ? hEWKMet->Fill((*metVars)[no],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
-          doMET ? hEWKMetp->Fill(metCorrLep,weight) : hEWKMetp->Fill(mtCorr,weight);
-          doMET ? hTtbMetp2d[0]->Fill(metCorrLep,weight) : hTtbMetp2d[0]->Fill(mtCorr,weight);
-          doMET ? hTtbMetp2dUncEffU[0][fsr]->Fill(metCorrLep,weight) : hTtbMetp2dUncEffU[0][fsr]->Fill(mtCorr,weight);
-          doMET ? hTtbMetp2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hTtbMetp2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
-          doMET ? hTtbMetp2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hTtbMetp2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetp->Fill((*metVars)[no],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
+          doMET ? hTtbMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[0]->Fill(mtCorr,wgtLum[main]);
+          // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hTtbMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hTtbMetp2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2dWeightU[0][k]->Fill(mtCorr,wgtLum[main]);
+          // }
         } else {
-          doMET ? hEWKMetm->Fill(metCorrLep,weight) : hEWKMetm->Fill(mtCorr,weight);
-          doMET ? hTtbMetm2dUncEffU[0][fsr]->Fill(metCorrLep,wgtFsr) : hTtbMetm2dUncEffU[0][fsr]->Fill(mtCorr,wgtFsr);
-          doMET ? hTtbMetm2dUncEffU[0][bkg]->Fill(metCorrLep,wgtBkg) : hTtbMetm2dUncEffU[0][bkg]->Fill(mtCorr,wgtBkg);
-          doMET ? hTtbMetm2dUncEffU[0][mc] ->Fill(metCorrLep,wgtMC ) : hTtbMetm2dUncEffU[0][mc] ->Fill(mtCorr,wgtMC );
+          doMET ? hEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hEWKMetm->Fill(mtCorr,wgtLum[main]);
+          doMET ? hTtbMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[0]->Fill(mtCorr,wgtLum[main]);
+          // fillMETs(doMET,hTtbMetm2dWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hTtbMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
+          // for(int k=mc; k < nWeight; k++){
+            // doMET ? hTtbMetm2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[k]) : hTtbMetm2dWeightU[0][k]->Fill(mtCorr,wgtLum[k]);
+          // }
         }
       } else if(typev[ifile]==eAntiWlnu){
-        hAntiWlnuMet->Fill(metCorrMain,weight);
+        hAntiWlnuMet->Fill((*metVars)[cent],wgtLum[main]);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0) {              
-              doMET ? hAntiWlnuMetp->Fill(metCorrMain,weight) : hAntiWlnuMetp->Fill(mtCorr,weight);
-              doMET ? hWlnuMetp2d[it]    ->Fill(metCorrMain, weight) : hWlnuMetp2d[it]    ->Fill(mtCorr, weight);
-              doMET ? hWlnuMetp2dUncRecU[it][eta] ->Fill(metCorrEta ,  weight) : hWlnuMetp2dUncRecU[it][eta] ->Fill(mtCorr, weight);
-              doMET ? hWlnuMetp2dUncRecU[it][keys]->Fill(metCorrKeys,  weight) : hWlnuMetp2dUncRecU[it][keys]->Fill(mtCorr, weight);
-              doMET ? hWlnuMetp2dUncRecU[it][stat]->Fill(metCorrStat,  weight) : hWlnuMetp2dUncRecU[it][stat]->Fill(mtCorr, weight);
-              doMET ? hWlnuMetp2dUncEffU[it][fsr] ->Fill(metCorrMain,  wgtFsr) : hWlnuMetp2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
-              doMET ? hWlnuMetp2dUncEffU[it][bkg] ->Fill(metCorrMain,  wgtBkg) : hWlnuMetp2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
-              doMET ? hWlnuMetp2dUncEffU[it][mc]  ->Fill(metCorrMain,  wgtMC ) : hWlnuMetp2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
+              doMET ? hAntiWlnuMetp->Fill((*metVars)[cent],wgtLum[main]) : hAntiWlnuMetp->Fill(mtCorr,wgtLum[main]);
+              doMET ? hWlnuMetp2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp2d[it]    ->Fill(mtCorr,wgtLum[main]);
+              fillMETs(doMET,hWlnuMetp2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hWlnuMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k =eta; k < nMET; k++){
+                // doMET ? hWlnuMetp2dMETU[it][k] ->Fill((*metVars)[k] , wgtLum[main]) : hWlnuMetp2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
+              // }
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hWlnuMetp2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hWlnuMetp2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
+              // }
             } else {
-              doMET ? hAntiWlnuMetm->Fill(metCorrMain,weight) : hAntiWlnuMetm->Fill(mtCorr,weight);
-              doMET ? hWlnuMetm2d[it]    ->Fill(metCorrMain, weight) : hWlnuMetm2d[it]    ->Fill(mtCorr, weight);
-              doMET ? hWlnuMetm2dUncRecU[it][eta] ->Fill(metCorrEta , weight) : hWlnuMetm2dUncRecU[it][eta] ->Fill(mtCorr,weight);
-              doMET ? hWlnuMetm2dUncRecU[it][keys]->Fill(metCorrKeys, weight) : hWlnuMetm2dUncRecU[it][keys]->Fill(mtCorr,weight);
-              doMET ? hWlnuMetm2dUncRecU[it][stat]->Fill(metCorrStat, weight) : hWlnuMetm2dUncRecU[it][stat]->Fill(mtCorr,weight);
-              doMET ? hWlnuMetm2dUncEffU[it][fsr] ->Fill(metCorrMain, wgtFsr) : hWlnuMetm2dUncEffU[it][fsr] ->Fill(mtCorr,wgtFsr);
-              doMET ? hWlnuMetm2dUncEffU[it][bkg] ->Fill(metCorrMain, wgtBkg) : hWlnuMetm2dUncEffU[it][bkg] ->Fill(mtCorr,wgtBkg);
-              doMET ? hWlnuMetm2dUncEffU[it][mc]  ->Fill(metCorrMain, wgtMC ) : hWlnuMetm2dUncEffU[it][mc]  ->Fill(mtCorr,wgtMC );
+              doMET ? hAntiWlnuMetm->Fill((*metVars)[cent],wgtLum[main]) : hAntiWlnuMetm->Fill(mtCorr,wgtLum[main]);
+              doMET ? hWlnuMetm2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm2d[it]    ->Fill(mtCorr,wgtLum[main]);
+              fillMETs(doMET,hWlnuMetm2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hWlnuMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k =eta; k < nMET; k++){
+                // doMET ? hWlnuMetm2dMETU[it][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWlnuMetm2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
+              // }
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hWlnuMetm2dWeightU[it][k] ->Fill((*metVars)[cent], wgtLum[k]) : hWlnuMetm2dWeightU[it][k] ->Fill(mtCorr,wgtLum[k]);
+              // }
             }
           }
         }
       } else if(typev[ifile]==eAntiWx){
-        doMET ? hAntiEWKMet->Fill(metCorrMain,weight) : hAntiEWKMet->Fill(mtCorr,weight);
+        doMET ? hAntiEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hAntiEWKMet->Fill(mtCorr,wgtLum[main]);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              doMET ? hAntiEWKMetp->Fill(metCorrMain,weight) :  hAntiEWKMetp->Fill(mtCorr,weight);
-              doMET ? hWxMetp2d[it]     ->Fill(metCorrMain, weight) : hWxMetp2d[it]     ->Fill(mtCorr, weight);
-              doMET ? hWxMetp2dUncRecU[it][eta] ->Fill(metCorrEta,  weight) : hWxMetp2dUncRecU[it][eta] ->Fill(mtCorr, weight);
-              doMET ? hWxMetp2dUncRecU[it][keys]->Fill(metCorrKeys, weight) : hWxMetp2dUncRecU[it][keys]->Fill(mtCorr, weight);
-              doMET ? hWxMetp2dUncRecU[it][stat]->Fill(metCorrStat, weight) : hWxMetp2dUncRecU[it][stat]->Fill(mtCorr, weight);
-              doMET ? hWxMetp2dUncEffU[it][fsr] ->Fill(metCorrKeys, wgtFsr) : hWxMetp2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
-              doMET ? hWxMetp2dUncEffU[it][bkg] ->Fill(metCorrKeys, wgtBkg) : hWxMetp2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
-              doMET ? hWxMetp2dUncEffU[it][mc]  ->Fill(metCorrKeys, wgtMC ) : hWxMetp2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
+              doMET ? hAntiEWKMetp->Fill((*metVars)[cent],wgtLum[main]) :  hAntiEWKMetp->Fill(mtCorr,wgtLum[main]);
+              doMET ? hWxMetp2d[it]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetp2d[it]     ->Fill(mtCorr,wgtLum[main]);
+              fillMETs(doMET,hWxMetp2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hWxMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k =eta; k < nMET; k++){
+                // doMET ? hWxMetp2dMETU[it][k] ->Fill((*metVars)[k], wgtLum[main]) : hWxMetp2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
+              // }
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hWxMetp2dWeightU[it][k] ->Fill((*metVars)[keys], wgtLum[k]) : hWxMetp2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
+              // }
             } else {
-              doMET ? hAntiEWKMetm->Fill(metCorrMain,weight) : hAntiEWKMetm->Fill(mtCorr,weight);
-              doMET ? hWxMetm2d[it]     ->Fill(metCorrMain, weight) : hWxMetm2d[it]     ->Fill(mtCorr, weight);
-              doMET ? hWxMetm2dUncRecU[it][eta] ->Fill(metCorrEta ,  weight) : hWxMetm2dUncRecU[it][eta] ->Fill(mtCorr, weight);
-              doMET ? hWxMetm2dUncRecU[it][keys]->Fill(metCorrKeys,  weight) : hWxMetm2dUncRecU[it][keys]->Fill(mtCorr, weight);
-              doMET ? hWxMetm2dUncRecU[it][stat]->Fill(metCorrStat,  weight) : hWxMetm2dUncRecU[it][stat]->Fill(mtCorr, weight);
-              doMET ? hWxMetm2dUncEffU[it][fsr] ->Fill(metCorrMain,  wgtFsr) : hWxMetm2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
-              doMET ? hWxMetm2dUncEffU[it][bkg] ->Fill(metCorrMain,  wgtBkg) : hWxMetm2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
-              doMET ? hWxMetm2dUncEffU[it][mc]  ->Fill(metCorrMain,  wgtMC ) : hWxMetm2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
+              doMET ? hAntiEWKMetm->Fill((*metVars)[cent],wgtLum[main]) : hAntiEWKMetm->Fill(mtCorr,wgtLum[main]);
+              doMET ? hWxMetm2d[it]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetm2d[it]     ->Fill(mtCorr,wgtLum[main]);
+              fillMETs(doMET,hWxMetm2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hWxMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k =eta; k < nMET; k++){
+                // doMET ? hWxMetm2dMETU[it][k] ->Fill((*metVars)[k] , wgtLum[main]) : hWxMetm2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
+              // }
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hWxMetm2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hWxMetm2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
+              // }
             }
             break;
           }
         }
       } else if(typev[ifile]==eAntiZxx){
-        doMET ? hAntiEWKMet->Fill(metCorrMain,weight) : hAntiEWKMet->Fill(mtCorr,weight);
+        doMET ? hAntiEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hAntiEWKMet->Fill(mtCorr,wgtLum[main]);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              hAntiEWKMetp->Fill(metCorrMain,weight); 
-              doMET ? hZxxMetp2d[it]    ->Fill(metCorrMain, weight) : hZxxMetp2d[it]->Fill(mtCorr, weight);
-              doMET ? hZxxMetp2dUncRecU[it][eta] ->Fill(metCorrEta,  weight) : hZxxMetp2dUncRecU[it][eta] ->Fill(mtCorr, weight);
-              doMET ? hZxxMetp2dUncRecU[it][keys]->Fill(metCorrEta,  weight) : hZxxMetp2dUncRecU[it][keys]->Fill(mtCorr, weight);
-              doMET ? hZxxMetp2dUncRecU[it][stat]->Fill(metCorrEta,  weight) : hZxxMetp2dUncRecU[it][stat]->Fill(mtCorr, weight);
-              doMET ? hZxxMetp2dUncEffU[it][fsr] ->Fill(metCorrEta,  wgtFsr) : hZxxMetp2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
-              doMET ? hZxxMetp2dUncEffU[it][bkg] ->Fill(metCorrEta,  wgtBkg) : hZxxMetp2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
-              doMET ? hZxxMetp2dUncEffU[it][mc]  ->Fill(metCorrEta,  wgtMC ) : hZxxMetp2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
+              hAntiEWKMetp->Fill((*metVars)[cent],wgtLum[main]); 
+              doMET ? hZxxMetp2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetp2d[it]->Fill(mtCorr,wgtLum[main]);
+              fillMETs(doMET,hZxxMetp2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hZxxMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k =eta; k < nMET; k++){
+                // doMET ? hZxxMetp2dMETU[it][k] ->Fill((*metVars)[k], wgtLum[main]) : hZxxMetp2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
+              // }
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hZxxMetp2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hZxxMetp2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
+              // }
             } else {
-              hAntiEWKMetm->Fill(metCorrMain,weight); 
-              doMET ? hZxxMetm2d[it]    ->Fill(metCorrMain, weight) : hZxxMetm2d[it]    ->Fill(mtCorr, weight);
-              doMET ? hZxxMetm2dUncRecU[it][eta] ->Fill(metCorrEta ,  weight) : hZxxMetm2dUncRecU[it][eta] ->Fill(mtCorr, weight);
-              doMET ? hZxxMetm2dUncRecU[it][keys]->Fill(metCorrKeys,  weight) : hZxxMetm2dUncRecU[it][keys]->Fill(mtCorr, weight);
-              doMET ? hZxxMetm2dUncRecU[it][stat]->Fill(metCorrStat,  weight) : hZxxMetm2dUncRecU[it][stat]->Fill(mtCorr, weight);
-              doMET ? hZxxMetm2dUncEffU[it][fsr] ->Fill(metCorrMain,  wgtFsr) : hZxxMetm2dUncEffU[it][fsr] ->Fill(mtCorr, wgtFsr);
-              doMET ? hZxxMetm2dUncEffU[it][bkg] ->Fill(metCorrMain,  wgtBkg) : hZxxMetm2dUncEffU[it][bkg] ->Fill(mtCorr, wgtBkg);
-              doMET ? hZxxMetm2dUncEffU[it][mc]  ->Fill(metCorrMain,  wgtMC ) : hZxxMetm2dUncEffU[it][mc]  ->Fill(mtCorr, wgtMC );
+              hAntiEWKMetm->Fill((*metVars)[cent],wgtLum[main]); 
+              doMET ? hZxxMetm2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetm2d[it]    ->Fill(mtCorr,wgtLum[main]);
+              fillMETs(doMET,hZxxMetm2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hZxxMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k =eta; k < nMET; k++){
+                // doMET ? hZxxMetm2dMETU[it][k] ->Fill((*metVars)[k] , wgtLum[main]) : hZxxMetm2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
+              // }
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hZxxMetm2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hZxxMetm2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
+              // }
             }
           }
         }
       } else if(typev[ifile]==eAntiDib){
-        doMET ? hAntiEWKMet->Fill(metCorrLep,weight) : hAntiEWKMet->Fill(mtCorr,weight);
+        doMET ? hAntiEWKMet->Fill((*metVars)[no],wgtLum[main]) : hAntiEWKMet->Fill(mtCorr,wgtLum[main]);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              hAntiEWKMetp->Fill(metCorrLep,weight); 
-              doMET ? hDibMetp2d[it]->Fill(metCorrLep, weight) : hDibMetp2d[it]->Fill(mtCorr, weight);
-              doMET ? hDibMetp2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hDibMetp2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
-              doMET ? hDibMetp2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hDibMetp2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
-              doMET ? hDibMetp2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hDibMetp2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
+              hAntiEWKMetp->Fill((*metVars)[no],wgtLum[main]); 
+              doMET ? hDibMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[it]->Fill(mtCorr,wgtLum[main]);
+              // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hDibMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hDibMetp2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibMetp2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+              // }
             } else {
-              hAntiEWKMetm->Fill(metCorrLep,weight); 
-              doMET ? hDibMetm2d[it]->Fill(metCorrLep, weight) : hDibMetm2d[it]->Fill(mtCorr, weight);
-              doMET ? hDibMetm2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hDibMetm2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
-              doMET ? hDibMetm2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hDibMetm2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
-              doMET ? hDibMetm2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hDibMetm2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
+              hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
+              doMET ? hDibMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[it]->Fill(mtCorr,wgtLum[main]);
+              // fillMETs(doMET,hDibMetm2dWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hDibMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hDibMetm2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibMetm2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+              // }
             }
           }
         }
       } else if(typev[ifile]==eAntiTtb){
-        doMET ? hAntiEWKMet->Fill(metCorrLep,weight) : hAntiEWKMet->Fill(mtCorr,weight);
+        doMET ? hAntiEWKMet->Fill((*metVars)[no],wgtLum[main]) : hAntiEWKMet->Fill(mtCorr,wgtLum[main]);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             if(q>0){
-              hAntiEWKMetp->Fill(metCorrLep,weight); 
-              doMET ? hTtbMetp2d[it]->Fill(metCorrLep, weight) : hTtbMetp2d[it]->Fill(mtCorr, weight);
-              doMET ? hTtbMetp2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hTtbMetp2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
-              doMET ? hTtbMetp2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hTtbMetp2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
-              doMET ? hTtbMetp2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hTtbMetp2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
+              hAntiEWKMetp->Fill((*metVars)[no],wgtLum[main]); 
+              doMET ? hTtbMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[it]->Fill(mtCorr,wgtLum[main]);
+              // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hTtbMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hTtbMetp2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbMetp2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+              // }
             } else {
-              hAntiEWKMetm->Fill(metCorrLep,weight); 
-              doMET ? hTtbMetm2d[it]->Fill(metCorrLep, weight) : hTtbMetm2d[it]->Fill(mtCorr, weight);
-              doMET ? hTtbMetm2dUncEffU[it][fsr]->Fill(metCorrLep, wgtFsr) : hTtbMetm2dUncEffU[it][fsr]->Fill(mtCorr, wgtFsr);
-              doMET ? hTtbMetm2dUncEffU[it][bkg]->Fill(metCorrLep, wgtBkg) : hTtbMetm2dUncEffU[it][bkg]->Fill(mtCorr, wgtBkg);
-              doMET ? hTtbMetm2dUncEffU[it][mc] ->Fill(metCorrLep, wgtMC ) : hTtbMetm2dUncEffU[it][mc] ->Fill(mtCorr, wgtMC );
+              hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
+              doMET ? hTtbMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[it]->Fill(mtCorr,wgtLum[main]);
+              // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hTtbMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // for(int k=mc; k < nWeight; k++){
+                // doMET ? hTtbMetm2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbMetm2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+              // }
             }
           }
         }
       } else if(typev[ifile]==eAntiQCD) {
-        hAntiQCDMet->Fill(metCorrLep,weight);
-        q>0 ? hAntiQCDMetp->Fill(metCorrLep,weight) : hAntiQCDMetm->Fill(metCorrLep,weight); 
+        hAntiQCDMet->Fill((*metVars)[no],wgtLum[main]);
+        q>0 ? hAntiQCDMetp->Fill((*metVars)[no],wgtLum[main]) : hAntiQCDMetm->Fill((*metVars)[no],wgtLum[main]); 
       }
     }
   }
@@ -972,23 +1042,23 @@ void fitWlnu(const TString  outputDir,   // output directory
     hEWKMetm2d[it]->Add(hZxxMetm2d[it],1);
     hEWKMetm2d[it]->Add(hWxMetm2d[it],1);
     
-    for(int j=0; j< nUncEff; j++){
-      hEWKMetp2dUncEffU[it][j]->Add(hTtbMetp2dUncEffU[it][j],1);
-      hEWKMetp2dUncEffU[it][j]->Add(hDibMetp2dUncEffU[it][j],1);
-      hEWKMetp2dUncEffU[it][j]->Add(hZxxMetp2dUncEffU[it][j],1);
-      hEWKMetp2dUncEffU[it][j]->Add(hWxMetp2dUncEffU[it][j],1);
+    for(int j=0; j< nWeight; j++){
+      hEWKMetp2dWeightU[it][j]->Add(hTtbMetp2dWeightU[it][j],1);
+      hEWKMetp2dWeightU[it][j]->Add(hDibMetp2dWeightU[it][j],1);
+      hEWKMetp2dWeightU[it][j]->Add(hZxxMetp2dWeightU[it][j],1);
+      hEWKMetp2dWeightU[it][j]->Add(hWxMetp2dWeightU[it][j],1);
       
-      hEWKMetm2dUncEffU[it][j]->Add(hTtbMetm2dUncEffU[it][j],1);
-      hEWKMetm2dUncEffU[it][j]->Add(hDibMetm2dUncEffU[it][j],1);
-      hEWKMetm2dUncEffU[it][j]->Add(hZxxMetm2dUncEffU[it][j],1);
-      hEWKMetm2dUncEffU[it][j]->Add(hWxMetm2dUncEffU[it][j],1);
+      hEWKMetm2dWeightU[it][j]->Add(hTtbMetm2dWeightU[it][j],1);
+      hEWKMetm2dWeightU[it][j]->Add(hDibMetm2dWeightU[it][j],1);
+      hEWKMetm2dWeightU[it][j]->Add(hZxxMetm2dWeightU[it][j],1);
+      hEWKMetm2dWeightU[it][j]->Add(hWxMetm2dWeightU[it][j],1);
     }
-    for(int j=0; j < nUncRec; j++){
-      hEWKMetp2dUncRecU[it][j]->Add(hZxxMetp2dUncRecU[it][j],1);
-      hEWKMetp2dUncRecU[it][j]->Add(hWxMetp2dUncRecU[it][j],1);
+    for(int j=0; j < nMET; j++){
+      hEWKMetp2dMETU[it][j]->Add(hZxxMetp2dMETU[it][j],1);
+      hEWKMetp2dMETU[it][j]->Add(hWxMetp2dMETU[it][j],1);
       
-      hEWKMetm2dUncRecU[it][j]->Add(hZxxMetm2dUncRecU[it][j],1);
-      hEWKMetm2dUncRecU[it][j]->Add(hWxMetm2dUncRecU[it][j],1);
+      hEWKMetm2dMETU[it][j]->Add(hZxxMetm2dMETU[it][j],1);
+      hEWKMetm2dMETU[it][j]->Add(hWxMetm2dMETU[it][j],1);
     }
   }
   
@@ -1387,88 +1457,88 @@ void fitWlnu(const TString  outputDir,   // output directory
   for(int j=0; j < nIsoBins; ++j){
     // W+ signal shape "down" uncertainty shapes
     TH1D *hh_diff;
-    for(int k=0; k < nUncRec; ++k){
-      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-      hWlnuMetp2dUncRecD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+    for(int k=0; k < nMET; ++k){
+      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnuMetp2dMETD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-      hWlnuMetm2dUncRecD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnuMetm2dMETD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-      hEWKMetp2dUncRecD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKMetp2dMETD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-      hEWKMetm2dUncRecD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKMetm2dMETD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWxMetpBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hWxMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-      hWxMetp2dUncRecD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWxMetpBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hWxMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxMetp2dMETD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWxMetmBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hWxMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-      hWxMetm2dUncRecD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWxMetmBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hWxMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxMetm2dMETD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-      hZxxMetp2dUncRecD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxMetp2dMETD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vUncRec[k].c_str());
-      hh_diff =  (TH1D*)hZxxMetm2dUncRecU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-      hZxxMetm2dUncRecD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dUncRecD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vMET[k].c_str());
+      hh_diff =  (TH1D*)hZxxMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxMetm2dMETD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
     }
     
-    for(int k=0; k < nUncEff; ++k){
-      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-      hWlnuMetp2dUncEffD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+    for(int k=0; k < nWeight; ++k){
+      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnuMetp2dWeightD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-      hWlnuMetm2dUncEffD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnuMetm2dWeightD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-      hEWKMetp2dUncEffD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKMetp2dWeightD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-      hEWKMetm2dUncEffD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hEWKMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKMetm2dWeightD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWxMetpBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hWxMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-      hWxMetp2dUncEffD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWxMetpBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hWxMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxMetp2dWeightD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWxMetmBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hWxMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-      hWxMetm2dUncEffD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hWxMetmBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hWxMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxMetm2dWeightD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-      hZxxMetp2dUncEffD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxMetp2dWeightD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hZxxMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-      hZxxMetm2dUncEffD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hZxxMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxMetm2dWeightD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hDibMetpBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hDibMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hDibMetp2d[j],-1);
-      hDibMetp2dUncEffD[j][k] = (TH1D*) hDibMetp2d[j]->Clone(nname); hDibMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hDibMetpBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hDibMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hDibMetp2d[j],-1);
+      hDibMetp2dWeightD[j][k] = (TH1D*) hDibMetp2d[j]->Clone(nname); hDibMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hDibMetmBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hDibMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hDibMetm2d[j],-1);
-      hDibMetm2dUncEffD[j][k] = (TH1D*) hDibMetm2d[j]->Clone(nname); hDibMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hDibMetmBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hDibMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hDibMetm2d[j],-1);
+      hDibMetm2dWeightD[j][k] = (TH1D*) hDibMetm2d[j]->Clone(nname); hDibMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hTtbMetpBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
-      hTtbMetp2dUncEffD[j][k] = (TH1D*) hTtbMetp2d[j]->Clone(nname); hTtbMetp2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hTtbMetpBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hWlnuMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
+      hTtbMetp2dWeightD[j][k] = (TH1D*) hTtbMetp2d[j]->Clone(nname); hTtbMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hTtbMetmBin%d_%sDown",j,vUncEff[k].c_str());
-      hh_diff =  (TH1D*)hTtbMetm2dUncEffU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetm2d[j],-1);
-      hTtbMetm2dUncEffD[j][k] = (TH1D*) hTtbMetm2d[j]->Clone(nname); hTtbMetm2dUncEffD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      sprintf(nname,"hTtbMetmBin%d_%sDown",j,vWeight[k].c_str());
+      hh_diff =  (TH1D*)hTtbMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetm2d[j],-1);
+      hTtbMetm2dWeightD[j][k] = (TH1D*) hTtbMetm2d[j]->Clone(nname); hTtbMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
     }
     
     // TH1D *hh_diff =  (TH1D*)hWlnuMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
@@ -2038,69 +2108,69 @@ void fitWlnu(const TString  outputDir,   // output directory
     hIsoBinQCDp->Write();
     hIsoBinQCDm->Write();
     
-    for(int k=0; k < nUncRec; k++){
-      hWlnuMetp2dUncRecU[j][k]->Write();
-      hWlnuMetm2dUncRecU[j][k]->Write();
+    for(int k=0; k < nMET; k++){
+      hWlnuMetp2dMETU[j][k]->Write();
+      hWlnuMetm2dMETU[j][k]->Write();
       
-      hWlnuMetp2dUncRecD[j][k]->Write();
-      hWlnuMetm2dUncRecD[j][k]->Write();
+      hWlnuMetp2dMETD[j][k]->Write();
+      hWlnuMetm2dMETD[j][k]->Write();
       
-      hEWKMetp2dUncRecU[j][k]->Write();
-      hEWKMetm2dUncRecU[j][k]->Write();
+      hEWKMetp2dMETU[j][k]->Write();
+      hEWKMetm2dMETU[j][k]->Write();
       
-      hEWKMetp2dUncRecD[j][k]->Write();
-      hEWKMetm2dUncRecD[j][k]->Write();
+      hEWKMetp2dMETD[j][k]->Write();
+      hEWKMetm2dMETD[j][k]->Write();
       
-      hWxMetp2dUncRecU[j][k]->Write();
-      hWxMetm2dUncRecU[j][k]->Write();
+      hWxMetp2dMETU[j][k]->Write();
+      hWxMetm2dMETU[j][k]->Write();
       
-      hWxMetp2dUncRecD[j][k]->Write();
-      hWxMetm2dUncRecD[j][k]->Write();
+      hWxMetp2dMETD[j][k]->Write();
+      hWxMetm2dMETD[j][k]->Write();
       
-      hZxxMetp2dUncRecU[j][k]->Write();
-      hZxxMetm2dUncRecU[j][k]->Write();
+      hZxxMetp2dMETU[j][k]->Write();
+      hZxxMetm2dMETU[j][k]->Write();
       
-      hZxxMetp2dUncRecD[j][k]->Write();
-      hZxxMetm2dUncRecD[j][k]->Write();
+      hZxxMetp2dMETD[j][k]->Write();
+      hZxxMetm2dMETD[j][k]->Write();
       
     }
     
-    for(int k=0; k < nUncEff; k++){
-      hWlnuMetp2dUncEffU[j][k]->Write();
-      hWlnuMetm2dUncEffU[j][k]->Write();
+    for(int k=0; k < nWeight; k++){
+      hWlnuMetp2dWeightU[j][k]->Write();
+      hWlnuMetm2dWeightU[j][k]->Write();
       
-      hWlnuMetp2dUncEffD[j][k]->Write();
-      hWlnuMetm2dUncEffD[j][k]->Write();
+      hWlnuMetp2dWeightD[j][k]->Write();
+      hWlnuMetm2dWeightD[j][k]->Write();
       
-      hEWKMetp2dUncEffU[j][k]->Write();
-      hEWKMetm2dUncEffU[j][k]->Write();
+      hEWKMetp2dWeightU[j][k]->Write();
+      hEWKMetm2dWeightU[j][k]->Write();
       
-      hEWKMetp2dUncEffD[j][k]->Write();
-      hEWKMetm2dUncEffD[j][k]->Write();
+      hEWKMetp2dWeightD[j][k]->Write();
+      hEWKMetm2dWeightD[j][k]->Write();
       
-      hWxMetp2dUncEffU[j][k]->Write();
-      hWxMetm2dUncEffU[j][k]->Write();
+      hWxMetp2dWeightU[j][k]->Write();
+      hWxMetm2dWeightU[j][k]->Write();
       
-      hWxMetp2dUncEffD[j][k]->Write();
-      hWxMetm2dUncEffD[j][k]->Write();
+      hWxMetp2dWeightD[j][k]->Write();
+      hWxMetm2dWeightD[j][k]->Write();
       
-      hZxxMetp2dUncEffU[j][k]->Write();
-      hZxxMetm2dUncEffU[j][k]->Write();
+      hZxxMetp2dWeightU[j][k]->Write();
+      hZxxMetm2dWeightU[j][k]->Write();
       
-      hZxxMetp2dUncEffD[j][k]->Write();
-      hZxxMetm2dUncEffD[j][k]->Write();
+      hZxxMetp2dWeightD[j][k]->Write();
+      hZxxMetm2dWeightD[j][k]->Write();
       
-      hDibMetp2dUncEffU[j][k]->Write();
-      hDibMetm2dUncEffU[j][k]->Write();
+      hDibMetp2dWeightU[j][k]->Write();
+      hDibMetm2dWeightU[j][k]->Write();
       
-      hDibMetp2dUncEffD[j][k]->Write();
-      hDibMetm2dUncEffD[j][k]->Write();
+      hDibMetp2dWeightD[j][k]->Write();
+      hDibMetm2dWeightD[j][k]->Write();
       
-      hTtbMetp2dUncEffU[j][k]->Write();
-      hTtbMetm2dUncEffU[j][k]->Write();
+      hTtbMetp2dWeightU[j][k]->Write();
+      hTtbMetm2dWeightU[j][k]->Write();
       
-      hTtbMetp2dUncEffD[j][k]->Write();
-      hTtbMetm2dUncEffD[j][k]->Write();
+      hTtbMetp2dWeightD[j][k]->Write();
+      hTtbMetm2dWeightD[j][k]->Write();
     }
     
     
@@ -2567,8 +2637,27 @@ void fitWlnu(const TString  outputDir,   // output directory
   gBenchmark->Show("fitWm");
 }
 
+// TH1D *QCD
+
 
 //=== FUNCTION DEFINITIONS ======================================================================================
+
+
+void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, vector<double> wgt,double mtCorr){
+  for(int k =2; k < nMET; k++){
+    doMET ? h[k] ->Fill(met[k] , wgt[0]) : h[k] ->Fill(mtCorr,wgt[0]);
+  }
+  std::cout << "h->int" << h[3]->Integral() << std::endl;
+  return;
+}
+
+void fillWeights(bool doMET,TH1D** h,vector<double> met, int nWeight,vector<double> wgt,double mtCorr){
+  for(int k =1; k < nWeight; k++){
+    doMET ? h[k] ->Fill(met[1] , wgt[k]) : h[k] ->Fill(mtCorr,wgt[k]);
+  }
+  return;
+}
+
 
 //--------------------------------------------------------------------------------------------------
 TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
