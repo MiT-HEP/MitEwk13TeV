@@ -83,7 +83,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
-  const TString corrFiles = "../EleScale/Run2017_LowPU_V0";//Run2017_17Nov2017_v1_ele_unc";
+  const TString corrFiles = "../EleScale/Run2017_LowPU";//Run2017_17Nov2017_v1_ele_unc";
   // const TString corrFiles = "../EleScale/lowPU2017_v1";
   // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
 
@@ -434,6 +434,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         
 // std::cout << "blah PV" << std::endl;
         // std::cout << "pass 3" << std::endl;
+        // if(info->evtNum != 70847872) continue;
+        // if(info->runNum != 307047) continue;
+        // std::cout << std::endl;
+        
+        
+  // std::cout <<  info->runNum << " " << info->evtNum << " " << std::endl;
 
 	electronArr->Clear();
         electronBr->GetEntry(ientry);
@@ -451,12 +457,18 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	Int_t tagscID=-1;
   
 // std::cout << "-----------" << std::endl;
+	// for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
+          // const baconhep::TElectron *tag = (baconhep::TElectron*)((*electronArr)[i1]);
+          // std::cout << "electrons " << tag->scEt << std::endl;
+          // std::cout << "ecal engy " << tag->ecalEnergy << std::endl;
+  // }
 		
 	for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
           const baconhep::TElectron *tag = (baconhep::TElectron*)((*electronArr)[i1]);
 
 	  vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
 	  vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
+    // std::cout << "ele " << tag->scEt;
 
 	  // check ECAL gap
 //        if(fabs(tag->scEta)>=ECAL_GAP_LOW && fabs(tag->scEta)<=ECAL_GAP_HIGH) continue
@@ -470,8 +482,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             float tagSmear = 0.;
             float tagScale = 1.;
 
-	    float tagAbsEta   = fabs(vTag.Eta());
-	    float tagEt       = vTag.E() / cosh(tagAbsEta);
+	    // float tagAbsEta   = fabs(vTag.Eta());
+	    // float tagEt       = vTag.E() / cosh(tagAbsEta);
+	    // bool  tagisBarrel = tagAbsEta < 1.4442;
+      float tagAbsEta   = fabs(vTagSC.Eta());
+	    float tagEt       = vTagSC.E() / cosh(tagAbsEta);
 	    bool  tagisBarrel = tagAbsEta < 1.4442;
 
         
@@ -479,11 +494,28 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         
 	    if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 // if(tag->r9>0.94) continue;
+
+
 	      tagScale = eleCorr.scaleCorr(info->runNum, tagEt, tagAbsEta, tag->r9);
-          tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9);
-          // std::cout << "tagScale " << tagScale << std::endl;
-          // tagScale = eleCorr.scaleCorr(306155, tagEt, tagAbsEta, tag->r9);
-          // tagError = eleCorr.scaleCorrUncert(306155, tagEt, tagAbsEta, tag->r9);
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,0);
+        std::cout << "tag error0 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,1);
+        std::cout << "tag error1 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,2);
+        std::cout << "tag error2 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,3);
+        std::cout << "tag error3 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,4);
+        std::cout << "tag error4 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,5);
+        std::cout << "tag error5 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,6);
+        std::cout << "tag error6 " << tagError << std::endl;
+        tagError = eleCorr.scaleCorrUncert(info->runNum, tagEt, tagAbsEta, tag->r9,7);
+        std::cout << "tag error7 " << tagError << std::endl;
+        
+        
+
 	      if(sigma==0){
                 (vTag) *= tagScale;
 	      }else if(sigma==1){
@@ -505,7 +537,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
                  
                  
                 // if(tagR9Prime>0.94) continue;
-              double tagRandom = gRandom->Gaus(0,1);
+             double tagRandom = 1;//gRandom->Gaus(0,1);
 
 	      tagSmear = eleCorr.smearingSigma(info->runNum, tagEt, tagAbsEta, tagR9Prime, gainSeed, 0., 0.);
         // std::cout << "tagSmear " << tagSmear << std::endl;
@@ -619,6 +651,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  r91        = tag->r9;
 	  lep1error  = tagError;
 
+  // std::cout << " " << tag->scEt << " " ;
 	}
 
 	if(tagPt<Pt2) continue;
@@ -639,6 +672,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  const baconhep::TPhoton *scProbe = (baconhep::TPhoton*)((*scArr)[j]);
 
           vProbe.SetPtEtaPhiM(scProbe->pt, scProbe->eta, scProbe->phi, ELE_MASS);
+          // vProbeSC.SetPtEtaPhiE(scProbe->pt, scProbe->eta, scProbe->phi, scProbe->ecalEnergy);
 // std::cout << "blahsasf" << std::endl;
 	  if(scProbe->scID == tagscID) continue;
 
@@ -661,7 +695,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
               // if(scProbe->r9>0.94) continue;
               probeScale = eleCorr.scaleCorr(info->runNum, probeEt, probeAbsEta, scProbe->r9);
-              probeError = eleCorr.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9);
+              probeError = eleCorr.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9,1);
               // probeScale = eleCorr.scaleCorr(306155, probeEt, probeAbsEta, scProbe->r9);
               // probeError = eleCorr.scaleCorrUncert(306155, probeEt, probeAbsEta, scProbe->r9);
 
@@ -684,7 +718,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	                // // probeR9Prime = scProbe->r9;
 	      // }
 // if(probeR9Prime>0.94) continue;
-              double probeRandom = gRandom->Gaus(0,1);
+              double probeRandom = 1;//gRandom->Gaus(0,1);
 	      probeSmear = eleCorr.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, 0., 0.);
 	      float probeSmearEP = eleCorr.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, 1., 0.);
 	      float probeSmearEM = eleCorr.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, -1., 0.);
@@ -741,6 +775,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  if(eleProbe){
 	    vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
 	    vEleProbeSC.SetPtEtaPhiM(eleProbe->scEt, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
+      // std::cout << " " << eleProbe->scEt << " " ;//<< std::endl;
             if(fabs(vEleProbe.Eta())>=ECAL_GAP_LOW && fabs(vEleProbe.Eta())<=ECAL_GAP_HIGH) continue;
 //	    if(vEleProbe.Pt()           < PT_CUT)  continue;
 
@@ -764,16 +799,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   
               if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
   // if(eleProbe->r9 > 0.94) continue;
-                eleProbeScale = eleCorr.scaleCorr(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
-                eleProbeError = eleCorr.scaleCorrUncert(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
+                // eleProbeScale = eleCorr.scaleCorr(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
+                // eleProbeError = eleCorr.scaleCorrUncert(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
 
+                eleProbeScale = eleCorr.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
+                eleProbeError = eleCorr.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
                 eleProbeSCScale = eleCorr.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
                 eleProbeSCError = eleCorr.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
-                // eleProbeScale = eleCorr.scaleCorr(306155, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
-                // eleProbeError = eleCorr.scaleCorrUncert(306155, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
-
-                // eleProbeSCScale = eleCorr.scaleCorr(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
-                // eleProbeSCError = eleCorr.scaleCorrUncert(306155, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
   
                 if(sigma==0){
                   (vEleProbe) *= eleProbeScale;
@@ -798,12 +830,17 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
                           // // eleProbeR9Prime = eleProbe->r9;
                 // }
 // if(eleProbeR9Prime> 0.94) continue;
-		double eleProbeRandom = gRandom->Gaus(0,1);
-		eleProbeSmear = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
-		float eleProbeSmearEP = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
-		float eleProbeSmearEM = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+		// double eleProbeRandom = gRandom->Gaus(0,1);
+		// eleProbeSmear = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
+		// float eleProbeSmearEP = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
+		// float eleProbeSmearEM = eleCorr.smearingSigma(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+    
+    double eleProbeRandom =1;// gRandom->Gaus(0,1);
+		eleProbeSmear = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
+		float eleProbeSmearEP = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
+		float eleProbeSmearEM = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
 
-		double eleProbeSCRandom = gRandom->Gaus(0,1);
+		double eleProbeSCRandom = 1;//gRandom->Gaus(0,1);
 		eleProbeSCSmear = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
 		float eleProbeSCSmearEP = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
 		float eleProbeSCSmearEM = eleCorr.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
@@ -950,15 +987,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
 	if(icat==0) continue;
     
-    // Loop through the photons to determine the Prefiring scale factor
-    prefireWeight=1; prefireUp=1; prefireDown=1;
-    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-	    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-        prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-        prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-       // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-    } 
+  // Loop through the photons to determine the Prefiring scale factor
+  prefireWeight=1; prefireUp=1; prefireDown=1;
+  for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+    prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+    prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+    prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+    // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+  } 
 
 	//******** We have a Z candidate! HURRAY! ********
 	nsel+=weight;
@@ -1091,7 +1128,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	lep2     = &vProbefinal;
         lep1_raw = &vTag_raw;
         lep2_raw = &vProbe_raw;
+  
+        
 	dilep    = &vDilep;
+  
+  // std::cout << "  " << dilep->M() <<  "  " << lep1->Pt() << " " << lep2->Pt() << std::endl;
 	sc1        = &vTagSC;
 	sc2        = &vProbeSC;
 	TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));

@@ -126,14 +126,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genWeight, PUWeight;
   Float_t scale1fb,scale1fbUp,scale1fbDown;
-  Float_t prefireWeight;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
-    TLorentzVector *genlep1=0;
+  TLorentzVector *genlep1=0;
   TLorentzVector *genlep2=0;
   ///// muon specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
@@ -213,6 +213,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
+    outTree->Branch("prefireUp",     &prefireUp,     "prefireUp/F");
+    outTree->Branch("prefireDown",   &prefireDown,   "prefireDown/F");
     outTree->Branch("met",         &met,        "met/F");         // MET
     outTree->Branch("metPhi",      &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",       &sumEt,      "sumEt/F");       // Sum ET
@@ -375,6 +377,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	  weightUp*=gen->weight*puWeightUp;
 	  weightDown*=gen->weight*puWeightDown;
 	}
+    
+
 
 	// veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
@@ -389,6 +393,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
+        
+
 
 	muonArr->Clear();
     muonBr->GetEntry(ientry);
@@ -556,13 +562,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	nsel+=weight;
 	nselvar+=weight*weight;
 	
-    // Loop through the photons to determine the Prefiring scale factor
-    prefireWeight=1;
-    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-	    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-       // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-    } 
+  // Loop through the photons to determine the Prefiring scale factor
+  prefireWeight=1;prefireUp=1; prefireDown=1;
+  for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+    const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+    prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+    prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+    prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+    // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+  } 
     
 	// Perform matching of dileptons to GEN leptons from Z decay
 
@@ -575,6 +583,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	Bool_t hasGenMatch = kFALSE;
 	if(isRecoil && hasGen) {
 	  toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+      // Test this mass cut
+        if(gvec->M()<MASS_LOW || gvec->M()>MASS_HIGH) continue;
 	  
 	  Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTag.Eta(), vTag.Phi(), glep1->Eta(), glep1->Phi())<0.5) ||
 			    ((glep2) && toolbox::deltaR(vTag.Eta(), vTag.Phi(), glep2->Eta(), glep2->Phi())<0.5) );

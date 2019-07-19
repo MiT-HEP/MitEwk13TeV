@@ -85,7 +85,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
   const Int_t LEPTON_ID = 11;
   
   const int gainSeed = 12;
-
+  const Int_t NPDF = 100;
+  const Int_t NQCD = 6;
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
@@ -146,7 +147,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
-  Float_t prefireWeight;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
@@ -162,6 +163,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
   Float_t d0, dz;
   UInt_t  isConv, nexphits, typeBits;
   TLorentzVector *sc=0;
+  vector<Double_t> lheweight;
+  for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
 
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -224,6 +227,8 @@ void selectAntiWe(const TString conf="we.conf", // input file
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
+    outTree->Branch("prefireUp",     &prefireUp,     "prefireUp/F");
+    outTree->Branch("prefireDown",   &prefireDown,   "prefireDown/F");
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",   &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -275,6 +280,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
     outTree->Branch("nexphits",   &nexphits,   "nexphits/i");    // number of missing expected inner hits of electron
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");    // electron type of electron
     outTree->Branch("sc",        "TLorentzVector", &sc);         // supercluster 4-vector
+    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     
     //
     // loop through files
@@ -470,23 +476,22 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	}
 
 	if(passSel) {  
-
 	  //******* We have a W candidate! HURRAY! ********
 	  nsel+=weight;
-      nselvar+=weight*weight;
-      
-      
-      // Loop through the photons to determine the Prefiring scale factor
-      prefireWeight=1;
-      for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-        const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-        // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-      } 
-      
-      TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0); TLorentzVector vLep_raw(0,0,0,0);
+    nselvar+=weight*weight;
+    // Loop through the photons to determine the Prefiring scale factor
+    prefireWeight=1;prefireUp=1; prefireDown=1;
+    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+      const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+      prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+      prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    } 
+    
+    TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0); TLorentzVector vLep_raw(0,0,0,0);
 	  vLep = vGoodEle;
-      vLep_raw.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
+    vLep_raw.SetPtEtaPhiM(goodEle->pt,goodEle->eta,goodEle->phi,ELE_MASS);
 	  
       //
 	  // Fill tree
@@ -585,6 +590,30 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	    xPDF_2    = gen->xPDF_2;
 	    scalePDF  = gen->scalePDF;
 	    weightPDF = gen->weight;
+
+      
+      if(isRecoil&&!isSignal&&!isWrongFlavor){
+        // std::cout <<"Filling the Zxx lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[0];
+        lheweight[1]=gen->lheweight[1];
+        lheweight[2]=gen->lheweight[2];
+        lheweight[3]=gen->lheweight[3];
+        lheweight[4]=gen->lheweight[5];
+        lheweight[5]=gen->lheweight[7];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
+      }else{
+        // std::cout << "filling the lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[1];
+        lheweight[1]=gen->lheweight[2];
+        lheweight[2]=gen->lheweight[3];
+        lheweight[3]=gen->lheweight[4];
+        lheweight[4]=gen->lheweight[6];
+        lheweight[5]=gen->lheweight[8];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
+        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
+        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
+        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
+      }
 
 	    delete gvec;
 	    delete glep1;
