@@ -1,4 +1,4 @@
-//================================================================================================
+////================================================================================================
 //
 // Select W->munu candidates
 //
@@ -68,7 +68,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
-
+  const Int_t NPDF = 100;
+  const Int_t NQCD = 6;
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
   
@@ -116,7 +117,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
-  Float_t prefireWeight;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
@@ -130,6 +131,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   Float_t d0, dz;
   Float_t muNchi2;
   UInt_t nPixHits, nTkLayers, nValidHits, nMatch, typeBits;
+  vector<Double_t> lheweight;
+  for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info  = new baconhep::TEventInfo();
@@ -154,9 +157,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm",TString::kIgnoreCase)==1);
+    Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
     // flag to reject W->mnu events when selecting wrong flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
     //flag to save the info for recoil corrections
     Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
     
@@ -191,6 +194,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
     outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");
+    outTree->Branch("prefireUp",     &prefireUp,     "prefireUp/F");
+    outTree->Branch("prefireDown",   &prefireDown,   "prefireDown/F");
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",   &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -236,6 +241,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     outTree->Branch("nMatch",     &nMatch,     "nMatch/i");	  // number of matched segments of muon	 
     outTree->Branch("nValidHits", &nValidHits, "nValidHits/i");   // number of valid muon hits of muon 
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");     // number of valid muon hits of muon 
+    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     //
     // loop through files
     //
@@ -277,6 +283,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 
       if (hasGen) {
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          
+        // for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
           infoBr->GetEntry(ientry);
           genBr->GetEntry(ientry);
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
@@ -289,6 +297,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
       }
       else if (not isData){
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          
+        // for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
@@ -304,6 +314,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     //
     Double_t nsel=0, nselvar=0;
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      
+      // for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -386,16 +398,18 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 	if(passSel) {
 	  /******** We have a W candidate! HURRAY! ********/
 	  nsel+=weight;
-      nselvar+=weight*weight;
-      
-        // Loop through the photons to determine the Prefiring scale factor
-        prefireWeight=1;
-        for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-          const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-          prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-          // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-        } 
-	  
+    nselvar+=weight*weight;
+    
+      // Loop through the photons to determine the Prefiring scale factor
+      prefireWeight=1;prefireUp=1; prefireDown=1;
+      for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+        const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+      prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+        // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    } 
+  
 	  TLorentzVector vLep; 
 	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
 	  
@@ -433,6 +447,31 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           xPDF_2    = -999;
           scalePDF  = -999;
           weightPDF = -999;
+
+    if(hasGen){
+      if(isRecoil&&!isSignal&&!isWrongFlavor){
+        // std::cout <<"Filling the Zxx lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[0];
+        lheweight[1]=gen->lheweight[1];
+        lheweight[2]=gen->lheweight[2];
+        lheweight[3]=gen->lheweight[3];
+        lheweight[4]=gen->lheweight[5];
+        lheweight[5]=gen->lheweight[7];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
+      }else{
+        // std::cout << "filling the lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[1];
+        lheweight[1]=gen->lheweight[2];
+        lheweight[2]=gen->lheweight[3];
+        lheweight[3]=gen->lheweight[4];
+        lheweight[4]=gen->lheweight[6];
+        lheweight[5]=gen->lheweight[8];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
+        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
+        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
+        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
+      }
+    }
 
 	  if(isRecoil && hasGen) {
             Int_t glepq1=-99;
@@ -499,6 +538,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
             xPDF_2    = gen->xPDF_2;
             scalePDF  = gen->scalePDF;
             weightPDF = gen->weight;
+
 
 	    delete gvec;
             delete glep1;

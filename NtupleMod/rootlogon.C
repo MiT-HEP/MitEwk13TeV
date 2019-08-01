@@ -27,8 +27,8 @@
   //gROOT->Macro("RooVoigtianShape.cc+");
   //gROOT->Macro("RooCMSShape.cc+");
 
-  gROOT->Macro("CEffUser1D.cc+");
-  gROOT->Macro("CEffUser2D.cc+");
+  gROOT->Macro("../Utils/CEffUser1D.cc+");
+  gROOT->Macro("../Utils/CEffUser2D.cc+");
 
 //  gROOT->Macro("muresolution_run2r.cc+");
   //gROOT->Macro("rochcor2015r.cc+");

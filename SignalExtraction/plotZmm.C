@@ -45,6 +45,7 @@ TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
 void plotZmm(const TString  inputDir,    // input directory
 	     const TString  outputDir,   // output directory
+       const TString  sqrts, 
              const Double_t lumi,        // integrated luminosity (/fb)
 	     const Bool_t   normToData=0 //draw MC normalized to data
 ) {
@@ -58,15 +59,20 @@ void plotZmm(const TString  inputDir,    // input directory
   //
   // input ntuple file names
   //
-  enum { eData, eZmm, eEWK, eTop };  // data type enum
+  enum { eData, eZmm, eEWK, eTop ,eDib,eZxx,eWx};  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_GenCut/Zmumu/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  fnamev.push_back(TString("/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV/Zmumu_testGen/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
   fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
+  
+  fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eZxx);
+  fnamev.push_back(inputDir + TString("/") + TString("dib_select.raw.root"));  typev.push_back(eDib);
 
   //
   // Fit options
@@ -77,7 +83,7 @@ void plotZmm(const TString  inputDir,    // input directory
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
 
-  const bool doRoch = false;
+  const bool doRoch = true;
   // efficiency files
  
   const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
@@ -85,7 +91,7 @@ void plotZmm(const TString  inputDir,    // input directory
 
   
     // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_Efficiency-results/";
-  const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
+  const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
   // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/Zmm/";
   const TString dataHLTEffName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
   const TString dataHLTEffName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
@@ -363,6 +369,10 @@ void plotZmm(const TString  inputDir,    // input directory
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
   TLorentzVector *genlep1=0, *genlep2=0;
+  Float_t genMuonPt1, genMuonPt2;
+
+  Double_t nDib=0, nWx=0, nZxx=0;
+  Double_t nDibUnc=0, nWxUnc=0, nZxxUnc=0;
 
   //
   // HLT efficiency
@@ -511,6 +521,8 @@ void plotZmm(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("lep2",1);
     intree -> SetBranchStatus("genlep1",1);
     intree -> SetBranchStatus("genlep2",1);
+    intree -> SetBranchStatus("genMuonPt1",1);
+    intree -> SetBranchStatus("genMuonPt2",1);
 
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
@@ -529,6 +541,8 @@ void plotZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
     intree->SetBranchAddress("genlep1",       &genlep1);        // tag lepton 4-vector
     intree->SetBranchAddress("genlep2",       &genlep2);        // probe lepton 4-vector
+    intree->SetBranchAddress("genMuonPt1",       &genMuonPt1);        // probe lepton 4-vector
+    intree->SetBranchAddress("genMuonPt2",       &genMuonPt2);        // probe lepton 4-vector
     
     //
     // loop over events
@@ -544,6 +558,12 @@ void plotZmm(const TString  inputDir,    // input directory
         // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
       // }
       
+      // if(abs(genlep1->Pt() - lep1->Pt())/lep1->Pt() > 0.1 || abs(genlep2->Pt() - lep2->Pt())/lep2->Pt() > 0.1){
+        // std::cout << "-------" << ientry << "-----------" << std::endl;
+        // std::cout << "lep 1 " << genlep1->Pt() << " " << lep1->Pt() << std::endl;
+        // std::cout << "lep 2 " << genlep2->Pt() << " " << lep2->Pt() << std::endl;
+      // }
+      
       float mass = 0;
       float pt = 0;
       float rapidity = 0;
@@ -553,12 +573,13 @@ void plotZmm(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	    // weight *= scale1fb*prefireWeight*lumi;
-	    weight *= scale1fb*lumi;
+	    weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*lumi;
       }
       
       // fill Z events passing selection
       if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
+        
         if(typev[ifile]==eData) { 
 
 	  TLorentzVector mu1;
@@ -646,8 +667,8 @@ void plotZmm(const TString  inputDir,    // input directory
       
 	  float qter1=1.0;
 	  float qter2=1.0;
-      double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
-      double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genlep2->Pt());//, s=0, m=0);
+      double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt1);//, s=0, m=0);
+      double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genMuonPt2);//, s=0, m=0);
       if(genlep1->Pt()==0 && genlep2->Pt()==0) {mcSF1=1; mcSF2=1;}// stupid gen shit for ttbar is messed up
 	  // rmcor->momcor_mc(mu1,q1,0,qter1);
 	  // rmcor->momcor_mc(mu2,q2,0,qter2);
@@ -943,6 +964,18 @@ void plotZmm(const TString  inputDir,    // input directory
 	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
 	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
 	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+    if(mass>60&&mass<120){
+      if(typev[ifile]==eDib){
+        nDib+=weight*corr;
+        nDibUnc+=weight*weight*corr*corr;
+      } else if(typev[ifile]==eZxx){
+        nZxx+=weight*corr;
+        nZxxUnc+=weight*weight*corr*corr;
+      } else if (typev[ifile]==eWx){
+        nWx+=weight*corr;
+        nWxUnc+=weight*weight*corr*corr;
+      }
+    }
 	  if(typev[ifile]==eZmm) 
 	    {
 	      yield_zmm += weight*corr;
@@ -1981,6 +2014,9 @@ void plotZmm(const TString  inputDir,    // input directory
   cout << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
   cout << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
   cout << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  cout << "  -> Dib event yield is " << nDib      << " +/-" << sqrt(nDibUnc)       << "." << endl;
+  cout << "  -> Zxx event yield is " << nZxx      << " +/-" << sqrt(nZxxUnc)       << "." << endl;
+  cout << "  -> Wx  event yield is " << nWx       << " +/-" << sqrt(nWxUnc)        << "." << endl;
   cout << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
   
   cout << endl;
@@ -2003,6 +2039,9 @@ void plotZmm(const TString  inputDir,    // input directory
   txtfile << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
   txtfile << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
   txtfile << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  txtfile << "  -> Dib event yield is " << nDib      << " +/-" << sqrt(nDibUnc)       << "." << endl;
+  txtfile << "  -> Zxx event yield is " << nZxx      << " +/-" << sqrt(nZxxUnc)       << "." << endl;
+  txtfile << "  -> Wx  event yield is " << nWx       << " +/-" << sqrt(nWxUnc)        << "." << endl;
   txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
   txtfile << std::endl;
   txtfile.close();
