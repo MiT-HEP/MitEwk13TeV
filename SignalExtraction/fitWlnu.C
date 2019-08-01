@@ -67,8 +67,14 @@
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
-void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, vector<double> wgtLum,double mtCorr);
-void fillWeights(bool doMET,TH1D** h,vector<double> met, int nWeight,vector<double> wgtLum,double mtCorr);
+void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, double wgtLum,double mtCorr);
+void fillWeights(bool doMET,TH1D** h,double met, int nWeight,vector<double> wgtLum,double mtCorr);
+
+void fillLHE(TH1D** hlhe, double met, double evtweight, vector<double> *lheweight);
+void calcLHE(TH1D* hQCD, TH1D* hPDF, TH1D** hlhe, TH1D* hMain, bool isSignal);
+void drawLHE(TH1D** hlhe, TH1D* hMain, TString name, TString outdir, bool isSignal);
+
+void drawShapes(TH1D** vars, TH1D* hMain, TString outdir, TString name, vector<string> leg, int max);
 
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
@@ -76,6 +82,8 @@ TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 void makeDataHistPdf(string dh, string hp, TH1D* hIn, vector<RooDataHist*> &vDataHist, vector<RooHistPdf*> &vHistPdf, RooRealVar &x, int it,string sfx);
 
 void drawWMetPlots(string plotname, TH1D *diff, RooRealVar &x, RooDataHist* dat, RooAddPdf* pdf, RooHistPdf* ewk, RooAbsPdf* qcd, RooHistPdf* wsigp, string lumitext, TH1D* hData);
+
+void drawWMetPlotsSplit(string plotname, TH1D *diff, RooRealVar &x, RooDataHist* dat, RooAddPdf* pdf, RooHistPdf* wx, RooHistPdf* zxx, RooHistPdf* dib, RooHistPdf* ttb, RooAbsPdf* qcd, RooHistPdf* wsigp, string lumitext, TH1D* hData);
 
 // print correlations of fitted parameters
 void printCorrelations(ostream& os, RooFitResult *res);
@@ -98,8 +106,13 @@ const  Int_t fillcolorQCD = kViolet-5;
 const  Int_t ratioColor   = kGray+2;
 
 const Int_t    NBINS   = 50;
+// const Int_t    NBINS   = 20;
 const Double_t METMIN  = 0;
+// const Double_t METMIN  = 25;
+// const Double_t METMAX  = 50;
 const Double_t METMAX  = 100;
+const Int_t    nPDF = 100;
+const Int_t    nQCD = 6;
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -122,21 +135,49 @@ void fitWlnu(const TString  outputDir,   // output directory
   bool doMET = true;
   bool doTemplate = true;
 
+double isoSigCut=9999;
+double isoTrkCut=9999;
+
+// double isoSigCut=0.05;
+// double isoTrkCut=0.05;
+
   double yscale=0.5;
   
+    // Control the types of uncertainties
+  enum{pdf,uqcd};
+  const string vaLHE[]={"pdf","qcd"};
+  // const vector<string> vLHE{"pdf","qcd"};
+  int nLHE = sizeof(vaLHE)/sizeof(vaLHE[0]);
+  std::cout << "nlhe" << nLHE << std::endl;
+    std::vector<string> vLHE;
+  for(int i = 0; i < nLHE; i++){vLHE.push_back(vaLHE[i]);}
+  
   // Control the types of uncertainties
-  enum{no,cent,eta,keys,rochu,rochd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  const string vMET[]={"no","main","eta","keys","rochu","rochd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"};
-  int nMET = sizeof(vMET)/sizeof(vMET[0]);
+  // enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
+  enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
+  const string vaMET[]={"no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"};
+  // const vector<string> vMET{ "no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"}; 
+  int nMET = sizeof(vaMET)/sizeof(vaMET[0]);
+  std::vector<string> vMET;
+  for(int i = 0; i < nMET; i++){vMET.push_back(vaMET[i]);}
   // int ns=nMET-nNV;
   // front half should be nMET-nNV
   
-  enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
-  const string vWeight[]={"main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
-  int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
+  enum{main,mc,fsr,bkg,tagpt,sdu,sdd,smu,smd,pfireu,pfired};
+  const string vaWeight[]={"eff","mc","fsr","bkg","tagpt","sdu","sdd","smu","smd","pfireu","pfired"};
+  // enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
+  // const string vaWeight[]={"main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
+  // const vector<string> v{ "main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"}; 
+  int nWeight = sizeof(vaWeight)/sizeof(vaWeight[0]);
+  std::vector<string> vWeight;
+  for(int i = 0; i < nWeight; i++){vWeight.push_back(vaWeight[i]);}
+  
+  std::cout << "size of weight array is " << nWeight << std::endl;
+  std::cout << "size of met array is " << nMET << std::endl;
   
   // Double_t vIsoBins[] = {0.0,0.20,0.30,0.40,0.50,0.60,0.70};
-  Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
+  // Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
+  Double_t vIsoBins[] = {0.0,0.25,0.35,0.45,0.55,0.65};
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
@@ -195,20 +236,20 @@ void fitWlnu(const TString  outputDir,   // output directory
   vector<Int_t>   typev;
   
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
-  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_newRecoils/Wmunu/ntuples/wparts/wm0_select.raw.root");  typev.push_back(eWlnu);
-  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_TESTADDSHAPE/Wmunu/ntuples/data_select.root");  typev.push_back(eData);
-  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_TESTADDSHAPE/Wmunu/ntuples/wm0_select.raw.root");  typev.push_back(eWlnu);
-  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_newRecoils/Wmunu/ntuples/wparts/wm1_select.raw.root");  typev.push_back(eWlnu);
-  // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_newRecoils/Wmunu/ntuples/wparts/wm2_select.raw.root");  typev.push_back(eWlnu);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGenTESTsmear/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGenTESTsmear/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGenTESTsmear/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/RCprob/wx_select.raw.root"));  typev.push_back(eWx);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+  // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/EleMu/ntuples/data_select.root")); typev.push_back(eTtb);
+  // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/Wmunu_ttbar2l2nu/ntuples/top_select.raw.root")); typev.push_back(eTtb);
 
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
@@ -216,10 +257,26 @@ void fitWlnu(const TString  outputDir,   // output directory
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm0_select.root")); typev.push_back(eAntiWlnu);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm1_select.root")); typev.push_back(eAntiWlnu);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm2_select.root")); typev.push_back(eAntiWlnu);
+  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+  
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm_select.raw.root"));  typev.push_back(eWlnu);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
+  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
+  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
+  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -275,20 +332,6 @@ void fitWlnu(const TString  outputDir,   // output directory
   TH1D *hWlnuMetmPhi   = new TH1D("hWlnuMetmPhi","",  100,-3.15, 6.30); hWlnuMetmPhi->Sumw2();
   
   
-  // // actually now we're switching to 2-d arrays haha, actually leave to test later
-  // TH1D ***hWlnuMetp2d  = new TH1D*[5];// hAntiWlnuMetp->Sumw2();
-  // TH1D ***hWlnuMetm2d  = new TH1D*[5];// hAntiWlnuMetm->Sumw2();
-  // // TH1D **hAntiEWKMetIsoBins    = new TH1D*[5];// hAntiEWKMet->Sumw2();
-  // TH1D ***hEWKMetp2d   = new TH1D*[5];// hAntiEWKMetp->Sumw2();
-  // TH1D ***hEWKMetm2d   = new TH1D*[5];// hAntiEWKMetm->Sumw2();
-  
-  // TH1D ***hWxMetp2d   = new TH1D*[5];// hAntiEWKMetp->Sumw2();
-  // TH1D ***hWxMetm2d   = new TH1D*[5];// hAntiEWKMetm->Sumw2();
-  
-  // TH1D ***hZxxMetp2d   = new TH1D*[5];// hAntiEWKMetp->Sumw2();
-  // TH1D ***hZxxMetm2d   = new TH1D*[5];// hAntiEWKMetm->Sumw2();
-  
-  
   // TH1D **hAntiDataMetIsoBins   = new TH1D*[5];// hAntiDataMet->Sumw2();
   TH1D **hDataMetm2d  = new TH1D*[nIsoBins];// hAntiDataMetm->Sumw2();  
   TH1D **hDataMetp2d  = new TH1D*[nIsoBins];// hAntiDataMetp->Sumw2();
@@ -298,167 +341,219 @@ void fitWlnu(const TString  outputDir,   // output directory
   TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
   // All teh uncertainties? 
   // this is an array of arrays of histograms // first index is iso bin, 2nd is uncertainty shape
-  TH1D ***hWlnuMetp2dMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  TH1D ***hWlnuMetp2dMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnupMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnumMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnupMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnumMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
   
-  TH1D ***hEWKMetp2dMETU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dMETU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
-  TH1D ***hEWKMetp2dMETD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dMETD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKpMETU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKmMETU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKpMETD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKmMETD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
   
-  TH1D ***hWxMetp2dMETU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dMETU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
-  TH1D ***hWxMetp2dMETD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dMETD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxpMETU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxmMETU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxpMETD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxmMETD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
   
-  TH1D ***hZxxMetp2dMETU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dMETU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
-  TH1D ***hZxxMetp2dMETD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dMETD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxpMETU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxmMETU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxpMETD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxmMETD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
   ////////////////////////////////////////////////////////////////////////////////////////
-  TH1D ***hWlnuMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  TH1D ***hWlnuMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D ***hWlnuMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnupWeightU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnumWeightU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnupWeightD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnumWeightD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
   
-  TH1D ***hEWKMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
-  TH1D ***hEWKMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
-  TH1D ***hEWKMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKpWeightU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKmWeightU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKpWeightD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKmWeightD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
   
-  TH1D ***hWxMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
-  TH1D ***hWxMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
-  TH1D ***hWxMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxpWeightU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxmWeightU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxpWeightD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxmWeightD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
   
-  TH1D ***hZxxMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
-  TH1D ***hZxxMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
-  TH1D ***hZxxMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxpWeightU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxmWeightU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxpWeightD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxmWeightD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
   
-  TH1D ***hDibMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
-  TH1D ***hDibMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
-  TH1D ***hDibMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
-  TH1D ***hDibMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  TH1D ***hDibpWeightU  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibmWeightU  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  TH1D ***hDibpWeightD  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibmWeightD  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
   
-  TH1D ***hTtbMetp2dWeightU  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
-  TH1D ***hTtbMetm2dWeightU  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
-  TH1D ***hTtbMetp2dWeightD  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
-  TH1D ***hTtbMetm2dWeightD  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  TH1D ***hTtbpWeightU  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbmWeightU  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  TH1D ***hTtbpWeightD  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbmWeightD  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  
+  // shit about to get outta hand
+  TH1D ***hWlnupLHE = new TH1D**[nIsoBins];
+  TH1D ***hEWKpLHE  = new TH1D**[nIsoBins];
+  TH1D ***hWxpLHE   = new TH1D**[nIsoBins];
+  TH1D ***hZxxpLHE  = new TH1D**[nIsoBins];
+  TH1D ***hDibpLHE  = new TH1D**[nIsoBins];
+  TH1D ***hTtbpLHE  = new TH1D**[nIsoBins];
+  
+  TH1D ***hWlnumLHE = new TH1D**[nIsoBins];
+  TH1D ***hEWKmLHE  = new TH1D**[nIsoBins];
+  TH1D ***hWxmLHE   = new TH1D**[nIsoBins];
+  TH1D ***hZxxmLHE  = new TH1D**[nIsoBins];
+  TH1D ***hDibmLHE  = new TH1D**[nIsoBins];
+  TH1D ***hTtbmLHE  = new TH1D**[nIsoBins];
+  
+  
+    ////////////////////////////////////////////////////////////////////////////////////////
+  TH1D ***hWlnupThyUncU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnumThyUncU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  TH1D ***hWlnupThyUncD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D ***hWlnumThyUncD  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  
+  TH1D ***hEWKpThyUncU  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKmThyUncU  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  TH1D ***hEWKpThyUncD  = new TH1D**[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D ***hEWKmThyUncD  = new TH1D**[nIsoBins];// hAntiEWKMetm->Sumw2();
+  
+  TH1D ***hWxpThyUncU  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxmThyUncU  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  TH1D ***hWxpThyUncD  = new TH1D**[nIsoBins];// hAntiWxMetp->Sumw2();
+  TH1D ***hWxmThyUncD  = new TH1D**[nIsoBins];// hAntiWxMetm->Sumw2();
+  
+  TH1D ***hZxxpThyUncU  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxmThyUncU  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  TH1D ***hZxxpThyUncD  = new TH1D**[nIsoBins];// hAntiZxxMetp->Sumw2();
+  TH1D ***hZxxmThyUncD  = new TH1D**[nIsoBins];// hAntiZxxMetm->Sumw2();
+  
+  TH1D ***hDibpThyUncU  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibmThyUncU  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  TH1D ***hDibpThyUncD  = new TH1D**[nIsoBins];// hAntiDibMetp->Sumw2();
+  TH1D ***hDibmThyUncD  = new TH1D**[nIsoBins];// hAntiDibMetm->Sumw2();
+  
+  TH1D ***hTtbpThyUncU  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbmThyUncU  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
+  TH1D ***hTtbpThyUncD  = new TH1D**[nIsoBins];// hAntiTtbMetp->Sumw2();
+  TH1D ***hTtbmThyUncD  = new TH1D**[nIsoBins];// hAntiTtbMetm->Sumw2();
   
   // do a loop to create the second array
   for(int i=0; i < nIsoBins; ++i){
     // w signal recoil
-    hWlnuMetp2dMETU[i] = new TH1D*[nMET];
-    hWlnuMetm2dMETU[i] = new TH1D*[nMET];
+    hWlnupMETU[i] = new TH1D*[nMET];
+    hWlnumMETU[i] = new TH1D*[nMET];
     
-    hWlnuMetp2dMETD[i] = new TH1D*[nMET];
-    hWlnuMetm2dMETD[i] = new TH1D*[nMET];
+    hWlnupMETD[i] = new TH1D*[nMET];
+    hWlnumMETD[i] = new TH1D*[nMET];
     
     // w signal efficiency 
-    hWlnuMetp2dWeightU[i] = new TH1D*[nWeight];
-    hWlnuMetm2dWeightU[i] = new TH1D*[nWeight];
+    hWlnupWeightU[i] = new TH1D*[nWeight];
+    hWlnumWeightU[i] = new TH1D*[nWeight];
     
-    hWlnuMetp2dWeightD[i] = new TH1D*[nWeight];
-    hWlnuMetm2dWeightD[i] = new TH1D*[nWeight];
+    hWlnupWeightD[i] = new TH1D*[nWeight];
+    hWlnumWeightD[i] = new TH1D*[nWeight];
+    
+    hWlnupThyUncU[i] = new TH1D*[nLHE];
+    hWlnumThyUncU[i] = new TH1D*[nLHE];
+    
+    hWlnupThyUncD[i] = new TH1D*[nLHE];
+    hWlnumThyUncD[i] = new TH1D*[nLHE];
     
     // ewk total recoil
-    hEWKMetp2dMETU[i] = new TH1D*[nMET];
-    hEWKMetm2dMETU[i] = new TH1D*[nMET];
+    hEWKpMETU[i] = new TH1D*[nMET];
+    hEWKmMETU[i] = new TH1D*[nMET];
     
-    hEWKMetp2dMETD[i] = new TH1D*[nMET];
-    hEWKMetm2dMETD[i] = new TH1D*[nMET];
+    hEWKpMETD[i] = new TH1D*[nMET];
+    hEWKmMETD[i] = new TH1D*[nMET];
     
     // ewk total efficiency
-    hEWKMetp2dWeightU[i] = new TH1D*[nWeight];
-    hEWKMetm2dWeightU[i] = new TH1D*[nWeight];
+    hEWKpWeightU[i] = new TH1D*[nWeight];
+    hEWKmWeightU[i] = new TH1D*[nWeight];
     
-    hEWKMetp2dWeightD[i] = new TH1D*[nWeight];
-    hEWKMetm2dWeightD[i] = new TH1D*[nWeight];
+    hEWKpWeightD[i] = new TH1D*[nWeight];
+    hEWKmWeightD[i] = new TH1D*[nWeight];
+    
+    hEWKpThyUncU[i] = new TH1D*[nLHE];
+    hEWKmThyUncU[i] = new TH1D*[nLHE];
+    
+    hEWKpThyUncD[i] = new TH1D*[nLHE];
+    hEWKmThyUncD[i] = new TH1D*[nLHE];
     
     // wx  recoil
-    hWxMetp2dMETU[i] = new TH1D*[nMET];
-    hWxMetm2dMETU[i] = new TH1D*[nMET];
+    hWxpMETU[i] = new TH1D*[nMET];
+    hWxmMETU[i] = new TH1D*[nMET];
     
-    hWxMetp2dMETD[i] = new TH1D*[nMET];
-    hWxMetm2dMETD[i] = new TH1D*[nMET];
+    hWxpMETD[i] = new TH1D*[nMET];
+    hWxmMETD[i] = new TH1D*[nMET];
     
     // wx  efficiency
-    hWxMetp2dWeightU[i] = new TH1D*[nWeight];
-    hWxMetm2dWeightU[i] = new TH1D*[nWeight];
+    hWxpWeightU[i] = new TH1D*[nWeight];
+    hWxmWeightU[i] = new TH1D*[nWeight];
     
-    hWxMetp2dWeightD[i] = new TH1D*[nWeight];
-    hWxMetm2dWeightD[i] = new TH1D*[nWeight];
+    hWxpWeightD[i] = new TH1D*[nWeight];
+    hWxmWeightD[i] = new TH1D*[nWeight];
+    
+    // wx  efficiency
+    hWxpThyUncU[i] = new TH1D*[nLHE];
+    hWxmThyUncU[i] = new TH1D*[nLHE];
+    
+    hWxpThyUncD[i] = new TH1D*[nLHE];
+    hWxmThyUncD[i] = new TH1D*[nLHE];
+    
     
     // zxx recoil
-    hZxxMetp2dMETU[i] = new TH1D*[nMET];
-    hZxxMetm2dMETU[i] = new TH1D*[nMET];
+    hZxxpMETU[i] = new TH1D*[nMET];
+    hZxxmMETU[i] = new TH1D*[nMET];
     
-    hZxxMetp2dMETD[i] = new TH1D*[nMET];
-    hZxxMetm2dMETD[i] = new TH1D*[nMET];
+    hZxxpMETD[i] = new TH1D*[nMET];
+    hZxxmMETD[i] = new TH1D*[nMET];
     
     // zxx efficiency
-    hZxxMetp2dWeightU[i] = new TH1D*[nWeight];
-    hZxxMetm2dWeightU[i] = new TH1D*[nWeight];
+    hZxxpWeightU[i] = new TH1D*[nWeight];
+    hZxxmWeightU[i] = new TH1D*[nWeight];
     
-    hZxxMetp2dWeightD[i] = new TH1D*[nWeight];
-    hZxxMetm2dWeightD[i] = new TH1D*[nWeight];
+    hZxxpWeightD[i] = new TH1D*[nWeight];
+    hZxxmWeightD[i] = new TH1D*[nWeight];
+    
+    hZxxpThyUncU[i] = new TH1D*[nLHE];
+    hZxxmThyUncU[i] = new TH1D*[nLHE];
+    
+    hZxxpThyUncD[i] = new TH1D*[nLHE];
+    hZxxmThyUncD[i] = new TH1D*[nLHE];
     
     // diboson efficiency
-    hDibMetp2dWeightU[i] = new TH1D*[nWeight];
-    hDibMetm2dWeightU[i] = new TH1D*[nWeight];
+    hDibpWeightU[i] = new TH1D*[nWeight];
+    hDibmWeightU[i] = new TH1D*[nWeight];
     
-    hDibMetp2dWeightD[i] = new TH1D*[nWeight];
-    hDibMetm2dWeightD[i] = new TH1D*[nWeight];
+    hDibpWeightD[i] = new TH1D*[nWeight];
+    hDibmWeightD[i] = new TH1D*[nWeight];
     
     // ttbar efficiency
-    hTtbMetp2dWeightU[i] = new TH1D*[nWeight];
-    hTtbMetm2dWeightU[i] = new TH1D*[nWeight];
+    hTtbpWeightU[i] = new TH1D*[nWeight];
+    hTtbmWeightU[i] = new TH1D*[nWeight];
     
-    hTtbMetp2dWeightD[i] = new TH1D*[nWeight];
-    hTtbMetm2dWeightD[i] = new TH1D*[nWeight];
+    hTtbpWeightD[i] = new TH1D*[nWeight];
+    hTtbmWeightD[i] = new TH1D*[nWeight];
+    
+    hWlnupLHE[i] = new TH1D*[nQCD+nPDF];
+    hEWKpLHE[i]  = new TH1D*[nQCD+nPDF];
+    hWxpLHE[i]   = new TH1D*[nQCD+nPDF];
+    hZxxpLHE[i]  = new TH1D*[nQCD+nPDF];
+    hDibpLHE[i]  = new TH1D*[nQCD+nPDF];
+    hTtbpLHE[i]  = new TH1D*[nQCD+nPDF];
+  
+    hWlnumLHE[i] = new TH1D*[nQCD+nPDF];
+    hEWKmLHE[i]  = new TH1D*[nQCD+nPDF];
+    hWxmLHE[i]   = new TH1D*[nQCD+nPDF];
+    hZxxmLHE[i]  = new TH1D*[nQCD+nPDF];
+    hDibmLHE[i]  = new TH1D*[nQCD+nPDF];
+    hTtbmLHE[i]  = new TH1D*[nQCD+nPDF];
+    
   }
-  // Eta-binned unc 
-  // TH1D **hWlnuMetp2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  // TH1D **hWlnuMetm2dEta  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // // Keys unc
-  // TH1D **hWlnuMetp2dKeys  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  // TH1D **hWlnuMetm2dKeys  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // // Stat Unc
-  // TH1D **hWlnuMetp2dStat  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  // TH1D **hWlnuMetm2dStat  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-    // // Eta-binned unc 
-  // TH1D **hWlnuMetp2dEtaD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  // TH1D **hWlnuMetm2dEtaD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // // Keys unc
-  // TH1D **hWlnuMetp2dKeysD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  // TH1D **hWlnuMetm2dKeysD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
-  // // Stat Unc
-  // TH1D **hWlnuMetp2dStatD  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  // TH1D **hWlnuMetm2dStatD  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
   // TH1D **hAntiEWKMetIsoBins    = new TH1D*[5];// hAntiEWKMet->Sumw2();
   TH1D **hEWKMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hEWKMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // eta binned
-  // TH1D **hEWKMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hEWKMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // keys
-  // TH1D **hEWKMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hEWKMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // stat unc
-  // TH1D **hEWKMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hEWKMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // eta binned
-  // TH1D **hEWKMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hEWKMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // keys
-  // TH1D **hEWKMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hEWKMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // stat unc
-  // TH1D **hEWKMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hEWKMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   
   TH1D **hDibMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
@@ -470,53 +565,17 @@ void fitWlnu(const TString  outputDir,   // output directory
   TH1D **hWxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hWxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   // eta binned
-  // TH1D **hWxMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hWxMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // keys unc
-  // TH1D **hWxMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hWxMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // stat unc
-  // TH1D **hWxMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hWxMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  
-  // // eta binned
-  // TH1D **hWxMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hWxMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // keys unc
-  // TH1D **hWxMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hWxMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // stat unc
-  // TH1D **hWxMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hWxMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   TH1D **hZxxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hZxxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // eta binned unc
-  // TH1D **hZxxMetp2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hZxxMetm2dEta   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // keys unc
-  // TH1D **hZxxMetp2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hZxxMetm2dKeys   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // stat unc
-  // TH1D **hZxxMetp2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hZxxMetm2dStat   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-    // // eta binned unc
-  // TH1D **hZxxMetp2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hZxxMetm2dEtaD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // keys unc
-  // TH1D **hZxxMetp2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hZxxMetm2dKeysD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // // stat unc
-  // TH1D **hZxxMetp2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
-  // TH1D **hZxxMetm2dStatD   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   
   TH1D **hMetpIsoValues = new TH1D*[nIsoBins];
   TH1D **hMetmIsoValues = new TH1D*[nIsoBins];
   // Create a histogram pointer in each space in the array
   for(int i = 0; i < nIsoBins; i++){
-    hDataMetm2d[i]  = new TH1D(("hDataMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hDataMetp2d[i]  = new TH1D(("hDataMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    hDataMetm2d[i]  = new TH1D(("hDataMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     
     hWlnuMetp2d[i]  = new TH1D(("hWlnuMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hWlnuMetm2d[i]  = new TH1D(("hWlnuMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
@@ -539,43 +598,101 @@ void fitWlnu(const TString  outputDir,   // output directory
     // Create a loop over the # of uncertainty shapes to produce the uncertainty histograms for the "up" shapes
     // Do the recoil ones here
     for(int j = 0; j < nMET; ++j){
-      // w signal
-      hWlnuMetp2dMETU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWlnuMetm2dMETU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      char hname[150]; char type[50];
+      if(j==ru){
+        sprintf(type,"%i_rochUp",i);
+      } else if (j==rd){
+        sprintf(type,"%i_rochDown",i);
+      } else {
+        sprintf(type,"%i_%sUp",i,(vMET[j]).c_str());
+      }
+
+      // Wlnu
+      sprintf(hname,"hWlnuMetpBin%s",type);
+      hWlnupMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hWlnuMetmBin%s",type);
+      hWlnumMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       
-      // ewk total
-      hEWKMetp2dMETU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hEWKMetm2dMETU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      // ewk sum
+      sprintf(hname,"hEWKMetpBin%s",type);
+      hEWKpMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hEWKMetmBin%s",type);
+      hEWKmMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       
       // wx
-      hWxMetp2dMETU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWxMetm2dMETU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hWxMetpBin%s",type);
+      hWxpMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hWxMetmBin%s",type);
+      hWxmMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       
       // zxx
-      hZxxMetp2dMETU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hZxxMetm2dMETU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vMET[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hZxxMetpBin%s",type);
+      hZxxpMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hZxxMetmBin%s",type);
+      hZxxmMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      // }
     }
     
     for(int j=0; j < nWeight; ++j){
-      hWlnuMetp2dWeightU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWlnuMetm2dWeightU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnupWeightU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnumWeightU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
-      hEWKMetp2dWeightU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hEWKMetm2dWeightU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKpWeightU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKmWeightU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
-      hWxMetp2dWeightU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWxMetm2dWeightU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxpWeightU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxmWeightU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
   
-      hZxxMetp2dWeightU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hZxxMetm2dWeightU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxpWeightU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxmWeightU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
-      hDibMetp2dWeightU[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hDibMetm2dWeightU[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hDibpWeightU[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hDibmWeightU[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
   
-      hTtbMetp2dWeightU[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hTtbMetm2dWeightU[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hTtbpWeightU[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hTtbmWeightU[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
       
     }
+    
+    for(int j = 0; j < nQCD + nPDF; ++j){ // the 100ish LHE weight histos
+      hWlnupLHE[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      hWlnumLHE[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      
+      hEWKpLHE[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_lhe"+std::to_string(i)).c_str(),"",NBINS,METMIN,METMAX);
+      hEWKmLHE[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      
+      hWxpLHE[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      hWxmLHE[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+  
+      hZxxpLHE[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      hZxxmLHE[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      
+      hDibpLHE[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      hDibmLHE[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+  
+      hTtbpLHE[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+      hTtbmLHE[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
+    }
+    
+    for(int j=0; j < nLHE; ++j){ // the final up/down shapes for the QCD and PDF uncertainty
+      // w signal
+      hWlnupThyUncU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWlnumThyUncU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // ewk total
+      hEWKpThyUncU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hEWKmThyUncU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // wx
+      hWxpThyUncU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hWxmThyUncU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // zxx
+      hZxxpThyUncU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      hZxxmThyUncU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+    }
+    
 
 	  hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
     hMetmIsoValues[i] = new TH1D(("hMetmIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
@@ -610,7 +727,7 @@ void fitWlnu(const TString  outputDir,   // output directory
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
   TLorentzVector *lep=0, *lep_raw=0, *genV=0, *genLep=0;
-  Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
+  Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso, trkIso;
   Double_t mtCorr;
   // Double_t (*metVars)[no], (*metVars)[cent], (*metVars)[eta], metCorrStat, (*metVars)[keys], mtCorr;
   // Double_t (*metVarsPhi)[no], (*metVarsPhi)[cent], (*metVarsPhi)[eta], metCorrStatPhi, (*metVarsPhi)[keys];
@@ -648,23 +765,9 @@ void fitWlnu(const TString  outputDir,   // output directory
     intree->SetBranchAddress("genLepPt",   &genLepPt);    // GEN lepton pT (signal MC)
     intree->SetBranchAddress("genLepPhi",  &genLepPhi);   // GEN lepton phi (signal MC)
     intree->SetBranchAddress("prefireWeight",  &prefireWeight);  // eventwgtLum[main] per 1/fb (MC)
-    // intree->SetBranchAddress("totalEvtWeight", &totalEvtWeight);  // eventwgtLum[main] per 1/fb (MC)
-    // intree->SetBranchAddress("(*evtWeight)SysFSR",&(*evtWeight)SysFSR);  // eventwgtLum[main] per 1/fb (MC)
-    // intree->SetBranchAddress("(*evtWeight)SysMC", &(*evtWeight)SysMC);  // eventwgtLum[main] per 1/fb (MC)
-    // intree->SetBranchAddress("(*evtWeight)SysBkg",&(*evtWeight)SysBkg);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fb",      &scale1fb);  // MCwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",    &scale1fbUp);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",  &scale1fbDown);  // eventwgtLum[main] per 1/fb (MC)
-    // intree->SetBranchAddress("(*metVars)[no]",      &(*metVars)[no]);     // MET including lepton scale/smear
-    // intree->SetBranchAddress("(*metVarsPhi)[no]",   &(*metVarsPhi)[no]);  // MET phi including lepton scale/smear
-    // intree->SetBranchAddress("(*metVars)[cent]",     &(*metVars)[cent]);     // MET including lepton scale/smear (w/ main recoil corrs)
-    // intree->SetBranchAddress("(*metVarsPhi)[cent]",  &(*metVarsPhi)[cent]);  // MET phi including lepton scale/smear (w/ main recoil corrs)
-    // intree->SetBranchAddress("(*metVars)[eta]",      &(*metVars)[eta]);      // MET including lepton scale/smear (w/ eta recoil corrs)
-    // intree->SetBranchAddress("(*metVarsPhi)[eta]",   &(*metVarsPhi)[eta]);   // MET phi including lepton scale/smear  (w/ eta recoil corrs)
-    // intree->SetBranchAddress("metCorrStat",     &metCorrStat);     // MET including lepton scale/smear (w/ stat unc recoil corrs)
-    // intree->SetBranchAddress("metCorrStatPhi",  &metCorrStatPhi);  // MET phi including lepton scale/smear (w/ stat unc recoil corrs)
-    // intree->SetBranchAddress("(*metVars)[keys]",     &(*metVars)[keys]);     // MET including lepton scale/smear (w/ keyspdf recoil corrs)
-    // intree->SetBranchAddress("(*metVarsPhi)[keys]",  &(*metVarsPhi)[keys]);  // MET phi including lepton scale/smear (w/ keyspdf recoil corrs)
     intree->SetBranchAddress("sumEt",         &sumEt);     // Sum ET
     intree->SetBranchAddress("mt",            &mt);        // transverse mass
     intree->SetBranchAddress("mtCorr",        &mtCorr);        // transverse mass
@@ -673,6 +776,7 @@ void fitWlnu(const TString  outputDir,   // output directory
     intree->SetBranchAddress("lep_raw",       &lep_raw);       // lepton 4-vector
     intree->SetBranchAddress("genLep",        &genLep);       // lepton 4-vector
     intree->SetBranchAddress("genV",          &genV);       // lepton 4-vector
+    intree->SetBranchAddress("trkIso",        &trkIso);
     intree->SetBranchAddress("pfChIso",       &pfChIso);
     intree->SetBranchAddress("pfGamIso",      &pfGamIso);
     intree->SetBranchAddress("pfNeuIso",      &pfNeuIso);
@@ -681,21 +785,24 @@ void fitWlnu(const TString  outputDir,   // output directory
     intree->SetBranchAddress("evtWeight",     &evtWeight); // eventwgtLum[main] vector
     intree->SetBranchAddress("metVars",       &metVars);            // contains the different met variations
     intree->SetBranchAddress("metVarsPhi",    &metVarsPhi);         // met phi for variations
-    // intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
+    intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
   
-    UInt_t iterator=15;
-    // UInt_t iterator=1;
-    if(typev[ifile]==eData||typev[ifile]==eAntiData)iterator=1;
+    // UInt_t iterator=30;
+    UInt_t iterator=10;
+    // if(typev[ifile]==eTtb)iterator=1;
+    // // if(typev[ifile]==eData||typev[ifile]==eAntiData)iterator=1;
     //
     // loop over events
     //
+    // double frac=0.1;
+    // if(typev[ifile]==eTtb) frac=1;
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.1); ientry++) {
-    // for(UInt_t ientry=0; ientry<((int)intree->GetEntries()); ientry+=iterator) {
+    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
+    // for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
-      // if(ientry%100000==0) 
-        cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+      if(ientry%100000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+
 
 // figure out later what to do
         // if(typev[ifile]==eWlnu || typev[ifile]==eWx || typev[ifile]==eZxx) {
@@ -709,23 +816,14 @@ void fitWlnu(const TString  outputDir,   // output directory
       if(lep_raw->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
       if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
-       // std::cout << "blah" << std::endl;
-      // set up the eventwgtLum[main]s for the MC reweighting
-      std::cout << "blah" << std::endl;
       vector<double> wgtLum;
-      // std::cout << "blah" << std::endl;
       for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt]));
-      // std::cout << "blablhlh" << std::endl;
-      // Double_twgtLum[main]=totalEvtWeight*lumi;
-      // Double_t wgtLum[k]=(*evtWeight)SysFSR*lumi;
-      // Double_t wgtLum[k]=(*evtWeight)SysBkg*lumi;
-      // Double_t wgtLum[k]=(*evtWeight)SysMC*lumi;
-      
-      // std::cout <<wgtLum[main] << "  " << wgtLum[k] << "  " << wgtLum[k] << "" << wgtLum[k] <<  " pt " << lep->Pt() << "  eta " <<  lep->Eta()<< std::endl;
-      // Double_twgtLum[main]=totalEvtWeight*lumi2;    
-      
-        // std::cout << typev[ifile]<< std::endl;
+      // if(typev[ifile]==eTtb){
+        // for(int jt=0; jt < nWeight; jt++) wgtLum[jt]=1;
+      // }
       if(typev[ifile]==eData) {
+        if(relIso > isoSigCut) continue;
+        if(trkIso > isoTrkCut) continue;
         hDataMet->Fill((*metVars)[no]);
         if(q>0) {
           doMET ? hDataMetp->Fill((*metVars)[no]) : hDataMetp->Fill(mtCorr);
@@ -759,6 +857,8 @@ void fitWlnu(const TString  outputDir,   // output directory
           }
         }
       } else if(typev[ifile]==eWlnu ) {
+        if(relIso > isoSigCut) continue;
+        if(trkIso > isoTrkCut) continue;
         // std::cout << "doing signal" << std::endl;
         int bin=0;
         // for(int i = 0; i <= hh_diff->GetNbinsX();++i){
@@ -772,122 +872,98 @@ void fitWlnu(const TString  outputDir,   // output directory
           hWlnuMetpPhi->Fill((*metVarsPhi)[cent]);
           doMET ? hWlnuMetp->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp->Fill(mtCorr,wgtLum[main]);
           doMET ? hWlnuMetp2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
-          fillMETs(doMET,hWlnuMetp2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hWlnuMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k =eta; k < nMET; k++){
-            // doMET ? hWlnuMetp2dMETU[0][k] ->Fill((*metVars)[k] , wgtLum[main]) : hWlnuMetp2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
-          // }
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hWlnuMetp2dWeightU[0][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hWlnuMetp2dWeightU[0][k] ->Fill(mtCorr, wgtLum[k]);
-          // }
-          // // doMET ? hWlnuMetp2dKeys[0]->Fill((*metVars)[keys],wgtLum[main]) : hWlnuMetp2dKeys[0]->Fill(mtCorr,wgtLum[main]);
-          // doMET ? hWlnuMetp2dStat[0]->Fill(metCorrStat,wgtLum[main]) : hWlnuMetp2dStat[0]->Fill(mtCorr,wgtLum[main]);
+          fillMETs(doMET,hWlnupMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
+          fillWeights(doMET,hWlnupWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+          fillLHE(hWlnupLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
+
         } else {
           hMuonEtaMCm->Fill(fabs(lep->Eta()),wgtLum[main]);
           hWlnuMetmPhi->Fill((*metVarsPhi)[cent]);
           doMET ? hWlnuMetm->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hWlnuMetm2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm2d[0]    ->Fill(mtCorr,wgtLum[main]);
-          fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hWlnuMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k =2; k < nMET; k++){
-            // doMET ? hWlnuMetm2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWlnuMetm2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
-          // }
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hWlnuMetm2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hWlnuMetm2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
-          // }
+          fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
+          fillWeights(doMET,hWlnumWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+          fillLHE(hWlnumLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eWx) {
+        
+        if(relIso > isoSigCut) continue;
+        if(trkIso > isoTrkCut) continue;
         // std::cout << "doing Wx" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
           doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
           doMET ? hWxMetp2d[0]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetp2d[0]     ->Fill(mtCorr,wgtLum[main]);
-          fillMETs(doMET,hWxMetp2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hWxMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k =eta; k < nMET; k++){
-            // doMET ? hWxMetp2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWxMetp2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
-          // }
-          // for(int k=mc; k < nWeight; k++){
-          // doMET ? hWxMetp2dWeightU[0][k] ->Fill((*metVars)[cent],wgtLum[k]) : hWxMetp2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
-          // }
+          fillMETs(doMET,hWxpMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
+          fillWeights(doMET,hWxpWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+          fillLHE(hWxpLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[cent],wgtLum[main]): hEWKMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hWxMetm2d[0]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetm2d[0] ->Fill(mtCorr,wgtLum[main]);
-          fillMETs(doMET,hWxMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hWxMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k =eta; k < nMET; k++){
-            // doMET ? hWxMetm2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWxMetm2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
-          // }
-          // for(int k=mc; k < nWeight; k++){
-          // doMET ? hWxMetm2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hWxMetm2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
-          // }
+          fillMETs(doMET,hWxmMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
+          fillWeights(doMET,hWxmWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+          fillLHE(hWxmLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eZxx){
+        
+        if(relIso > isoSigCut) continue;
+        if(trkIso > isoTrkCut) continue;
         // std::cout << "doing Zxx" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
  				  doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
           doMET ? hZxxMetp2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
-          fillMETs(doMET,hZxxMetp2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hZxxMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k =eta; k < nMET; k++){
-            // doMET ? hZxxMetp2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hZxxMetp2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
-          // }
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hZxxMetp2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hZxxMetp2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
-          // }
+          fillMETs(doMET,hZxxpMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
+          fillWeights(doMET,hZxxpWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+          fillLHE(hZxxpLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[cent],wgtLum[main]) :  hEWKMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hZxxMetm2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetm2d[0]    ->Fill(mtCorr,wgtLum[main]);
-          fillMETs(doMET,hZxxMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hZxxMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k =eta; k < nMET; k++){
-            // doMET ? hZxxMetm2dMETU[0][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hZxxMetm2dMETU[0][k] ->Fill(mtCorr,wgtLum[main]);
-          // }
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hZxxMetm2dWeightU[0][k] ->Fill((*metVars)[cent], wgtLum[k]) : hZxxMetm2dWeightU[0][k] ->Fill(mtCorr,wgtLum[k]);
-          // }
+          fillMETs(doMET,hZxxmMETU[0],(*metVars),nMET,wgtLum[0],mtCorr);
+          fillWeights(doMET,hZxxmWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+          fillLHE(hZxxmLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eDib) {
-        // std::cout << "doing Dibosons" << std::endl;
+        
+        if(relIso > isoSigCut) continue;
+        if(trkIso > isoTrkCut) continue;
         doMET ? hEWKMet->Fill((*metVars)[no],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
           // std::cout << "filling dib + " << std::endl;
           doMET ? hEWKMetp->Fill((*metVars)[no],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
           doMET ? hDibMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hDibMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hDibMetp2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[k]) : hDibMetp2dWeightU[0][k]->Fill(mtCorr,wgtLum[k]);
-          // }
+          // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hDibpWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
+          fillLHE(hDibpLHE[0],(*metVars)[no], wgtLum[main],lheweight);
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hEWKMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hDibMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hDibMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hDibMetm2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[k]) : hDibMetm2dWeightU[0][k]->Fill(mtCorr,wgtLum[k]);
+          // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hDibmWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
+          fillLHE(hDibmLHE[0],(*metVars)[no], wgtLum[main],lheweight);
           // }
         }
       } else if(typev[ifile]==eTtb) {
+        if(relIso > isoSigCut) continue;
+        if(trkIso > isoTrkCut) continue;
         // std::cout << "doing TTBar" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[no],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
+          // std::cout << "filling ttbar with " << (*metVars)[no] << " " << wgtLum[main] << std::endl;
           doMET ? hEWKMetp->Fill((*metVars)[no],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
+          // doMET ? hTtbMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[0]->Fill(mtCorr,wgtLum[main]);
           doMET ? hTtbMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hTtbMetp2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hTtbMetp2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2dWeightU[0][k]->Fill(mtCorr,wgtLum[main]);
+          // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hTtbpWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
+          fillLHE(hTtbpLHE[0],(*metVars)[no], wgtLum[main],lheweight);
           // }
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hEWKMetm->Fill(mtCorr,wgtLum[main]);
+          // doMET ? hTtbMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[0]->Fill(mtCorr,wgtLum[main]);
           doMET ? hTtbMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hTtbMetm2dWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
-          fillWeights(doMET,hTtbMetm2dWeightU[0],(*metVars),nWeight,wgtLum,mtCorr);
-          // for(int k=mc; k < nWeight; k++){
-            // doMET ? hTtbMetm2dWeightU[0][k]->Fill((*metVars)[no],wgtLum[k]) : hTtbMetm2dWeightU[0][k]->Fill(mtCorr,wgtLum[k]);
-          // }
+          // fillMETs(doMET,hTtbmWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
+          fillWeights(doMET,hTtbmWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
+          fillLHE(hTtbmLHE[0],(*metVars)[no], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eAntiWlnu){
         hAntiWlnuMet->Fill((*metVars)[cent],wgtLum[main]);
@@ -896,24 +972,15 @@ void fitWlnu(const TString  outputDir,   // output directory
             if(q>0) {              
               doMET ? hAntiWlnuMetp->Fill((*metVars)[cent],wgtLum[main]) : hAntiWlnuMetp->Fill(mtCorr,wgtLum[main]);
               doMET ? hWlnuMetp2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp2d[it]    ->Fill(mtCorr,wgtLum[main]);
-              fillMETs(doMET,hWlnuMetp2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hWlnuMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k =eta; k < nMET; k++){
-                // doMET ? hWlnuMetp2dMETU[it][k] ->Fill((*metVars)[k] , wgtLum[main]) : hWlnuMetp2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
-              // }
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hWlnuMetp2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hWlnuMetp2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
-              // }
+              fillMETs(doMET,hWlnupMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
+              fillWeights(doMET,hWlnupWeightU[it],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+              fillLHE(hWlnupLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
             } else {
               doMET ? hAntiWlnuMetm->Fill((*metVars)[cent],wgtLum[main]) : hAntiWlnuMetm->Fill(mtCorr,wgtLum[main]);
               doMET ? hWlnuMetm2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm2d[it]    ->Fill(mtCorr,wgtLum[main]);
-              fillMETs(doMET,hWlnuMetm2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hWlnuMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k =eta; k < nMET; k++){
-                // doMET ? hWlnuMetm2dMETU[it][k] ->Fill((*metVars)[k] ,wgtLum[main]) : hWlnuMetm2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
-              // }
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hWlnuMetm2dWeightU[it][k] ->Fill((*metVars)[cent], wgtLum[k]) : hWlnuMetm2dWeightU[it][k] ->Fill(mtCorr,wgtLum[k]);
+              fillMETs(doMET,hWlnumMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
+              fillWeights(doMET,hWlnumWeightU[it],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+              fillLHE(hWlnumLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
               // }
             }
           }
@@ -925,25 +992,15 @@ void fitWlnu(const TString  outputDir,   // output directory
             if(q>0){
               doMET ? hAntiEWKMetp->Fill((*metVars)[cent],wgtLum[main]) :  hAntiEWKMetp->Fill(mtCorr,wgtLum[main]);
               doMET ? hWxMetp2d[it]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetp2d[it]     ->Fill(mtCorr,wgtLum[main]);
-              fillMETs(doMET,hWxMetp2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hWxMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k =eta; k < nMET; k++){
-                // doMET ? hWxMetp2dMETU[it][k] ->Fill((*metVars)[k], wgtLum[main]) : hWxMetp2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
-              // }
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hWxMetp2dWeightU[it][k] ->Fill((*metVars)[keys], wgtLum[k]) : hWxMetp2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
-              // }
+              fillMETs(doMET,hWxpMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
+              fillWeights(doMET,hWxpWeightU[it],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+              fillLHE(hWxpLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
             } else {
               doMET ? hAntiEWKMetm->Fill((*metVars)[cent],wgtLum[main]) : hAntiEWKMetm->Fill(mtCorr,wgtLum[main]);
               doMET ? hWxMetm2d[it]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetm2d[it]     ->Fill(mtCorr,wgtLum[main]);
-              fillMETs(doMET,hWxMetm2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hWxMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k =eta; k < nMET; k++){
-                // doMET ? hWxMetm2dMETU[it][k] ->Fill((*metVars)[k] , wgtLum[main]) : hWxMetm2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
-              // }
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hWxMetm2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hWxMetm2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
-              // }
+              fillMETs(doMET,hWxmMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
+              fillWeights(doMET,hWxmWeightU[it],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+              fillLHE(hWxmLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
             }
             break;
           }
@@ -955,25 +1012,15 @@ void fitWlnu(const TString  outputDir,   // output directory
             if(q>0){
               hAntiEWKMetp->Fill((*metVars)[cent],wgtLum[main]); 
               doMET ? hZxxMetp2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetp2d[it]->Fill(mtCorr,wgtLum[main]);
-              fillMETs(doMET,hZxxMetp2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hZxxMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k =eta; k < nMET; k++){
-                // doMET ? hZxxMetp2dMETU[it][k] ->Fill((*metVars)[k], wgtLum[main]) : hZxxMetp2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
-              // }
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hZxxMetp2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hZxxMetp2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
-              // }
+              fillMETs(doMET,hZxxpMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
+              fillWeights(doMET,hZxxpWeightU[it],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+              fillLHE(hZxxpLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
             } else {
               hAntiEWKMetm->Fill((*metVars)[cent],wgtLum[main]); 
               doMET ? hZxxMetm2d[it]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetm2d[it]    ->Fill(mtCorr,wgtLum[main]);
-              fillMETs(doMET,hZxxMetm2dMETU[it],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hZxxMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k =eta; k < nMET; k++){
-                // doMET ? hZxxMetm2dMETU[it][k] ->Fill((*metVars)[k] , wgtLum[main]) : hZxxMetm2dMETU[it][k] ->Fill(mtCorr,wgtLum[main]);
-              // }
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hZxxMetm2dWeightU[it][k] ->Fill((*metVars)[cent],  wgtLum[k]) : hZxxMetm2dWeightU[it][k] ->Fill(mtCorr, wgtLum[k]);
-              // }
+              fillMETs(doMET,hZxxmMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
+              fillWeights(doMET,hZxxmWeightU[it],(*metVars)[cent],nWeight,wgtLum,mtCorr);
+              fillLHE(hZxxmLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
             }
           }
         }
@@ -984,18 +1031,17 @@ void fitWlnu(const TString  outputDir,   // output directory
             if(q>0){
               hAntiEWKMetp->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hDibMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hDibMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hDibMetp2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibMetp2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
-              // }
+              // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hDibpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
+              fillLHE(hDibpLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
             } else {
               hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hDibMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hDibMetm2dWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hDibMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // fillMETs(doMET,hDibmWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hDibmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
+              fillLHE(hDibmLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
               // for(int k=mc; k < nWeight; k++){
-                // doMET ? hDibMetm2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibMetm2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+                // doMET ? hDibmWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibmWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
               // }
             }
           }
@@ -1007,18 +1053,20 @@ void fitWlnu(const TString  outputDir,   // output directory
             if(q>0){
               hAntiEWKMetp->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hTtbMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hTtbMetp2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hTtbpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
+              fillLHE(hTtbpLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
               // for(int k=mc; k < nWeight; k++){
-                // doMET ? hTtbMetp2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbMetp2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+                // doMET ? hTtbpWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbpWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
               // }
             } else {
               hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hTtbMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hWlnuMetm2dMETU[0],(*metVars),nMET,wgtLum,mtCorr);
-              fillWeights(doMET,hTtbMetm2dWeightU[it],(*metVars),nWeight,wgtLum,mtCorr);
+              // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
+              fillWeights(doMET,hTtbmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
+              fillLHE(hTtbmLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
               // for(int k=mc; k < nWeight; k++){
-                // doMET ? hTtbMetm2dWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbMetm2dWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
+                // doMET ? hTtbmWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbmWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
               // }
             }
           }
@@ -1030,7 +1078,44 @@ void fitWlnu(const TString  outputDir,   // output directory
     }
   }
   
+  char sname[50];
   for(int it = 0; it < nIsoBins; it++){
+    
+    sprintf(sname,"hWlnuMetp2d%i",it);  drawLHE(hWlnupLHE[it], hWlnuMetp2d[it], sname, CPlot::sOutDir.Data(), 1);
+    sprintf(sname,"hWlnuMetm2d%i",it);  drawLHE(hWlnumLHE[it], hWlnuMetm2d[it], sname, CPlot::sOutDir.Data(), 1);
+    
+    sprintf(sname,"hEWKMetp2d%i",it);  drawLHE(hEWKpLHE[it], hEWKMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    sprintf(sname,"hEWKMetm2d%i",it);  drawLHE(hEWKmLHE[it], hEWKMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    
+    sprintf(sname,"hZxxMetp2d%i",it);  drawLHE(hZxxpLHE[it], hZxxMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    sprintf(sname,"hZxxMetm2d%i",it);  drawLHE(hZxxmLHE[it], hZxxMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    
+    sprintf(sname,"hWxMetp2d%i",it);  drawLHE(hWxpLHE[it], hWxMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    sprintf(sname,"hWxMetm2d%i",it);  drawLHE(hWxmLHE[it], hWxMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    
+    // sprintf(sname,"hDibMetp2d%i",it);  drawLHE(hDibpLHE[it], hDibMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hDibMetm2d%i",it);  drawLHE(hDibmLHE[it], hDibMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    
+    // sprintf(sname,"hTtbMetp2d%i",it);  drawLHE(hTtbpLHE[it], hTtbMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hTtbMetm2d%i",it);  drawLHE(hTtbmLHE[it], hTtbMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // std::cout << "calc lhe1" << std::endl;
+    std::cout << hWlnupThyUncU[it][0]->Integral() << std::endl;
+    std::cout << hWlnupThyUncU[it][1]->Integral() << std::endl;
+    calcLHE(hWlnupThyUncU[it][uqcd], hWlnupThyUncU[it][pdf], hWlnupLHE[it], hWlnuMetp2d[it], 1);
+    calcLHE(hWlnumThyUncU[it][uqcd], hWlnumThyUncU[it][pdf], hWlnumLHE[it], hWlnuMetp2d[it], 1);
+    // std::cout << "calc lhe2" << std::endl;
+    calcLHE(hEWKpThyUncU[it][uqcd], hEWKpThyUncU[it][pdf], hEWKpLHE[it], hEWKMetp2d[it], 0);
+    calcLHE(hEWKmThyUncU[it][uqcd], hEWKmThyUncU[it][pdf], hEWKmLHE[it], hEWKMetm2d[it], 0);
+    // std::cout << "calc lhe3" << std::endl;
+    calcLHE(hWxpThyUncU[it][uqcd], hWxpThyUncU[it][pdf], hWxpLHE[it], hWxMetp2d[it], 0);
+    calcLHE(hWxmThyUncU[it][uqcd], hWxmThyUncU[it][pdf], hWxmLHE[it], hWxMetm2d[it], 0);
+    // std::cout << "calc lhe4" << std::endl;
+    calcLHE(hZxxpThyUncU[it][uqcd], hZxxpThyUncU[it][pdf], hZxxpLHE[it], hZxxMetp2d[it], 0);
+    calcLHE(hZxxmThyUncU[it][uqcd], hZxxmThyUncU[it][pdf], hZxxmLHE[it], hZxxMetm2d[it], 0);
+    
+    // CPlot::sOutDir.Data()
+    // calcLHE(TH1D* hQCD, TH1D* hPDF, hTtbmLHE[it], hTtbMetm2d[it], 0);
+    // calcLHE(TH1D* hQCD, TH1D* hPDF, hTtbmLHE[it], hTtbMetm2d[it], 0);
     
     hEWKMetp2d[it]->Add(hTtbMetp2d[it],1);
     hEWKMetp2d[it]->Add(hDibMetp2d[it],1);
@@ -1043,23 +1128,66 @@ void fitWlnu(const TString  outputDir,   // output directory
     hEWKMetm2d[it]->Add(hWxMetm2d[it],1);
     
     for(int j=0; j< nWeight; j++){
-      hEWKMetp2dWeightU[it][j]->Add(hTtbMetp2dWeightU[it][j],1);
-      hEWKMetp2dWeightU[it][j]->Add(hDibMetp2dWeightU[it][j],1);
-      hEWKMetp2dWeightU[it][j]->Add(hZxxMetp2dWeightU[it][j],1);
-      hEWKMetp2dWeightU[it][j]->Add(hWxMetp2dWeightU[it][j],1);
+      hEWKpWeightU[it][j]->Add(hTtbpWeightU[it][j],1);
+      hEWKpWeightU[it][j]->Add(hDibpWeightU[it][j],1);
+      hEWKpWeightU[it][j]->Add(hZxxpWeightU[it][j],1);
+      hEWKpWeightU[it][j]->Add(hWxpWeightU[it][j],1);
       
-      hEWKMetm2dWeightU[it][j]->Add(hTtbMetm2dWeightU[it][j],1);
-      hEWKMetm2dWeightU[it][j]->Add(hDibMetm2dWeightU[it][j],1);
-      hEWKMetm2dWeightU[it][j]->Add(hZxxMetm2dWeightU[it][j],1);
-      hEWKMetm2dWeightU[it][j]->Add(hWxMetm2dWeightU[it][j],1);
+      hEWKmWeightU[it][j]->Add(hTtbmWeightU[it][j],1);
+      hEWKmWeightU[it][j]->Add(hDibmWeightU[it][j],1);
+      hEWKmWeightU[it][j]->Add(hZxxmWeightU[it][j],1);
+      hEWKmWeightU[it][j]->Add(hWxmWeightU[it][j],1);
     }
     for(int j=0; j < nMET; j++){
-      hEWKMetp2dMETU[it][j]->Add(hZxxMetp2dMETU[it][j],1);
-      hEWKMetp2dMETU[it][j]->Add(hWxMetp2dMETU[it][j],1);
+      hEWKpMETU[it][j]->Add(hZxxpMETU[it][j],1);
+      hEWKpMETU[it][j]->Add(hWxpMETU[it][j],1);
       
-      hEWKMetm2dMETU[it][j]->Add(hZxxMetm2dMETU[it][j],1);
-      hEWKMetm2dMETU[it][j]->Add(hWxMetm2dMETU[it][j],1);
+      hEWKmMETU[it][j]->Add(hZxxmMETU[it][j],1);
+      hEWKmMETU[it][j]->Add(hWxmMETU[it][j],1);
     }
+    
+  }
+  std::cout << "blahasfadsfa " << std::endl;
+  for(int it=0; it<1; it++){
+    
+    for(int i=0; i < nWeight; i++){
+      std::cout << hWlnupWeightU[it][i]->Integral() << std::endl;
+    }
+    for(int i=0; i < nMET; i++){
+      std::cout << hWlnupMETU[it][i]->Integral() << std::endl;
+    }
+    
+    drawShapes(hWlnupMETU[it], hWlnuMetp2d[it], CPlot::sOutDir.Data(), "WlnupMET", vMET, nMET);
+    drawShapes(hWlnumMETU[it], hWlnuMetm2d[it], CPlot::sOutDir.Data(), "WlnumMET", vMET, nMET);
+    
+    drawShapes(hWlnupWeightU[it], hWlnuMetp2d[it], CPlot::sOutDir.Data(), "WlnupWeight", vWeight, nWeight);
+    drawShapes(hWlnumWeightU[it], hWlnuMetm2d[it], CPlot::sOutDir.Data(), "WlnumWeight", vWeight, nWeight);
+    
+    
+    drawShapes(hEWKpMETU[it], hEWKMetp2d[it], CPlot::sOutDir.Data(), "EWKpMET", vMET, nMET);
+    drawShapes(hEWKmMETU[it], hEWKMetm2d[it], CPlot::sOutDir.Data(), "EWKmMET", vMET, nMET);
+    
+    drawShapes(hWxpMETU[it], hWxMetp2d[it], CPlot::sOutDir.Data(), "WxpMET", vMET, nMET);
+    drawShapes(hWxmMETU[it], hWxMetm2d[it], CPlot::sOutDir.Data(), "WxmMET", vMET, nMET);
+    
+    drawShapes(hZxxpMETU[it], hZxxMetp2d[it], CPlot::sOutDir.Data(), "ZxxpMET", vMET, nMET);
+    drawShapes(hZxxmMETU[it], hZxxMetm2d[it], CPlot::sOutDir.Data(), "ZxxmMET", vMET, nMET);
+    
+    
+    drawShapes(hEWKpWeightU[it], hEWKMetp2d[it], CPlot::sOutDir.Data(), "EWKpWeight", vWeight, nWeight);
+    drawShapes(hEWKmWeightU[it], hEWKMetm2d[it], CPlot::sOutDir.Data(), "EWKmWeight", vWeight, nWeight);
+    
+    drawShapes(hWxpWeightU[it], hWxMetp2d[it], CPlot::sOutDir.Data(), "WxpWeight", vWeight, nWeight);
+    drawShapes(hWxmWeightU[it], hWxMetm2d[it], CPlot::sOutDir.Data(), "WxmWeight", vWeight, nWeight);
+    
+    drawShapes(hZxxpWeightU[it], hZxxMetp2d[it], CPlot::sOutDir.Data(), "ZxxpWeight", vWeight, nWeight);
+    drawShapes(hZxxmWeightU[it], hZxxMetm2d[it], CPlot::sOutDir.Data(), "ZxxmWeight", vWeight, nWeight);
+    
+    drawShapes(hDibpWeightU[it], hDibMetp2d[it], CPlot::sOutDir.Data(), "DibpWeight", vWeight, nWeight);
+    drawShapes(hDibmWeightU[it], hDibMetm2d[it], CPlot::sOutDir.Data(), "DibmWeight", vWeight, nWeight);
+    
+    drawShapes(hTtbpWeightU[it], hTtbMetp2d[it], CPlot::sOutDir.Data(), "TtbpWeight", vWeight, nWeight);
+    drawShapes(hTtbmWeightU[it], hTtbMetm2d[it], CPlot::sOutDir.Data(), "TtbmWeight", vWeight, nWeight);
   }
   
   delete infile;
@@ -1122,6 +1250,10 @@ void fitWlnu(const TString  outputDir,   // output directory
 		txtfile3 << "bin " << i << "  Data# " << hDataMetp2d[i]->Integral() << std::endl;
 		txtfile3 << "bin " << i << "  Wsig# " << hWlnuMetp2d[i]->Integral() << std::endl;
 		txtfile3 << "bin " << i << "  ewk# "  << hEWKMetp2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "   wx# "  << hWxMetp2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "  zxx# "  << hZxxMetp2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "  ttb# "  << hTtbMetp2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "  dib# "  << hDibMetp2d[i]->Integral()  << std::endl;
 	}
 	
 	txtfile3 << "W- " << std::endl << "data" << std::endl;
@@ -1129,6 +1261,10 @@ void fitWlnu(const TString  outputDir,   // output directory
 		txtfile3 << "bin " << i << "  Data# " << hDataMetm2d[i]->Integral() << std::endl;
 		txtfile3 << "bin " << i << "  Wsig# " << hWlnuMetm2d[i]->Integral() << std::endl;
 		txtfile3 << "bin " << i << "  ewk# "  << hEWKMetm2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "   wx# "  << hWxMetm2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "  zxx# "  << hZxxMetm2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "  ttb# "  << hTtbMetm2d[i]->Integral()  << std::endl;
+		txtfile3 << "bin " << i << "  dib# "  << hDibMetm2d[i]->Integral()  << std::endl;
 	}
 
 	txtfile3.close();
@@ -1147,7 +1283,7 @@ void fitWlnu(const TString  outputDir,   // output directory
   
   
  
- std::cout << "blah" << std::endl;
+ // std::cout << "blah" << std::endl;
   //
   // Declare fit parameters for signal and background yields
   // Note: W signal and EWK+top PDFs are constrained to the ratio described in MC
@@ -1169,6 +1305,7 @@ void fitWlnu(const TString  outputDir,   // output directory
   RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWlnuMetp->Integral(),0,hAntiDataMetp->Integral());
 //   RooRealVar nSigp("nSigp","nSigp",90000,0,hDataMetp->Integral());
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
+    
   RooRealVar nQCDp("nQCDp","nQCDp",hDataMetp->Integral()*0.3,0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.1,0,5) ;
   cewkp.setVal(hEWKMetp->Integral()/hWlnuMetp->Integral());
@@ -1459,240 +1596,88 @@ void fitWlnu(const TString  outputDir,   // output directory
     TH1D *hh_diff;
     for(int k=0; k < nMET; ++k){
       sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-      hWlnuMetp2dMETD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnupMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnupMETD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnupMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-      hWlnuMetm2dMETD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnumMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnumMETD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnumMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-      hEWKMetp2dMETD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hEWKpMETU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKpMETD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKpMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hEwkMetmBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-      hEWKMetm2dMETD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hEWKmMETU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKmMETD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKmMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWxMetpBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hWxMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-      hWxMetp2dMETD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWxpMETU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxpMETD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxpMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWxMetmBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hWxMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-      hWxMetm2dMETD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWxmMETU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxmMETD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxmMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetpBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-      hZxxMetp2dMETD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnupMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxpMETD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxpMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetmBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hZxxMetm2dMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-      hZxxMetm2dMETD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hZxxmMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxmMETD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxmMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
     }
     
     for(int k=0; k < nWeight; ++k){
+      
       sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-      hWlnuMetp2dWeightD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnupWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnupWeightD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnupWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-      hWlnuMetm2dWeightD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnumWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnumWeightD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnumWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-      hEWKMetp2dWeightD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hEWKpWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKpWeightD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hEwkMetmBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hEWKMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-      hEWKMetm2dWeightD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hEWKmWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKmWeightD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWxMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWxMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-      hWxMetp2dWeightD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWxpWeightU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxpWeightD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hWxMetmBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWxMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-      hWxMetm2dWeightD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWxmWeightU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxmWeightD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-      hZxxMetp2dWeightD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnupWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxpWeightD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetmBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hZxxMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-      hZxxMetm2dWeightD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hZxxmWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxmWeightD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hDibMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hDibMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hDibMetp2d[j],-1);
-      hDibMetp2dWeightD[j][k] = (TH1D*) hDibMetp2d[j]->Clone(nname); hDibMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hDibpWeightU[j][k]->Clone("diff"); hh_diff->Add(hDibMetp2d[j],-1);
+      hDibpWeightD[j][k] = (TH1D*) hDibMetp2d[j]->Clone(nname); hDibpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hDibMetmBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hDibMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hDibMetm2d[j],-1);
-      hDibMetm2dWeightD[j][k] = (TH1D*) hDibMetm2d[j]->Clone(nname); hDibMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hDibmWeightU[j][k]->Clone("diff"); hh_diff->Add(hDibMetm2d[j],-1);
+      hDibmWeightD[j][k] = (TH1D*) hDibMetm2d[j]->Clone(nname); hDibmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hTtbMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWlnuMetp2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
-      hTtbMetp2dWeightD[j][k] = (TH1D*) hTtbMetp2d[j]->Clone(nname); hTtbMetp2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hWlnupWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
+      hTtbpWeightD[j][k] = (TH1D*) hTtbMetp2d[j]->Clone(nname); hTtbpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hTtbMetmBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hTtbMetm2dWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetm2d[j],-1);
-      hTtbMetm2dWeightD[j][k] = (TH1D*) hTtbMetm2d[j]->Clone(nname); hTtbMetm2dWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      hh_diff =  (TH1D*)hTtbmWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetm2d[j],-1);
+      hTtbmWeightD[j][k] = (TH1D*) hTtbMetm2d[j]->Clone(nname); hTtbmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
     }
-    
-    // TH1D *hh_diff =  (TH1D*)hWlnuMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    // hWlnuMetp2dEtaD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetpBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    // hWlnuMetp2dKeysD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetpBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetp2dStat[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    // hWlnuMetp2dStatD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dStatD[j]->Add(hh_diff,-1);// delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetpBin%d_mcDown",j);
-    // // clone the up shape and subtract the main shape
-    // hh_diff =  (TH1D*)hWlnuMetp2dEffMC[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    // hWlnuMetp2dEffMCD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetpBin%d_bkgDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetp2dEffBkg[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    // hWlnuMetp2dEffBkgD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetpBin%d_fsrDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetp2dEffFsr[j]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
-    // hWlnuMetp2dEffFsrD[j] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnuMetp2dEffFsrD[j]->Add(hh_diff,-1);// delete hh_diff;
-    //////////////////////////
-    //------------------------------------------------------------
-    // sprintf(nname,"hEWKMetpBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hEWKMetp2dEta[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    // hEWKMetp2dEtaD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetpBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hEWKMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    // hEWKMetp2dKeysD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetpBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hEWKMetp2dStat[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    // hEWKMetp2dStatD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetpBin%d_mcDown",j);
-    // hh_diff =  (TH1D*)hEWKMetp2dEffMC[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    // hEWKMetp2dEffMCD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetpBin%d_bkgDown",j);
-    // hh_diff =  (TH1D*)hEWKMetp2dEffBkg[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    // hEWKMetp2dEffBkgD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetpBin%d_fsrDown",j);
-    // hh_diff =  (TH1D*)hEWKMetp2dEffFsr[j]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
-    // hEWKMetp2dEffFsrD[j] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKMetp2dEffFsrD[j]->Add(hh_diff,-1); //delete hh_diff;
-    ////////////////////////////
-    //------------------------------------------------------------
-    // sprintf(nname,"hWxMetpBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hWxMetp2dEta[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-    // hWxMetp2dEtaD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWxMetpBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hWxMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-    // hWxMetp2dKeysD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWxMetpBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hWxMetp2dStat[j]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
-    // hWxMetp2dStatD[j] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    // /////////////////////
-    // //------------------------------------------------------------
-    // sprintf(nname,"hZxxMetpBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hZxxMetp2dEta[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-    // hZxxMetp2dEtaD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hZxxMetpBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hZxxMetp2dKeys[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-    // hZxxMetp2dKeysD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hZxxMetpBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hZxxMetp2dStat[j]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
-    // hZxxMetp2dStatD[j] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxMetp2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    // ==============================================================================================================
-    // ---------------------   W-   ------------------------------------
-        // // clone the up shape and subtract the main shape
-    // sprintf(nname,"hWlnuMetmBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetm2dEta[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    // hWlnuMetm2dEtaD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetmBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    // hWlnuMetm2dKeysD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetmBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetm2dStat[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    // hWlnuMetm2dStatD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dStatD[j]->Add(hh_diff,-1);// delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetmBin%d_mcDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetm2dEffMC[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    // hWlnuMetm2dEffMCD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetmBin%d_bkgDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetm2dEffBkg[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    // hWlnuMetm2dEffBkgD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWlnuMetmBin%d_fsrDown",j);
-    // hh_diff =  (TH1D*)hWlnuMetm2dEffFsr[j]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
-    // hWlnuMetm2dEffFsrD[j] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnuMetm2dEffFsrD[j]->Add(hh_diff,-1);// delete hh_diff;
-    // //////////////////////////
-    //------------------------------------------------------------
-    // sprintf(nname,"hEWKMetmBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hEWKMetm2dEta[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    // hEWKMetm2dEtaD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetmBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hEWKMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    // hEWKMetm2dKeysD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetmBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hEWKMetm2dStat[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    // hEWKMetm2dStatD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetmBin%d_mcDown",j);
-    // hh_diff =  (TH1D*)hEWKMetm2dEffMC[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    // hEWKMetm2dEffMCD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEffMCD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetmBin%d_bkgDown",j);
-    // hh_diff =  (TH1D*)hEWKMetm2dEffBkg[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    // hEWKMetm2dEffBkgD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEffBkgD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hEWKMetmBin%d_fsrDown",j);
-    // hh_diff =  (TH1D*)hEWKMetm2dEffFsr[j]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
-    // hEWKMetm2dEffFsrD[j] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKMetm2dEffFsrD[j]->Add(hh_diff,-1); //delete hh_diff;
-    ////////////////////////////
-    //------------------------------------------------------------
-    // sprintf(nname,"hWxMetmBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hWxMetm2dEta[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-    // hWxMetm2dEtaD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWxMetmBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hWxMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-    // hWxMetm2dKeysD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hWxMetmBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hWxMetm2dStat[j]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
-    // hWxMetm2dStatD[j] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-    // /////////////////////
-    // //------------------------------------------------------------
-    // sprintf(nname,"hZxxMetmBin%d_etaDown",j);
-    // hh_diff =  (TH1D*)hZxxMetm2dEta[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-    // hZxxMetm2dEtaD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dEtaD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hZxxMetmBin%d_keysDown",j);
-    // hh_diff =  (TH1D*)hZxxMetm2dKeys[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-    // hZxxMetm2dKeysD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dKeysD[j]->Add(hh_diff,-1); //delete hh_diff;
-    
-    // sprintf(nname,"hZxxMetmBin%d_statDown",j);
-    // hh_diff =  (TH1D*)hZxxMetm2dStat[j]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
-    // hZxxMetm2dStatD[j] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxMetm2dStatD[j]->Add(hh_diff,-1); //delete hh_diff;
-      
   }
   
    std::cout << "making pdfs from histograms" << std::endl;
@@ -1718,40 +1703,6 @@ void fitWlnu(const TString  outputDir,   // output directory
       makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2d[j] ,wxMetp_ ,pdfWxp_ ,pfmet,j,"");
       makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2d[j],zxxMetp_,pdfZxxp_,pfmet,j,""); 
       
-      //============== Recoil Up Shapes =====================
-      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dEta[j] ,WlnuMetpEta_ ,pdfWepEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dKeys[j],WlnuMetpKeys_,pdfWepKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dStat[j],WlnuMetpStat_,pdfWepStat_,pfmet,j,"_statUp");
-
-      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dEta[j] ,ewkMetpEta_ ,pdfEWKpEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dKeys[j],ewkMetpKeys_,pdfEWKpKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dStat[j],ewkMetpStat_,pdfEWKpStat_,pfmet,j,"_statUp");
-      
-      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dEta[j]  ,wxMetpEta_ ,pdfWxpEta_  ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dKeys[j] ,wxMetpKeys_ ,pdfWxpKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dStat[j] ,wxMetpStat_ ,pdfWxpStat_,pfmet,j,"_statUp");
-      
-      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dEta[j] ,zxxMetpEta_ ,pdfZxxpEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dKeys[j],zxxMetpKeys_,pdfZxxpKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dStat[j],zxxMetpStat_,pdfZxxpStat_,pfmet,j,"_statUp");
-      
-      //============= Recoil Down Shapes ====================
-      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dEtaD[j] ,WlnuMetpEtaD_ ,pdfWepEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dKeysD[j],WlnuMetpKeysD_,pdfWepKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("WlnuMETp","wep",hWlnuMetp2dStatD[j],WlnuMetpStatD_,pdfWepStatD_,pfmet,j,"_statDown");
-
-      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dEtaD[j] ,ewkMetpEtaD_ ,pdfEWKpEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dKeysD[j],ewkMetpKeysD_,pdfEWKpKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("ewkMETp","ewkp",hEWKMetp2dStatD[j],ewkMetpStatD_,pdfEWKpStatD_,pfmet,j,"_statDown");
-      
-      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dEtaD[j]  ,wxMetpEtaD_ ,pdfWxpEtaD_  ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dKeysD[j] ,wxMetpKeysD_ ,pdfWxpKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("wxMETp" ,"wxp" ,hWxMetp2dStatD[j] ,wxMetpStatD_ ,pdfWxpStatD_,pfmet,j,"_statDown");
-      
-      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dEtaD[j] ,zxxMetpEtaD_ ,pdfZxxpEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dKeysD[j],zxxMetpKeysD_,pdfZxxpKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("zxxMETp","zxxp",hZxxMetp2dStatD[j],zxxMetpStatD_,pdfZxxpStatD_,pfmet,j,"_statDown");
-      
       j==0?makeDataHistPdf("qcdMETp","qcdp",hIsoBinQCDp,qcdMetp_,pdfQCDp_,pfmet,j,""):makeDataHistPdf("qcdMETp","qcdp",hDataMetp2d[j],qcdMetp_,pdfQCDp_,pfmet,j,"");
 	  // ----------------------------------------- W- ---------------------------------
       makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2d[j],WlnuMetm_,pdfWem_,pfmet,j,"");
@@ -1760,39 +1711,6 @@ void fitWlnu(const TString  outputDir,   // output directory
       makeDataHistPdf("dibMETm","dibm",hDibMetm2d[j],dibMetm_,pdfDibm_,pfmet,j,"");
       makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2d[j] ,wxMetm_ ,pdfWxm_ ,pfmet,j,"");
       makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2d[j],zxxMetm_,pdfZxxm_,pfmet,j,"");
-      
-      //============== Recoil Up Shapes
-      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dEta[j] ,WlnuMetmEta_ ,pdfWemEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dKeys[j],WlnuMetmKeys_,pdfWemKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dStat[j],WlnuMetmStat_,pdfWemStat_,pfmet,j,"_statUp");
-      
-      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dEta[j] ,ewkMetmEta_ ,pdfEWKmEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dKeys[j],ewkMetmKeys_,pdfEWKmKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dStat[j],ewkMetmStat_,pdfEWKmStat_,pfmet,j,"_statUp");
-      
-      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dEta[j] ,wxMetmEta_ ,pdfWxmEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dKeys[j],wxMetmKeys_,pdfWxmKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dStat[j],wxMetmStat_,pdfWxmStat_,pfmet,j,"_statUp");
-      
-      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dEta[j] ,zxxMetmEta_ ,pdfZxxmEta_ ,pfmet,j,"_etaUp");
-      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dKeys[j],zxxMetmKeys_,pdfZxxmKeys_,pfmet,j,"_keysUp");
-      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dStat[j],zxxMetmStat_,pdfZxxmStat_,pfmet,j,"_statUp");
-      // //============== Recoil Down Shapes
-      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dEtaD[j] ,WlnuMetmEtaD_ ,pdfWemEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dKeysD[j],WlnuMetmKeysD_,pdfWemKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("WlnuMETm","wem",hWlnuMetm2dStatD[j],WlnuMetmStatD_,pdfWemStatD_,pfmet,j,"_statDown");
-      
-      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dEtaD[j] ,ewkMetmEtaD_ ,pdfEWKmEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dKeysD[j],ewkMetmKeysD_,pdfEWKmKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("ewkMETm","ewkm",hEWKMetm2dStatD[j],ewkMetmStatD_,pdfEWKmStatD_,pfmet,j,"_statDown");
-      
-      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dEtaD[j] ,wxMetmEtaD_ ,pdfWxmEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dKeysD[j],wxMetmKeysD_,pdfWxmKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("wxMETm" ,"wxm" ,hWxMetm2dStatD[j],wxMetmStatD_,pdfWxmStatD_,pfmet,j,"_statDown");
-      
-      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dEtaD[j] ,zxxMetmEtaD_ ,pdfZxxmEtaD_ ,pfmet,j,"_etaDown");
-      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dKeysD[j],zxxMetmKeysD_,pdfZxxmKeysD_,pfmet,j,"_keysDown");
-      // makeDataHistPdf("zxxMETm","zxxm",hZxxMetm2dStatD[j],zxxMetmStatD_,pdfZxxmStatD_,pfmet,j,"_statDown");
       
       std::cout << "do QCD" << std::endl;
       j==0?makeDataHistPdf("qcdMetm","qcdm",hIsoBinQCDm,qcdMetm_,pdfQCDm_,pfmet,j,""):makeDataHistPdf("qcdMetm","qcdm",hDataMetm2d[j],qcdMetm_,pdfQCDm_,pfmet,j,"");
@@ -1919,13 +1837,20 @@ void fitWlnu(const TString  outputDir,   // output directory
 	 // if(j==0 || j==1){
    
 	 if(j==0||j==1||j==2||j==3||j==4){
-		 sprintf(nname,"pdfWep%d",j);
+		 // sprintf(nname,"pdfWep%d",j);
 
-		 (doMET&&(!doTemplate)) ? pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j])) : pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*pdfQCDp_[j]),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j]));
+		 // (doMET&&(!doTemplate)) ? pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j])) : pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*pdfQCDp_[j]),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j]));
+		 
+		 // sprintf(nname,"pdfWem%d",j);
+		 // (doMET&&(!doTemplate)) ? pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j])) : pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*pdfQCDm_[j]),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j]));		
+     sprintf(nname,"pdfWep%d",j);
+
+		 (doMET&&(!doTemplate)) ? pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j])) : pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfWxp_[j],*pdfZxxp_[j],*pdfDibp_[j],*pdfTtbp_[j],*pdfQCDp_[j]),RooArgList(*nSigp_[j],*nWxp_[j],*nZxxp_[j],*nDibp_[j],*nTtbp_[j],*nQCDp_[j]));
 		 
 		 sprintf(nname,"pdfWem%d",j);
-		 (doMET&&(!doTemplate)) ? pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j])) : pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*pdfQCDm_[j]),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j]));		
-	  } else {
+		 (doMET&&(!doTemplate)) ? pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j])) : pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfWxm_[j],*pdfZxxm_[j],*pdfDibm_[j],*pdfTtbm_[j],*pdfQCDm_[j]),RooArgList(*nSigm_[j],*nWxm_[j],*nZxxm_[j],*nDibm_[j],*nTtbm_[j],*nQCDm_[j]));		
+    
+    } else {
     sprintf(nname,"pdfWep%d",j);
     if(doMET&&(!doTemplate)){
              pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*(qcdp_[j]->model)),RooArgList(*nQCDp_[j]));
@@ -2093,319 +2018,97 @@ void fitWlnu(const TString  outputDir,   // output directory
     
     hDataMetp2d[j]->Write();
     hDataMetm2d[j]->Write();
+    
     hWlnuMetp2d[j]->Write();
     hWlnuMetm2d[j]->Write();
+    
     hEWKMetp2d[j]->Write();
     hEWKMetm2d[j]->Write();
+    
     hZxxMetp2d[j]->Write();
     hZxxMetm2d[j]->Write();
+    
     hWxMetp2d[j]->Write();
     hWxMetm2d[j]->Write();
+    
     hTtbMetp2d[j]->Write();
     hTtbMetm2d[j]->Write();
+    
     hDibMetp2d[j]->Write();
     hDibMetm2d[j]->Write();
+    
     hIsoBinQCDp->Write();
     hIsoBinQCDm->Write();
     
     for(int k=0; k < nMET; k++){
-      hWlnuMetp2dMETU[j][k]->Write();
-      hWlnuMetm2dMETU[j][k]->Write();
+      hWlnupMETU[j][k]->Write();
+      hWlnumMETU[j][k]->Write();
       
-      hWlnuMetp2dMETD[j][k]->Write();
-      hWlnuMetm2dMETD[j][k]->Write();
+      hWlnupMETD[j][k]->Write();
+      hWlnumMETD[j][k]->Write();
       
-      hEWKMetp2dMETU[j][k]->Write();
-      hEWKMetm2dMETU[j][k]->Write();
+      hEWKpMETU[j][k]->Write();
+      hEWKmMETU[j][k]->Write();
       
-      hEWKMetp2dMETD[j][k]->Write();
-      hEWKMetm2dMETD[j][k]->Write();
+      hEWKpMETD[j][k]->Write();
+      hEWKmMETD[j][k]->Write();
       
-      hWxMetp2dMETU[j][k]->Write();
-      hWxMetm2dMETU[j][k]->Write();
+      hWxpMETU[j][k]->Write();
+      hWxmMETU[j][k]->Write();
       
-      hWxMetp2dMETD[j][k]->Write();
-      hWxMetm2dMETD[j][k]->Write();
+      hWxpMETD[j][k]->Write();
+      hWxmMETD[j][k]->Write();
       
-      hZxxMetp2dMETU[j][k]->Write();
-      hZxxMetm2dMETU[j][k]->Write();
+      hZxxpMETU[j][k]->Write();
+      hZxxmMETU[j][k]->Write();
       
-      hZxxMetp2dMETD[j][k]->Write();
-      hZxxMetm2dMETD[j][k]->Write();
+      hZxxpMETD[j][k]->Write();
+      hZxxmMETD[j][k]->Write();
       
     }
     
     for(int k=0; k < nWeight; k++){
-      hWlnuMetp2dWeightU[j][k]->Write();
-      hWlnuMetm2dWeightU[j][k]->Write();
+      hWlnupWeightU[j][k]->Write();
+      hWlnumWeightU[j][k]->Write();
       
-      hWlnuMetp2dWeightD[j][k]->Write();
-      hWlnuMetm2dWeightD[j][k]->Write();
+      hWlnupWeightD[j][k]->Write();
+      hWlnumWeightD[j][k]->Write();
       
-      hEWKMetp2dWeightU[j][k]->Write();
-      hEWKMetm2dWeightU[j][k]->Write();
+      hEWKpWeightU[j][k]->Write();
+      hEWKmWeightU[j][k]->Write();
       
-      hEWKMetp2dWeightD[j][k]->Write();
-      hEWKMetm2dWeightD[j][k]->Write();
+      hEWKpWeightD[j][k]->Write();
+      hEWKmWeightD[j][k]->Write();
       
-      hWxMetp2dWeightU[j][k]->Write();
-      hWxMetm2dWeightU[j][k]->Write();
+      hWxpWeightU[j][k]->Write();
+      hWxmWeightU[j][k]->Write();
       
-      hWxMetp2dWeightD[j][k]->Write();
-      hWxMetm2dWeightD[j][k]->Write();
+      hWxpWeightD[j][k]->Write();
+      hWxmWeightD[j][k]->Write();
       
-      hZxxMetp2dWeightU[j][k]->Write();
-      hZxxMetm2dWeightU[j][k]->Write();
+      hZxxpWeightU[j][k]->Write();
+      hZxxmWeightU[j][k]->Write();
       
-      hZxxMetp2dWeightD[j][k]->Write();
-      hZxxMetm2dWeightD[j][k]->Write();
+      hZxxpWeightD[j][k]->Write();
+      hZxxmWeightD[j][k]->Write();
       
-      hDibMetp2dWeightU[j][k]->Write();
-      hDibMetm2dWeightU[j][k]->Write();
+      hDibpWeightU[j][k]->Write();
+      hDibmWeightU[j][k]->Write();
       
-      hDibMetp2dWeightD[j][k]->Write();
-      hDibMetm2dWeightD[j][k]->Write();
+      hDibpWeightD[j][k]->Write();
+      hDibmWeightD[j][k]->Write();
       
-      hTtbMetp2dWeightU[j][k]->Write();
-      hTtbMetm2dWeightU[j][k]->Write();
+      hTtbpWeightU[j][k]->Write();
+      hTtbmWeightU[j][k]->Write();
       
-      hTtbMetp2dWeightD[j][k]->Write();
-      hTtbMetm2dWeightD[j][k]->Write();
+      hTtbpWeightD[j][k]->Write();
+      hTtbmWeightD[j][k]->Write();
     }
-    
-    
-    // hWlnuMetp2dEta[j]->Write();
-    // hWlnuMetp2dKeys[j]->Write();
-    // hWlnuMetp2dStat[j]->Write();
-    
-    // hWlnuMetp2dEtaD[j]->Write();
-    // hWlnuMetp2dKeysD[j]->Write();
-    // hWlnuMetp2dStatD[j]->Write();
-    
-    // hEWKMetp2dEta[j]->Write();
-    // hEWKMetp2dKeys[j]->Write();
-    // hEWKMetp2dStat[j]->Write();
-    
-    // hEWKMetp2dEtaD[j]->Write();
-    // hEWKMetp2dKeysD[j]->Write();
-    // hEWKMetp2dStatD[j]->Write();
-    
-    // hZxxMetp2dEta[j]->Write();
-    // hZxxMetp2dKeys[j]->Write();
-    // hZxxMetp2dStat[j]->Write();
-    
-    // hZxxMetp2dEtaD[j]->Write();
-    // hZxxMetp2dKeysD[j]->Write();
-    // hZxxMetp2dStatD[j]->Write();
-    
-    // hWxMetp2dEta[j]->Write();
-    // hWxMetp2dKeys[j]->Write();
-    // hWxMetp2dStat[j]->Write();
-    
-    // hWxMetp2dEtaD[j]->Write();
-    // hWxMetp2dKeysD[j]->Write();
-    // hWxMetp2dStatD[j]->Write();
-    
-    // // hWlnuMetm2dEta[j]->Write();
-    // // hWlnuMetm2dKeys[j]->Write();
-    // // hWlnuMetm2dStat[j]->Write();
-    
-    // // hWlnuMetm2dEtaD[j]->Write();
-    // // hWlnuMetm2dKeysD[j]->Write();
-    // // hWlnuMetm2dStatD[j]->Write();
-    
-    // hEWKMetm2dEta[j]->Write();
-    // hEWKMetm2dKeys[j]->Write();
-    // hEWKMetm2dStat[j]->Write();
-    
-    // hEWKMetm2dEtaD[j]->Write();
-    // hEWKMetm2dKeysD[j]->Write();
-    // hEWKMetm2dStatD[j]->Write();
-    
-    // hZxxMetm2dEta[j]->Write();
-    // hZxxMetm2dKeys[j]->Write();
-    // hZxxMetm2dStat[j]->Write();
-    
-    // hZxxMetm2dEtaD[j]->Write();
-    // hZxxMetm2dKeysD[j]->Write();
-    // hZxxMetm2dStatD[j]->Write();
-    
-    // hWxMetm2dEta[j]->Write();
-    // hWxMetm2dKeys[j]->Write();
-    // hWxMetm2dStat[j]->Write();
-    
-    // hWxMetm2dEtaD[j]->Write();
-    // hWxMetm2dKeysD[j]->Write();
-    // hWxMetm2dStatD[j]->Write();
     
     
   }
   histFile->Write();
   histFile->Close();
-
-
-  // RooWorkspace combine_workspace("combine_workspace");
-  // combine_workspace.import(dataMet);
-  // combine_workspace.import(dataMetp);
-  // combine_workspace.import(dataMetm);
-  // combine_workspace.import(pepe2Pdf_qcdp_norm);
-  // combine_workspace.import(pepe2Pdf_qcdm_norm);
-
-  // combine_workspace.import(pdfWm);
-  // combine_workspace.import(pdfWmp);
-  // combine_workspace.import(pdfWmm);
-  // combine_workspace.import(pdfEWK);
-  // combine_workspace.import(pdfEWKp);
-  // combine_workspace.import(pdfEWKm);
-// //   combine_workspace.import(*(qcd.model));
-// //   combine_workspace.import(*(qcdp.model));
-// //   combine_workspace.import(*(qcdm.model));
-
-  // combine_workspace.import(pdfQCD);
-  // combine_workspace.import(pdfQCDp);
-  // combine_workspace.import(pdfQCDm);
-  
-  // combine_workspace.import(antiMet);
-  // combine_workspace.import(antiMetp);
-  // combine_workspace.import(antiMetm);
-  // combine_workspace.import(pepe2Pdf_aqcdp_norm);
-  // combine_workspace.import(pepe2Pdf_aqcdm_norm);
-  
-  // combine_workspace.import(apdfWm);
-  // combine_workspace.import(apdfWmp);
-  // combine_workspace.import(apdfWmm);
-  // combine_workspace.import(apdfEWK);
-  // combine_workspace.import(apdfEWKp);
-  // combine_workspace.import(apdfEWKm);
-  // combine_workspace.import(*(aqcd.model));
-  // //combine_workspace.import(qcdpn);
-  // combine_workspace.import(*(aqcdp.model));
-  // combine_workspace.import(*(aqcdm.model));
-
-  // sprintf(nname,"%s/Wlnu_pdfTemplates.root",CPlot::sOutDir.Data());
-  // combine_workspace.writeToFile(nname);
-  
-  
-   // // separate file for the binned workspace just so i don't fuck up the original one
-  // RooWorkspace binned_workspace("binned_workspace");
-  // // loop through the number of bins, import the appropriate pdf for each one
-  // for(int j = 0; j < nIsoBins; ++j){
-      // // binned_workspace.import(dataMet);
-      // binned_workspace.import(*dataMetpHist_[j]);
-      // binned_workspace.import(*dataMetmHist_[j]);
-	  // // QCD normalization RooRealVars
-      // binned_workspace.import(*pepe2Pdf_qcdp_norms_[j]);
-      // binned_workspace.import(*pepe2Pdf_qcdm_norms_[j]);
-	  // // QCD shapes
-      // // binned_workspace.import(*(qcd.model));
-      // binned_workspace.import(*(qcdp_[j]->model));
-      // binned_workspace.import(*(qcdm_[j]->model));
-      // std::cout << "importing   " << qcdm_[j]->model->GetName() << std::endl;
-	  // //The DataHist
-	  // // combine_workspace.import(*wenuMet_[j]);
-	  // binned_workspace.import(*WlnuMetp_[j]);
-	  // binned_workspace.import(*WlnuMetm_[j]);
-      // // binned_workspace.import(pdfWe);
-      // // binned_workspace.import(*pdfWep_[j]);
-      // // binned_workspace.import(*pdfWem_[j]);
-	  // // The DataHist
-	  // // combine_workspace.import(*ewkMet_[j]);
-	  // binned_workspace.import(*ewkMetp_[j]);
-	  // binned_workspace.import(*ewkMetm_[j]);
-      
-    // binned_workspace.import(*wxMetp_[j]);
-	  // binned_workspace.import(*wxMetm_[j]);
-      
-    // binned_workspace.import(*zxxMetp_[j]);
-	  // binned_workspace.import(*zxxMetm_[j]);
-      
-    // binned_workspace.import(*ttbMetp_[j]);
-	  // binned_workspace.import(*ttbMetm_[j]);
-      
-    // binned_workspace.import(*dibMetp_[j]);
-	  // binned_workspace.import(*dibMetm_[j]);
-    
-    // binned_workspace.import(*WlnuMetpEta_[j]);
-	  // binned_workspace.import(*WlnuMetmEta_[j]);
-    // binned_workspace.import(*WlnuMetpKeys_[j]);
-	  // binned_workspace.import(*WlnuMetmKeys_[j]);
-    // binned_workspace.import(*WlnuMetpStat_[j]);
-	  // binned_workspace.import(*WlnuMetmStat_[j]);
-    
-    // binned_workspace.import(*WlnuMetpEtaD_[j]);
-	  // binned_workspace.import(*WlnuMetmEtaD_[j]);
-    // binned_workspace.import(*WlnuMetpKeysD_[j]);
-	  // binned_workspace.import(*WlnuMetmKeysD_[j]);
-    // binned_workspace.import(*WlnuMetpStatD_[j]);
-	  // binned_workspace.import(*WlnuMetmStatD_[j]);
-    
-    // binned_workspace.import(*ewkMetpEta_[j]);
-	  // binned_workspace.import(*ewkMetmEta_[j]);
-    // binned_workspace.import(*ewkMetpKeys_[j]);
-	  // binned_workspace.import(*ewkMetmKeys_[j]);
-    // binned_workspace.import(*ewkMetpStat_[j]);
-	  // binned_workspace.import(*ewkMetmStat_[j]);
-    
-    // binned_workspace.import(*ewkMetpEtaD_[j]);
-	  // binned_workspace.import(*ewkMetmEtaD_[j]);
-    // binned_workspace.import(*ewkMetpKeysD_[j]);
-	  // binned_workspace.import(*ewkMetmKeysD_[j]);
-    // binned_workspace.import(*ewkMetpStatD_[j]);
-	  // binned_workspace.import(*ewkMetmStatD_[j]);
-    
-    // binned_workspace.import(*wxMetpEta_[j]);
-	  // binned_workspace.import(*wxMetmEta_[j]);
-    // binned_workspace.import(*wxMetpKeys_[j]);
-	  // binned_workspace.import(*wxMetmKeys_[j]);
-    // binned_workspace.import(*wxMetpStat_[j]);
-	  // binned_workspace.import(*wxMetmStat_[j]);
-    
-    // binned_workspace.import(*wxMetpEtaD_[j]);
-	  // binned_workspace.import(*wxMetmEtaD_[j]);
-    // binned_workspace.import(*wxMetpKeysD_[j]);
-	  // binned_workspace.import(*wxMetmKeysD_[j]);
-    // binned_workspace.import(*wxMetpStatD_[j]);
-	  // binned_workspace.import(*wxMetmStatD_[j]);
-    
-    // binned_workspace.import(*zxxMetpEta_[j]);
-	  // binned_workspace.import(*zxxMetmEta_[j]);
-    // binned_workspace.import(*zxxMetpKeys_[j]);
-	  // binned_workspace.import(*zxxMetmKeys_[j]);
-    // binned_workspace.import(*zxxMetpStat_[j]);
-	  // binned_workspace.import(*zxxMetmStat_[j]);
-    
-    // binned_workspace.import(*zxxMetpEtaD_[j]);
-	  // binned_workspace.import(*zxxMetmEtaD_[j]);
-    // binned_workspace.import(*zxxMetpKeysD_[j]);
-	  // binned_workspace.import(*zxxMetmKeysD_[j]);
-    // binned_workspace.import(*zxxMetpStatD_[j]);
-	  // binned_workspace.import(*zxxMetmStatD_[j]);
-    
-	  // //The Pdfs
-      // // binned_workspace.import(pdfEWK);
-      // // binned_workspace.import(*pdfEWKp_[j]);
-      // // binned_workspace.import(*pdfEWKm_[j]);
-	  
-	  // binned_workspace.import(*hDataMetp2d[j]);
-	  // binned_workspace.import(*hDataMetm2d[j]);
-	  // binned_workspace.import(*hWlnuMetp2d[j]);
-	  // binned_workspace.import(*hWlnuMetm2d[j]);
-	  // binned_workspace.import(*hEWKMetp2d[j]);
-	  // binned_workspace.import(*hEWKMetm2d[j]);
-    // binned_workspace.import(*hWxMetp2d[j]);
-	  // binned_workspace.import(*hWxMetm2d[j]);
-    // binned_workspace.import(*hZxxMetp2d[j]);
-	  // binned_workspace.import(*hZxxMetm2d[j]);
-    // binned_workspace.import(*hDibMetp2d[j]);
-	  // binned_workspace.import(*hDibMetm2d[j]);
-    // binned_workspace.import(*hTtbMetp2d[j]);
-	  // binned_workspace.import(*hTtbMetm2d[j]);
-	  // // binned_workspace.import(*hDataMetp2d[j]);
-	  
-
-  // // }// end of loop, now save the workspace
-  // sprintf(nname, "%s/Wlnu_pdfTemplates_binned.root",CPlot::sOutDir.Data());
-  // binned_workspace.writeToFile(nname);
   
   
 
@@ -2413,6 +2116,18 @@ void fitWlnu(const TString  outputDir,   // output directory
   
     RooGaussian constm("constm","constm",nEWKm,RooConst(hEWKMetm->Integral()),RooConst(0.15*hEWKMetm->Integral()));
     RooGaussian constp("constp","constp",nEWKp,RooConst(hEWKMetp->Integral()),RooConst(0.15*hEWKMetp->Integral()));
+    
+    RooGaussian const_wxm("const_wxm","const_wxm",*nWxm_[0],RooConst(hWxMetm2d[0]->Integral()),RooConst(0.15*hWxMetm2d[0]->Integral()));
+    RooGaussian const_wxp("const_wxp","const_wxp",*nWxp_[0],RooConst(hWxMetp2d[0]->Integral()),RooConst(0.15*hWxMetp2d[0]->Integral()));
+    
+    RooGaussian const_zxxm("const_zxxm","const_zxxm",*nZxxm_[0],RooConst(hZxxMetm2d[0]->Integral()),RooConst(0.15*hZxxMetm2d[0]->Integral()));
+    RooGaussian const_zxxp("const_zxxp","const_zxxp",*nZxxp_[0],RooConst(hZxxMetp2d[0]->Integral()),RooConst(0.15*hZxxMetp2d[0]->Integral()));
+    
+    RooGaussian const_dibm("const_dibm","const_dibm",*nDibm_[0],RooConst(hDibMetm2d[0]->Integral()),RooConst(0.15*hDibMetm2d[0]->Integral()));
+    RooGaussian const_dibp("const_dibp","const_dibp",*nDibp_[0],RooConst(hDibMetp2d[0]->Integral()),RooConst(0.15*hDibMetp2d[0]->Integral()));
+    
+    RooGaussian const_ttbm("const_ttbm","const_ttbm",*nTtbm_[0],RooConst(hTtbMetm2d[0]->Integral()),RooConst(0.15*hTtbMetm2d[0]->Integral()));
+    RooGaussian const_ttbp("const_ttbp","const_ttbp",*nTtbp_[0],RooConst(hTtbMetp2d[0]->Integral()),RooConst(0.15*hTtbMetp2d[0]->Integral()));
     
     RooGaussian constantim("constantim","constantim",nAntiSigm,RooConst(hAntiWlnuMetm->Integral()),RooConst(0.15*hAntiWlnuMetm->Integral()));
     RooGaussian constantip("constantip","constantip",nAntiSigp,RooConst(hAntiWlnuMetp->Integral()),RooConst(0.15*hAntiWlnuMetp->Integral()));
@@ -2423,8 +2138,8 @@ void fitWlnu(const TString  outputDir,   // output directory
   // RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),PrintEvalErrors(-1));
   // RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),PrintEvalErrors(-1));
   
-  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(RooArgSet(constp_sr/*,constp_cr*/)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
-  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(RooArgSet(constm_sr/*,constm_cr*/)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
+  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
+  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
   
   TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", pfmet));
   hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
@@ -2433,7 +2148,8 @@ void fitWlnu(const TString  outputDir,   // output directory
    
   TH1D *hPdfMetp = (TH1D*)(pdfMetp.createHistogram("hPdfMetp", pfmet));
   for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWlnuMetp->GetBinError(ibin));}
-  std::cout << nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal() << std::endl;
+  // std::cout << nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal() << std::endl;
+  // std::cout << nSigp.getVal()+nWxp.getVal()+nZxxp.getVal()+nDibp.getVal()+nTtbp.getVal()+nQCDp.getVal() << std::endl;
   hPdfMetp->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp->Integral());
   TH1D *hMetpDiff = makeDiffHist(hDataMetp,hPdfMetp,"hMetpDiff");
   hMetpDiff->SetMarkerStyle(kFullCircle); hMetpDiff->SetMarkerSize(0.9);
@@ -2546,8 +2262,10 @@ void fitWlnu(const TString  outputDir,   // output directory
     std::cout << "set up diff plot #" << i << std::endl;
     TH1D *hPdfMetp = (TH1D*)(pdfMetp_[i]->createHistogram("hPdfMetp", pfmet));
     for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWlnuMetp2d[i]->GetBinError(ibin));}
-    std::cout << nSigp_[i]->getVal()+nEWKp_[i]->getVal()+nQCDp_[i]->getVal() << std::endl;
-    hPdfMetp->Scale((nSigp_[i]->getVal()+nEWKp_[i]->getVal()+nQCDp_[i]->getVal())/hPdfMetp->Integral());
+    // std::cout << nSigp_[i]->getVal()+nEWKp_[i]->getVal()+nQCDp_[i]->getVal() << std::endl;
+    std::cout << nSigp_[i]->getVal()+nWxp_[i]->getVal()+nZxxp_[i]->getVal()+nDibp_[i]->getVal()+nTtbp_[i]->getVal()+nQCDp_[i]->getVal() << std::endl;
+    // hPdfMetp->Scale((nSigp_[i]->getVal()+nEWKp_[i]->getVal()+nQCDp_[i]->getVal())/hPdfMetp->Integral());
+    hPdfMetp->Scale((nSigp_[i]->getVal()+nWxp_[i]->getVal()+nZxxp_[i]->getVal()+nDibp_[i]->getVal()+nTtbp_[i]->getVal()+nQCDp_[i]->getVal())/hPdfMetp->Integral());
     TH1D *hMetpDiff = makeDiffHist(hDataMetp2d[i],hPdfMetp,"hMetpDiff");
     hMetpDiff->SetMarkerStyle(kFullCircle); hMetpDiff->SetMarkerSize(0.9);
     std::cout << "did diff " <<  i << std::endl;
@@ -2555,17 +2273,23 @@ void fitWlnu(const TString  outputDir,   // output directory
     std::cout << "set up diff plot #" << i << std::endl;
     TH1D *hPdfMetm = (TH1D*)(pdfMetm_[i]->createHistogram("hPdfMetm", pfmet));
     for(int ibin = 1; ibin < hPdfMetm->GetNbinsX(); ++ibin){hPdfMetm->SetBinError(ibin, hWlnuMetm2d[i]->GetBinError(ibin));}
-    std::cout << nSigm_[i]->getVal()+nEWKm_[i]->getVal()+nQCDm_[i]->getVal() << std::endl;
-    hPdfMetm->Scale((nSigm_[i]->getVal()+nEWKm_[i]->getVal()+nQCDm_[i]->getVal())/hPdfMetm->Integral());
+    std::cout << nSigm_[i]->getVal()+nWxm_[i]->getVal()+nZxxm_[i]->getVal()+nDibm_[i]->getVal()+nTtbm_[i]->getVal()+nQCDm_[i]->getVal() << std::endl;
+    hPdfMetm->Scale((nSigm_[i]->getVal()+nWxm_[i]->getVal()+nZxxm_[i]->getVal()+nDibm_[i]->getVal()+nTtbm_[i]->getVal()+nQCDm_[i]->getVal())/hPdfMetm->Integral());
     TH1D *hMetmDiff = makeDiffHist(hDataMetm2d[i],hPdfMetm,"hMetmDiff");
     hMetmDiff->SetMarkerStyle(kFullCircle); hMetmDiff->SetMarkerSize(0.9);
     std::cout << "did diff " <<  i << std::endl;
 
+    // sprintf(nname,"isop%d",i); sprintf(plotname, "wep_fitmetp_bin%i",i);
+    // drawWMetPlots(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfEWKp_[i], doTemplate?(RooAbsPdf*)pdfQCDp_[i]:(RooAbsPdf*)qcdp_[i]->model, pdfWep_[i], lumitext, hDataMetp2d[i]);
+    
+    // sprintf(nname,"isom%d",i); sprintf(plotname, "wem_fitmetm_bin%i",i);
+    // drawWMetPlots(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfEWKm_[i], doTemplate?(RooAbsPdf*)pdfQCDm_[i]:(RooAbsPdf*)qcdm_[i]->model, pdfWem_[i], lumitext, hDataMetm2d[i]);
+    
     sprintf(nname,"isop%d",i); sprintf(plotname, "wep_fitmetp_bin%i",i);
-    drawWMetPlots(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfEWKp_[i], doTemplate?(RooAbsPdf*)pdfQCDp_[i]:(RooAbsPdf*)qcdp_[i]->model, pdfWep_[i], lumitext, hDataMetp2d[i]);
+    drawWMetPlotsSplit(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfWxp_[i],pdfZxxp_[i],pdfDibp_[i],pdfTtbp_[i], (RooAbsPdf*)pdfQCDp_[i], pdfWep_[i], lumitext, hDataMetp2d[i]);
     
     sprintf(nname,"isom%d",i); sprintf(plotname, "wem_fitmetm_bin%i",i);
-    drawWMetPlots(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfEWKm_[i], doTemplate?(RooAbsPdf*)pdfQCDm_[i]:(RooAbsPdf*)qcdm_[i]->model, pdfWem_[i], lumitext, hDataMetm2d[i]);
+    drawWMetPlotsSplit(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfWxm_[i],pdfZxxm_[i],pdfDibm_[i],pdfTtbm_[i], (RooAbsPdf*)pdfQCDm_[i], pdfWem_[i], lumitext, hDataMetm2d[i]);
 
 
     chi2probp = hDataMetp2d[i]->Chi2Test(hPdfMetp,"PUW");
@@ -2643,21 +2367,160 @@ void fitWlnu(const TString  outputDir,   // output directory
 //=== FUNCTION DEFINITIONS ======================================================================================
 
 
-void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, vector<double> wgt,double mtCorr){
+void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, double wgt, double mtCorr){
   for(int k =2; k < nMET; k++){
-    doMET ? h[k] ->Fill(met[k] , wgt[0]) : h[k] ->Fill(mtCorr,wgt[0]);
+    doMET ? h[k] ->Fill(met[k] , wgt) : h[k] ->Fill(mtCorr,wgt);
   }
-  std::cout << "h->int" << h[3]->Integral() << std::endl;
+  // std::cout << "h->int" << h[3]->Integral() << std::endl;
   return;
 }
 
-void fillWeights(bool doMET,TH1D** h,vector<double> met, int nWeight,vector<double> wgt,double mtCorr){
+void fillWeights(bool doMET,TH1D** h,double met, int nWeight,vector<double> wgt,double mtCorr){
+  // std::cout <<  wgt[0]<<" " <<  wgt[9]<<" " <<  wgt[10]<<" " << std::endl;
   for(int k =1; k < nWeight; k++){
-    doMET ? h[k] ->Fill(met[1] , wgt[k]) : h[k] ->Fill(mtCorr,wgt[k]);
+    doMET ? h[k] ->Fill(met , wgt[k]) : h[k] ->Fill(mtCorr,wgt[k]);
   }
   return;
 }
 
+
+void fillLHE(TH1D** hlhe, double met, double evtweight, vector<double> *lheweight){
+  // std::cout << "filling lhe weights" << std::endl;
+  for(int k = 0; k < nQCD+nPDF; k ++){
+    // std::cout << k << "  " <<  (*lheweight)[k] << std::endl;
+    // std::cout << hlhe[k]->Integral() << std::endl;
+    hlhe[k]->Fill(met, evtweight*((*lheweight)[k]));
+  } 
+  
+  // std::cout << "done with lhe weights" << std::endl;
+}
+
+void calcLHE(TH1D* hQCD, TH1D* hPDF, TH1D** hlhe, TH1D* hMain,  bool isSignal){
+  
+  // rescale the histograms if it's the signal shape
+  // std::cout << "1" << std::endl;
+  if(isSignal){
+    double sigNorm=hMain->Integral();
+    for(int i=0; i < nQCD+nPDF; i++){
+      double norm=hlhe[i]->Integral();
+      if(norm!=0)hlhe[i]->Scale(sigNorm/norm);
+    }
+  }
+
+  // std::cout << "1" << std::endl;
+  // star loop through the bins
+  for(int ibin=0; ibin<hMain->GetNbinsX(); ibin++){
+    double qcdval=0;
+    // loop through the 6 for QCD
+    // std::cout <<"nqcd" << nQCD << std::endl;
+    for(int k=0; k < nQCD; k++){
+     // std::cout << k<< std::endl;
+     // std::cout << hlhe[k]->Integral() << std::endl;
+       fabs(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin)) > qcdval ? qcdval=fabs(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin)) : 0;
+    }
+    // std::cout << "blah" << std::endl;
+    // std::cout << hMain->Integral() << std::endl;
+    // std::cout << hQCD->Integral() << std::endl;
+    hQCD->SetBinContent(ibin,hMain->GetBinContent(ibin)+qcdval);
+    
+    // std::cout << "done qcd" << std::endl;
+    double pdfval=0;
+    for(int k=nQCD; k < nQCD+nPDF; k++ ){
+      pdfval+=(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin))*(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin))/hMain->GetBinContent(ibin);
+      
+  // std::cout << k << std::endl;
+    }
+    pdfval=sqrt(pdfval/nPDF);
+    hPDF->SetBinContent(ibin,hMain->GetBinContent(ibin)*(1+pdfval));
+    
+  // std::cout << "2" << std::endl;
+  }
+  
+  // std::cout << "3" << std::endl;
+}
+
+void drawLHE(TH1D** hlhe, TH1D* hMain, TString name, TString outdir, bool isSignal){
+  // std::cout << "draw lhe " << std::endl;
+  // rescale the histograms if it's the signal shape
+  if(isSignal){
+    double sigNorm=hMain->Integral();
+    for(int i=0; i < nQCD+nPDF; i++){
+      double norm=hlhe[i]->Integral();
+      if(norm!=0)hlhe[i]->Scale(sigNorm/norm);
+    }
+  }
+  // make a canvas to draw onto
+  TCanvas *c = new TCanvas("c","c",800,600);
+  char outfile[150];
+  // draw main shape 
+  hMain->SetLineColor(kBlack);
+  hMain->SetMarkerSize(0);
+  hMain->SetLineWidth(5);
+  hMain->Draw("L");
+  // loop through the 6 for QCD
+  for(int k=0; k < nQCD; k++){
+    std::cout << hlhe[k]->Integral() << std::endl;
+    hlhe[k]->SetMarkerColor(kAzure);
+    hlhe[k]->SetLineColor(kAzure);
+    hlhe[k]->SetMarkerSize(0);
+    hlhe[k]->SetLineWidth(1);
+    hlhe[k]->Draw("same");
+  }
+  // save and clear canvas
+  sprintf(outfile,"%s/%s_QCDshapes.png",outdir.Data(),name.Data());
+  c->SaveAs(outfile);
+  c->Clear();
+  // draw main shape again
+  hMain->SetLineColor(kBlack);
+  hMain->SetMarkerSize(0);
+  hMain->SetLineWidth(5);
+  hMain->Draw("L");
+  // loop through the 100 for PDF
+  for(int k=nQCD; k < nQCD+nPDF; k++ ){
+    hlhe[k]->SetMarkerColor(kAzure);
+    hlhe[k]->SetLineColor(kAzure);
+    hlhe[k]->SetMarkerSize(0);
+    hlhe[k]->SetLineWidth(1);
+    hlhe[k]->Draw("same");
+  }
+  sprintf(outfile,"%s/%s_PDFshapes.png",outdir.Data(),name.Data());
+  c->SaveAs(outfile);
+  // std::cout << "blah" << std::endl;
+  delete c;
+}
+
+void drawShapes(TH1D** vars, TH1D* hMain, TString outdir, TString name, vector<string> leg, int max){
+   // make a canvas to draw onto
+  TCanvas *c = new TCanvas("c","c",800,600);
+  TLegend* legend = new TLegend(0.6, 0.5, .99, .99);
+  char outfile[150];
+  // draw main shape 
+  hMain->SetLineColor(kBlack);
+  hMain->SetMarkerSize(0);
+  hMain->SetLineWidth(5);
+  hMain->Draw("L");
+  // loop through the 6 for QCD
+  std::cout << "here" << std::endl;
+  for(int k=1; k < max; k++){
+    std::cout << vars[k]->Integral() << std::endl;
+    vars[k]->SetMarkerColor(k+1);
+    vars[k]->SetLineColor(k+1);
+    vars[k]->SetMarkerSize(0);
+    vars[k]->SetLineWidth(1);
+    vars[k]->Draw("same");
+    legend->AddEntry(vars[k],(leg[k]).c_str(),"l");
+    // std::cout << "ljljljlk" << std::endl;
+  }
+  // save and clear canvas
+  legend->Draw();
+  sprintf(outfile,"%s/%s_all.png",outdir.Data(),name.Data());
+  c->SaveAs(outfile);
+  c->Clear();
+  
+  // std::cout << "blah" << std::endl;
+  delete c;
+  
+}
 
 //--------------------------------------------------------------------------------------------------
 TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
@@ -2760,6 +2623,113 @@ void drawWMetPlots(string plotname, TH1D *diff, RooRealVar &x, RooDataHist* dat,
   
   pdf->plotOn(frame,Components(RooArgSet(*ewk,*qcd)),FillColor(fillcolorEWK),DrawOption("F"));
   pdf->plotOn(frame,Components(RooArgSet(*ewk,*qcd)),LineColor(linecolorEWK));
+  pdf->plotOn(frame,Components(RooArgSet(*qcd)),LineColor(linecolorQCD));
+  pdf->plotOn(frame,Components(RooArgSet(*qcd)),FillColor(fillcolorQCD),DrawOption("F"));
+
+  pdf->plotOn(frame,Components(RooArgSet(*wsigp)),LineColor(linecolorW),LineStyle(2));
+  dat->plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+ 
+  sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
+  CPlot plot(plotname,frame,"","",ylabel);
+  plot.SetLegend(0.68,0.57,0.93,0.77);
+  plot.GetLegend()->AddEntry(hDummyData,"data","PL");
+  plot.GetLegend()->AddEntry(hDummyW,"W#rightarrow#mu#bar{#nu}","F");
+  plot.GetLegend()->AddEntry(hDummyEWK,"EWK+t#bar{t}","F");
+  plot.GetLegend()->AddEntry(hDummyQCD,"QCD","F");
+  plot.AddTextBox("#bf{CMS}",0.62,0.80,0.88,0.88,0);
+  plot.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  plot.Draw(c,kFALSE,format,1);
+  
+  std::cout << "Draw the W plot diff" << std::endl;
+  CPlot plotDiff(plotname,"","#slash{E}_{T} [GeV]","#frac{Data-Pred}{Data}");
+  diff->GetYaxis()->SetTitleOffset(0.5);
+  diff->GetYaxis()->SetLabelSize(0.11);
+  plotDiff.SetYRange(-yscale,yscale);
+  plotDiff.AddLine(0, 0,METMAX, 0,kBlack,1);
+  plotDiff.AddLine(0, 0.10,METMAX, 0.10,kBlack,3);
+  plotDiff.AddLine(0,-0.10,METMAX,-0.10,kBlack,3);
+  plotDiff.AddHist1D(diff,"EX0",ratioColor);
+  plotDiff.Draw(c,kTRUE,format,2);
+  plotDiff.Draw(c,kTRUE,"pdf",2);
+
+  std::cout << "Draw the W plot log" << std::endl;
+  plot.SetName((plotname+"_log").c_str());
+  plot.SetLogy();
+  plot.SetYRange(1e-5*(hData->GetMaximum()),10*(hData->GetMaximum()));
+  plot.Draw(c,kTRUE,format,1);
+  plot.Draw(c,kTRUE,"pdf",1);
+}
+
+void drawWMetPlotsSplit(string plotname, TH1D *diff, RooRealVar &x, RooDataHist* dat, RooAddPdf* pdf, RooHistPdf* wx,RooHistPdf* zxx,RooHistPdf* dib,RooHistPdf* ttb, RooAbsPdf* qcd, RooHistPdf* wsigp, string lumitext, TH1D* hData){
+  double yscale=0.2;
+  
+  const TString format("png"); 
+  char ylabel[100];  // string buffer for y-axis label
+  // plot colors
+  // Int_t linecolorW   = kOrange-3;
+  // Int_t fillcolorW   = kOrange-2;
+  // Int_t linecolorEWK = kOrange+10;
+  // Int_t fillcolorEWK = kOrange+7;
+  // Int_t linecolorQCD = kViolet+2;
+  // Int_t fillcolorQCD = kViolet-5;
+  // Int_t ratioColor   = kGray+2;
+
+  TH1D *hDummyData = new TH1D("hDummyData","",0,0,10);
+  hDummyData->SetMarkerStyle(kFullCircle);
+  hDummyData->SetMarkerSize(0.9);
+  
+  TH1D *hDummyW = new TH1D("hDummyW","",0,0,10);
+  hDummyW->SetLineColor(linecolorW);
+  hDummyW->SetFillColor(fillcolorW);
+  hDummyW->SetFillStyle(1001);
+  
+  TH1D *hDummyEWK = new TH1D("hDummyEWK","",0,0,10);
+  hDummyEWK->SetLineColor(linecolorEWK);
+  hDummyEWK->SetFillColor(fillcolorEWK);
+  hDummyEWK->SetFillStyle(1001);
+  
+  TH1D *hDummyQCD = new TH1D("hDummyQCD","",0,0,10);
+  hDummyQCD->SetLineColor(linecolorQCD);
+  hDummyQCD->SetFillColor(fillcolorQCD);
+  hDummyQCD->SetFillStyle(1001);
+  
+  TCanvas *c = MakeCanvas("c","c",800,800);
+  c->Divide(1,2,0,0);
+  c->cd(1)->SetPad(0,0.3,1.0,1.0);
+  c->cd(1)->SetTopMargin(0.1);
+  c->cd(1)->SetBottomMargin(0.02);
+  c->cd(1)->SetLeftMargin(0.15);  
+  c->cd(1)->SetRightMargin(0.07);  
+  c->cd(1)->SetTickx(1);
+  c->cd(1)->SetTicky(1);  
+  c->cd(2)->SetPad(0,0,1.0,0.3);
+  c->cd(2)->SetTopMargin(0.05);
+  c->cd(2)->SetBottomMargin(0.45);
+  c->cd(2)->SetLeftMargin(0.15);
+  c->cd(2)->SetRightMargin(0.07);
+  c->cd(2)->SetTickx(1);
+  c->cd(2)->SetTicky(1);
+  gStyle->SetTitleOffset(1.100,"Y");
+  TGaxis::SetMaxDigits(3);
+
+  RooPlot *frame = x.frame(Bins(NBINS)); 
+  frame->GetYaxis()->SetNdivisions(505);
+  frame->GetXaxis()->SetLabelOffset(2.0);
+  
+  // sprintf(nname,"isop%d",i);
+  // sprintf(plotname, "wep_fitmetp_bin%i",i);
+  dat->plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
+  pdf->plotOn(frame,FillColor(fillcolorW),DrawOption("F"));
+  pdf->plotOn(frame,LineColor(linecolorW));
+  
+  pdf->plotOn(frame,Components(RooArgSet(*wx,*qcd)),FillColor(fillcolorEWK),DrawOption("F"));
+  pdf->plotOn(frame,Components(RooArgSet(*wx,*qcd)),LineColor(linecolorEWK));
+  pdf->plotOn(frame,Components(RooArgSet(*zxx,*wx,*qcd)),FillColor(fillcolorEWK),DrawOption("F"));
+  pdf->plotOn(frame,Components(RooArgSet(*zxx,*wx,*qcd)),LineColor(linecolorEWK));
+  pdf->plotOn(frame,Components(RooArgSet(*ttb,*zxx,*wx,*qcd)),FillColor(fillcolorEWK),DrawOption("F"));
+  pdf->plotOn(frame,Components(RooArgSet(*ttb,*zxx,*wx,*qcd)),LineColor(linecolorEWK));
+  pdf->plotOn(frame,Components(RooArgSet(*dib,*ttb,*zxx,*wx,*qcd)),FillColor(fillcolorEWK),DrawOption("F"));
+  pdf->plotOn(frame,Components(RooArgSet(*dib,*ttb,*zxx,*wx,*qcd)),LineColor(linecolorEWK));
   pdf->plotOn(frame,Components(RooArgSet(*qcd)),LineColor(linecolorQCD));
   pdf->plotOn(frame,Components(RooArgSet(*qcd)),FillColor(fillcolorQCD),DrawOption("F"));
 
