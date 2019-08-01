@@ -132,6 +132,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
   Int_t   q1, q2;
+  Float_t genMuonPt1, genMuonPt2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0;
   TLorentzVector *genlep1=0;
   TLorentzVector *genlep2=0;
@@ -239,6 +240,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("q2",          &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("glepq1",      &glepq1,     "glepq1/I");          // charge of tag lepton
     outTree->Branch("glepq2",      &glepq2,     "glepq2/I");          // charge of probe lepton
+    outTree->Branch("genMuonPt1",  &genMuonPt1,  "genMuonPt1/F");          // charge of probe lepton
+    outTree->Branch("genMuonPt2",  &genMuonPt2,  "genMuonPt2/F");          // charge of probe lepton
     outTree->Branch("dilep",       "TLorentzVector", &dilep);     // di-lepton 4-vector
     outTree->Branch("lep1",        "TLorentzVector", &lep1);      // tag lepton 4-vector
     outTree->Branch("lep2",        "TLorentzVector", &lep2);      // probe lepton 4-vector
@@ -643,6 +646,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 	}
 	
 	if (hasGen) {
+    genMuonPt1 = toolbox::getGenLep(genPartArr, vTag);
+    genMuonPt2 = toolbox::getGenLep(genPartArr, vProbe);
+    
 	  id_1      = gen->id_1;
 	  id_2      = gen->id_2;
 	  x_1       = gen->x_1;
