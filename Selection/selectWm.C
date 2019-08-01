@@ -115,7 +115,8 @@ void selectWm(const TString conf="wm.conf", // input file
   UInt_t  id_1, id_2;
   Double_t x_1, x_2, xPDF_1, xPDF_2;
   Double_t scalePDF, weightPDF;
-  TLorentzVector *genV=0, *genLep=0;
+  TLorentzVector *genV=0, *genLep=0;//, *genMuonMatch=0;
+  Float_t genMuonPt;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
@@ -204,6 +205,8 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("genV",       "TLorentzVector", &genV);      // GEN boson 4-vector (signal MC)
     outTree->Branch("genLep",     "TLorentzVector", &genLep);    // GEN lepton 4-vector (signal MC)
+    // outTree->Branch("genMuonMatch","TLorentzVector", &genMuonMatch);    // GEN lepton 4-vector (signal MC)
+    outTree->Branch("genMuonPt",  &genMuonPt,     "genMuonPt/F");      // GEN boson pT (signal MC)
     outTree->Branch("genVPt",     &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
     outTree->Branch("genVPhi",    &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
     outTree->Branch("genVy",      &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
@@ -275,8 +278,8 @@ void selectWm(const TString conf="wm.conf", // input file
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
       if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
-	hasJSON = kTRUE;
-	rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
+        hasJSON = kTRUE;
+        rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
 
       eventTree = (TTree*)infile->Get("Events");
@@ -300,8 +303,8 @@ void selectWm(const TString conf="wm.conf", // input file
 
 
       if (hasGen) {
-        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-        for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+        // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
           infoBr->GetEntry(ientry);
           genBr->GetEntry(ientry);
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
@@ -313,8 +316,8 @@ void selectWm(const TString conf="wm.conf", // input file
         }
       }
       else if (not isData){
-        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-        for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+        // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
@@ -330,8 +333,8 @@ void selectWm(const TString conf="wm.conf", // input file
     // loop over events
     //
     Double_t nsel=0, nselvar=0;
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -481,6 +484,40 @@ void selectWm(const TString conf="wm.conf", // input file
           scalePDF  = -999;
           weightPDF = -999;
 
+    genMuonPt = 0;
+    if(hasGen){
+      
+      // genMuonMatch
+      // use the function to get the 
+      // std::cout << "---------" << std::endl;
+      genMuonPt = toolbox::getGenLep(genPartArr, vLep);
+      // std::cout << "gen muon pt " << genMuonPt << std::endl;
+      // std::cout << "boson charge " << toolbox::flavor(genPartArr, BOSON_ID) << std::endl;
+      
+      if(isRecoil&&!isSignal&&!isWrongFlavor){
+        // std::cout <<"Filling the Zxx lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[0];
+        lheweight[1]=gen->lheweight[1];
+        lheweight[2]=gen->lheweight[2];
+        lheweight[3]=gen->lheweight[3];
+        lheweight[4]=gen->lheweight[5];
+        lheweight[5]=gen->lheweight[7];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
+      }else{
+        // std::cout << "filling the lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[1];
+        lheweight[1]=gen->lheweight[2];
+        lheweight[2]=gen->lheweight[3];
+        lheweight[3]=gen->lheweight[4];
+        lheweight[4]=gen->lheweight[6];
+        lheweight[5]=gen->lheweight[8];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
+        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
+        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
+        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
+      }
+    }
+
 	  if(isRecoil && hasGen) {
       Int_t glepq1=-99;
       Int_t glepq2=-99;
@@ -499,21 +536,38 @@ void selectWm(const TString conf="wm.conf", // input file
       genVPhi  = tvec.Phi();
       genVy    = tvec.Rapidity();
       genVMass = tvec.M();
+      
+      // std::cout << "construct genVPt " << genVPt << std::endl;
+      // std::cout << "from " << glep1->Pt() << " and " << glep2->Pt() << std::endl;
 
           if (gvec && glep1) {
       //genV      = new TLorentzVector(0,0,0,0);
       //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
+      // std::cout << "boson id "  << BOSON_ID << "  genlepq1 " << glepq1 << " genlepq2 " << glepq2 << std::endl;
       genLep    = new TLorentzVector(0,0,0,0);
-      if(BOSON_ID*glepq1>0)
+      if(toolbox::flavor(genPartArr, BOSON_ID)*glepq1<0){
+        // std::cout << "lep1 ! " << BOSON_ID*glepq1 << std::endl;
         genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-        if(BOSON_ID*glepq2>0)
-          genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+      }
+      if(toolbox::flavor(genPartArr, BOSON_ID)*glepq2<0){
+        // std::cout << "lep2 ! " << BOSON_ID*glepq2 << std::endl;
+        genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+      }
         // genVPt    = gvec->Pt();
         // genVPhi   = gvec->Phi();
         // genVy     = gvec->Rapidity();
         // genVMass  = gvec->M();
         genLepPt  = genLep->Pt();
+        // std::cout << "other gen lep pt " << genLepPt << std::endl;
         genLepPhi = genLep->Phi();
+        // if(fabs(genLepPt-genMuonPt)/genMuonPt > 0.1) {
+          // // std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
+          // // std::cout << "lepton code " << toolbox::flavor(genPartArr, BOSON_ID) << std::endl;
+          // // std::cout << "genlep1 pT " << genLepPt << "  genmuonpt " << genMuonPt << std::endl;
+          // // std::cout << "genlep1 phi " << genLepPhi << "  lepPhi " << vLep.Phi() << std::endl;
+          // // std::cout << toolbox::getGenLep(genPartArr, vLep) << std::endl;
+          // // std::cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << std::endl;
+        // }
   
         TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
         TVector2 vLepPt(vLep.Px(),vLep.Py());
@@ -548,28 +602,7 @@ void selectWm(const TString conf="wm.conf", // input file
       scalePDF  = gen->scalePDF;
       weightPDF = gen->weight;
       
-      if(isRecoil&&!isSignal&&!isWrongFlavor){
-        // std::cout <<"Filling the Zxx lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[0];
-        lheweight[1]=gen->lheweight[1];
-        lheweight[2]=gen->lheweight[2];
-        lheweight[3]=gen->lheweight[3];
-        lheweight[4]=gen->lheweight[5];
-        lheweight[5]=gen->lheweight[7];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-      }else{
-        // std::cout << "filling the lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[1];
-        lheweight[1]=gen->lheweight[2];
-        lheweight[2]=gen->lheweight[3];
-        lheweight[3]=gen->lheweight[4];
-        lheweight[4]=gen->lheweight[6];
-        lheweight[5]=gen->lheweight[8];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-      }
+
       
 
       
