@@ -1,4 +1,4 @@
-//================================================================================================
+////================================================================================================
 //
 // Select W->munu candidates
 //
@@ -157,9 +157,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     else if (isam==0) isData=kTRUE;
 
     // Assume signal sample is given name "wm" -- flag to store GEN W kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("wm0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm2",TString::kIgnoreCase)==0);
+    Bool_t isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
     // flag to reject W->mnu events when selecting wrong flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
     //flag to save the info for recoil corrections
     Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
     
@@ -282,9 +282,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 
 
       if (hasGen) {
-        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
           
-        for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+        // for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
           infoBr->GetEntry(ientry);
           genBr->GetEntry(ientry);
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
@@ -296,9 +296,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         }
       }
       else if (not isData){
-        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
           
-        for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+        // for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
@@ -313,9 +313,9 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     // loop over events
     //
     Double_t nsel=0, nselvar=0;
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
       
-      for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+      // for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
         infoBr->GetEntry(ientry);
 
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -448,6 +448,31 @@ void selectAntiWm(const TString conf="wm.conf", // input file
           scalePDF  = -999;
           weightPDF = -999;
 
+    if(hasGen){
+      if(isRecoil&&!isSignal&&!isWrongFlavor){
+        // std::cout <<"Filling the Zxx lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[0];
+        lheweight[1]=gen->lheweight[1];
+        lheweight[2]=gen->lheweight[2];
+        lheweight[3]=gen->lheweight[3];
+        lheweight[4]=gen->lheweight[5];
+        lheweight[5]=gen->lheweight[7];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
+      }else{
+        // std::cout << "filling the lheweight" << std::endl;
+        lheweight[0]=gen->lheweight[1];
+        lheweight[1]=gen->lheweight[2];
+        lheweight[2]=gen->lheweight[3];
+        lheweight[3]=gen->lheweight[4];
+        lheweight[4]=gen->lheweight[6];
+        lheweight[5]=gen->lheweight[8];
+        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
+        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
+        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
+        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
+      }
+    }
+
 	  if(isRecoil && hasGen) {
             Int_t glepq1=-99;
             Int_t glepq2=-99;
@@ -513,30 +538,7 @@ void selectAntiWm(const TString conf="wm.conf", // input file
             xPDF_2    = gen->xPDF_2;
             scalePDF  = gen->scalePDF;
             weightPDF = gen->weight;
-            
-                  
-      if(isRecoil&&!isSignal&&!isWrongFlavor){
-        // std::cout <<"Filling the Zxx lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[0];
-        lheweight[1]=gen->lheweight[1];
-        lheweight[2]=gen->lheweight[2];
-        lheweight[3]=gen->lheweight[3];
-        lheweight[4]=gen->lheweight[5];
-        lheweight[5]=gen->lheweight[7];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-      }else{
-        // std::cout << "filling the lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[1];
-        lheweight[1]=gen->lheweight[2];
-        lheweight[2]=gen->lheweight[3];
-        lheweight[3]=gen->lheweight[4];
-        lheweight[4]=gen->lheweight[6];
-        lheweight[5]=gen->lheweight[8];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-      }
+
 
 	    delete gvec;
             delete glep1;
