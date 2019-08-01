@@ -24,6 +24,7 @@
 #include <TGaxis.h>
 #include "TLorentzVector.h"           // 4-vector class
 
+#include "TRandom.h"
 #include "../Utils/MyTools.hh"            // various helper functions
 #include "../Utils/CPlot.hh"              // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
@@ -48,8 +49,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
                    const TString  sqrts,      // 13 or 5 TeV string specifier
                    const TString  fileName,    // both the input and output final file name i.e. data_select.root
                    const TString  sysFileSIT, // constains the uncertainty info for selection/id/trk efficiency
-                   const TString  sysFileSta,  // contains the alternate shape info for standalone efficiencies
-                   const TString  sysFileSta_Alt // alternate file to get the direct comparison for the one shape
+                   const TString  sysFileSta  // contains the alternate shape info for standalone efficiencies
 ) {
   gBenchmark->Start("fitWm");
 
@@ -60,7 +60,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   bool doInclusive = true; // This should be the standard recoil correction: 3-gaussian inclusive eta
   bool doKeys = true; // RooKeysPDF instead of 3-Gaus
   bool doEta = true; // eta-binned 3-Gaus fit
-  bool doStat = false; //  Statistical Uncertainty
+  bool doStat = true; //  Statistical Uncertainty
   int nNV = 10;
   // which MET type we use
   bool doPF = true;
@@ -77,8 +77,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   int ns=nMET-nNV;
   // front half should be nMET-nNV
   
-  enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
-  const string vWeight[]={"eff","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
+  enum{main,mc,fsr,bkg,tagpt,sdu,sdd,smu,smd,pfireu,pfired};
+  const string vWeight[]={"eff","mc","fsr","bkg","tagpt","sdu","sdd","smu","smd","pfireu","pfired"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
   if(doPF){
@@ -123,28 +123,23 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   const TString dataStaEffName_neg = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
   const TString zmmStaEffName_pos  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
   const TString zmmStaEffName_neg  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-
-  // Include the uncertainty maps for the efficiencies
-  // uncertainty files
-  // TFile *fSysSIT = TFile::Open(sysFileSIT);
-  // TFile *fSysSta = TFile::Open(sysFileSta);
-  // TFile *fSysSta2 = TFile::Open(sysFileSta_Alt);
-
-  // TH2D  *hSysSITSigFSRNeg = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRNeg");
-  // TH2D  *hSysSITSigFSRPos = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRPos"); 
-  // TH2D  *hSysSITSigMCNeg  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCNeg"); 
-  // TH2D  *hSysSITSigMCPos  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCPos"); 
-  // TH2D  *hSysSITBkgNeg    = (TH2D*) fSysSIT->Get("hMuSITEffBkgNeg"); 
-  // TH2D  *hSysSITBkgPos    = (TH2D*) fSysSIT->Get("hMuSITEffBkgPos"); 
   
-  // // fsr needs to come from the 
-  // TH2D  *hSysStaSigFSRNeg = (TH2D*) fSysSta2->Get("hMuStaEffSigFSRNeg");
-  // TH2D  *hSysStaSigFSRPos = (TH2D*) fSysSta2->Get("hMuStaEffSigFSRPos"); 
-  // TH2D  *hSysStaSigMCNeg  = (TH2D*) fSysSta->Get("hMuStaEffSigMCNeg"); 
-  // TH2D  *hSysStaSigMCPos  = (TH2D*) fSysSta->Get("hMuStaEffSigMCPos"); 
-  // TH2D  *hSysStaBkgNeg    = (TH2D*) fSysSta->Get("hMuStaEffBkgNeg"); 
-  // TH2D  *hSysStaBkgPos    = (TH2D*) fSysSta->Get("hMuStaEffBkgPos"); 
-  
+  const TString dataHLTEffNameTagPt_pos = baseDir + "Data/MuHLTEff_aMCxPythia_tagPt/Positive/eff.root";
+  const TString dataHLTEffNameTagPt_neg = baseDir + "Data/MuHLTEff_aMCxPythia_tagPt/Negative/eff.root";
+  const TString zmmHLTEffNameTagPt_pos  = baseDir + "MC/MuHLTEff_aMCxPythia_tagPt/Positive/eff.root";
+  const TString zmmHLTEffNameTagPt_neg  = baseDir + "MC/MuHLTEff_aMCxPythia_tagPt/Negative/eff.root";
+
+  const TString dataSelEffNameTagPt_pos = baseDir + "Data/MuSITEff_aMCxPythia_tagPt/Positive/eff.root";
+  const TString dataSelEffNameTagPt_neg = baseDir + "Data/MuSITEff_aMCxPythia_tagPt/Negative/eff.root";
+  const TString zmmSelEffNameTagPt_pos  = baseDir + "MC/MuSITEff_aMCxPythia_tagPt/Positive/eff.root";
+  const TString zmmSelEffNameTagPt_neg  = baseDir + "MC/MuSITEff_aMCxPythia_tagPt/Negative/eff.root";
+
+  const TString dataStaEffNameTagPt_pos = baseDir + "Data/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
+  const TString dataStaEffNameTagPt_neg = baseDir + "Data/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
+  const TString zmmStaEffNameTagPt_pos  = baseDir + "MC/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
+  const TString zmmStaEffNameTagPt_neg  = baseDir + "MC/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
+
+
   TFile *fSysSIT = new TFile(sysFileSIT);
   TFile *fSysSta = new TFile(sysFileSta);
   CEffUser2D sysSIT_FSR_Neg, sysSIT_MC_Neg, sysSIT_Bkg_Neg;
@@ -177,7 +172,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   std::cout << "isData " << isData << std::endl;
   std::cout << "isRecoil " << isRecoil << std::endl;
 
-  if(isData) {doInclusive = false; doKeys = false; doEta = false; doStat = false;}
+  if(isData||(!isRecoil)) {doInclusive = false; doKeys = false; doEta = false; doStat = false;}
 
  // ------------------------------------------------------------------------------------------------------------------------------------------
  //   Load the Recoil Correction Files
@@ -200,12 +195,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   RecoilCorrector *rcEta1Wp    = new  RecoilCorrector("",""); RecoilCorrector *rcEta1Wm    = new  RecoilCorrector("","");
   // also make sure to add the Wm stuff
   if(doInclusive){
+    // rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
-    rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()));
+    rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     
+    // rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
-    rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()));
+    rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
   } 
   if (doStat){
@@ -218,35 +215,43 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     
   } 
   if (doEta){
+    // rcEta05Wp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     
+    // rcEta051Wp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
       
+    // rcEta1Wp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
 
+    // rcEta05Wm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     
+    // rcEta051Wm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     
+    // rcEta1Wm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
       rcEta1Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
   }
   if (doKeys){
+    // rcKeysWp->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWp->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     
+    // rcKeysWm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
@@ -313,6 +318,90 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   
   TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);  CEffUser2D zmmStaEff_neg;
   zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt")); 
+  
+     // ---------------------------------------------------------------
+   //      Tag PT stuff
+   // ---------------------------------------------------------------  
+  TFile *dataHLTEffFileTagPt_pos = new TFile(dataHLTEffNameTagPt_pos);  TFile *dataHLTEffFileTagPt_neg = new TFile(dataHLTEffNameTagPt_neg);
+  TFile *zmmHLTEffFileTagPt_pos  = new TFile(zmmHLTEffNameTagPt_pos);   TFile *zmmHLTEffFileTagPt_neg = new TFile(zmmHLTEffNameTagPt_neg);
+  
+  CEffUser2D dataHLTEffTagPt_pos; CEffUser2D dataHLTEffTagPt_neg; CEffUser2D zmmHLTEffTagPt_pos; CEffUser2D zmmHLTEffTagPt_neg;
+  
+  dataHLTEffTagPt_pos.loadEff((TH2D*)dataHLTEffFileTagPt_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFileTagPt_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFileTagPt_pos->Get("hErrhEtaPt"));
+  
+  dataHLTEffTagPt_neg.loadEff((TH2D*)dataHLTEffFileTagPt_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFileTagPt_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFileTagPt_neg->Get("hErrhEtaPt"));
+    
+  zmmHLTEffTagPt_pos.loadEff((TH2D*)zmmHLTEffFileTagPt_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFileTagPt_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFileTagPt_pos->Get("hErrhEtaPt"));
+  
+  zmmHLTEffTagPt_neg.loadEff((TH2D*)zmmHLTEffFileTagPt_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFileTagPt_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFileTagPt_neg->Get("hErrhEtaPt"));
+
+  // h =(TH2D*)dataHLTEffFileTagPt_pos->Get("hEffEtaPt");
+  // TH2D *hHLTErrTagPt_pos = new TH2D("hHLTErrTagPt_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  // TH2D *hHLTErrTagPt_neg = new TH2D("hHLTErrTagPt_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  
+  //
+  // Selection efficiency
+  //
+  cout << "Loading selection efficiencies..." << endl;
+  
+  TFile *dataSelEffFileTagPt_pos = new TFile(dataSelEffNameTagPt_pos);    TFile *dataSelEffFileTagPt_neg = new TFile(dataSelEffNameTagPt_neg);
+  TFile *zmmSelEffFileTagPt_pos = new TFile(zmmSelEffNameTagPt_pos);  TFile *zmmSelEffFileTagPt_neg = new TFile(zmmSelEffNameTagPt_neg);
+  CEffUser2D dataSelEffTagPt_pos; CEffUser2D dataSelEffTagPt_neg; CEffUser2D zmmSelEffTagPt_pos; CEffUser2D zmmSelEffTagPt_neg;
+  
+  dataSelEffTagPt_pos.loadEff((TH2D*)dataSelEffFileTagPt_pos->Get("hEffEtaPt"), 
+                              (TH2D*)dataSelEffFileTagPt_pos->Get("hErrlEtaPt"), 
+                              (TH2D*)dataSelEffFileTagPt_pos->Get("hErrhEtaPt"));
+
+  dataSelEffTagPt_neg.loadEff((TH2D*)dataSelEffFileTagPt_neg->Get("hEffEtaPt"), 
+                              (TH2D*)dataSelEffFileTagPt_neg->Get("hErrlEtaPt"), 
+                              (TH2D*)dataSelEffFileTagPt_neg->Get("hErrhEtaPt"));
+
+  zmmSelEffTagPt_pos.loadEff((TH2D*)zmmSelEffFileTagPt_pos->Get("hEffEtaPt"), 
+                             (TH2D*)zmmSelEffFileTagPt_pos->Get("hErrlEtaPt"), 
+                             (TH2D*)zmmSelEffFileTagPt_pos->Get("hErrhEtaPt"));
+
+  zmmSelEffTagPt_neg.loadEff((TH2D*)zmmSelEffFileTagPt_neg->Get("hEffEtaPt"), 
+                             (TH2D*)zmmSelEffFileTagPt_neg->Get("hErrlEtaPt"), 
+                             (TH2D*)zmmSelEffFileTagPt_neg->Get("hErrhEtaPt"));
+
+  // h =(TH2D*)dataSelEffFileTagPt_pos->Get("hEffEtaPt");
+  // TH2D *hSelErrTagPt_pos = new TH2D("hSelErrTagPt_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  // TH2D *hSelErrTagPt_neg = new TH2D("hSelErrTagPt_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+
+  //
+  // Standalone efficiency
+  //
+  cout << "Loading standalone efficiencies..." << endl;
+  
+  TFile *dataStaEffFileTagPt_pos = new TFile(dataStaEffNameTagPt_pos);  TFile *dataStaEffFileTagPt_neg = new TFile(dataStaEffNameTagPt_neg);
+  TFile *zmmStaEffFileTagPt_pos = new TFile(zmmStaEffNameTagPt_pos);  TFile *zmmStaEffFileTagPt_neg = new TFile(zmmStaEffNameTagPt_neg);
+  CEffUser2D dataStaEffTagPt_pos;  CEffUser2D dataStaEffTagPt_neg;  CEffUser2D zmmStaEffTagPt_pos;  CEffUser2D zmmStaEffTagPt_neg;
+  
+  dataStaEffTagPt_pos.loadEff((TH2D*)dataStaEffFileTagPt_pos->Get("hEffEtaPt"), 
+                              (TH2D*)dataStaEffFileTagPt_pos->Get("hErrlEtaPt"), 
+                              (TH2D*)dataStaEffFileTagPt_pos->Get("hErrhEtaPt"));
+  
+  dataStaEffTagPt_neg.loadEff((TH2D*)dataStaEffFileTagPt_neg->Get("hEffEtaPt"), 
+                              (TH2D*)dataStaEffFileTagPt_neg->Get("hErrlEtaPt"), 
+                              (TH2D*)dataStaEffFileTagPt_neg->Get("hErrhEtaPt"));
+  
+  zmmStaEffTagPt_pos.loadEff((TH2D*)zmmStaEffFileTagPt_pos->Get("hEffEtaPt"), 
+                             (TH2D*)zmmStaEffFileTagPt_pos->Get("hErrlEtaPt"), 
+                             (TH2D*)zmmStaEffFileTagPt_pos->Get("hErrhEtaPt"));
+  
+  zmmStaEffTagPt_neg.loadEff((TH2D*)zmmStaEffFileTagPt_neg->Get("hEffEtaPt"), 
+                             (TH2D*)zmmStaEffFileTagPt_neg->Get("hErrlEtaPt"), 
+                             (TH2D*)zmmStaEffFileTagPt_neg->Get("hErrhEtaPt"));
+
+  // h =(TH2D*)dataStaEffFileTagPt_pos->Get("hEffEtaPt");
+  // TH2D *hStaErrTagPt_pos = new TH2D("hStaErrTagPt_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  // TH2D *hStaErrTagPt_neg = new TH2D("hStaErrTagPt_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
+			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
 
   RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
   
@@ -330,7 +419,9 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   Float_t scale1fb, scale1fbUp, scale1fbDown, prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
+  UInt_t nTkLayers;
   TLorentzVector *lep=0, *genV=0, *genLep=0;
+  Float_t genMuonPt=0;
   Float_t pfCombIso;
   intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
   intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)
@@ -352,6 +443,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   intree->SetBranchAddress("genLep",      &genLep);       // lepton 4-vector
   intree->SetBranchAddress("genV",        &genV);       // lepton 4-vector
   intree->SetBranchAddress("pfCombIso",   &pfCombIso);       // lepton 4-vector
+  intree->SetBranchAddress("nTkLayers",   &nTkLayers);       // lepton 4-vector
+  intree->SetBranchAddress("genMuonPt",   &genMuonPt);       // lepton 4-vector
 
   //
   // Set up output file
@@ -375,22 +468,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   
   TLorentzVector *lep_raw=0;
   outFile->cd();
-  // outTree->Branch("metVars[no]",      &metVars[no],       "metVars[no]/d");      // corrected MET with only lepton corrections
-  // outTree->Branch("metVarsPhi[no]",   &metVarsPhi[no],    "metVarsPhi[no]/d");   // corrected METphi with only lepton corrections
-  // outTree->Branch("metVars[main]",     &metVars[main],      "metVars[main]/d");     // corrected MET with main corrections
-  // outTree->Branch("metVarsPhi[main]",  &metVarsPhi[main],   "metVarsPhi[main]/d");  // corrected METphi with main corrections
-  // outTree->Branch("metVars[eta]",      &metVars[eta],       "metVars[eta]/d");      // corrected MET with eta corrections
-  // outTree->Branch("metVarsPhi[eta]",   &metVarsPhi[eta],    "metVarsPhi[eta]/d");   // corrected METphi with eta corrections
-  // outTree->Branch("metCorrStat",     &metCorrStat,      "metCorrStat/d");     // corrected MET with stat corrections
-  // outTree->Branch("metCorrStatPhi",  &metCorrStatPhi,   "metCorrStatPhi/d");  // corrected METphi with stat corrections
-  // outTree->Branch("metVars[keys]",     &metVars[keys],      "metVars[keys]/d");     // corrected MET with keys corrections
-  // outTree->Branch("metVarsPhi[keys]",  &metVarsPhi[keys],   "metVarsPhi[keys]/d");  // corrected METphi with keys corrections
   outTree->Branch("relIso",          &relIso,           "relIso/d");          // scaled isolation variable that needs calculation
   outTree->Branch("mtCorr",          &mtCorr,           "mtCorr/d");          // corrected MET with keys corrections
-  // outTree->Branch("totalEvtWeight",  &totalEvtWeight,   "totalEvtWeight/d");  // total event weight
-  // outTree->Branch("evtWeightSysFSR",  &evtWeightSysFSR,  "evtWeightSysFSR/d");  // total event weight
-  // outTree->Branch("evtWeightSysMC",   &evtWeightSysMC,   "evtWeightSysMC/d");  // total event weight
-  // outTree->Branch("evtWeightSysBkg",  &evtWeightSysBkg,  "evtWeightSysBkg/d");  // total event weight
   outTree->Branch("evtWeight",       "vector<Double_t>", &evtWeight); // event weight vector
   outTree->Branch("effSFweight",     &effSFweight,      "effSFweight/d");     // scale factors weight
   outTree->Branch("lep_raw",         "TLorentzVector",   &lep_raw);            // uncorrected lepton vector
@@ -409,9 +488,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.1; ientry+=iterator) {
+   // for(UInt_t ientry=0; ientry<0.33*((uint)intree->GetEntries()); ientry++) {
+   // for(UInt_t ientry=0.33*((uint)intree->GetEntries()); ientry<0.67*((uint)intree->GetEntries()); ientry++) {
+   // for(UInt_t ientry=0.67*((uint)intree->GetEntries()); ientry<intree->GetEntries(); ientry++) {
+  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.5; ientry+=iterator) {
     intree->GetEntry(ientry);
-    if(ientry%1000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+    if(ientry%100000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+
+  // genMuonPt = 0;
 
     // vector containing raw lepton info for correcting MET
     TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
@@ -422,11 +506,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
 
     // data/MC scale factor corrections
     Double_t effdata, effmc;
+    Double_t effdatah, effmch, effdatal, effmcl;
     Double_t effdataFSR, effdataMC, effdataBkg;
-    Double_t corr=1;
+    Double_t edTag, emTag;
+    Double_t corr=1, corrdu=1, corrdd=1, corrmu=1, corrmd=1;
     Double_t corrFSR=1;
     Double_t corrMC=1;
     Double_t corrBkg=1;
+    Double_t corrTag=1;
 
     if(fabs(lep->Eta()) > ETA_CUT) continue;
       
@@ -437,37 +524,68 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     // HLT efficiency. 
     // HLT doesn't have associated systematic uncertainties
     effdata=1;effmc=1;
+    effdatah=1;effdatal=1; effmch=1;effmcl=1;
     if(q>0) {
       effdata *= (1.-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())); 
       effmc   *= (1.-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())); 
+      effdatah*=(1-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1+dataHLTEff_pos.getErrHigh((lep->Eta()), lep->Pt())));
+      effdatal*=(1-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1-dataHLTEff_pos.getErrLow((lep->Eta()), lep->Pt())));
+      effmch  *=(1-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1+zmmHLTEff_pos.getErrHigh((lep->Eta()), lep->Pt())));
+      effmcl  *=(1-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1-zmmHLTEff_pos.getErrLow((lep->Eta()), lep->Pt())));
     } else {
       effdata *= (1.-dataHLTEff_neg.getEff((lep->Eta()), lep->Pt())); 
       effmc   *= (1.-zmmHLTEff_neg.getEff((lep->Eta()), lep->Pt())); 
+      effdatah*=(1-dataHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1+dataHLTEff_neg.getErrHigh((lep->Eta()), lep->Pt())));
+      effdatal*=(1-dataHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1-dataHLTEff_neg.getErrLow((lep->Eta()), lep->Pt())));
+      effmch  *=(1-zmmHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1+zmmHLTEff_neg.getErrHigh((lep->Eta()), lep->Pt())));
+      effmcl  *=(1-zmmHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1-zmmHLTEff_neg.getErrLow((lep->Eta()), lep->Pt())));
     }
     effdata = 1.-effdata;
     effmc   = 1.-effmc;
+    effdatah = 1.-effdatah;
+    effmch   = 1.-effmch;
+    effdatal = 1.-effdatal;
+    effmcl   = 1.-effmcl;
     corr *= effdata/effmc;
+    corrdu *= effdatah/effmc;
+    corrdd *= effdatal/effmc;
+    corrmu *= effdata/effmch;
+    corrmd *= effdata/effmcl;
+    
     corrFSR *= effdata/effmc;
     corrMC  *= effdata/effmc;
     corrBkg *= effdata/effmc;
+    corrTag *= effdata/effmc;
     
     // if(lep->Pt() < 25) continue;
    
     // std::cout << q << std::endl;
-    effdata=1; effmc=1;
-    effdataMC=1; effdataBkg=1; effdataFSR=1; 
+    effdata=1; effmc=1;    effdatah=1;effdatal=1; effmch=1;effmcl=1;
+    effdataMC=1; effdataBkg=1; effdataFSR=1; edTag=1;emTag=1;
     if(q>0) {
-      effdataFSR *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSIT_FSR_Pos.getEff(lep->Eta(), lep->Pt());
-      effdataMC *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt())  * sysSIT_MC_Pos.getEff(lep->Eta(), lep->Pt());
-      effdataBkg *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSIT_Bkg_Pos.getEff(lep->Eta(), lep->Pt());
       effdata *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
+      effdataFSR *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSIT_FSR_Pos.getEff(lep->Eta(), lep->Pt());
+      effdataMC  *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt())  * sysSIT_MC_Pos.getEff(lep->Eta(), lep->Pt());
+      effdataBkg *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSIT_Bkg_Pos.getEff(lep->Eta(), lep->Pt());
+      effdatah   *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * (1+dataSelEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
+      effmch     *= zmmSelEff_pos.getEff((lep->Eta()),  lep->Pt()) * (1+zmmSelEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
+      effdatal   *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * (1-dataSelEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
+      effmcl     *= zmmSelEff_pos.getEff((lep->Eta()),  lep->Pt()) * (1-zmmSelEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
+      edTag  *= dataSelEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
+      emTag   *= zmmSelEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
     } else {
-      effdataFSR *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_FSR_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataMC *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt())  * sysSIT_MC_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataBkg *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_Bkg_Neg.getEff(lep->Eta(), lep->Pt()); 
       effdata *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
+      effdataFSR *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_FSR_Neg.getEff(lep->Eta(), lep->Pt()); 
+      effdataMC  *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_MC_Neg.getEff(lep->Eta(), lep->Pt()); 
+      effdataBkg *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_Bkg_Neg.getEff(lep->Eta(), lep->Pt()); 
+      effdatah   *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * (1+dataSelEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
+      effmch     *= zmmSelEff_neg.getEff((lep->Eta()),  lep->Pt()) * (1+zmmSelEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
+      effdatal   *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * (1-dataSelEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
+      effmcl     *= zmmSelEff_neg.getEff((lep->Eta()),  lep->Pt()) * (1-zmmSelEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
+      edTag *= dataSelEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
+      emTag   *= zmmSelEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
     }
     // std::cout << "fsr " << effdataFSR << std::endl;
     // std::cout << "-----------------------" << std::endl;
@@ -479,23 +597,40 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     corrFSR *= effdataFSR/effmc;
     corrMC  *= effdataMC/effmc;
     corrBkg *= effdataBkg/effmc;
+    corrTag *= edTag/emTag;
+    corrdu *= effdatah/effmc;
+    corrdd *= effdatal/effmc;
+    corrmu *= effdata/effmch;
+    corrmd *= effdata/effmcl;
     
-    effdata=1; effmc=1;
-    effdataFSR=1; effdataMC=1; effdataBkg=1; 
+    effdata=1; effmc=1;    effdatah=1;effdatal=1; effmch=1;effmcl=1;
+    effdataFSR=1; effdataMC=1; effdataBkg=1; emTag=1; edTag=1; 
     // effSigShapedata=1;
     // effBkgShapedata=1;
     if(q>0) {
-      effdataFSR *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_FSR_Pos.getEff(lep->Eta(), lep->Pt()); 
-      effdataMC *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_MC_Pos.getEff(lep->Eta(), lep->Pt()); 
-      effdataBkg *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_Bkg_Pos.getEff(lep->Eta(), lep->Pt()); 
       effdata *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
+      effdataFSR *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_FSR_Pos.getEff(lep->Eta(), lep->Pt()); 
+      effdataMC  *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_MC_Pos.getEff(lep->Eta(), lep->Pt()); 
+      effdataBkg *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_Bkg_Pos.getEff(lep->Eta(), lep->Pt()); 
+      effdatah   *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * (1+dataStaEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
+      effmch     *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt())   * (1+zmmStaEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
+      effdatal   *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * (1-dataStaEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
+      effmcl     *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt())   * (1-zmmStaEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
+      edTag *= dataStaEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
+      emTag   *= zmmStaEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
     } else {
-      effdataFSR *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_FSR_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataMC *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_MC_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataBkg *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_Bkg_Neg.getEff(lep->Eta(), lep->Pt()); 
       effdata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
       effmc   *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
+      effdataFSR *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_FSR_Neg.getEff(lep->Eta(), lep->Pt()); 
+      effdataMC  *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_MC_Neg.getEff(lep->Eta(), lep->Pt()); 
+      effdataBkg *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_Bkg_Neg.getEff(lep->Eta(), lep->Pt()); 
+      effdatah   *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * (1+dataStaEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
+      effmch     *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt())   * (1+zmmStaEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
+      effdatal   *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * (1-dataStaEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
+      effmcl     *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt())   * (1-zmmStaEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
+      edTag *= dataStaEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
+      emTag   *= zmmStaEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
     }
     // std::cout << "fsr " << effdataFSR << std::endl;
     // std::cout << "mc " << effdataMC << std::endl;
@@ -505,6 +640,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     corrFSR *= effdataFSR/effmc;
     corrMC  *= effdataMC/effmc;
     corrBkg *= effdataBkg/effmc;
+    corrTag *= edTag/emTag;
+    corrdu *= effdatah/effmc;
+    corrdd *= effdatal/effmc;
+    corrmu *= effdata/effmch;
+    corrmd *= effdata/effmcl;
     
     // std::cout << "did the efficiencies" << std::endl;
 
@@ -512,7 +652,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     if(isData){
       // Apply the Rochester Corrections to data
       TLorentzVector mu1;
+      TLorentzVector mu1u;
+      TLorentzVector mu1d;
       mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
+      mu1u.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
+      mu1d.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       double dtSF1 = rc.kScaleDT(q, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
       mu1*=dtSF1;
       (*lep)*=dtSF1; // is this legit lol
@@ -522,13 +666,22 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       // std::cout << "lepPt " << mu1.Pt() << "  lep->Pt() " << lep->Pt() << "  lep_raw->Pt() " << lep_raw->Pt() << std::endl;
       // corrected (smear/scale) lepton for MET correction
       TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
+      TVector2 vLepCoru((mu1u.Pt())*cos(mu1u.Phi()),(mu1u.Pt())*sin(mu1u.Phi()));
+      TVector2 vLepCord((mu1d.Pt())*cos(mu1d.Phi()),(mu1d.Pt())*sin(mu1d.Phi()));
       // calculate the corrected MET
       TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));  //move the declaration elsewhere
       Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod(); // calculate the MET corrected for lepton scale
       Double_t corrMetPhiLepton = (vMetCorr + vLepRaw - vLepCor).Phi();// calculate the MET corrected for lepton scale
       mt     = sqrt( 2.0 * (mu1.Pt()) * (corrMetWithLepton) * (1.0-cos(toolbox::deltaPhi(mu1.Phi(),corrMetPhiLepton))) );
       
+      Double_t corrMetWithLeptonu = (vMetCorr + vLepRaw - vLepCoru).Mod(); // calculate the MET corrected for lepton scale
+      Double_t corrMetPhiLeptonu = (vMetCorr + vLepRaw - vLepCoru).Phi();// calculate the MET corrected for lepton scale
+      Double_t corrMetWithLeptond = (vMetCorr + vLepRaw - vLepCord).Mod(); // calculate the MET corrected for lepton scale
+      Double_t corrMetPhiLeptond = (vMetCorr + vLepRaw - vLepCord).Phi();// calculate the MET corrected for lepton scale
+      
       metVars[no]=corrMetWithLepton;
+      metVars[ru]=corrMetWithLeptonu;
+      metVars[rd]=corrMetWithLeptond;
       mtCorr=mt;
     } else {
       
@@ -536,9 +689,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       evtWeight[fsr]=corrFSR*scale1fb*prefireWeight;
       evtWeight[mc] =corrMC*scale1fb*prefireWeight;
       evtWeight[bkg]=corrBkg*scale1fb*prefireWeight;
-      // evtWeight[tagpt]
-      // evtWeight[statu]
-      // evtWeight[statd]
+      evtWeight[tagpt]=corrTag*scale1fb*prefireWeight;
+      evtWeight[sdu]=corrdu*scale1fb*prefireWeight;
+      evtWeight[sdd]=corrdd*scale1fb*prefireWeight;
+      evtWeight[smu]=corrmu*scale1fb*prefireWeight;
+      evtWeight[smd]=corrmd*scale1fb*prefireWeight;
       evtWeight[pfireu]=corr*scale1fb*prefireUp;
       evtWeight[pfired]=corr*scale1fb*prefireDown;
       // std::cout << "storight the wweights" << std::endl;
@@ -555,12 +710,26 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       mu1u.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       mu1d.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       
-      double mcSF1 = rc.kSpreadMC(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genLep->Pt());
+      
+      double rand = gRandom->Uniform(1);
+      double mcSF1 = 1;
+      if(genMuonPt > 0){
+        mcSF1 = rc.kSpreadMC(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt);
+      } else {
+        mcSF1 = rc.kSmearMC(q, mu1.Pt(),  mu1.Eta(), mu1.Phi(), nTkLayers, rand);
+      }
       mu1*=mcSF1;
       (*lep)*=mcSF1; // is this legit lol
       
       // double deltaDtSF = rc.kScaleDTerror(Q, pt, eta, phi);
-      double deltaMcSF = rc.kSpreadMCerror(q, mu1u.Pt(), mu1u.Eta(), mu1u.Phi(), genLep->Pt());
+      double deltaMcSF = 1;
+      if(genMuonPt>0){
+        deltaMcSF = rc.kSpreadMCerror(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt);
+      } else {
+        deltaMcSF = rc.kSmearMCerror(q, mu1.Pt(),  mu1.Eta(), mu1.Phi(), nTkLayers, rand);
+      }
+      mu1u*=(1+deltaMcSF);
+      mu1d*=(1-deltaMcSF);
       // std::cout << deltaMcSF << std::endl; *=(1+delta)
       // double deltaMcSF = rc.kSmearMCerror(Q, pt, eta, phi, nl, u);
       
