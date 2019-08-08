@@ -235,48 +235,56 @@ double isoTrkCut=9999;
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGenTESTsmear/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGenTESTsmear/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGenTESTsmear/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/RCprob/wx_select.raw.root"));  typev.push_back(eWx);
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
+  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/RCprob/wx_select.raw.root"));  typev.push_back(eWx);
+  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
+  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
-  fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/top_select.raw.root")); typev.push_back(eTtb);
-  // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/EleMu/ntuples/data_select.root")); typev.push_back(eTtb);
-  // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/Wmunu_ttbar2l2nu/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+  // // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/EleMu/ntuples/data_select.root")); typev.push_back(eTtb);
+  // // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/Wmunu_ttbar2l2nu/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+  
+  // For the 5 TeV
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm_select.raw.root"));  typev.push_back(eWlnu);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/Wmunu/ntuples/zz_select.raw.root");  typev.push_back(eDib);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/Wmunu/ntuples/ww_select.raw.root");  typev.push_back(eDib);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/Wmunu/ntuples/wz_select.raw.root");  typev.push_back(eDib);
+  fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
 
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
-  fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
+  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+  
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/AntiWmunu/ntuples/ww_select.root"); typev.push_back(eAntiDib);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/AntiWmunu/ntuples/wz_select.root"); typev.push_back(eAntiDib);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/AntiWmunu/ntuples/zz_select.root"); typev.push_back(eAntiDib);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
-  
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm_select.raw.root"));  typev.push_back(eWlnu);
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
-  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
-  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
-  // // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-  // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
-
-  // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
-  // // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -634,23 +642,56 @@ double isoTrkCut=9999;
     }
     
     for(int j=0; j < nWeight; ++j){
-      hWlnupWeightU[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWlnumWeightU[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      char hname[150]; char type[50];
+      //sdu,sdd,smu,smd,pfireu,pfired
+      if(j==sdu){
+        sprintf(type,"%i_stdatUp",i);
+      } else if (j==sdd){
+        sprintf(type,"%i_stdatDown",i);
+      } else if (j==smu){
+        sprintf(type,"%i_stmcUp",i);
+      } else if (j==smd){
+        sprintf(type,"%i_stmcDown",i);
+      } else if (j==pfireu){
+        sprintf(type,"%i_prefireUp",i);
+      } else if (j==pfired){
+        sprintf(type,"%i_prefireDown",i);
+      } else {
+        sprintf(type,"%i_%sUp",i,(vMET[j]).c_str());
+      }
       
-      hEWKpWeightU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hEWKmWeightU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      // Wlnu
+      // sprintf(hname,"hWlnuMetpBin%s",type);
+      // hWlnupMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hWlnuMetpBin%s",type);
+      hWlnupWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hWlnuMetmBin%s",type);
+      hWlnumWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       
-      hWxpWeightU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hWxmWeightU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hEwkMetpBin%s",type);
+      hEWKpWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hEwkMetmBin%s",type);
+      hEWKmWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      
+      sprintf(hname,"hWxMetpBin%s",type);
+      hWxpWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hWxMetmBin%s",type);
+      hWxmWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
   
-      hZxxpWeightU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hZxxmWeightU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hZxxMetpBin%s",type);
+      hZxxpWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hZxxMetmBin%s",type);
+      hZxxmWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       
-      hDibpWeightU[i][j] = new TH1D(("hDibMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hDibmWeightU[i][j] = new TH1D(("hDibMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hDibMetpBin%s",type);
+      hDibpWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hDibMetmBin%s",type);
+      hDibmWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
   
-      hTtbpWeightU[i][j] = new TH1D(("hTtbMetpBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
-      hTtbmWeightU[i][j] = new TH1D(("hTtbMetmBin"+std::to_string(i)+"_"+vWeight[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hTtbMetpBin%s",type);
+      hTtbpWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
+      sprintf(hname,"hTtbMetmBin%s",type);
+      hTtbmWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       
     }
     
@@ -1595,6 +1636,8 @@ double isoTrkCut=9999;
     // W+ signal shape "down" uncertainty shapes
     TH1D *hh_diff;
     for(int k=0; k < nMET; ++k){
+      if(k==ru||k==rd) continue;
+      
       sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vMET[k].c_str());
       hh_diff =  (TH1D*)hWlnupMETU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
       hWlnupMETD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnupMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
@@ -1629,7 +1672,9 @@ double isoTrkCut=9999;
     }
     
     for(int k=0; k < nWeight; ++k){
-      
+      if(k==sdu||k==sdd||k==smu||k==smd||k==pfireu||k==pfired)continue;
+        // sprintf(type,"%i_prefireDown",i);
+
       sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vWeight[k].c_str());
       hh_diff =  (TH1D*)hWlnupWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
       hWlnupWeightD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnupWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
@@ -1638,7 +1683,7 @@ double isoTrkCut=9999;
       hh_diff =  (TH1D*)hWlnumWeightU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
       hWlnumWeightD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnumWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
-      sprintf(nname,"hWEwkMetpBin%d_%sDown",j,vWeight[k].c_str());
+      sprintf(nname,"hEwkMetpBin%d_%sDown",j,vWeight[k].c_str());
       hh_diff =  (TH1D*)hEWKpWeightU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
       hEWKpWeightD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
@@ -1677,6 +1722,56 @@ double isoTrkCut=9999;
       sprintf(nname,"hTtbMetmBin%d_%sDown",j,vWeight[k].c_str());
       hh_diff =  (TH1D*)hTtbmWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetm2d[j],-1);
       hTtbmWeightD[j][k] = (TH1D*) hTtbMetm2d[j]->Clone(nname); hTtbmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+    }
+    
+        
+    for(int k=0; k < nLHE; ++k){ // the final up/down shapes for the QCD and PDF uncertainty
+      // w signal
+      
+      sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hWlnupThyUncU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetp2d[j],-1);
+      hWlnupThyUncD[j][k] = (TH1D*) hWlnuMetp2d[j]->Clone(nname); hWlnupThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWlnuMetmBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hWlnumThyUncU[j][k]->Clone("diff"); hh_diff->Add(hWlnuMetm2d[j],-1);
+      hWlnumThyUncD[j][k] = (TH1D*) hWlnuMetm2d[j]->Clone(nname); hWlnumThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      // ewk total
+            
+      sprintf(nname,"hEwkMetpBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hEWKpThyUncU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetp2d[j],-1);
+      hEWKpThyUncD[j][k] = (TH1D*) hEWKMetp2d[j]->Clone(nname); hEWKpThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hEwkMetmBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hEWKmThyUncU[j][k]->Clone("diff"); hh_diff->Add(hEWKMetm2d[j],-1);
+      hEWKmThyUncD[j][k] = (TH1D*) hEWKMetm2d[j]->Clone(nname); hEWKmThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      // hEWKpThyUncU[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      // hEWKmThyUncU[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // wx
+            
+      sprintf(nname,"hWxMetpBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hWxpThyUncU[j][k]->Clone("diff"); hh_diff->Add(hWxMetp2d[j],-1);
+      hWxpThyUncD[j][k] = (TH1D*) hWxMetp2d[j]->Clone(nname); hWxpThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hWxMetmBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hWxmThyUncU[j][k]->Clone("diff"); hh_diff->Add(hWxMetm2d[j],-1);
+      hWxmThyUncD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxmThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      // hWxpThyUncU[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      // hWxmThyUncU[i][j] = new TH1D(("hWxMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
+      // zxx
+            
+      sprintf(nname,"hZxxMetpBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hZxxpThyUncU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hZxxpThyUncD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxpThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      
+      sprintf(nname,"hZxxMetmBin%d_%sDown",j,vLHE[k].c_str());
+      hh_diff =  (TH1D*)hZxxmThyUncU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetm2d[j],-1);
+      hZxxmThyUncD[j][k] = (TH1D*) hZxxMetm2d[j]->Clone(nname); hZxxmThyUncD[j][k]->Add(hh_diff,-1); //delete hh_diff;
+      // hZxxpThyUncU[i][j] = new TH1D(("hZxxMetpBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      // hZxxmThyUncU[i][j] = new TH1D(("hZxxMetmBin"+std::to_string(i)+"_"+vLHE[j]+"Up").c_str(),"",NBINS,METMIN,METMAX);
+      
     }
   }
   
@@ -2015,7 +2110,7 @@ double isoTrkCut=9999;
   TFile *histFile = new TFile(histfname,"RECREATE");
   histFile->cd();
   for(int j = 0; j < nIsoBins; ++j){
-    
+    std::cout << "writing" << std::endl;
     hDataMetp2d[j]->Write();
     hDataMetm2d[j]->Write();
     
@@ -2041,26 +2136,29 @@ double isoTrkCut=9999;
     hIsoBinQCDm->Write();
     
     for(int k=0; k < nMET; k++){
+    std::cout << "writing MET" << std::endl;
       hWlnupMETU[j][k]->Write();
       hWlnumMETU[j][k]->Write();
-      
-      hWlnupMETD[j][k]->Write();
-      hWlnumMETD[j][k]->Write();
       
       hEWKpMETU[j][k]->Write();
       hEWKmMETU[j][k]->Write();
       
-      hEWKpMETD[j][k]->Write();
-      hEWKmMETD[j][k]->Write();
-      
       hWxpMETU[j][k]->Write();
       hWxmMETU[j][k]->Write();
       
-      hWxpMETD[j][k]->Write();
-      hWxmMETD[j][k]->Write();
-      
       hZxxpMETU[j][k]->Write();
       hZxxmMETU[j][k]->Write();
+      
+      std::cout << "writing MET DOWN" << std::endl;
+      if(k==rd||k==ru)continue;
+      hWlnupMETD[j][k]->Write();
+      hWlnumMETD[j][k]->Write();
+            
+      hWxpMETD[j][k]->Write();
+      hWxmMETD[j][k]->Write();
+            
+      hEWKpMETD[j][k]->Write();
+      hEWKmMETD[j][k]->Write();
       
       hZxxpMETD[j][k]->Write();
       hZxxmMETD[j][k]->Write();
@@ -2068,43 +2166,75 @@ double isoTrkCut=9999;
     }
     
     for(int k=0; k < nWeight; k++){
+      std::cout << "writing weight" << std::endl;
       hWlnupWeightU[j][k]->Write();
       hWlnumWeightU[j][k]->Write();
-      
-      hWlnupWeightD[j][k]->Write();
-      hWlnumWeightD[j][k]->Write();
+
       
       hEWKpWeightU[j][k]->Write();
       hEWKmWeightU[j][k]->Write();
       
-      hEWKpWeightD[j][k]->Write();
-      hEWKmWeightD[j][k]->Write();
+
       
       hWxpWeightU[j][k]->Write();
       hWxmWeightU[j][k]->Write();
+
+      
+      hZxxpWeightU[j][k]->Write();
+      hZxxmWeightU[j][k]->Write();
+
+      hDibpWeightU[j][k]->Write();
+      hDibmWeightU[j][k]->Write();
+
+      hTtbpWeightU[j][k]->Write();
+      hTtbmWeightU[j][k]->Write();
+      std::cout << "writing weight DOWN" << std::endl;
+      if(k==sdu||k==sdd||k==smu||k==smd||k==pfireu||k==pfired)continue;
+            
+      hWlnupWeightD[j][k]->Write();
+      hWlnumWeightD[j][k]->Write();
+      
+      hEWKpWeightD[j][k]->Write();
+      hEWKmWeightD[j][k]->Write();
       
       hWxpWeightD[j][k]->Write();
       hWxmWeightD[j][k]->Write();
       
-      hZxxpWeightU[j][k]->Write();
-      hZxxmWeightU[j][k]->Write();
-      
       hZxxpWeightD[j][k]->Write();
       hZxxmWeightD[j][k]->Write();
-      
-      hDibpWeightU[j][k]->Write();
-      hDibmWeightU[j][k]->Write();
       
       hDibpWeightD[j][k]->Write();
       hDibmWeightD[j][k]->Write();
       
-      hTtbpWeightU[j][k]->Write();
-      hTtbmWeightU[j][k]->Write();
-      
       hTtbpWeightD[j][k]->Write();
       hTtbmWeightD[j][k]->Write();
     }
-    
+    for(int k=0; k < nLHE; k++){
+      std::cout << "writing LHE" << std::endl;
+      hWlnupThyUncU[j][k]->Write();
+      hWlnumThyUncU[j][k]->Write();
+      
+      hWlnupThyUncD[j][k]->Write();
+      hWlnumThyUncD[j][k]->Write();
+      
+      hEWKpThyUncU[j][k]->Write();
+      hEWKmThyUncU[j][k]->Write();
+      
+      hEWKpThyUncD[j][k]->Write();
+      hEWKmThyUncD[j][k]->Write();
+      
+      hWxpThyUncU[j][k]->Write();
+      hWxmThyUncU[j][k]->Write();
+      
+      hWxpThyUncD[j][k]->Write();
+      hWxmThyUncD[j][k]->Write();
+      
+      hZxxpThyUncU[j][k]->Write();
+      hZxxmThyUncU[j][k]->Write();
+      
+      hZxxpThyUncD[j][k]->Write();
+      hZxxmThyUncD[j][k]->Write();
+    }
     
   }
   histFile->Write();
