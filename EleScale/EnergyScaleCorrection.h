@@ -60,7 +60,8 @@ public:
       scale_(iScale),scaleErrStat_(iScaleErrStat),scaleErrSyst_(iScaleErrSyst),scaleErrGain_(iScaleErrGain){}
     
     float scale()const{return scale_;}
-    float scaleErr(const std::bitset<kErrNrBits>& uncBitMask)const;
+    // float scaleErr(const std::bitset<kErrNrBits>& uncBitMask)const;
+    float scaleErr(int uncBitMask)const;
     float scaleErrStat()const{return scaleErrStat_;}
     float scaleErrSyst()const{return scaleErrSyst_;}
     float scaleErrGain()const{return scaleErrGain_;}
@@ -81,8 +82,8 @@ public:
       rho_(iRho),rhoErr_(iRhoErr),phi_(iPhi),phiErr_(iPhiErr),
       eMean_(iEMean),eMeanErr_(iEMeanErr){}
     
-    friend std::ostream& operator<<(std::ostream& os, const SmearCorrection& a){return a.print(os);}
-    std::ostream& print(std::ostream& os)const;
+    // friend std::ostream& operator<<(std::ostream& os, const SmearCorrection& a){return a.print();}
+    void print()const;
    
    
     float sigma(const float et,const float nrSigmaRho=0.,const float nrSigmaPhi=0.)const{
@@ -93,8 +94,6 @@ public:
         // std::cout << "phiVal " << phiVal << "  phi_ " << phi_ << "   phiErr_ " << phiErr_ << std::endl;
       const float constTerm =  rhoVal * std::sin(phiVal);
       const float alpha =  rhoVal *  eMean_ * std::cos(phiVal);
-        // std::cout << "alpha " << alpha << "  eMean_ " << eMean_  << std::endl;
-        // std::cout << "final value?? " << std::sqrt(constTerm * constTerm + alpha * alpha / et) << std::endl;
       return std::sqrt(constTerm * constTerm + alpha * alpha / et);
     }
   private:
@@ -145,7 +144,8 @@ public:
 		  unsigned int gainSeed=12, std::bitset<kErrNrBits> uncBitMask=kErrNone) const; 
   
   float scaleCorrUncert(unsigned int runnr, double et, double eta, double r9,
-			unsigned int gainSeed=12,std::bitset<kErrNrBits> uncBitMask=kErrNone) const;
+			unsigned int gainSeed=12,int uncBitMask=1) const;
+			// unsigned int gainSeed=12,std::bitset<kErrNrBits> uncBitMask=kErrNone) const;
   
   float smearingSigma(int runnr, double et, double eta, double r9, unsigned int gainSeed, ParamSmear par, float nSigma = 0.) const;
   float smearingSigma(int runnr, double et, double eta, double r9, unsigned int gainSeed, float nSigmaRho, float nSigmaPhi) const;

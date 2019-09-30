@@ -36,6 +36,7 @@ EnergyScaleCorrection::EnergyScaleCorrection(const std::string& correctionFileNa
 float EnergyScaleCorrection::scaleCorr(unsigned int runNumber, double et, double eta, double r9,
 				       unsigned int gainSeed, std::bitset<kErrNrBits> uncBitMask) const
 {
+  // std::cout << "scale corr" << std::endl;
   const ScaleCorrection* scaleCorr =  getScaleCorr(runNumber, et, eta, r9, gainSeed);
   if(scaleCorr!=nullptr) return scaleCorr->scale();
   else return kDefaultScaleVal_;
@@ -44,10 +45,12 @@ float EnergyScaleCorrection::scaleCorr(unsigned int runNumber, double et, double
 
 
 float EnergyScaleCorrection::scaleCorrUncert(unsigned int runNumber, double et, double eta, double r9,
-					     unsigned int gainSeed, std::bitset<kErrNrBits> uncBitMask) const
+					     unsigned int gainSeed, int uncBitMask) const
+					     // unsigned int gainSeed, std::bitset<kErrNrBits> uncBitMask) const
 {
   
   const ScaleCorrection* scaleCorr = getScaleCorr(runNumber, et, eta, r9, gainSeed);
+  // std::cout << "bits " << uncBitMask << std::endl;
   if(scaleCorr!=nullptr) return scaleCorr->scaleErr(uncBitMask);
   else return 0.;
 }
@@ -56,7 +59,9 @@ float EnergyScaleCorrection::scaleCorrUncert(unsigned int runNumber, double et, 
 float EnergyScaleCorrection::smearingSigma(int runnr, double et, double eta, double r9,
 					   unsigned int gainSeed, ParamSmear par, 
 					   float nSigma) const
-{
+{  
+  // std::cout << "do smear" << std::endl;
+  // smearCorr->print();
   if (par == kRho) return smearingSigma(runnr, et, eta, r9, gainSeed, nSigma, 0.);
   if (par == kPhi) return smearingSigma(runnr, et, eta, r9, gainSeed, 0., nSigma);
   return smearingSigma(runnr, et, eta, r9, gainSeed, 0., 0.);
@@ -67,8 +72,11 @@ float EnergyScaleCorrection::smearingSigma(int runnr, double et, double eta, dou
 					   unsigned int gainSeed, float nrSigmaRho, 
 					   float nrSigmaPhi) const
 {
-  // std::cout << "get smear corr. run " << runnr << ", et " << et << ", eta " << eta << ", r9 " << r9 << ", gain " << gainSeed << std::endl;
+  // std::cout << "get smear corr. run " << runnr << ", et " << et << ", eta " << eta << ", r9 " << r9 << ", gain " << gainSeed << std::endl;  
+
   const SmearCorrection* smearCorr = getSmearCorr(runnr,et,eta,r9,gainSeed);
+  // std::cout << "print smear" << std::endl;
+  // smearCorr->print();
 						  // std::cout << "rho " << nrSigmaRho << "  phi " << nrSigmaPhi << std::endl;
                           // std::cout << "smear correction " << smearCorr << std::endl;
   if(smearCorr!=nullptr) return smearCorr->sigma(et,nrSigmaRho,nrSigmaPhi);
@@ -142,12 +150,13 @@ void EnergyScaleCorrection::addScale(const std::string& category, int runMin, in
 {
   
   CorrectionCategory cat(category,runMin,runMax); // build the category from the string
+  // std::cout << "adding category " << cat << std::endl;
   auto result = std::equal_range(scales_.begin(),scales_.end(),cat,Sorter<CorrectionCategory,ScaleCorrection>());
   if(result.first!=result.second){
     //throw cms::Exception("ConfigError") << "Category already defined! "<<cat;
     std::cerr << "Category already defined" << std::endl;
   }
-  
+  // std::cout << energyScale << " " << energyScaleErrStat << " " << energyScaleErrSyst << " " << energyScaleErrGain << " " << std::endl;
   ScaleCorrection corr(energyScale,energyScaleErrStat,energyScaleErrSyst,energyScaleErrGain);
   scales_.push_back({cat,corr});
   std::sort(scales_.begin(),scales_.end(),Sorter<CorrectionCategory,ScaleCorrection>()); 
@@ -197,11 +206,14 @@ void EnergyScaleCorrection::readScalesFromFile(const std::string& filename)
   int runMin, runMax;
   std::string category, region2;
   double energyScale, energyScaleErr, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain;
-  
+  // std::cout << "reading file" << std::endl;
   for(file >> category; file.good(); file >> category) {
+    
     file >> region2
 	 >> runMin >> runMax
 	 >> energyScale >> energyScaleErr >> energyScaleErrStat >> energyScaleErrSyst >> energyScaleErrGain;
+   // std::cout << category << " " << region2 << std::endl;
+   // std::cout << energyScale << " " << energyScaleErr << " " << energyScaleErrStat << " " << energyScaleErrSyst << " " << energyScaleErrGain << std::endl; 
     addScale(category, runMin, runMax, energyScale, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain);
   }
   
@@ -286,26 +298,31 @@ std::ostream& EnergyScaleCorrection::ScaleCorrection::print(std::ostream& os)con
   return os; 
 }
 
-float EnergyScaleCorrection::ScaleCorrection::scaleErr(const std::bitset<kErrNrBits>& uncBitMask)const
+// float EnergyScaleCorrection::ScaleCorrection::scaleErr(const std::bitset<kErrNrBits>& uncBitMask)const
+float EnergyScaleCorrection::ScaleCorrection::scaleErr(int type)const
 {
   double totErr(0);
   auto pow2 = [](const double& x){return x*x;};
-  
-  if(uncBitMask.test(kErrStatBitNr)) totErr+=pow2(scaleErrStat_);
-  if(uncBitMask.test(kErrSystBitNr)) totErr+=pow2(scaleErrSyst_);  
-  if(uncBitMask.test(kErrGainBitNr)) totErr+=pow2(scaleErrGain_);
+  // std::cout << "bitmask " << type << std::endl;
+  // std::cout << scaleErrStat_ << " " << scaleErrSyst_ << " " << scaleErrGain_ << std::endl;
+  if(type==kErrStatBitNr) totErr+=pow2(scaleErrStat_);
+  if(type==kErrSystBitNr) totErr+=pow2(scaleErrSyst_);  
+  if(type==kErrGainBitNr) totErr+=pow2(scaleErrGain_);
+  // if(uncBitMask.test(kErrStatBitNr)) totErr+=pow2(scaleErrStat_);
+  // if(uncBitMask.test(kErrSystBitNr)) totErr+=pow2(scaleErrSyst_);  
+  // if(uncBitMask.test(kErrGainBitNr)) totErr+=pow2(scaleErrGain_);
   
   return std::sqrt(totErr);
 }
 
-std::ostream& EnergyScaleCorrection::SmearCorrection::print(std::ostream& os)const
+void EnergyScaleCorrection::SmearCorrection::print()const
 {
-  os << rho_ << " +/- " << rhoErr_ 
+  std::cout << rho_ << " +/- " << rhoErr_ 
      <<  "\t"
      << phi_ << " +/- " << phiErr_
      <<  "\t"
      << eMean_ << " +/- " << eMeanErr_;
-  return os; 
+  return; 
 }
 
 //here be dragons
@@ -316,6 +333,7 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
 {
   size_t p1, p2; // boundary
 
+// std::cout << "before: " << r9Max_ << " " << etaMax_ << " " << etMax_ << " " << gain_ << std::endl;
   // eta region
   p1 = category.find("absEta_");
   if(category.find("absEta_0_1") != std::string::npos) {
@@ -334,6 +352,7 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
     etaMax_ = 3;
   } else {
     if(p1 != std::string::npos) {
+      // std::cout << "hello" << std::endl;
       p1 = category.find("_", p1);
       p2 = category.find("_", p1 + 1);
       etaMin_ = std::stof(category.substr(p1 + 1, p2 - p1 - 1));
@@ -406,6 +425,8 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
 	  p2 = category.find("-", p1); // Position of - or end of string
 	  gain_ = std::stoul(category.substr(p1, p2-p1), nullptr);
   }
+  
+  // std::cout << "corr: " << r9Max_ << " " << etaMax_ << " " << etMax_ << " " << gain_ << std::endl;
   //so turns out the code does an includes X<=Y<=Z search for bins
   //which is what we want for run numbers
   //however then the problem is when we get a value exactly at the bin boundary

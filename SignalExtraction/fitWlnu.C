@@ -231,14 +231,14 @@ double isoTrkCut=9999;
   //
   // input ntuple file names
   //
-  enum {eData, eWlnu, eZxx, eWx, eTtb, eDib, eQCD, eAntiData, eAntiWlnu, eAntiQCD, eAntiTtb, eAntiDib, eAntiWx, eAntiZxx };  // data type enum
+  enum {eData, eWlnu, eW0j, eW1j, eW2j, eZxx, eWx, eTtb, eDib, eQCD, eAntiData, eAntiWlnu, eAntiQCD, eAntiTtb, eAntiDib, eAntiWx, eAntiZxx };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eW0j);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eW1j);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eW2j);
    // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/RCprob/wx_select.raw.root"));  typev.push_back(eWx);
    // fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
@@ -897,7 +897,7 @@ double isoTrkCut=9999;
             }
           }
         }
-      } else if(typev[ifile]==eWlnu ) {
+      } else if(typev[ifile]==eWlnu|| typev[ifile]==eW0j|| typev[ifile]==eW1j||typev[ifile]==eW2j) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
         // std::cout << "doing signal" << std::endl;
@@ -907,6 +907,12 @@ double isoTrkCut=9999;
         // }
         // double w2 =  hh_diff->GetBinContent(bin);
         //wgtLum[main]*=w2;
+        // quick and dirty rescaling for the W+njets for 13 tev
+        // cross sections used: 55980,  7060 , 1577
+        // // should be: 50131.98+8426.09+3172.96
+        // if(typev[ifile]==eW0j) wgtLum[main]*=50131.98/55980;
+        // if(typev[ifile]==eW1j) wgtLum[main]*=8426.09/7060;
+        // if(typev[ifile]==eW2j) wgtLum[main]*=3172.96/1577;
         hWlnuMet->Fill((*metVars)[cent],wgtLum[main]);
         if(q>0){
           hMuonEtaMCp->Fill(fabs(lep->Eta()),wgtLum[main]);
@@ -1663,7 +1669,7 @@ double isoTrkCut=9999;
       hWxmMETD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxmMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetpBin%d_%sDown",j,vMET[k].c_str());
-      hh_diff =  (TH1D*)hWlnupMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hh_diff =  (TH1D*)hZxxpMETU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
       hZxxpMETD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxpMETD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetmBin%d_%sDown",j,vMET[k].c_str());
@@ -1700,7 +1706,7 @@ double isoTrkCut=9999;
       hWxmWeightD[j][k] = (TH1D*) hWxMetm2d[j]->Clone(nname); hWxmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWlnupWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
+      hh_diff =  (TH1D*)hZxxpWeightU[j][k]->Clone("diff"); hh_diff->Add(hZxxMetp2d[j],-1);
       hZxxpWeightD[j][k] = (TH1D*) hZxxMetp2d[j]->Clone(nname); hZxxpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hZxxMetmBin%d_%sDown",j,vWeight[k].c_str());
@@ -1716,7 +1722,7 @@ double isoTrkCut=9999;
       hDibmWeightD[j][k] = (TH1D*) hDibMetm2d[j]->Clone(nname); hDibmWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hTtbMetpBin%d_%sDown",j,vWeight[k].c_str());
-      hh_diff =  (TH1D*)hWlnupWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
+      hh_diff =  (TH1D*)hTtbpWeightU[j][k]->Clone("diff"); hh_diff->Add(hTtbMetp2d[j],-1);
       hTtbpWeightD[j][k] = (TH1D*) hTtbMetp2d[j]->Clone(nname); hTtbpWeightD[j][k]->Add(hh_diff,-1); //delete hh_diff;
       
       sprintf(nname,"hTtbMetmBin%d_%sDown",j,vWeight[k].c_str());
