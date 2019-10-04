@@ -47,8 +47,10 @@ void computeAccGenZee_Sys(const TString conf,             // input file
   const Double_t MASS_HIGH  = 120;
   const Double_t PT_CUT     = 25;
   const Double_t ETA_CUT    = 2.4; 
-  const Double_t ETA_BARREL = 1.4442;
-  const Double_t ETA_ENDCAP = 1.566;
+  // const Double_t ETA_BARREL = 1.4442;
+  // const Double_t ETA_ENDCAP = 1.566;
+  const Double_t ETA_BARREL = 10.;
+  const Double_t ETA_ENDCAP = 10.;
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
@@ -202,8 +204,8 @@ void computeAccGenZee_Sys(const TString conf,             // input file
       if(lep2->Pt() < PT_CUT)         continue;
       if(fabs(lep1->Eta()) > ETA_CUT) continue;
       if(fabs(lep2->Eta()) > ETA_CUT) continue;
-      // if(fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
-      // if(fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
+      if(fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
+      if(fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
 
       TLorentzVector dilep=(*lep1)+(*lep2);
 
