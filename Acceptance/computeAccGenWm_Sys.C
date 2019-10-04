@@ -169,6 +169,22 @@ void computeAccGenWm_Sys(const TString conf,             // input file
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       // int mparam = fabs(1-fabs(charge));
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
+      // std::cout << "---------------" << std::endl;
+    //  std::cout << "evtnum " << ientry <<  " lep1 " << lep1->Pt() << "  lepq1 " << lepq1 << std::endl;
+    //  std::cout << "evtnum " << ientry << " lep2 " << lep2->Pt() << "  lepq2 " << lepq2 << std::endl;
+      
+      if(charge!=0&&charge!=lepq1) lep1=lep2;
+      // if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq1<0){
+        // // std::cout << "lep1 ! " << BOSON_ID*glepq1 << std::endl;
+        // genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+      // }
+      if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq2<0){
+        // std::cout << "lep2 ! " << BOSON_ID*glepq2 << std::endl;
+        //genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+        lep1=lep2;
+      }
+      //if(charge==0&&charge==lepq1) lep1=lep2;
+     
       
       TLorentzVector *gph=new TLorentzVector(0,0,0,0);
       if(doDressed){
@@ -178,14 +194,14 @@ void computeAccGenWm_Sys(const TString conf,             // input file
             gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
             if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep1->Eta(),lep1->Phi())<0.1)
               {
-            lep1->operator+=(*gph);
-              }
-            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1)
+                lep1->operator+=(*gph);
+              } else if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1)
               {
-            lep2->operator+=(*gph);
+                lep2->operator+=(*gph);
               }
           }
       }
+      delete lep2;
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
@@ -196,6 +212,7 @@ void computeAccGenWm_Sys(const TString conf,             // input file
       // nEvtsv_QCD[ifile][4]+=weight*gen->lheweight[6];
       // nEvtsv_QCD[ifile][5]+=weight*gen->lheweight[8];
       // for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[ifile][npdf]+=weight*gen->lheweight[9+npdf];
+      
       tempQCD_Evtsv[0]+=weight*gen->lheweight[1];
       tempQCD_Evtsv[1]+=weight*gen->lheweight[2];
       tempQCD_Evtsv[2]+=weight*gen->lheweight[3];
@@ -205,6 +222,16 @@ void computeAccGenWm_Sys(const TString conf,             // input file
       
       for(int npdf=0; npdf<NPDF; npdf++) tempPDF_Evtsv[npdf]+=weight*gen->lheweight[9+npdf];
     
+    // // 2015
+      // tempQCD_Evtsv[0]+=weight*gen->lheweight[1]/gen->lheweight[0];
+      // tempQCD_Evtsv[1]+=weight*gen->lheweight[2]/gen->lheweight[0];
+      // tempQCD_Evtsv[2]+=weight*gen->lheweight[3]/gen->lheweight[0];
+      // tempQCD_Evtsv[3]+=weight*gen->lheweight[4]/gen->lheweight[0];
+      // tempQCD_Evtsv[4]+=weight*gen->lheweight[6]/gen->lheweight[0];
+      // tempQCD_Evtsv[5]+=weight*gen->lheweight[8]/gen->lheweight[0];
+      
+      // for(int npdf=0; npdf<NPDF; npdf++) tempPDF_Evtsv[npdf]+=weight*gen->lheweight[9+npdf]/gen->lheweight[0];
+    
       Bool_t isBarrel=kTRUE;
       if (lep1) {
         if (fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
@@ -212,10 +239,9 @@ void computeAccGenWm_Sys(const TString conf,             // input file
         if (lep1->Pt() < PT_CUT) continue;
         if (fabs(lep1->Eta()) > ETA_CUT) continue;
         isBarrel = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
-      }
-      else if (lep2) {
+      } else if (lep2) {
         if (fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
-
+std::cout << "eta 2 cut " << std::endl;
         if (lep2->Pt() < PT_CUT) continue;
         if (fabs(lep2->Eta()) > ETA_CUT) continue;
         isBarrel = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
@@ -234,6 +260,7 @@ void computeAccGenWm_Sys(const TString conf,             // input file
       // nSelv_QCD[ifile][4]+=weight*gen->lheweight[6];
       // nSelv_QCD[ifile][5]+=weight*gen->lheweight[8];
       // for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[ifile][npdf]+=weight*gen->lheweight[9+npdf];
+      
       tempQCD_Selv[0]+=weight*gen->lheweight[1];
       tempQCD_Selv[1]+=weight*gen->lheweight[2];
       tempQCD_Selv[2]+=weight*gen->lheweight[3];
@@ -241,6 +268,14 @@ void computeAccGenWm_Sys(const TString conf,             // input file
       tempQCD_Selv[4]+=weight*gen->lheweight[6];
       tempQCD_Selv[5]+=weight*gen->lheweight[8];
       for(int npdf=0; npdf<NPDF; npdf++) tempPDF_Selv[npdf]+=weight*gen->lheweight[9+npdf];
+      
+      // tempQCD_Selv[0]+=weight*gen->lheweight[1]/gen->lheweight[0];
+      // tempQCD_Selv[1]+=weight*gen->lheweight[2]/gen->lheweight[0];
+      // tempQCD_Selv[2]+=weight*gen->lheweight[3]/gen->lheweight[0];
+      // tempQCD_Selv[3]+=weight*gen->lheweight[4]/gen->lheweight[0];
+      // tempQCD_Selv[4]+=weight*gen->lheweight[6]/gen->lheweight[0];
+      // tempQCD_Selv[5]+=weight*gen->lheweight[8]/gen->lheweight[0];
+      // for(int npdf=0; npdf<NPDF; npdf++) tempPDF_Selv[npdf]+=weight*gen->lheweight[9+npdf]/gen->lheweight[0];
     }
     
     // compute acceptances
