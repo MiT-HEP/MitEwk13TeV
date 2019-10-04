@@ -486,7 +486,7 @@ Bool_t passAntiEleID_2015(const baconhep::TElectron *electron,const TLorentzVect
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   // conversion rejection
   if(electron->isConv)            return kFALSE;
@@ -609,19 +609,8 @@ Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t 
 }
 Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData, Bool_t is13TeV=true) {
   if (isData) {
-    if (isL1) {
-      return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltEGL1SingleEG20ORL1SingleEG15Filter",hltMatchBits); // not used
-      //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
-    }
-    else {
-      return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
-      // return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
-      //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
-    }
-  }
-  else if (isL1) {
-    return triggerMenu.passObj("HLT_Ele23_WPLoose_Gsf_v*","hltL1sL1SingleEG20",hltMatchBits);
-    //return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
+    return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
+    // return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
   }
   else {
     if(is13TeV){return triggerMenu.passObj("HLT_Ele27_WPTight_Gsf_v*","hltEle27WPTightGsfTrackIsoFilter",hltMatchBits);} // 13 TeV
