@@ -37,6 +37,7 @@
 #include "BaconAna/DataFormats/interface/TElectron.hh"
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
+#include "BaconAna/DataFormats/interface/TJet.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 #include "CCorrUser2D.hh"
@@ -95,9 +96,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
   TFile *prefireFile = new TFile(prefireFileName);
-  CCorrUser2D prefirePhotonCorr;
-  if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
-  else if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
+  CCorrUser2D prefirePhotonCorr, prefireJetCorr;
+  if(!is13TeV){
+    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // 5 TeV photon prefire
+    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017G")); // 5 TeV jet prefire
+  } else if(is13TeV){
+    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // 13 TeV photon prefire
+    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017H")); // 13 TeV jet prefire
+  }
   
   
   //data
@@ -155,8 +161,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genWeight, PUWeight;
   Float_t scale1fb,scale1fbUp,scale1fbDown;
-  Float_t prefireWeight, prefireUp, prefireDown;
+  Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
+  Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
+  Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
   Float_t met, metPhi, sumEt, u1, u2;
+  Float_t metDJee, metPhiDJee, sumEtDJee, u1DJee, u2DJee;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
@@ -166,7 +175,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0, *dilepSC = 0;
   TLorentzVector *genlep1=0;
   TLorentzVector *genlep2=0;
-  Float_t escaleUp, escaleDown;
   
   ///// electron specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
@@ -190,6 +198,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
   TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
   TClonesArray *vertexArr      = new TClonesArray("baconhep::TVertex");
+  TClonesArray *jetArr         = new TClonesArray("baconhep::TJet");
 
   TFile *infile=0;
   TTree *eventTree=0;
@@ -247,14 +256,25 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("prefireWeight", &prefireWeight, "prefireWeight/F");
     outTree->Branch("prefireUp",     &prefireUp,     "prefireUp/F");
     outTree->Branch("prefireDown",   &prefireDown,   "prefireDown/F");
-    outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
+    outTree->Branch("prefirePhoton", &prefirePhoton, "prefirePhoton/F");
+    outTree->Branch("prefirePhotUp",     &prefirePhotUp,     "prefirePhotUp/F");
+    outTree->Branch("prefirePhotDown",   &prefirePhotDown,   "prefirePhotDown/F");
+    outTree->Branch("prefireJet",    &prefireJet,    "prefireJet/F");
+    outTree->Branch("prefireJetUp",  &prefireJetUp,  "prefireJetUp/F");
+    outTree->Branch("prefireJetDown",&prefireJetDown,"prefireJetDown/F");
+    outTree->Branch("scale1fb",      &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
-    outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
+    outTree->Branch("scale1fbDown",  &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
+    outTree->Branch("metDJee",        &metDJee,        "metDJee/F");         // MET
+    outTree->Branch("metPhiDJee",     &metPhiDJee,     "metPhiDJee/F");      // phi(MET)
+    outTree->Branch("sumEtDJee",      &sumEtDJee,      "sumEtDJee/F");       // Sum ET
+    outTree->Branch("u1DJee",         &u1DJee,         "u1DJee/F");          // parallel component of recoil
+    outTree->Branch("u2DJee",         &u2DJee,         "u2DJee/F");          // perpendicular component of recoil
     outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
     outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
     outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
@@ -270,8 +290,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
     outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
-    outTree->Branch("escaleUp",    &escaleUp,   "escaleUp/F");       // perpendicular component of recoil (Puppi MET)
-    outTree->Branch("escaleDown",  &escaleDown, "escaleDown/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("glepq1",         &glepq1,         "glepq1/I");          // charge of tag lepton
@@ -338,7 +356,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     // loop through files
     //
     const UInt_t nfiles = samp->fnamev.size();
-    for(UInt_t ifile=0; ifile<nfiles; ifile++) {  
+    for(UInt_t ifile=0; ifile<nfiles; ifile++) {
 
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... " << endl; cout.flush();
@@ -354,10 +372,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);  
-      eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
+      eventTree->SetBranchAddress("Info",     &info       ); TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
-      eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
-      eventTree->SetBranchAddress("PV",   &vertexArr);       TBranch *vertexBr = eventTree->GetBranch("PV");
+      eventTree->SetBranchAddress("Photon",   &scArr      ); TBranch *scBr       = eventTree->GetBranch("Photon");
+      eventTree->SetBranchAddress("PV",       &vertexArr  ); TBranch *vertexBr   = eventTree->GetBranch("PV");
+      eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -389,7 +408,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         }
       }
       else if (not isData){
-        // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.1); ientry++) {
+        // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.01); ientry++) {
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
         // for(UInt_t ientry=0; ientry<1000; ientry++) {
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
@@ -448,6 +467,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         electronBr->GetEntry(ientry);
         scArr->Clear();
         scBr->GetEntry(ientry);
+        jetArr->Clear();
+        jetBr->GetEntry(ientry);
 
         TLorentzVector vTag(0,0,0,0);
         TLorentzVector vTag_raw(0,0,0,0);
@@ -474,8 +495,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           // vTagSC.SetPtEtaPhiM(eTregress, tag->eta, tag->phi, ELE_MASS);
           
           
-            float scaleUp = 1.;
-            float scaleDown = 1.;
           // std::cout << tagRandom << std::endl;
          // std::cout << "---------event " << info->evtNum << "------------" << std::endl; 
          // std::cout << "tag pt " << vTag.Pt()   << "   tag eta " <<  vTag.Eta()   << std::endl; 
@@ -515,8 +534,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
               tagSCError = ec.scaleCorrUncert(info->runNum, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
               
               (vTag)*=tagScale*(1+sigma*tagError);
-              scaleUp = (1 + tagError);
-              scaleDown = (1 - tagError);
               (vTagSC)*=tagSCScale*(1+sigma*tagSCError);
               // std::cout << "corr tag pt " << vTag.Pt()   << "   tag eta " <<  vTag.Eta()   << std::endl; 
               // std::cout << "corr sc  pt " << vTagSC.Pt() << "   sc  eta " <<  vTagSC.Eta() << std::endl; 
@@ -547,10 +564,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
                 (vTag) *= 1. + tagSmearEM * tagRandom;
                 (vTagSC) *= 1. + tagSCSmearEM * tagRandom;
               }
-              scaleUp = (1. + tagSmearEP * tagRandom)/(1. + tagSmear*tagRandom);
-              scaleDown = (1. + tagSmearEM * tagRandom)/(1. + tagSmear*tagRandom);
-              
-
 
               tagError = tagRandom * std::hypot(tagSmearEP - tagSmear, tagSmearEM - tagSmear); 
 
@@ -588,8 +601,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           vTagfinal = vTag;
           vTagSCfinal = vTagSC;
           vTag_raw.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
-          escaleUp = scaleUp;
-          escaleDown = scaleDown;
 
           trkIso1    = tag->trkIso;
           emIso1     = tag->ecalIso;
@@ -819,16 +830,87 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       TLorentzVector vDilepSC = vTagSCfinal + vProbeSC;
       if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
       if(icat==0) continue;
-        
-      // Loop through the photons to determine the Prefiring scale factor
-      prefireWeight=1; prefireUp=1; prefireDown=1;
-      for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-        const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-        prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-        prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-        prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-        // if(photon->pt<10)std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+      
+      // Loop through Jets
+      // set up the met variable, default is PF met
+      metDJee      = info->pfMETC;
+      metPhiDJee   = info->pfMETCphi;
+      sumEtDJee = 0;
+      // if(category==1||category==2||category==3) cout << "Selected! " << endl;
+      TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
+      for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+        const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+        if(fabs(jet->eta) < 2.65 || fabs(jet->eta) > 3.139) continue;
+        if(jet->pt > 50) continue;
+        TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
+        vMetEE += vJet;
+        // if(category==1||category==2||category==3)cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
       } 
+      metDJee      = vMetEE.Mod();
+      metPhiDJee   = vMetEE.Phi();
+      // sumEtDJee = 0;
+        
+      if(!isData){
+        // Loop through the photons to determine the Prefiring scale factor
+        prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+        for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+          const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+          if(fabs(photon->eta) < 2) continue;
+          prefirePhoton *= 1. - TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 );
+          prefirePhotUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+          prefirePhotDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+          // cout << "photon current prob. " << prefirePhotonCorr.getCorr(photon->eta, photon->pt)  << "  totalW " <<  prefirePhoton << endl;
+          // if(prefirePhotonCorr.getCorr(photon->eta, photon->pt) < 0 || prefirePhotonCorr.getCorr(photon->eta, photon->pt) > 1) cout << " " << photon->eta<< " " << photon->pt << endl;
+          // if(photon->pt<10)std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+        } 
+        
+        prefireJet=1; prefireJetUp=1; prefireJetDown=1;
+        for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+          const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
+          if(fabs(jet->eta) < 2.0) continue;
+          // prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
+          prefireJet*= 1. - prefireJetCorr.getCorr(jet->eta, jet->pt);
+          prefireJetUp     *= TMath::Max((1.-(1.2*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
+          prefireJetDown   *= TMath::Max((1.-(0.8*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
+          cout << "JET current prob. " << prefireJetCorr.getCorr(jet->eta, jet->pt)  << "  totalW " <<  prefireJet << endl;
+          if(prefireJetCorr.getCorr(jet->eta, jet->pt) < 0 || prefireJetCorr.getCorr(jet->eta, jet->pt) > 1) {
+            cout << " " << jet->eta<< " " << jet->pt << endl;
+            std::cout << "jet eta " << jet->eta << "  jet pT " << jet->pt << "  prefire weight " << prefireJet << std::endl;
+          }
+        } 
+        
+        // loop through photons and jets
+        // overlap is anything within deltaR < 0.4.
+        // take max prefire prob for any overlap cases
+        //toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi))<0.4
+        // total prefire probability = product of all (1-prob) for photons,jets, & remove the overlap
+        prefireWeight=prefireJet*prefirePhoton;
+        prefireUp=prefireJetUp*prefirePhotUp;
+        prefireDown=prefireJetDown*prefirePhotDown;
+        for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+          const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+          if(fabs(photon->eta) < 2) continue;
+          // now loop through jets:
+          double rmP = 0, rmU = 0, rmD = 0;
+
+          for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+            const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+            if(fabs(jet->eta) < 2) continue;
+            // check if the jet and photon overlap: 
+            if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
+            // photon & jet overlap, now get min to divide out 
+              rmP = min(prefirePhotonCorr.getCorr(photon->eta, photon->pt), prefireJetCorr.getCorr(jet->eta, jet->pt));
+              rmU = TMath::Max(1.-(1.2*rmP),0.0);
+              rmD = TMath::Max(1.-(0.8*rmP),0.0);
+          }
+          // divide out the lesser of the two probabilities
+          prefireWeight = prefireWeight / (1 - rmP);
+          prefireUp = prefireUp / rmU;
+          prefireDown = prefireDown / rmD;
+        } 
+      }
+      
+      
 
       //******** We have a Z candidate! HURRAY! ********
       nsel+=weight;
@@ -873,7 +955,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         
         
         if(isRecoil&&!isSignal&&!isWrongFlavor){
-          // std::cout <<"Filling the Zxx lheweight" << std::endl;
           lheweight[0]=gen->lheweight[0];
           lheweight[1]=gen->lheweight[1];
           lheweight[2]=gen->lheweight[2];
@@ -882,7 +963,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           lheweight[5]=gen->lheweight[7];
           for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
         }else{
-          // std::cout << "filling the lheweight" << std::endl;
           lheweight[0]=gen->lheweight[1];
           lheweight[1]=gen->lheweight[2];
           lheweight[2]=gen->lheweight[3];
@@ -890,9 +970,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           lheweight[4]=gen->lheweight[6];
           lheweight[5]=gen->lheweight[8];
           for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-          // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-          // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-          // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
         }
 
         
@@ -927,6 +1004,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
 
 
+
       category = icat;
 
       vertexArr->Clear();
@@ -937,29 +1015,28 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       genWeight= hasGen ? gen->weight: 1.;
       PUWeight = puWeight;
       scale1fb = weight;
-      scale1fbUp = weightUp;
+      scale1fbUp   = weightUp;
       scale1fbDown = weightDown;
-      met      = info->pfMETC;
-      metPhi   = info->pfMETCphi;
-      sumEt    = 0;
-      tkMet    = info->trkMET;
-      tkMetPhi = info->trkMETphi;
-      tkSumEt  = 0;
-      mvaMet   = info->mvaMET;
+      met       = info->pfMETC;
+      metPhi    = info->pfMETCphi;
+      sumEt     = 0;
+      tkMet     = info->trkMET;
+      tkMetPhi  = info->trkMETphi;
+      tkSumEt   = 0;
+      mvaMet    = info->mvaMET;
       mvaMetPhi = info->mvaMETphi; 
-      mvaSumEt = 0;
+      mvaSumEt  = 0;
       TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
-      puppiMet = info->puppET;
-            puppiMetPhi = info->puppETphi;
+      puppiMet    = info->puppET;
+      puppiMetPhi = info->puppETphi;
       puppiSumEt = 0;
-      lep1     = &vTagfinal;
-      lep2     = &vProbefinal;
-      lep1_raw = &vTag_raw;
-      lep2_raw = &vProbe_raw;
-      
-            
-      dilep    = &vDilep;
-      dilepSC = &vDilepSC;
+      lep1       = &vTagfinal;
+      lep2       = &vProbefinal;
+      lep1_raw   = &vTag_raw;
+      lep2_raw   = &vProbe_raw;
+
+      dilep      = &vDilep;
+      dilepSC    = &vDilepSC;
       sc1        = &vTagSCfinal;
       sc2        = &vProbeSC;
       
@@ -967,14 +1044,22 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       TVector2 vU = -1.0*(vMet+vZPt);
       u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
       u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
+      
+      TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
+      TVector2 vUDJ = -1.0*(vMetDJ+vZPt);
+      u1DJee = ((vDilep.Px())*(vUDJ.Px()) + (vDilep.Py())*(vUDJ.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+      u2DJee = ((vDilep.Px())*(vUDJ.Py()) - (vDilep.Py())*(vUDJ.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
+      
       TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
       TVector2 vTkU = -1.0*(vTkMet+vZPt);
       tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
       tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+      
       TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
       TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
       mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
       mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+      
       TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
       TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
       puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
