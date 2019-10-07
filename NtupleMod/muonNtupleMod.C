@@ -36,7 +36,8 @@
 #include "../Utils/CEffUser2D.hh"
 
 //helper class to handle rochester corrections
-#include <../RochesterCorr/RoccoR.cc>
+#include "../RochesterCorr/RoccoR.cc"
+#include "../Utils/AppEffSF.cc"
 
 
 
@@ -57,13 +58,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // Settings 
   //==============================================================================================================   
   // flage to control applying the recoil corrections
-  bool doInclusive = true; // This should be the standard recoil correction: 3-gaussian inclusive eta
-  bool doKeys = true; // RooKeysPDF instead of 3-Gaus
-  bool doEta = true; // eta-binned 3-Gaus fit
-  bool doStat = true; //  Statistical Uncertainty
+  bool doInclusive = false; // This should be the standard recoil correction: 3-gaussian inclusive eta
+  bool doKeys = false; // RooKeysPDF instead of 3-Gaus
+  bool doEta = false; // eta-binned 3-Gaus fit
+  bool doStat = false; //  Statistical Uncertainty
   int nNV = 10;
   // which MET type we use
   bool doPF = true;
+  bool doNewMET = true;
   
   std::string u1_name; std::string u2_name;
   std::string met_name; std::string metPhi_name;
@@ -77,16 +79,20 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   int ns=nMET-nNV;
   // front half should be nMET-nNV
   
-  enum{main,mc,fsr,bkg,tagpt,sdu,sdd,smu,smd,pfireu,pfired};
-  const string vWeight[]={"eff","mc","fsr","bkg","tagpt","sdu","sdd","smu","smd","pfireu","pfired"};
+  enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
+  const string vWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
-  if(doPF){
+  if (doNewMET && doPF) {
+    u1_name = "u1DJee";
+    u2_name = "u2DJee";
+    met_name = "metDJee";
+    metPhi_name = "metPhiDJee";
+  } else if(!doNewMET && doPF){
     u1_name = "u1";
     u2_name = "u2";
     met_name = "met";
     metPhi_name = "metPhi";
-//     recoilType = "PF";
   } else {
     u1_name = "puppiU1";
     u2_name = "puppiU2";
@@ -102,68 +108,19 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   
   const Double_t mu_MASS = 0.1057;
  
- // ------------------------------------------------------------------------------------------------------------------------------------------
+ // -----------------------------------------------------------
  //   Point to the Efficiency SF
- // ------------------------------------------------------------------------------------------------------------------------------------------
- // These are the official recoil corrections path, I will update corrections by putting new ones in this folder
-  const TString baseDir = "/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
-  // "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
-  // path needs to be updated ^
-  const TString dataHLTEffName_pos = baseDir + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataSelEffName_pos = baseDir + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString dataSelEffName_neg = baseDir + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
-  const TString zmmSelEffName_pos  = baseDir + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString zmmSelEffName_neg  = baseDir + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataStaEffName_pos = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString dataStaEffName_neg = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEffName_pos  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEffName_neg  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+ // -----------------------------------------------------------
+ 
+  string effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
+  AppEffSF effs(effDir);
+  effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   
-  const TString dataHLTEffNameTagPt_pos = baseDir + "Data/MuHLTEff_aMCxPythia_tagPt/Positive/eff.root";
-  const TString dataHLTEffNameTagPt_neg = baseDir + "Data/MuHLTEff_aMCxPythia_tagPt/Negative/eff.root";
-  const TString zmmHLTEffNameTagPt_pos  = baseDir + "MC/MuHLTEff_aMCxPythia_tagPt/Positive/eff.root";
-  const TString zmmHLTEffNameTagPt_neg  = baseDir + "MC/MuHLTEff_aMCxPythia_tagPt/Negative/eff.root";
-
-  const TString dataSelEffNameTagPt_pos = baseDir + "Data/MuSITEff_aMCxPythia_tagPt/Positive/eff.root";
-  const TString dataSelEffNameTagPt_neg = baseDir + "Data/MuSITEff_aMCxPythia_tagPt/Negative/eff.root";
-  const TString zmmSelEffNameTagPt_pos  = baseDir + "MC/MuSITEff_aMCxPythia_tagPt/Positive/eff.root";
-  const TString zmmSelEffNameTagPt_neg  = baseDir + "MC/MuSITEff_aMCxPythia_tagPt/Negative/eff.root";
-
-  const TString dataStaEffNameTagPt_pos = baseDir + "Data/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
-  const TString dataStaEffNameTagPt_neg = baseDir + "Data/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
-  const TString zmmStaEffNameTagPt_pos  = baseDir + "MC/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
-  const TString zmmStaEffNameTagPt_neg  = baseDir + "MC/MuStaEff_aMCxPythia_tagPt/Combined/eff.root";
-
-
-  TFile *fSysSIT = new TFile(sysFileSIT);
-  TFile *fSysSta = new TFile(sysFileSta);
-  CEffUser2D sysSIT_FSR_Neg, sysSIT_MC_Neg, sysSIT_Bkg_Neg;
-  CEffUser2D sysSIT_FSR_Pos, sysSIT_MC_Pos, sysSIT_Bkg_Pos;
-  CEffUser2D sysSta_FSR_Neg, sysSta_MC_Neg, sysSta_Bkg_Neg;
-  CEffUser2D sysSta_FSR_Pos, sysSta_MC_Pos, sysSta_Bkg_Pos;
-  
-  sysSIT_FSR_Neg.loadEff((TH2D*)fSysSIT->Get("hMuSITEffSigFSRNeg"), (TH2D*)fSysSIT->Get(""), (TH2D*)fSysSIT->Get(""));
-  sysSIT_FSR_Pos.loadEff((TH2D*)fSysSIT->Get("hMuSITEffSigFSRPos"), (TH2D*)fSysSIT->Get(""), (TH2D*)fSysSIT->Get(""));
-  
-  sysSIT_MC_Neg.loadEff((TH2D*)fSysSIT->Get("hMuSITEffSigMCNeg"), (TH2D*)fSysSIT->Get(""), (TH2D*)fSysSIT->Get(""));
-  sysSIT_MC_Pos.loadEff((TH2D*)fSysSIT->Get("hMuSITEffSigMCPos"), (TH2D*)fSysSIT->Get(""), (TH2D*)fSysSIT->Get(""));
-  
-  sysSIT_Bkg_Neg.loadEff((TH2D*)fSysSIT->Get("hMuSITEffBkgNeg"), (TH2D*)fSysSIT->Get(""), (TH2D*)fSysSIT->Get(""));
-  sysSIT_Bkg_Pos.loadEff((TH2D*)fSysSIT->Get("hMuSITEffBkgPos"), (TH2D*)fSysSIT->Get(""), (TH2D*)fSysSIT->Get(""));
-  
-  sysSta_FSR_Neg.loadEff((TH2D*)fSysSta->Get("hMuStaEffSigFSRNeg"), (TH2D*)fSysSta->Get(""), (TH2D*)fSysSta->Get(""));
-  sysSta_FSR_Pos.loadEff((TH2D*)fSysSta->Get("hMuStaEffSigFSRPos"), (TH2D*)fSysSta->Get(""), (TH2D*)fSysSta->Get(""));
-  
-  sysSta_MC_Neg.loadEff((TH2D*)fSysSta->Get("hMuStaEffSigMCNeg"), (TH2D*)fSysSta->Get(""), (TH2D*)fSysSta->Get(""));
-  sysSta_MC_Pos.loadEff((TH2D*)fSysSta->Get("hMuStaEffSigMCPos"), (TH2D*)fSysSta->Get(""), (TH2D*)fSysSta->Get(""));
-  
-  sysSta_Bkg_Neg.loadEff((TH2D*)fSysSta->Get("hMuStaEffBkgNeg"), (TH2D*)fSysSta->Get(""), (TH2D*)fSysSta->Get(""));
-  sysSta_Bkg_Pos.loadEff((TH2D*)fSysSta->Get("hMuStaEffBkgPos"), (TH2D*)fSysSta->Get(""), (TH2D*)fSysSta->Get(""));
+  effs.loadUncSel(sysFileSIT);
+  effs.loadUncSta(sysFileSta);
+  TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
 
 
   Bool_t isData = (fileName.CompareTo("data_select.root")==0);
@@ -267,141 +224,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
   
- // ------------------------------------------------------------------------------------------------------------------------------------------
- //   Load the Efficiency SF
- // ------------------------------------------------------------------------------------------------------------------------------------------
-  cout << "Loading trigger efficiencies..." << endl;
-  
-  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);  CEffUser2D dataHLTEff_pos;
-  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);  CEffUser2D dataHLTEff_neg;
-  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
-    
-  TFile *zmmHLTEffFile_pos = new TFile(zmmHLTEffName_pos);  CEffUser2D zmmHLTEff_pos;
-  zmmHLTEff_pos.loadEff((TH2D*)zmmHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);  CEffUser2D zmmHLTEff_neg;
-  zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
-
-  //
-  // Selection efficiency
-  //
-  cout << "Loading selection efficiencies..." << endl;
-  
-  TFile *dataSelEffFile_pos = new TFile(dataSelEffName_pos);  CEffUser2D dataSelEff_pos;
-  dataSelEff_pos.loadEff((TH2D*)dataSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataSelEffFile_neg = new TFile(dataSelEffName_neg);  CEffUser2D dataSelEff_neg;
-  dataSelEff_neg.loadEff((TH2D*)dataSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmSelEffFile_pos = new TFile(zmmSelEffName_pos);  CEffUser2D zmmSelEff_pos;
-  zmmSelEff_pos.loadEff((TH2D*)zmmSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrhEtaPt"));
-
-  TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);  CEffUser2D zmmSelEff_neg;
-  zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
-
-  
-  //
-  // Standalone efficiency
-  //
-  cout << "Loading standalone efficiencies..." << endl;
-  
-  TFile *dataStaEffFile_pos = new TFile(dataStaEffName_pos);  CEffUser2D dataStaEff_pos;
-  dataStaEff_pos.loadEff((TH2D*)dataStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataStaEffFile_neg = new TFile(dataStaEffName_neg);  CEffUser2D dataStaEff_neg;
-  dataStaEff_neg.loadEff((TH2D*)dataStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEffFile_pos = new TFile(zmmStaEffName_pos);  CEffUser2D zmmStaEff_pos;
-  zmmStaEff_pos.loadEff((TH2D*)zmmStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);  CEffUser2D zmmStaEff_neg;
-  zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt")); 
-  
-     // ---------------------------------------------------------------
-   //      Tag PT stuff
-   // ---------------------------------------------------------------  
-  TFile *dataHLTEffFileTagPt_pos = new TFile(dataHLTEffNameTagPt_pos);  TFile *dataHLTEffFileTagPt_neg = new TFile(dataHLTEffNameTagPt_neg);
-  TFile *zmmHLTEffFileTagPt_pos  = new TFile(zmmHLTEffNameTagPt_pos);   TFile *zmmHLTEffFileTagPt_neg = new TFile(zmmHLTEffNameTagPt_neg);
-  
-  CEffUser2D dataHLTEffTagPt_pos; CEffUser2D dataHLTEffTagPt_neg; CEffUser2D zmmHLTEffTagPt_pos; CEffUser2D zmmHLTEffTagPt_neg;
-  
-  dataHLTEffTagPt_pos.loadEff((TH2D*)dataHLTEffFileTagPt_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFileTagPt_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFileTagPt_pos->Get("hErrhEtaPt"));
-  
-  dataHLTEffTagPt_neg.loadEff((TH2D*)dataHLTEffFileTagPt_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFileTagPt_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFileTagPt_neg->Get("hErrhEtaPt"));
-    
-  zmmHLTEffTagPt_pos.loadEff((TH2D*)zmmHLTEffFileTagPt_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFileTagPt_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFileTagPt_pos->Get("hErrhEtaPt"));
-  
-  zmmHLTEffTagPt_neg.loadEff((TH2D*)zmmHLTEffFileTagPt_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFileTagPt_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFileTagPt_neg->Get("hErrhEtaPt"));
-
-  // h =(TH2D*)dataHLTEffFileTagPt_pos->Get("hEffEtaPt");
-  // TH2D *hHLTErrTagPt_pos = new TH2D("hHLTErrTagPt_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  // TH2D *hHLTErrTagPt_neg = new TH2D("hHLTErrTagPt_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  
-  //
-  // Selection efficiency
-  //
-  cout << "Loading selection efficiencies..." << endl;
-  
-  TFile *dataSelEffFileTagPt_pos = new TFile(dataSelEffNameTagPt_pos);    TFile *dataSelEffFileTagPt_neg = new TFile(dataSelEffNameTagPt_neg);
-  TFile *zmmSelEffFileTagPt_pos = new TFile(zmmSelEffNameTagPt_pos);  TFile *zmmSelEffFileTagPt_neg = new TFile(zmmSelEffNameTagPt_neg);
-  CEffUser2D dataSelEffTagPt_pos; CEffUser2D dataSelEffTagPt_neg; CEffUser2D zmmSelEffTagPt_pos; CEffUser2D zmmSelEffTagPt_neg;
-  
-  dataSelEffTagPt_pos.loadEff((TH2D*)dataSelEffFileTagPt_pos->Get("hEffEtaPt"), 
-                              (TH2D*)dataSelEffFileTagPt_pos->Get("hErrlEtaPt"), 
-                              (TH2D*)dataSelEffFileTagPt_pos->Get("hErrhEtaPt"));
-
-  dataSelEffTagPt_neg.loadEff((TH2D*)dataSelEffFileTagPt_neg->Get("hEffEtaPt"), 
-                              (TH2D*)dataSelEffFileTagPt_neg->Get("hErrlEtaPt"), 
-                              (TH2D*)dataSelEffFileTagPt_neg->Get("hErrhEtaPt"));
-
-  zmmSelEffTagPt_pos.loadEff((TH2D*)zmmSelEffFileTagPt_pos->Get("hEffEtaPt"), 
-                             (TH2D*)zmmSelEffFileTagPt_pos->Get("hErrlEtaPt"), 
-                             (TH2D*)zmmSelEffFileTagPt_pos->Get("hErrhEtaPt"));
-
-  zmmSelEffTagPt_neg.loadEff((TH2D*)zmmSelEffFileTagPt_neg->Get("hEffEtaPt"), 
-                             (TH2D*)zmmSelEffFileTagPt_neg->Get("hErrlEtaPt"), 
-                             (TH2D*)zmmSelEffFileTagPt_neg->Get("hErrhEtaPt"));
-
-  // h =(TH2D*)dataSelEffFileTagPt_pos->Get("hEffEtaPt");
-  // TH2D *hSelErrTagPt_pos = new TH2D("hSelErrTagPt_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  // TH2D *hSelErrTagPt_neg = new TH2D("hSelErrTagPt_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-
-  //
-  // Standalone efficiency
-  //
-  cout << "Loading standalone efficiencies..." << endl;
-  
-  TFile *dataStaEffFileTagPt_pos = new TFile(dataStaEffNameTagPt_pos);  TFile *dataStaEffFileTagPt_neg = new TFile(dataStaEffNameTagPt_neg);
-  TFile *zmmStaEffFileTagPt_pos = new TFile(zmmStaEffNameTagPt_pos);  TFile *zmmStaEffFileTagPt_neg = new TFile(zmmStaEffNameTagPt_neg);
-  CEffUser2D dataStaEffTagPt_pos;  CEffUser2D dataStaEffTagPt_neg;  CEffUser2D zmmStaEffTagPt_pos;  CEffUser2D zmmStaEffTagPt_neg;
-  
-  dataStaEffTagPt_pos.loadEff((TH2D*)dataStaEffFileTagPt_pos->Get("hEffEtaPt"), 
-                              (TH2D*)dataStaEffFileTagPt_pos->Get("hErrlEtaPt"), 
-                              (TH2D*)dataStaEffFileTagPt_pos->Get("hErrhEtaPt"));
-  
-  dataStaEffTagPt_neg.loadEff((TH2D*)dataStaEffFileTagPt_neg->Get("hEffEtaPt"), 
-                              (TH2D*)dataStaEffFileTagPt_neg->Get("hErrlEtaPt"), 
-                              (TH2D*)dataStaEffFileTagPt_neg->Get("hErrhEtaPt"));
-  
-  zmmStaEffTagPt_pos.loadEff((TH2D*)zmmStaEffFileTagPt_pos->Get("hEffEtaPt"), 
-                             (TH2D*)zmmStaEffFileTagPt_pos->Get("hErrlEtaPt"), 
-                             (TH2D*)zmmStaEffFileTagPt_pos->Get("hErrhEtaPt"));
-  
-  zmmStaEffTagPt_neg.loadEff((TH2D*)zmmStaEffFileTagPt_neg->Get("hEffEtaPt"), 
-                             (TH2D*)zmmStaEffFileTagPt_neg->Get("hErrlEtaPt"), 
-                             (TH2D*)zmmStaEffFileTagPt_neg->Get("hErrhEtaPt"));
-
-  // h =(TH2D*)dataStaEffFileTagPt_pos->Get("hEffEtaPt");
-  // TH2D *hStaErrTagPt_pos = new TH2D("hStaErrTagPt_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  // TH2D *hStaErrTagPt_neg = new TH2D("hStaErrTagPt_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       // h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
 
   RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
   
@@ -487,11 +309,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+   // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
    // for(UInt_t ientry=0; ientry<0.33*((uint)intree->GetEntries()); ientry++) {
    // for(UInt_t ientry=0.33*((uint)intree->GetEntries()); ientry<0.67*((uint)intree->GetEntries()); ientry++) {
    // for(UInt_t ientry=0.67*((uint)intree->GetEntries()); ientry<intree->GetEntries(); ientry++) {
-  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.5; ientry+=iterator) {
+  for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.05; ientry+=iterator) {
     intree->GetEntry(ientry);
     if(ientry%100000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
@@ -525,129 +347,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     // HLT doesn't have associated systematic uncertainties
     effdata=1;effmc=1;
     effdatah=1;effdatal=1; effmch=1;effmcl=1;
-    if(q>0) {
-      effdata *= (1.-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())); 
-      effmc   *= (1.-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())); 
-      effdatah*=(1-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1+dataHLTEff_pos.getErrHigh((lep->Eta()), lep->Pt())));
-      effdatal*=(1-dataHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1-dataHLTEff_pos.getErrLow((lep->Eta()), lep->Pt())));
-      effmch  *=(1-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1+zmmHLTEff_pos.getErrHigh((lep->Eta()), lep->Pt())));
-      effmcl  *=(1-zmmHLTEff_pos.getEff((lep->Eta()), lep->Pt())*(1-zmmHLTEff_pos.getErrLow((lep->Eta()), lep->Pt())));
-    } else {
-      effdata *= (1.-dataHLTEff_neg.getEff((lep->Eta()), lep->Pt())); 
-      effmc   *= (1.-zmmHLTEff_neg.getEff((lep->Eta()), lep->Pt())); 
-      effdatah*=(1-dataHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1+dataHLTEff_neg.getErrHigh((lep->Eta()), lep->Pt())));
-      effdatal*=(1-dataHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1-dataHLTEff_neg.getErrLow((lep->Eta()), lep->Pt())));
-      effmch  *=(1-zmmHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1+zmmHLTEff_neg.getErrHigh((lep->Eta()), lep->Pt())));
-      effmcl  *=(1-zmmHLTEff_neg.getEff((lep->Eta()), lep->Pt())*(1-zmmHLTEff_neg.getErrLow((lep->Eta()), lep->Pt())));
-    }
-    effdata = 1.-effdata;
-    effmc   = 1.-effmc;
-    effdatah = 1.-effdatah;
-    effmch   = 1.-effmch;
-    effdatal = 1.-effdatal;
-    effmcl   = 1.-effmcl;
-    corr *= effdata/effmc;
-    corrdu *= effdatah/effmc;
-    corrdd *= effdatal/effmc;
-    corrmu *= effdata/effmch;
-    corrmd *= effdata/effmcl;
-    
-    corrFSR *= effdata/effmc;
-    corrMC  *= effdata/effmc;
-    corrBkg *= effdata/effmc;
-    corrTag *= effdata/effmc;
-    
-    // if(lep->Pt() < 25) continue;
-   
-    // std::cout << q << std::endl;
-    effdata=1; effmc=1;    effdatah=1;effdatal=1; effmch=1;effmcl=1;
-    effdataMC=1; effdataBkg=1; effdataFSR=1; edTag=1;emTag=1;
-    if(q>0) {
-      effdata *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
-      effmc   *= zmmSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
-      effdataFSR *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSIT_FSR_Pos.getEff(lep->Eta(), lep->Pt());
-      effdataMC  *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt())  * sysSIT_MC_Pos.getEff(lep->Eta(), lep->Pt());
-      effdataBkg *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSIT_Bkg_Pos.getEff(lep->Eta(), lep->Pt());
-      effdatah   *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * (1+dataSelEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
-      effmch     *= zmmSelEff_pos.getEff((lep->Eta()),  lep->Pt()) * (1+zmmSelEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
-      effdatal   *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()) * (1-dataSelEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
-      effmcl     *= zmmSelEff_pos.getEff((lep->Eta()),  lep->Pt()) * (1-zmmSelEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
-      edTag  *= dataSelEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
-      emTag   *= zmmSelEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
-    } else {
-      effdata *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
-      effmc   *= zmmSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
-      effdataFSR *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_FSR_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataMC  *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_MC_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataBkg *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSIT_Bkg_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdatah   *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * (1+dataSelEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
-      effmch     *= zmmSelEff_neg.getEff((lep->Eta()),  lep->Pt()) * (1+zmmSelEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
-      effdatal   *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()) * (1-dataSelEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
-      effmcl     *= zmmSelEff_neg.getEff((lep->Eta()),  lep->Pt()) * (1-zmmSelEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
-      edTag *= dataSelEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
-      emTag   *= zmmSelEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
-    }
-    // std::cout << "fsr " << effdataFSR << std::endl;
-    // std::cout << "-----------------------" << std::endl;
-    // std::cout << "fsr " << effdataFSR << std::endl;
-    // std::cout << "mc " << effdataMC << std::endl;
-    // std::cout << "bkg " << effdataBkg << std::endl;
-    // std::cout << lep->Pt() << "  " << lep->Eta() << std::endl;
-    corr *= effdata/effmc;
-    corrFSR *= effdataFSR/effmc;
-    corrMC  *= effdataMC/effmc;
-    corrBkg *= effdataBkg/effmc;
-    corrTag *= edTag/emTag;
-    corrdu *= effdatah/effmc;
-    corrdd *= effdatal/effmc;
-    corrmu *= effdata/effmch;
-    corrmd *= effdata/effmcl;
-    
-    effdata=1; effmc=1;    effdatah=1;effdatal=1; effmch=1;effmcl=1;
-    effdataFSR=1; effdataMC=1; effdataBkg=1; emTag=1; edTag=1; 
-    // effSigShapedata=1;
-    // effBkgShapedata=1;
-    if(q>0) {
-      effdata *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
-      effmc   *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
-      effdataFSR *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_FSR_Pos.getEff(lep->Eta(), lep->Pt()); 
-      effdataMC  *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_MC_Pos.getEff(lep->Eta(), lep->Pt()); 
-      effdataBkg *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * sysSta_Bkg_Pos.getEff(lep->Eta(), lep->Pt()); 
-      effdatah   *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * (1+dataStaEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
-      effmch     *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt())   * (1+zmmStaEff_pos.getErrHigh((lep->Eta()), lep->Pt())); 
-      effdatal   *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()) * (1-dataStaEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
-      effmcl     *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt())   * (1-zmmStaEff_pos.getErrLow((lep->Eta()), lep->Pt())); 
-      edTag *= dataStaEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
-      emTag   *= zmmStaEffTagPt_pos.getEff((lep->Eta()), lep->Pt()); 
-    } else {
-      effdata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
-      effmc   *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
-      effdataFSR *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_FSR_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataMC  *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_MC_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdataBkg *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * sysSta_Bkg_Neg.getEff(lep->Eta(), lep->Pt()); 
-      effdatah   *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * (1+dataStaEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
-      effmch     *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt())   * (1+zmmStaEff_neg.getErrHigh((lep->Eta()), lep->Pt())); 
-      effdatal   *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()) * (1-dataStaEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
-      effmcl     *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt())   * (1-zmmStaEff_neg.getErrLow((lep->Eta()), lep->Pt())); 
-      edTag *= dataStaEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
-      emTag   *= zmmStaEffTagPt_neg.getEff((lep->Eta()), lep->Pt()); 
-    }
-    // std::cout << "fsr " << effdataFSR << std::endl;
-    // std::cout << "mc " << effdataMC << std::endl;
-    // std::cout << "bkg " << effdataBkg << std::endl;
-    // std::cout << lep->Pt() << "  " << lep->Eta() << std::endl;
-    corr *= effdata/effmc; 
-    corrFSR *= effdataFSR/effmc;
-    corrMC  *= effdataMC/effmc;
-    corrBkg *= effdataBkg/effmc;
-    corrTag *= edTag/emTag;
-    corrdu *= effdatah/effmc;
-    corrdd *= effdatal/effmc;
-    corrmu *= effdata/effmch;
-    corrmd *= effdata/effmcl;
-    
-    // std::cout << "did the efficiencies" << std::endl;
-
     
     if(isData){
       // Apply the Rochester Corrections to data
@@ -685,22 +384,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       mtCorr=mt;
     } else {
       
-      evtWeight[main]=corr*scale1fb*prefireWeight;
-      evtWeight[fsr]=corrFSR*scale1fb*prefireWeight;
-      evtWeight[mc] =corrMC*scale1fb*prefireWeight;
-      evtWeight[bkg]=corrBkg*scale1fb*prefireWeight;
-      evtWeight[tagpt]=corrTag*scale1fb*prefireWeight;
-      evtWeight[sdu]=corrdu*scale1fb*prefireWeight;
-      evtWeight[sdd]=corrdd*scale1fb*prefireWeight;
-      evtWeight[smu]=corrmu*scale1fb*prefireWeight;
-      evtWeight[smd]=corrmd*scale1fb*prefireWeight;
-      evtWeight[pfireu]=corr*scale1fb*prefireUp;
-      evtWeight[pfired]=corr*scale1fb*prefireDown;
-      // std::cout << "storight the wweights" << std::endl;
-      // std::cout << "weights and alternates" << totalEvtWeight << "  " << evtWeightSysFSR << "  " << evtWeightSysMC << "  " << evtWeightSysBkg << std::endl;
-       
-      // if(q<0) continue;
-
       // Do some Rochester corrections for MC
       TLorentzVector mu1;
       TLorentzVector mu1u;
@@ -710,7 +393,33 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       mu1u.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       mu1d.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       
+    
+      corr = effs.fullEfficiencies(&mu1,q);
+      vector<double> uncs_sta = effs.getUncSta(&mu1,q);
+      vector<double> uncs_sit = effs.getUncSel(&mu1,q);
       
+      corrFSR *= uncs_sta[0]*uncs_sit[0]*effs.computeHLTSF(&mu1,q); // alternate fsr model
+      corrMC  *= uncs_sta[1]*uncs_sit[1]*effs.computeHLTSF(&mu1,q); // alternate mc gen model
+      corrBkg *= uncs_sta[2]*uncs_sit[2]*effs.computeHLTSF(&mu1,q); // alternate bkg model
+      corrTag *= uncs_sta[3]*uncs_sit[3]*effs.computeHLTSF(&mu1,q); // alternate bkg model
+
+      double var=0.;        
+      // var += effs.statUncSta(&l1, q) + effs.statUncSta(&l2, q2);
+      var += effs.statUncSta(&mu1, q, hErr, hErr, 1.0);
+      var += effs.statUncSel(&mu1, q, hErr, hErr, 1.0);
+      var += effs.statUncHLT(&mu1, q, hErr, hErr, 1.0);
+    
+      evtWeight[main]=corr*scale1fb*prefireWeight;
+      evtWeight[fsr]=corrFSR*scale1fb*prefireWeight;
+      evtWeight[mc] =corrMC*scale1fb*prefireWeight;
+      evtWeight[bkg]=corrBkg*scale1fb*prefireWeight;
+      evtWeight[tagpt]=corrTag*scale1fb*prefireWeight;
+      evtWeight[effstat]=(corr+sqrt(var))*scale1fb*prefireWeight;
+      evtWeight[pfireu]=corr*scale1fb*prefireUp;
+      evtWeight[pfired]=corr*scale1fb*prefireDown;
+
+      cout << "test " << evtWeight[main] << " " << evtWeight[mc] << " " << evtWeight[effstat] << endl;
+
       double rand = gRandom->Uniform(1);
       double mcSF1 = 1;
       if(genMuonPt > 0){
