@@ -26,15 +26,20 @@ const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6
 // const int NBpt = 8;
 // const float ptrange[NBpt+1] = {25,30,35,40,45,50,60,80,8000};
 
-// TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
-// TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results/TOYS/";
-TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v1/results/TOYS/";
-TString sigDirFSR="_POWxPythia_v2_POWxPhotos_v2/";
-TString sigDirMC="_aMCxPythia_v2_minloxPythia_v2/";
-// TString bkgDir="_aMCxPythia_v1_POWBKG_v1/"; // should be exp vs Powerlaw
-TString bkgDir="_POWBKG_v2_aMCxPythia_v2/"; // should be exp vs Powerlaw
+// TString mainDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
+// TString mainDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results/TOYS/";
+TString mainDir="/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/TOYS_v2/";
+TString sigDirFSR="_POWxPythia_POWxPhotos/";
+TString sigDirMC ="_aMCxPythia_minloxPythia/";
+TString bkgDir   ="_aMCxPythia_POWBKG/"; // should be exp vs Powerlaw
+// TString tagDir   ="_aMCxPythia_aMCxPythia_tagPt/"; // should be exp vs Powerlaw
+TString effDirD = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/Data/";
+TString effDirM = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/MC/";
+TString amc="_aMCxPythia/";
+TString tagpt="_aMCxPythia_tagPt/"; // should be exp vs Powerlaw
 
-TString subfolder="";
+TString outDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics";
+TString subf="";
 
 // TString sigDirMC="_aMCxPythia_v0_POWBKG_v0/";
 // TString sigDirFSR="_aMCxPythia_v0_POWBKG_v0/";
@@ -46,88 +51,131 @@ TString subfolder="";
 // TString bkgDir="_aMCxPythia_v0_aMCxPythia_v0/"; 
 
 // const string charges[2] = {"Negative","Positive"};
-const string charges[2] = {"Combined","Combined"};
+// const string charges[2] = {"Combined","Combined"};
 
-/* old
-const float StaSigSys[NBpt*NBeta] = {1.00, 1.28, 0.52, 0.69, 1.48, 1.11, 1.00, 0.97,
-				     0.35, 0.22, 0.27, 0.11, 0.11, 0.19, 0.23, 0.34};
-const float StaBkgSys[NBpt*NBeta] = {0.10, 0.33, 0.39, 1.30, 0.05, 0.14, 0.10, 0.22,
-				     0.13, 0.05, 0.06, 0.02, 0.03, 0.02, 0.01, 0.26};
-const float SITSigSys[NBpt*NBeta] = {0.03, 0.16, 1.52, 0.02, 1.10, 0.77, 0.58, 0.01,
-				     0.02, 0.02, 0.81, 0.12, 0.01, 0.45, 0.05, 0.04};
-const float SITBkgSys[NBpt*NBeta] = {0.13, 0.01, 0.07, 0.00, 0.01, 0.01, 0.15, 0.00,
-				     0.11, 0.00, 0.07, 0.01, 0.00, 0.00, 0.00, 0.15};
-*/
-const float StaSigSys[NBpt*NBeta] = {0.50, 0.93, 0.74, 0.64, 0.67, 0.73, 0.55, 0.41,
-                                     0.15, 0.26, 0.17, 0.11, 0.08, 0.21, 0.17, 0.13};
-const float StaBkgSys[NBpt*NBeta] = {0.25, 0.76, 0.31, 0.22, 0.30, 0.16, 0.56, 0.46,
-                                     0.02, 0.03, 0.01, 0.01, 0.01, 0.01, 0.03, 0.01};
-const float SITSigSys[NBpt*NBeta] = {0.38, 0.57, 1.25, 0.78, 0.79, 1.00, 0.63, 0.51,
-                                     0.46, 0.28, 0.32, 0.29, 0.35, 0.61, 0.21, 0.39};
-const float SITBkgSys[NBpt*NBeta] = {0.03, 0.08, 0.14, 0.11, 0.11, 0.12, 0.07, 0.06,
-                                     0.01, 0.00, 0.02, 0.00, 0.00, 0.00, 0.00, 0.01};
-void makeTH2DMu(TString effTypeSig = "MuStaEff"){
-// void makeTH2DMu(TString effTypeSig = "MuSITEff"){
+// const vector<TString> charges{"Negative","Positive"};
+const vector<TString> charges{"Combined", "Combined"};
+
+// the alternative values for the Standalone 
+const float fsrReplace[NBpt*NBeta]={ 0.999918, 1.003591, 1.000001, 1.000711, 1.000439, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000};
+const float mcReplace[NBpt*NBeta]={0.999980, 0.992656, 0.999727, 0.996864, 1.001382, 1.003100, 1.004811, 1.000910, 1.002059, 0.998573, 0.999180, 0.995128, 1.000510, 0.999844, 0.999514, 1.000040, 1.000328, 1.001896, 1.001451, 1.001363, 1.000182, 1.000526, 0.999576, 1.001489};
+const float bkgReplace[NBpt*NBeta]={0.997122, 0.990444, 0.998531, 0.993576, 0.996215, 0.993380, 0.994157, 0.976469, 0.998377, 0.998529, 0.986246, 0.993661, 0.997157, 0.998264, 0.998694, 0.998115, 0.998386, 0.999483, 0.999141, 0.999100, 0.998073, 0.999231, 0.999083, 0.999723};
+
+void makeTH2DMu(TString eType = "MuStaEff"){
+// void makeTH2DMu(TString eType = "MuSITEff"){
     // alternate input option is MuStaEff, HLT should not have fits?MuSITEff
     bool doAbs=false; 
-    vector<double> vSigMCNeg;
-    vector<double> vSigMCPos;
-    vector<double> vSigFSRNeg;
-    vector<double> vSigFSRPos;
+    vector<double> vMCNeg;
+    vector<double> vMCPos;
+    vector<double> vFSRNeg;
+    vector<double> vFSRPos;
     vector<double> vBkgNeg; 
     vector<double> vBkgPos;
+    vector<double> vTagNeg; 
+    vector<double> vTagPos;
+    
+    
+    double value=0; // read in value is the % diff from the central value
+    char infilename[200];
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirD.Data(),eType.Data(),amc.Data(),subf.Data(),charges[0].Data());
+    TFile *amcPd = new TFile(infilename); TH2D *amcPosDat = (TH2D*) amcPd->Get("hEffEtaPt");
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirD.Data(),eType.Data(),amc.Data(),subf.Data(),charges[1].Data());
+    TFile *amcNd = new TFile(infilename); TH2D *amcNegDat = (TH2D*) amcNd->Get("hEffEtaPt");
+    
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirD.Data(),eType.Data(),tagpt.Data(),subf.Data(),charges[0].Data());
+    TFile *tagPd = new TFile(infilename);TH2D *tagPosDat = (TH2D*) tagPd->Get("hEffEtaPt");
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirD.Data(),eType.Data(),tagpt.Data(),subf.Data(),charges[1].Data());
+    TFile *tagNd = new TFile(infilename);TH2D *tagNegDat = (TH2D*) tagNd->Get("hEffEtaPt");
+    
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirM.Data(),eType.Data(),amc.Data(),subf.Data(),charges[0].Data());
+    TFile *amcPm = new TFile(infilename); TH2D *amcPosMC = (TH2D*) amcPm->Get("hEffEtaPt");
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirM.Data(),eType.Data(),amc.Data(),subf.Data(),charges[1].Data());
+    TFile *amcNm = new TFile(infilename); TH2D *amcNegMC = (TH2D*) amcNm->Get("hEffEtaPt");
+    
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirM.Data(),eType.Data(),tagpt.Data(),subf.Data(),charges[0].Data());
+    TFile *tagPm = new TFile(infilename);TH2D *tagPosMC = (TH2D*) tagPm->Get("hEffEtaPt");
+    sprintf(infilename,"%s%s%s%s%s/eff.root",effDirM.Data(),eType.Data(),tagpt.Data(),subf.Data(),charges[1].Data());
+    TFile *tagNm = new TFile(infilename);TH2D *tagNegMC = (TH2D*) tagNm->Get("hEffEtaPt");
     
   for(int i = 0; i < NBeta*NBpt; ++i){
-    double value=0;
-    char infilename[200];
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),subfolder.Data(),charges[0].c_str(),i);
-    ifstream infile1(infilename); assert (infile1); infile1>>value; doAbs?value=fabs(value):value=value;vSigFSRNeg.push_back(value); value=0;
-    std::cout << infilename << vSigFSRNeg.back() << std::endl;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirFSR.Data(),subfolder.Data(),charges[1].c_str(),i);
-    ifstream infile2(infilename); assert (infile2);infile2>>value; doAbs?value=fabs(value):value=value;vSigFSRPos.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),subfolder.Data(),charges[0].c_str(),i);
-    ifstream infile3(infilename); assert (infile3);infile3>>value; doAbs?value=fabs(value):value=value;vSigMCNeg.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),sigDirMC.Data(),subfolder.Data(),charges[1].c_str(),i);
-    ifstream infile4(infilename); assert (infile4);infile4>>value;doAbs?value=fabs(value):value=value;vSigMCPos.push_back(value); value=0;    
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),subfolder.Data(),charges[0].c_str(),i);
-    ifstream infile5(infilename); assert (infile5);infile5>>value; doAbs?value=fabs(value):value=value;vBkgNeg.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),effTypeSig.Data(),bkgDir.Data(),subfolder.Data(),charges[1].c_str(),i);
-    ifstream infile6(infilename); infile6>>value; doAbs?value=fabs(value):value=value;vBkgPos.push_back(value); value=0; 
+    
+    
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),sigDirFSR.Data(),subf.Data(),charges[0].Data(),i);
+    ifstream infile1(infilename); assert (infile1); infile1>>value; value=(doAbs?fabs(value):value);vFSRNeg.push_back(value); value=0;
+    std::cout << infilename << vFSRNeg.back() << std::endl;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),sigDirFSR.Data(),subf.Data(),charges[1].Data(),i);
+    ifstream infile2(infilename); assert (infile2);infile2>>value; value=(doAbs?fabs(value):value);vFSRPos.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),sigDirMC.Data(),subf.Data(),charges[0].Data(),i);
+    ifstream infile3(infilename); assert (infile3);infile3>>value; value=(doAbs?fabs(value):value);vMCNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),sigDirMC.Data(),subf.Data(),charges[1].Data(),i);
+    ifstream infile4(infilename); assert (infile4);infile4>>value;value=(doAbs?fabs(value):value);vMCPos.push_back(value); value=0;    
+    std::cout << infilename << vMCPos.back() << std::endl;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),bkgDir.Data(),subf.Data(),charges[0].Data(),i);
+    ifstream infile5(infilename); assert (infile5);infile5>>value; value=(doAbs?fabs(value):value);vBkgNeg.push_back(value); value=0;
+    sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),bkgDir.Data(),subf.Data(),charges[1].Data(),i);
+    ifstream infile6(infilename); infile6>>value; value=(doAbs?fabs(value):value); vBkgPos.push_back(value); value=0; 
+    
+    if(i==2||i==10||i==14) {vFSRNeg[i]=fsrReplace[i]-1;vFSRPos[i]=fsrReplace[i]-1;}
+    // if(i==2||i==10||i==14) {vMCNeg[i]=mcReplace[i]-1;vMCPos[i]=mcReplace[i]-1;}
+    // if(i==10||i==14) {vBkgNeg[i]=bkgReplace[i]-1;vBkgPos[i]=bkgReplace[i]-1;}
   }
     
     char histname[100];
-    sprintf(histname,"h%sSigMCNeg",effTypeSig.Data());
-	TH2D *hSigMCNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
-    sprintf(histname,"h%sSigMCPos",effTypeSig.Data());
-	TH2D *hSigMCPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
-    sprintf(histname,"h%sSigFSRNeg",effTypeSig.Data());
-    TH2D *hSigFSRNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
-    sprintf(histname,"h%sSigFSRPos",effTypeSig.Data());
-    TH2D *hSigFSRPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
-    sprintf(histname,"h%sBkgNeg",effTypeSig.Data());
+    sprintf(histname,"hMCNeg");
+    TH2D *hMCNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"hMCPos");
+    TH2D *hMCPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"hFSRNeg");
+    TH2D *hFSRNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"hFSRPos");
+    TH2D *hFSRPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"hBkgNeg");
     TH2D *hBkgNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
-    sprintf(histname,"h%sBkgPos",effTypeSig.Data());
+    sprintf(histname,"hBkgPos");
     TH2D *hBkgPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"hTagNeg");
+    TH2D *hTagNeg = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
+    sprintf(histname,"hTagPos");
+    TH2D *hTagPos = new TH2D(histname,histname, NBeta, etarange, NBpt, ptrange);
 
 	for(int ipt=0; ipt<NBpt; ipt++){
 
 		for(int ieta=0; ieta<NBeta; ieta++){
-			hSigFSRNeg->SetBinContent(ieta+1, ipt+1, 1.+vSigFSRNeg[ipt*NBeta+ieta]);
-			hSigFSRPos->SetBinContent(ieta+1, ipt+1, 1.+vSigFSRPos[ipt*NBeta+ieta]);
-			hSigMCNeg->SetBinContent(ieta+1, ipt+1, 1.+vSigMCNeg[ipt*NBeta+ieta]);
-			hSigMCPos->SetBinContent(ieta+1, ipt+1, 1.+vSigMCPos[ipt*NBeta+ieta]);
+      
+      std::cout << ipt*NBeta+ieta << "  " << 1.+vFSRNeg[ipt*NBeta+ieta] << " " << 1.+vMCNeg[ipt*NBeta+ieta] << std::endl;
+			hFSRNeg->SetBinContent(ieta+1, ipt+1, 1.+vFSRNeg[ipt*NBeta+ieta]);
+			hFSRPos->SetBinContent(ieta+1, ipt+1, 1.+vFSRPos[ipt*NBeta+ieta]);
+			hMCNeg ->SetBinContent(ieta+1, ipt+1, 1.+vMCNeg[ipt*NBeta+ieta]);
+			hMCPos ->SetBinContent(ieta+1, ipt+1, 1.+vMCPos[ipt*NBeta+ieta]);
 			hBkgNeg->SetBinContent(ieta+1, ipt+1, 1.+vBkgNeg[ipt*NBeta+ieta]);
 			hBkgPos->SetBinContent(ieta+1, ipt+1, 1.+vBkgPos[ipt*NBeta+ieta]);
+      
+      // hSigFSRNeg->SetBinContent(ieta+1, ipt+1, 1.-vFSRNeg[ipt*NBeta+ieta]);
+			// hSigFSRPos->SetBinContent(ieta+1, ipt+1, 1.-vFSRPos[ipt*NBeta+ieta]);
+			// hSigMCNeg->SetBinContent(ieta+1, ipt+1, 1.-vMCNeg[ipt*NBeta+ieta]);
+			// hSigMCPos->SetBinContent(ieta+1, ipt+1, 1.-vMCPos[ipt*NBeta+ieta]);
+			// hBkgNeg->SetBinContent(ieta+1, ipt+1, 1.-vBkgNeg[ipt*NBeta+ieta]);
+			// hBkgPos->SetBinContent(ieta+1, ipt+1, 1.-vBkgPos[ipt*NBeta+ieta]);
+      
+      double num = tagPosDat->GetBinContent(ieta+1, ipt+1) / amcPosDat->GetBinContent(ieta+1, ipt+1);
+      double dnm = tagPosMC ->GetBinContent(ieta+1, ipt+1) / amcPosMC ->GetBinContent(ieta+1, ipt+1);
+      hTagNeg->SetBinContent(ieta+1, ipt+1, num/dnm);
+      
+      num = tagNegDat->GetBinContent(ieta+1, ipt+1) / amcNegDat->GetBinContent(ieta+1, ipt+1);
+      dnm = tagNegMC ->GetBinContent(ieta+1, ipt+1) / amcNegMC ->GetBinContent(ieta+1, ipt+1);
+			hTagPos->SetBinContent(ieta+1, ipt+1, num/dnm);
 		}
 	}
-    char outfilename[100];
-    sprintf(outfilename,"SysUnc_%s.root",effTypeSig.Data());
+  char outfilename[500];
+  sprintf(outfilename,"%s/SysUnc_%s.root",outDir.Data(),eType.Data());
 	TFile *f = new TFile(outfilename, "RECREATE");
-	hSigFSRNeg->Write();
-	hSigFSRPos->Write();
-	hSigMCNeg->Write();
-	hSigMCPos->Write();
+	hFSRNeg->Write();
+	hFSRPos->Write();
+	hMCNeg->Write();
+	hMCPos->Write();
 	hBkgNeg->Write();
 	hBkgPos->Write();
+  hTagNeg->Write();
+	hTagPos->Write();
 	f->Close();
 }
