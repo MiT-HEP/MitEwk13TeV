@@ -108,24 +108,7 @@ void plotZmm(const TString  inputDir,    // input directory
   const TString zmmStaEffName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
   const TString zmmStaEffName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
  
-    // efficiency files 2Bins
-
-  const TString dataHLTEff2BinName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
-  const TString zmmHLTEff2BinName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString zmmHLTEff2BinName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataSelEff2BinName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString dataSelEff2BinName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
-  const TString zmmSelEff2BinName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString zmmSelEff2BinName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
-
-
-  const TString dataStaEff2BinName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString dataStaEff2BinName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEff2BinName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEff2BinName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-
+ 
   TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
   TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
   TString SelEffSignalShapeSys     = baseDir + "Results/MuSITSigSys.root";
