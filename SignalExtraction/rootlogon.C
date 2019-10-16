@@ -19,17 +19,17 @@
 
     //gROOT->Macro("../Utils/RooVoigtianShape.cc+");
     gROOT->Macro("../Utils/RooCMSShape.cc+");
-
+   gROOT->Macro("../EleScale/EnergyScaleCorrection.cc++");
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");  
-//  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
+  //gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
 
   //gROOT->Macro("RooVoigtianShape.cc+");
   //gROOT->Macro("RooCMSShape.cc+");
 
+  gROOT->Macro("../Utils/AppEffSF.cc+");
   gROOT->Macro("../Utils/CEffUser1D.cc+");
   gROOT->Macro("../Utils/CEffUser2D.cc+");
-
 //  gROOT->Macro("muresolution_run2r.cc+");
   //gROOT->Macro("rochcor2015r.cc+");
  // gROOT->Macro("../RochesterCorr/RoccoR.cc+");
