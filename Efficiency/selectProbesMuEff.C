@@ -54,10 +54,14 @@ void selectProbesMuEff(const TString infilename,           // input ntuple
   const float fitMassHi = 120;
   const int massBin = 60;
 
-const int muEtaNB = 8;
-const float muEtaRange[muEtaNB+1] = {-2.4,-2.1,-1.2,-0.9,0,0.9,1.2,2.1,2.4};
-const int muPtNB = 8;
-const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+const int muEtaNB = 12;
+const float muEtaRange[muEtaNB+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
+
+// const int muPtNB = 8;
+// const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+
+const int muPtNB = 2;
+const float muPtRange[muPtNB+1] = {25,40,8000};
   
   
       TH1D *h_mll_amcnlo[muEtaNB][muPtNB];
@@ -65,10 +69,14 @@ const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
     TH1D *h_mll_photos[muEtaNB][muPtNB];
 
       // Set up to load both the photos and pythia extra weighting
-    TFile *inAMCNLO = new TFile(TString("GenReweightMassHist/zmm-amc-pyth-mll.root"),"OPEN");
-    TFile *inPhotos = new TFile(TString("GenReweightMassHist/zmm-pow-phot-mll.root"),"OPEN");
+    TFile *inAMCNLO = new TFile(TString("GenReweightMassHist/MuSta/zmm-amc-pyth-mll.root"),"OPEN");
+    TFile *inPhotos = new TFile(TString("GenReweightMassHist/MuSta/zmm-pow-phot-mll.root"),"OPEN");
     // TH1D * = (TH1F*)f.Get(“h1”);
-    TFile *inPythia = new TFile(TString("GenReweightMassHist/zmm-pow-pyth-mll.root"),"OPEN"); 
+    TFile *inPythia = new TFile(TString("GenReweightMassHist/MuSta/zmm-pow-pyth-mll.root"),"OPEN"); 
+    // TFile *inAMCNLO = new TFile(TString("GenReweightMassHist/MuSIT/zmm-amc-pyth-mll.root"),"OPEN");
+    // TFile *inPhotos = new TFile(TString("GenReweightMassHist/MuSIT/zmm-pow-phot-mll.root"),"OPEN");
+    // // TH1D * = (TH1F*)f.Get(“h1”);
+    // TFile *inPythia = new TFile(TString("GenReweightMassHist/MuSIT/zmm-pow-pyth-mll.root"),"OPEN"); 
     
   for(int iEtaBin = 0; iEtaBin < muEtaNB; iEtaBin ++){
     for(int iPtBin = 0; iPtBin < muPtNB; iPtBin ++){
@@ -391,7 +399,8 @@ const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
       
       m = dilep->M();    
     }
-    
+    weightPowPhot=1;
+    weightPowPyth=1;
     nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
     if(doWeighted){
      Float_t geneta = -99.;
