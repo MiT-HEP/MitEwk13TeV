@@ -1,9 +1,5 @@
 //================================================================================================
 // 
-// Perform fit to extract Z->mumu signal and efficiency simultaneously
-//
-//  * outputs plots and fit results summary
-//
 //________________________________________________________________________________________________
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -20,179 +16,210 @@
 #include <fstream>                        // functions for file I/O
 #include <string>                         // C++ string class
 #include <sstream>                        // class for parsing strings
+#include <TRandom3.h>
+#include <TGaxis.h>
 #include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"	          // various helper functions
 #include "../Utils/CPlot.hh"	          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
+#include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
-#include "../Utils/ZSignals.hh"           // define models for Z signal PDFs
-#include "../Utils/ZBackgrounds.hh"       // define models for background PDFs
+// helper class to handle efficiency tables
+// #include "../Utils/CEffUser1D.hh"
+// #include "../Utils/CEffUser2D.hh"
 
-// RooFit headers
-#include "RooRealVar.h"
-#include "RooDataSet.h"
-#include "RooCategory.h"
-#include "RooArgList.h"
-#include "RooDataHist.h"
-#include "RooFormulaVar.h"
-#include "RooHistPdf.h"
-#include "RooGenericPdf.h"
-#include "RooAddPdf.h"
-#include "RooExtendPdf.h"
-#include "RooSimultaneous.h"
-#include "RooGaussian.h"
-#include "RooPoisson.h"
-#include "RooNLLVar.h"
-#include "RooConstVar.h"
-#include "RooMinuit.h"
-#include "RooFitResult.h"
+//helper class to handle rochester corrections
+// // #include <rochcor2015r.h>
+// #include <muresolution_run2r.h>
+#include "../RochesterCorr/RoccoR.cc"
+#include "../Utils/AppEffSF.cc"
+
 #endif
-
-enum { eCount, eBWxCB, eMCxGaus };
-enum { eNone, eExp, eErfcExp, eDblExp, eLinExp, eQuadExp };
-
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
-// make webpage
-void makeHTML(const TString outDir);
-
-// obtain a signal+background PDF
-RooAbsPdf* getModel(Int_t sigType, Int_t bkgType, const char *label, TH1D *histTemplate,
-                    RooRealVar &m, RooFormulaVar &NfitSig, RooRealVar &NfitBkg);
-
-
-// print correlations of fitted parameters
-void printCorrelations(ostream& os, RooFitResult *res);
-
-// print chi2 test and KS test results
-void printChi2AndKSResults(ostream& os, 
-                           const Double_t chi2prob, const Double_t chi2ndf, 
-                           const Double_t ksprob, const Double_t ksprobpe);
-
+void orderByLepPt(TLorentzVector &mu1, TLorentzVector &mu2, Int_t &q1, Int_t &q2, double mu_MASS);
 
 //=== MAIN MACRO ================================================================================================= 
 
-void fitZmm(const TString  outputDir,   // output directory
-            const Double_t lumi,        // integrated luminosity (/fb)
-	    const Int_t    doPU         // option for PU-reweighting
+void fitZmm(const TString  inputDir,    // input directory
+          const TString  outputDir,   // output directory
+          const TString  sqrts, 
+          const Double_t lumi,        // integrated luminosity (/fb)
+          const Bool_t   normToData=0 //draw MC normalized to data
 ) {
-  gBenchmark->Start("fitZmm");
+  gBenchmark->Start("plotZmm");
+  gStyle->SetTitleOffset(1.100,"Y");
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //==============================================================================================================   
-  
+  const Double_t mu_MASS  = 0.1057;
   //
   // input ntuple file names
   //
-  enum { eData, eZmm, eEWK };  // data type enum
+  enum { eData, eZmm, eEWK, eTop ,eDib, eZxx, eWx};  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
+
+  fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
+  fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(TString("/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV/Zmumu_testGen/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
   
-//  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/c/cmedlock/wz-ntuples/Zmumu/ntuples/zmm_select.root");  typev.push_back(eZmm);
-//  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/ewk_select.root");  typev.push_back(eEWK);
-//  fnamev.push_back("/scratch/ksung/EWKAna/8TeV/Selection/Zmumu/ntuples/top_select.root");  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eZxx);
+  fnamev.push_back(inputDir + TString("/") + TString("dib_select.raw.root"));  typev.push_back(eDib);
 
   //
   // Fit options
   //
-  const Bool_t doBinned = kTRUE;
-  
-  const Int_t    NBINS     = 30;
+  const Int_t    NBINS     = 60;
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
-  const Double_t ETA_CUT   = 2.1;
-  
-  const Int_t typeMuMuNoSelSig = eMCxGaus;
-  const Int_t typeMuMuNoSelBkg = eExp;
-  const Int_t typeMuStaSig     = eMCxGaus;
-  const Int_t typeMuStaBkg     = eExp;
-  const Int_t typeMuTrkSig     = eMCxGaus;
-  const Int_t typeMuTrkBkg     = eExp;
-  
-  // plot output file format
-  const TString format("png");
-  
-  // pile-up re-weight file
-//  const TString pufname("/scratch/ksung/EWKAna/test/Utils/PileupReweighting.Summer11DYmm_To_Run2011A.root");
+  const Double_t ETA_CUT   = 2.4;
+
+  const bool doRoch = true;
+  // efficiency files
  
+  // new eff SF helper code
+  // constructor-> construct and intialize the main file path
+  // add 
+  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
+  // std::string baseDirs = baseDir.Data();
+  AppEffSF effs(baseDir);
+  effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
+  
+  string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/";
+    // Sta=${EFFSYSDIR}/${SYS}/SysUnc_MuStaEff.root
+  // SIT=${EFFSYSDIR}/${SYS}/SysUnc_MuSITEff.root
+  string sysFileSIT = sysDir + "SysUnc_MuSITEff.root";
+  string sysFileSta = sysDir + "SysUnc_MuStaEff.root";
+  effs.loadUncSel(sysFileSIT);
+  effs.loadUncSta(sysFileSta);
+  
+  //
+  // Set up output file
+  //
+  TString outfilename = outputDir + TString("/") + TString("Zmm_DataBkg.root");
+  TFile *outFile = new TFile(outfilename,"RECREATE");
+  TH1::AddDirectory(kFALSE);
+
+
+  // plot output file format
+  const TString format("all");
+
+  Int_t yield = 0;  
+  Double_t yield_zmm_up = 0, yield_zmm_dn = 0;
+  Double_t yield_zmm_noPrefire = 0;
+  Double_t yield_wm = 0;
+  Double_t yield_zmm = 0, yield_zmm_unc=0;
+  Double_t yield_ewk = 0, yield_ewk_unc=0;
+  Double_t yield_top = 0, yield_top_unc=0;
    
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
 
   // event category enumeration
-  enum { eMuMu2HLT=1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk };
-  
+  enum { eMuMu2HLT=1, eMuMu1HLT1mu1, eMuMu1HLT, eMuMuNoSel, eMuSta, eMuTrk }; // event category enum
+
+ 
+   // histograms for full selection
+  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
-/*  
-  // Get pile-up weights
-  TFile *pufile    = 0;
-  TH1D  *puWeights = 0;
-  if(doPU) {
-    pufile = new TFile(pufname);
-    assert(pufile);
-    puWeights = (TH1D*)pufile->Get("puWeights");
-    assert(puWeights);
-  }
-*/    
-  //
-  // Trees/histograms to store events in each category for
-  // unbinned/binned fits
-  //
-  Float_t mass;
   
-  TTree *treeMuMu2HLT = new TTree("treeMuMu2HLT","treeMuMu2HLT");
-  treeMuMu2HLT->Branch("m",&mass,"m/F");
-  treeMuMu2HLT->SetDirectory(0);
-  TH1D *hMuMu2HLT = new TH1D("hMuMu2HLT","",NBINS,MASS_LOW,MASS_HIGH);
-  hMuMu2HLT->Sumw2();
-  
-  TTree *treeMuMu1HLT = new TTree("treeMuMu1HLT","treeMuMu1HLT");
-  treeMuMu1HLT->Branch("m",&mass,"m/F");
-  treeMuMu1HLT->SetDirectory(0);
-  TH1D *hMuMu1HLT = new TH1D("hMuMu1HLT","",NBINS,MASS_LOW,MASS_HIGH);
-  hMuMu1HLT->Sumw2();
-  
-  TTree *treeMuMuNoSel = new TTree("treeMuMuNoSel","treeMuMuNoSel");
-  treeMuMuNoSel->Branch("m",&mass,"m/F");
-  treeMuMuNoSel->SetDirectory(0);
-  TH1D *hMuMuNoSel = new TH1D("hMuMuNoSel","",NBINS,MASS_LOW,MASS_HIGH);
-  hMuMuNoSel->Sumw2();
-  
-  TTree *treeMuSta = new TTree("treeMuSta","treeMuSta");
-  treeMuSta->Branch("m",&mass,"m/F");
-  treeMuSta->SetDirectory(0);
-  TH1D *hMuSta = new TH1D("hMuSta","",NBINS,MASS_LOW,MASS_HIGH);
-  hMuSta->Sumw2();
-  
-  TTree *treeMuTrk = new TTree("treeMuTrk","treeMuTrk");
-  treeMuTrk->Branch("m",&mass,"m/F");
-  treeMuTrk->SetDirectory(0);
-  TH1D *hMuTrk = new TH1D("hMuTrk","",NBINS,MASS_LOW,MASS_HIGH); 
-  hMuTrk->Sumw2();
+  enum{mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown};
+  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effsUp","effsDown","lepsfUp","lepsfDown","pfireUp","pfireDown"};
+  int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
-  // histogram for MC-based templates
-  TH1D *tmpltMuMu2HLT  = (TH1D*)hMuMu2HLT->Clone("tmpltMuMu2HLT");
-  TH1D *tmpltMuMu1HLT  = (TH1D*)hMuMu1HLT->Clone("tmpltMuMu1HLT");
-  TH1D *tmpltMuMuNoSel = (TH1D*)hMuMuNoSel->Clone("tmpltMuMuNoSel");
-  TH1D *tmpltMuSta     = (TH1D*)hMuSta->Clone("tmpltMuSta");
-  TH1D *tmpltMuTrk     = (TH1D*)hMuTrk->Clone("tmpltMuTrk");
-  
-  // histograms for full selection (MuMu2HLT + MuMu1HLT)
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
   TH1D *hZmm  = new TH1D("hZmm", "",NBINS,MASS_LOW,MASS_HIGH); hZmm->Sumw2();
+  TH1D *hZxx  = new TH1D("hZxx", "",NBINS,MASS_LOW,MASS_HIGH); hZxx->Sumw2();
+  TH1D *hWx   = new TH1D("hWx",  "",NBINS,MASS_LOW,MASS_HIGH); hWx->Sumw2();
+  TH1D *hTtb  = new TH1D("hTtb", "",NBINS,MASS_LOW,MASS_HIGH); hTtb->Sumw2();
+  TH1D *hDib  = new TH1D("hDib", "",NBINS,MASS_LOW,MASS_HIGH); hDib->Sumw2();
   TH1D *hEWK  = new TH1D("hEWK", "",NBINS,MASS_LOW,MASS_HIGH); hEWK->Sumw2();
   TH1D *hMC   = new TH1D("hMC",  "",NBINS,MASS_LOW,MASS_HIGH); hMC->Sumw2();
+  
+  // uncertainty shapes: 
+  // vector of hists
+  TH1D **hDataUnc  = new TH1D*[nWeight];// hAntiDataMetm->Sumw2();  
+  TH1D **hZmmUnc  = new TH1D*[nWeight];// hAntiDataMetm->Sumw2();  
+  TH1D **hZxxUnc  = new TH1D*[nWeight];// hAntiDataMetm->Sumw2(); 
+  TH1D **hWxUnc  = new TH1D*[nWeight];// hAntiDataMetm->Sumw2(); 
+  TH1D **hDibUnc  = new TH1D*[nWeight];// hAntiDataMetm->Sumw2(); 
+  TH1D **hTtbUnc  = new TH1D*[nWeight];// hAntiDataMetm->Sumw2();   
+  for(int j=0; j < nWeight; ++j){
+    char hname[150];//char type[50];
+    // sprintf(type,"%s",(vWeight[j]).c_str());
+    sprintf(hname,"hData_%s",(vWeight[j]).c_str());   hDataUnc[j] = new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH);
+    cout << hDataUnc[j]->GetName() << endl;
+    sprintf(hname,"hZmm_%s",(vWeight[j]).c_str());    hZmmUnc[j]  = new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH);
+    sprintf(hname,"hZxx_%s",(vWeight[j]).c_str());    hZxxUnc[j]  = new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH);
+    sprintf(hname,"hWx_%s",(vWeight[j]).c_str());     hWxUnc[j]   = new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH);
+    sprintf(hname,"hTtb_%s",(vWeight[j]).c_str());    hTtbUnc[j]  = new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH);
+    sprintf(hname,"hDib_%s",(vWeight[j]).c_str());    hDibUnc[j]  = new TH1D(hname,"",NBINS,MASS_LOW,MASS_HIGH);
+  }
+
+  TH1D *hDataNPV = new TH1D("hDataNPV","",50,0,50); hDataNPV->Sumw2();
+  TH1D *hZmmNPV  = new TH1D("hZmmNPV", "",50,0,50); hZmmNPV->Sumw2();
+  TH1D *hEWKNPV  = new TH1D("hEWKNPV", "",50,0,50); hEWKNPV->Sumw2();
+  TH1D *hTtbNPV  = new TH1D("hTtbNPV", "",50,0,50); hTtbNPV->Sumw2();
+  TH1D *hMCNPV   = new TH1D("hMCNPV",  "",50,0,50); hMCNPV->Sumw2();
+
+
+  const int nBinsZPt= sizeof(ZPtBins)/sizeof(double)-1;
+  TH1D *hDataZPt = new TH1D("hDataZPt","",nBinsZPt,ZPtBins); hDataZPt->Sumw2();
+  TH1D *hZmmZPt  = new TH1D("hZmmZPt", "",nBinsZPt,ZPtBins); hZmmZPt->Sumw2();
+  TH1D *hEWKZPt  = new TH1D("hEWKZPt", "",nBinsZPt,ZPtBins); hEWKZPt->Sumw2();
+  TH1D *hTtbZPt  = new TH1D("hTtbZPt", "",nBinsZPt,ZPtBins); hTtbZPt->Sumw2();
+  TH1D *hMCZPt   = new TH1D("hMCZPt",  "",nBinsZPt,ZPtBins); hMCZPt->Sumw2();
+
+  TH1D *hEWKZPt_EffBin  = new TH1D("hEWKZPt_EffBin", "",nBinsZPt,ZPtBins); hEWKZPt_EffBin->Sumw2();
+  TH1D *hTtbZPt_EffBin  = new TH1D("hTtbZPt_EffBin", "",nBinsZPt,ZPtBins); hTtbZPt_EffBin->Sumw2();
+  TH1D *hEWKZPt_EffStatUp  = new TH1D("hEWKZPt_EffStatUp", "",nBinsZPt,ZPtBins); hEWKZPt_EffStatUp->Sumw2();
+  TH1D *hTtbZPt_EffStatUp  = new TH1D("hTtbZPt_EffStatUp", "",nBinsZPt,ZPtBins); hTtbZPt_EffStatUp->Sumw2();
+  TH1D *hEWKZPt_EffStatDown  = new TH1D("hEWKZPt_EffStatDown", "",nBinsZPt,ZPtBins); hEWKZPt_EffStatDown->Sumw2();
+  TH1D *hTtbZPt_EffStatDown  = new TH1D("hTtbZPt_EffStatDown", "",nBinsZPt,ZPtBins); hTtbZPt_EffStatDown->Sumw2();
+  TH1D *hEWKZPt_EffSigShape  = new TH1D("hEWKZPt_EffSigShape", "",nBinsZPt,ZPtBins); hEWKZPt_EffSigShape->Sumw2();
+  TH1D *hTtbZPt_EffSigShape  = new TH1D("hTtbZPt_EffSigShape", "",nBinsZPt,ZPtBins); hTtbZPt_EffSigShape->Sumw2();
+  TH1D *hEWKZPt_EffBkgShape  = new TH1D("hEWKZPt_EffBkgShape", "",nBinsZPt,ZPtBins); hEWKZPt_EffBkgShape->Sumw2();
+  TH1D *hTtbZPt_EffBkgShape  = new TH1D("hTtbZPt_EffBkgShape", "",nBinsZPt,ZPtBins); hTtbZPt_EffBkgShape->Sumw2();
+
+  const int nBinsLep1Pt= sizeof(Lep1PtBins)/sizeof(double)-1;
+  TH1D *hDataLep1Pt = new TH1D("hDataLep1Pt","",nBinsLep1Pt,Lep1PtBins); hDataLep1Pt->Sumw2();
+  TH1D *hZmmLep1Pt  = new TH1D("hZmmLep1Pt", "",nBinsLep1Pt,Lep1PtBins); hZmmLep1Pt->Sumw2();
+  TH1D *hEWKLep1Pt  = new TH1D("hEWKLep1Pt", "",nBinsLep1Pt,Lep1PtBins); hEWKLep1Pt->Sumw2();
+  TH1D *hTtbLep1Pt  = new TH1D("hTtbLep1Pt", "",nBinsLep1Pt,Lep1PtBins); hTtbLep1Pt->Sumw2();
+  TH1D *hMCLep1Pt   = new TH1D("hMCLep1Pt",  "",nBinsLep1Pt,Lep1PtBins); hMCLep1Pt->Sumw2();
+
+  TH1D *hEWKLep1Pt_EffBin  = new TH1D("hEWKLep1Pt_EffBin", "",nBinsLep1Pt,Lep1PtBins); hEWKLep1Pt_EffBin->Sumw2();
+  TH1D *hTtbLep1Pt_EffBin  = new TH1D("hTtbLep1Pt_EffBin", "",nBinsLep1Pt,Lep1PtBins); hTtbLep1Pt_EffBin->Sumw2();
+  TH1D *hEWKLep1Pt_EffStatUp  = new TH1D("hEWKLep1Pt_EffStatUp", "",nBinsLep1Pt,Lep1PtBins); hEWKLep1Pt_EffStatUp->Sumw2();
+  TH1D *hTtbLep1Pt_EffStatUp  = new TH1D("hTtbLep1Pt_EffStatUp", "",nBinsLep1Pt,Lep1PtBins); hTtbLep1Pt_EffStatUp->Sumw2();
+  TH1D *hEWKLep1Pt_EffStatDown  = new TH1D("hEWKLep1Pt_EffStatDown", "",nBinsLep1Pt,Lep1PtBins); hEWKLep1Pt_EffStatDown->Sumw2();
+  TH1D *hTtbLep1Pt_EffStatDown  = new TH1D("hTtbLep1Pt_EffStatDown", "",nBinsLep1Pt,Lep1PtBins); hTtbLep1Pt_EffStatDown->Sumw2();
+  TH1D *hEWKLep1Pt_EffSigShape  = new TH1D("hEWKLep1Pt_EffSigShape", "",nBinsLep1Pt,Lep1PtBins); hEWKLep1Pt_EffSigShape->Sumw2();
+  TH1D *hTtbLep1Pt_EffSigShape  = new TH1D("hTtbLep1Pt_EffSigShape", "",nBinsLep1Pt,Lep1PtBins); hTtbLep1Pt_EffSigShape->Sumw2();
+  TH1D *hEWKLep1Pt_EffBkgShape  = new TH1D("hEWKLep1Pt_EffBkgShape", "",nBinsLep1Pt,Lep1PtBins); hEWKLep1Pt_EffBkgShape->Sumw2();
+  TH1D *hTtbLep1Pt_EffBkgShape  = new TH1D("hTtbLep1Pt_EffBkgShape", "",nBinsLep1Pt,Lep1PtBins); hTtbLep1Pt_EffBkgShape->Sumw2();
+  
+  
+  TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     
   //
   // Declare variables to read in ntuple
@@ -201,12 +228,18 @@ void fitZmm(const TString  outputDir,   // output directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t genVPt, genVPhi, genVy, genVMass;
-  Float_t scale1fb;
-  Float_t met, metPhi, sumEt, u1, u2;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Int_t   q1, q2;
-  TLorentzVector *dilep=0, *lep1=0, *lep2=0;
-  Float_t pfCombIso1, pfCombIso2;
+  TLorentzVector *lep1=0, *lep2=0;
+  TLorentzVector *genlep1=0, *genlep2=0;
+  Float_t genMuonPt1, genMuonPt2;
+
+  Double_t nDib=0, nWx=0, nZxx=0;
+  Double_t nDibUnc=0, nWxUnc=0, nZxxUnc=0;
+
+  // Loading the Rochster Corrections
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
 
   TFile *infile=0;
   TTree *intree=0;
@@ -218,727 +251,804 @@ void fitZmm(const TString  outputDir,   // output directory
     infile = new TFile(fnamev[ifile]);	    assert(infile);
     intree = (TTree*)infile->Get("Events"); assert(intree);
 
+    intree -> SetBranchStatus("*",0);
+    intree -> SetBranchStatus("runNum",1);
+    intree -> SetBranchStatus("lumiSec",1);
+    intree -> SetBranchStatus("evtNum",1);
+    intree -> SetBranchStatus("category",1);
+    intree -> SetBranchStatus("npv",1);
+    intree -> SetBranchStatus("npu",1);
+    intree -> SetBranchStatus("prefireWeight",1);
+    intree -> SetBranchStatus("prefireUp",1);
+    intree -> SetBranchStatus("prefireDown",1);
+    intree -> SetBranchStatus("scale1fb",1);
+    intree -> SetBranchStatus("scale1fbUp",1);
+    intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("genVMass",1);
+    intree -> SetBranchStatus("q1",1);
+    intree -> SetBranchStatus("q2",1);
+    intree -> SetBranchStatus("lep1",1);
+    intree -> SetBranchStatus("lep2",1);
+    intree -> SetBranchStatus("genlep1",1);
+    intree -> SetBranchStatus("genlep2",1);
+    intree -> SetBranchStatus("genMuonPt1",1);
+    intree -> SetBranchStatus("genMuonPt2",1);
+
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
     intree->SetBranchAddress("evtNum",     &evtNum);      // event number
-    intree->SetBranchAddress("matchGen",   &matchGen);    // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
-    intree->SetBranchAddress("genVPt",     &genVPt);      // GEN Z boson pT (signal MC)
-    intree->SetBranchAddress("genVPhi",    &genVPhi);     // GEN Z boson phi (signal MC)
-    intree->SetBranchAddress("genVy",      &genVy);       // GEN Z boson rapidity (signal MC)
-    intree->SetBranchAddress("genVMass",   &genVMass);    // GEN Z boson mass (signal MC)
+    intree->SetBranchAddress("prefireWeight",   &prefireWeight);    // prefire weights for 2017 (MC)
+    intree->SetBranchAddress("prefireUp",   &prefireUp);    // prefire weights for 2017 (MC)
+    intree->SetBranchAddress("prefireDown",   &prefireDown);    // prefire weights for 2017 (MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
-    intree->SetBranchAddress("met",        &met);	  // MET
-    intree->SetBranchAddress("metPhi",     &metPhi);      // phi(MET)
-    intree->SetBranchAddress("sumEt",      &sumEt);       // Sum ET
-    intree->SetBranchAddress("u1",         &u1);	  // parallel component of recoil
-    intree->SetBranchAddress("u2",         &u2);	  // perpendicular component of recoil
+    intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
-    intree->SetBranchAddress("dilep",      &dilep);       // dilepton 4-vector
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
-    intree->SetBranchAddress("pfCombIso1", &pfCombIso1);  // combined PF isolation of tag lepton
-    intree->SetBranchAddress("pfCombIso2", &pfCombIso2);  // combined PF isolation of probe lepton
-  
+    intree->SetBranchAddress("genlep1",       &genlep1);        // tag lepton 4-vector
+    intree->SetBranchAddress("genlep2",       &genlep2);        // probe lepton 4-vector
+    intree->SetBranchAddress("genMuonPt1",       &genMuonPt1);        // probe lepton 4-vector
+    intree->SetBranchAddress("genMuonPt2",       &genMuonPt2);        // probe lepton 4-vector
+    
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(int ientry=0; ientry<0.1*(intree->GetEntries()); ientry++) {
+      if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " percent done with this file." << endl;
       intree->GetEntry(ientry);
    
-      if(dilep->M()        < MASS_LOW)  continue;
-      if(dilep->M()        > MASS_HIGH) continue;
-      if(lep1->Pt()        < PT_CUT)    continue;
-      if(lep2->Pt()        < PT_CUT)    continue;
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
+      if(q1*q2>0) continue;
       
-      mass = dilep->M();
-      
+      float mass = 0;
+      float pt = 0;
+      // float rapidity = 0;
+      // float phiacop=0;
+      // float costhetastar=0;
+      // float phistar=0;
+     
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	weight *= scale1fb*lumi;
-	//if(doPU>0) weight *= puWeights->GetBinContent(npu+1);
-      }
-    
-      // fill data events for each category
-      if(typev[ifile]==eData) {
-        if     (category == eMuMu2HLT)  { treeMuMu2HLT->Fill();  hMuMu2HLT->Fill(mass); }
-        else if(category == eMuMu1HLT)  { treeMuMu1HLT->Fill();  hMuMu1HLT->Fill(mass); }
-        else if(category == eMuMuNoSel) { treeMuMuNoSel->Fill(); hMuMuNoSel->Fill(mass); }
-        else if(category == eMuSta)     { treeMuSta->Fill();     hMuSta->Fill(mass); }
-        else if(category == eMuTrk)     { treeMuTrk->Fill();     hMuTrk->Fill(mass); }
+        // if prefire weight > 1, divivde by 2
+        // also do up.down uncertainty by hand
+        
+        weight *= scale1fb*prefireWeight*lumi;
       }
       
-      // fill gen-matched Z events each category for MC templates and to compute MC efficiencies
-      if(typev[ifile]==eZmm && matchGen) {
-        Double_t w=1;
-	//if(doPU>0) w *= puWeights->GetBinContent(npu+1);
-	if     (category == eMuMu2HLT)  { tmpltMuMu2HLT->Fill(mass,w); }
-        else if(category == eMuMu1HLT)  { tmpltMuMu1HLT->Fill(mass,w); }
-	else if(category == eMuMuNoSel) { tmpltMuMuNoSel->Fill(mass,w); }
-        else if(category == eMuSta)     { tmpltMuSta->Fill(mass,w); }
-        else if(category == eMuTrk)     { tmpltMuTrk->Fill(mass,w); }
-      }
-      
-      // fill Z events passing selection (MuMu2HLT + MuMu1HLT)
-      if((category==eMuMu2HLT) || (category==eMuMu1HLT)) {
+      // fill Z events passing selection
+        if(!(category==eMuMu2HLT) && !(category==eMuMu1HLT) && !(category==eMuMu1HLT1mu1)) continue;
+        
         if(typev[ifile]==eData) { 
-	  hData->Fill(mass); 
+
+          TLorentzVector mu1;
+          TLorentzVector mu2;
+          mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+          mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+          float qter1=1.0;
+          float qter2=1.0;
+
+          double dtSF1 = rc.kScaleDT(q1, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
+          double dtSF2 = rc.kScaleDT(q2, mu2.Pt(), mu2.Eta(), mu2.Phi());//s=0, m=0);
+          if(doRoch){
+            mu1*=dtSF1;
+            mu2*=dtSF2;
+          }
+      
+
+          Double_t lp1 = mu1.Pt();
+          Double_t lp2 = mu2.Pt();
+          Int_t q1 = q1;
+          Int_t q2 = q2;
+
+          // TLorentzVector mu1, mu2;
+          orderByLepPt(mu1, mu2, q1, q2, mu_MASS);
+
+          mass=(mu1+mu2).M();
+          pt =(mu1+mu2).Pt();
+          
+          if(mass        < MASS_LOW)  continue;
+          if(mass        > MASS_HIGH) continue;
+          if(mu1.Pt()        < PT_CUT)    continue;
+          if(mu2.Pt()        < PT_CUT)    continue;
+            
+          hData->Fill(mass); 
+          hDataNPV->Fill(npv);
+          hDataZPt->Fill(pt); 
+          hDataLep1Pt->Fill(mu1.Pt()); 
+          
+          yield++;
 	
 	} else {
-	  hMC->Fill(mass,weight);
-	  if(typev[ifile]==eZmm) { hZmm->Fill(mass,weight); }
-	  if(typev[ifile]==eEWK) { hEWK->Fill(mass,weight); }
-	}
-      }
+
+	  TLorentzVector mu1;
+	  TLorentzVector mu2;
+	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+    TLorentzVector mu1u, mu1d, mu2u, mu2d;
+    mu1u = mu1; mu1d = mu1;
+    mu2u = mu2; mu2d = mu2;
+      // std::cout << "MC pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
+      
+      
+	  float qter1=1.0;
+	  float qter2=1.0;
+    double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt1);//, s=0, m=0);
+    double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genMuonPt2);//, s=0, m=0);
+    if(genlep1->Pt()==0 && genlep2->Pt()==0) {mcSF1=1; mcSF2=1;}// stupid gen shit for ttbar is messed up
+    if(doRoch){
+      mu1*=mcSF1;
+      mu2*=mcSF2;
+    }
+
+    double rand = gRandom->Uniform(1);
+    double deltaMcSF1 = rc.kSpreadMCerror(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt1);
+    double deltaMcSF2 = rc.kSpreadMCerror(q2, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt2);
+    mu1u*=(1+deltaMcSF1);
+    mu1d*=(1-deltaMcSF1);
+    mu2u*=(1+deltaMcSF2);
+    mu2d*=(1-deltaMcSF2);
+
+
+	  Double_t lp1 = mu1.Pt();
+	  Double_t lp2 = mu2.Pt();
+
+	  // TLorentzVector mu1, mu2;
+    
+    orderByLepPt(mu1, mu2, q1, q2, mu_MASS);
+
+	  double mll=(mu1+mu2).M();
+	  Double_t effdata, effmc;
+	  Double_t corr=1;
+	  Double_t corrFSR=1, corrMC=1, corrBkg=1, corrTag=1;
+	  Double_t eff2Bindata, eff2Binmc;
+	  Double_t corr2Bin=1;
+	  Double_t corrUp=1;
+	  Double_t corrDown=1;
+	  Double_t effSigShapedata;
+	  Double_t corrSigShape=1;
+	  Double_t effBkgShapedata;
+	  Double_t corrBkgShape=1;
+
+	  if(mll       < MASS_LOW)  continue;
+	  if(mll       > MASS_HIGH) continue;
+	  if(lp1        < PT_CUT)    continue;
+	  if(lp2        < PT_CUT)    continue;
+    
+    
+    // corr = effs.computeHLTSF(&mu1,q1,&mu2,q2)*effs.computeSelSF(&mu1,q1,&mu2,q2)*effs.computeStaSF(&mu1,q1,&mu2,q2);
+    corr = effs.fullEfficiencies(&mu1,q1,&mu2,q2);
+    // cout << corr1 << " " << corr << endl;
+    
+    vector<double> uncs_sta = effs.getUncSta(&mu1,q1,&mu2,q2);
+    vector<double> uncs_sit = effs.getUncSel(&mu1,q1,&mu2,q2);
+    
+    corrFSR *= uncs_sta[0]*uncs_sit[0]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate fsr model
+    corrMC  *= uncs_sta[1]*uncs_sit[1]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate mc gen model
+    corrBkg *= uncs_sta[2]*uncs_sit[2]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate bkg model
+    corrTag *= uncs_sta[3]*uncs_sit[3]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate bkg model
+    // corr *= effdata/effmc; // orig
+    
+	  
+	  double var=0.;        
+    var += effs.statUncSta(&mu1, q1, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncSta(&mu2, q2, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncSel(&mu1, q1, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncSel(&mu2, q2, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncHLT(&mu1, q1, hErr, hErr, fabs(weight)*corr); 
+    var += effs.statUncHLT(&mu2, q2, hErr, hErr, fabs(weight)*corr);
+    // cout << var1 << " " << var << endl;
+	  
+	  corrUp=corr+sqrt(var);
+	  corrDown=corr-sqrt(var);  
+
+    // corr=1;
+
+	  mass = (mu1+mu2).M();
+	  pt = (mu1+mu2).Pt();
+	  // rapidity = (mu1+mu2).Rapidity();
+
+    if(mass        < MASS_LOW)  continue;
+    if(mass        > MASS_HIGH) continue;
+    if(mu1.Pt()        < PT_CUT)    continue;
+    if(mu2.Pt()        < PT_CUT)    continue;
+
+	  if(typev[ifile]==eZmm) {//mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown
+	      yield_zmm += weight*corr;
+	      yield_zmm_unc += weight*weight*corr*corr;
+        yield_zmm_up += weight*corrUp;
+        yield_zmm_dn += weight*corrDown;
+        yield_zmm_noPrefire += scale1fb*lumi*corr;
+        
+        hZmmUnc[mcUp]->Fill(mass,weight*corrMC);
+        hZmmUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
+        hZmmUnc[fsrUp]->Fill(mass,weight*corrFSR);
+        hZmmUnc[fsrDown]->Fill(mass,weight*(corr+(corr-corrFSR)));
+        hZmmUnc[bkgUp]->Fill(mass,weight*corrBkg);
+        hZmmUnc[bkgDown]->Fill(mass,weight*(corr+(corr-corrBkg)));
+        hZmmUnc[tagptUp]->Fill(mass,weight*corrTag);
+        hZmmUnc[tagptDown]->Fill(mass,weight*(corr+(corr-corrTag)));
+        hZmmUnc[effsUp]->Fill(mass,weight*(corr+sqrt(var)));
+        hZmmUnc[effsDown]->Fill(mass,weight*(corr-sqrt(var)));
+        // roch up/down
+        hZmmUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
+        hZmmUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
+        
+        hZmmUnc[pfireUp]->Fill(mass,prefireUp*corr);
+        hZmmUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        
+	      hZmm->Fill(mass,weight*corr); 
+	      hMC->Fill(mass,weight*corr);
+	      hZmmNPV->Fill(npv,weight*corr); 
+	      hMCNPV->Fill(npv,weight*corr);
+	      hZmmZPt->Fill(pt,weight*corr); 
+	      hMCZPt->Fill(pt,weight*corr);
+	      hZmmLep1Pt->Fill(mu1.Pt(),weight*corr); 
+	      hMCLep1Pt->Fill(mu1.Pt(),weight*corr);
+    } if(typev[ifile]==eZxx){
+        nZxx+=weight*corr;
+        nZxxUnc+=weight*weight*corr*corr;
+        hZxx->Fill(mass,weight*corr); 
+        //mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown
+        hZxxUnc[mcUp]->Fill(mass,weight*corrMC);
+        hZxxUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
+        hZxxUnc[fsrUp]->Fill(mass,weight*corrFSR);
+        hZxxUnc[fsrDown]->Fill(mass,weight*(corr+(corr-corrFSR)));
+        hZxxUnc[bkgUp]->Fill(mass,weight*corrBkg);
+        hZxxUnc[bkgDown]->Fill(mass,weight*(corr+(corr-corrBkg)));
+        hZxxUnc[tagptUp]->Fill(mass,weight*corrTag);
+        hZxxUnc[tagptDown]->Fill(mass,weight*(corr+(corr-corrTag)));
+        hZxxUnc[effsUp]->Fill(mass,weight*(corr+sqrt(var)));
+        hZxxUnc[effsDown]->Fill(mass,weight*(corr-sqrt(var)));
+        
+        // roch up/down
+        hZxxUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
+        hZxxUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
+        
+        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr);
+        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+    } if(typev[ifile]==eWx){
+      
+        nWx+=weight*corr;
+        nWxUnc+=weight*weight*corr*corr;
+        hWx->Fill(mass,weight*corr); 
+      
+        hWxUnc[mcUp]->Fill(mass,weight*corrMC);
+        hWxUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
+        hWxUnc[fsrUp]->Fill(mass,weight*corrFSR);
+        hWxUnc[fsrDown]->Fill(mass,weight*(corr+(corr-corrFSR)));
+        hWxUnc[bkgUp]->Fill(mass,weight*corrBkg);
+        hWxUnc[bkgDown]->Fill(mass,weight*(corr+(corr-corrBkg)));
+        hWxUnc[tagptUp]->Fill(mass,weight*corrTag);
+        hWxUnc[tagptDown]->Fill(mass,weight*(corr+(corr-corrTag)));
+        hWxUnc[effsUp]->Fill(mass,weight*(corr+sqrt(var)));
+        hWxUnc[effsDown]->Fill(mass,weight*(corr-sqrt(var)));
+        
+        // roch up/down
+        hWxUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
+        hWxUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
+        
+        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr);
+        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+      
+    } if(typev[ifile]==eDib){
+        // cout << "blah " << endl;
+        // cout << weight << " " << corr << " " << mass << endl;
+        nDib+=weight*corr;
+        nDibUnc+=weight*weight*corr*corr;
+        hDib->Fill(mass,weight*corr); 
+        
+        // cout << "bleh << " << endl;
+        hDibUnc[mcUp]->Fill(mass,weight*corrMC);
+        hDibUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
+        hDibUnc[fsrUp]->Fill(mass,weight*corrFSR);
+        hDibUnc[fsrDown]->Fill(mass,weight*(corr+(corr-corrFSR)));
+        hDibUnc[bkgUp]->Fill(mass,weight*corrBkg);
+        hDibUnc[bkgDown]->Fill(mass,weight*(corr+(corr-corrBkg)));
+        hDibUnc[tagptUp]->Fill(mass,weight*corrTag);
+        hDibUnc[tagptDown]->Fill(mass,weight*(corr+(corr-corrTag)));
+        hDibUnc[effsUp]->Fill(mass,weight*(corr+sqrt(var)));
+        hDibUnc[effsDown]->Fill(mass,weight*(corr-sqrt(var)));
+        
+        // roch up/down
+        hDibUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
+        hDibUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
+        
+        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr);
+        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        // cout << "blah " << endl;
+    } if(typev[ifile]==eEWK) {
+	      yield_ewk += weight*corr;
+	      yield_ewk_unc += weight*weight*corr*corr;
+	      hEWK->Fill(mass,weight*corr); 
+	      hMC->Fill(mass,weight*corr);
+
+	      hEWKNPV->Fill(npv,weight*corr); 
+	      hMCNPV->Fill(npv,weight*corr);
+
+	      hEWKZPt->Fill(pt,weight*corr); 
+	      hEWKZPt_EffBin->Fill(pt,weight*corr2Bin); 
+	      hEWKZPt_EffStatUp->Fill(pt,weight*corrUp);
+	      hEWKZPt_EffStatDown->Fill(pt,weight*corrDown);
+	      hEWKZPt_EffSigShape->Fill(pt,weight*corrSigShape);
+	      hEWKZPt_EffBkgShape->Fill(pt,weight*corrBkgShape);
+	      hMCZPt->Fill(pt,weight*corr);
+
+	      hEWKLep1Pt->Fill(mu1.Pt(),weight*corr);
+	      hEWKLep1Pt_EffBin->Fill(mu1.Pt(),weight*corr2Bin);
+	      hEWKLep1Pt_EffStatUp->Fill(mu1.Pt(),weight*corrUp);
+	      hEWKLep1Pt_EffStatDown->Fill(mu1.Pt(),weight*corrDown);
+	      hEWKLep1Pt_EffSigShape->Fill(mu1.Pt(),weight*corrSigShape);
+	      hEWKLep1Pt_EffBkgShape->Fill(mu1.Pt(),weight*corrBkgShape);
+	      hMCLep1Pt->Fill(mu1.Pt(),weight*corr);
+
+	    } if(typev[ifile]==eTop) {
+	      yield_top += weight*corr;
+	      yield_top_unc += weight*weight*corr*corr;
+	      hTtb->Fill(mass,weight*corr); 
+	      hMC->Fill(mass,weight*corr);
+        
+        hTtbUnc[mcUp]->Fill(mass,weight*corrMC);
+        hTtbUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
+        hTtbUnc[fsrUp]->Fill(mass,weight*corrFSR);
+        hTtbUnc[fsrDown]->Fill(mass,weight*(corr+(corr-corrFSR)));
+        hTtbUnc[bkgUp]->Fill(mass,weight*corrBkg);
+        hTtbUnc[bkgDown]->Fill(mass,weight*(corr+(corr-corrBkg)));
+        hTtbUnc[tagptUp]->Fill(mass,weight*corrTag);
+        hTtbUnc[tagptDown]->Fill(mass,weight*(corr+(corr-corrTag)));
+        hTtbUnc[effsUp]->Fill(mass,weight*(corr+sqrt(var)));
+        hTtbUnc[effsDown]->Fill(mass,weight*(corr-sqrt(var)));
+        
+        // roch up/down
+        hTtbUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
+        hTtbUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
+        
+        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr);
+        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr);
+      
+        
+
+	      hTtbNPV->Fill(npv,weight*corr); 
+	      hMCNPV->Fill(npv,weight*corr);
+
+	      hTtbZPt->Fill(pt,weight*corr); 
+	      hTtbZPt_EffBin->Fill(pt,weight*corr2Bin); 
+	      hTtbZPt_EffStatUp->Fill(pt,weight*corrUp);
+	      hTtbZPt_EffStatDown->Fill(pt,weight*corrDown);
+	      hTtbZPt_EffSigShape->Fill(pt,weight*corrSigShape); 
+	      hTtbZPt_EffBkgShape->Fill(pt,weight*corrBkgShape); 
+	      hMCZPt->Fill(pt,weight*corr);
+
+	      hTtbLep1Pt->Fill(mu1.Pt(),weight*corr);
+	      hTtbLep1Pt_EffBin->Fill(mu1.Pt(),weight*corr2Bin);
+	      hTtbLep1Pt_EffStatUp->Fill(mu1.Pt(),weight*corrUp);
+	      hTtbLep1Pt_EffStatDown->Fill(mu1.Pt(),weight*corrDown);
+	      hTtbLep1Pt_EffSigShape->Fill(mu1.Pt(),weight*corrSigShape);
+	      hTtbLep1Pt_EffBkgShape->Fill(mu1.Pt(),weight*corrBkgShape);
+	      hMCLep1Pt->Fill(mu1.Pt(),weight*corr);
+
+          }
+        }
+      // }
     }
     
     delete infile;
     infile=0, intree=0;
   } 
+
+  outFile->cd();
+
+  hDataZPt->Write();
+  hEWKZPt->Write();
+  hEWKZPt_EffBin->Write();
+  hEWKZPt_EffStatUp->Write();
+  hEWKZPt_EffStatDown->Write();
+  hEWKZPt_EffSigShape->Write();
+  hEWKZPt_EffBkgShape->Write();
+  hTtbZPt->Write();
+  hTtbZPt_EffBin->Write();
+  hTtbZPt_EffStatUp->Write();
+  hTtbZPt_EffStatDown->Write();
+  hTtbZPt_EffSigShape->Write();
+  hTtbZPt_EffBkgShape->Write();
+
+  hDataLep1Pt->Write();
+  hEWKLep1Pt->Write();
+  hEWKLep1Pt_EffBin->Write();
+  hEWKLep1Pt_EffStatUp->Write();
+  hEWKLep1Pt_EffStatDown->Write();
+  hEWKLep1Pt_EffSigShape->Write();
+  hEWKLep1Pt_EffBkgShape->Write();
+  hTtbLep1Pt->Write();
+  hTtbLep1Pt_EffBin->Write();
+  hTtbLep1Pt_EffStatUp->Write();
+  hTtbLep1Pt_EffStatDown->Write();
+  hTtbLep1Pt_EffSigShape->Write();
+  hTtbLep1Pt_EffBkgShape->Write();
+
+  outFile->Write();
+  outFile->Close(); 
   
-  //
-  // Set up parameters and PDFs for fitting
-  //
-       
-  RooRealVar m("m","m",MASS_LOW,MASS_HIGH);
-  m.setBins(NBINS);
+  TString histfname = outputDir + TString("/Zmumu_Histograms.root");
+  TFile *histFile = new TFile(histfname,"RECREATE");
+  histFile->cd();
+  hData->Write();
+  hZmm->Write();
+  hZxx->Write();
+  hWx->Write();
+  hTtb->Write();
+  hDib->Write();
   
-  // Combine low purity categories into one dataset for simultaneous fitting
-  // The golden categories 2HLT and 1HLT are not fit: they enter minimization
-  // via the constraint terms.
-  RooCategory rooCat("rooCat","rooCat");
-  rooCat.defineType("MuMuNoSel");
-  rooCat.defineType("MuSta");
-  rooCat.defineType("MuTrk");
-    
-  RooAbsData *dataMuMuNoSel=0;
-  RooAbsData *dataMuSta=0;
-  RooAbsData *dataMuTrk=0;
-  RooAbsData *dataNonGolden=0;
-  
-  if(doBinned) {
-    dataMuMuNoSel = new RooDataHist("dataMuMuNoSel","dataMuMuNoSel",RooArgSet(m),hMuMuNoSel);
-    dataMuSta	  = new RooDataHist("dataMuSta",    "dataMuSta",    RooArgSet(m),hMuSta);
-    dataMuTrk	  = new RooDataHist("dataMuTrk",    "dataMuTrk",    RooArgSet(m),hMuTrk);
-    dataNonGolden = new RooDataHist("dataNonGolden","dataNonGolden", RooArgList(m), Index(rooCat),
-                                    Import("MuMuNoSel", *((RooDataHist*)dataMuMuNoSel)),
-				    Import("MuSta",     *((RooDataHist*)dataMuSta)),
-                                    Import("MuTrk",     *((RooDataHist*)dataMuTrk)));
-  } else {  
-    dataMuMuNoSel = new RooDataSet("dataMuMuNoSel","dataMuMuNoSel",treeMuMuNoSel,RooArgSet(m));
-    dataMuSta	  = new RooDataSet("dataMuSta",	   "dataMuSta",	   treeMuSta,    RooArgSet(m));
-    dataMuTrk	  = new RooDataSet("dataMuTrk",	   "dataMuTrk",	   treeMuTrk,    RooArgSet(m));
-    dataNonGolden = new RooDataSet("dataNonGolden","dataNonGolden", RooArgList(m), Index(rooCat),
-                                   Import("MuMuNoSel", *((RooDataSet*)dataMuMuNoSel)),
-				   Import("MuSta",     *((RooDataSet*)dataMuSta)),
-                                   Import("MuTrk",     *((RooDataSet*)dataMuTrk)));
+  for(int j = 0; j < nWeight; ++j){
+    // hDataUnc[j]->Write();
+    hZmmUnc[j]->Write();
+    hZxxUnc[j]->Write();
+    hWxUnc[j]->Write();
+    hTtbUnc[j]->Write();
+    hDibUnc[j]->Write();
   }
   
-  // Primary parameters
-  UInt_t nMuMu2HLT  = treeMuMu2HLT->GetEntries();
-  UInt_t nMuMu1HLT  = treeMuMu1HLT->GetEntries();
-  UInt_t nMuMuNoSel = treeMuMuNoSel->GetEntries();
-  UInt_t nMuSta     = treeMuSta->GetEntries();
-  UInt_t nMuTrk     = treeMuTrk->GetEntries();
-  UInt_t NzMax = 2*(nMuMu2HLT + nMuMu1HLT + nMuMuNoSel + nMuSta + nMuTrk);
-  RooRealVar Nz("Nz","Nz",nMuMu2HLT+nMuMu1HLT,0,NzMax);
-  RooRealVar effHLT("effHLT","effHLT",0.90,0.80,1.0);
-  RooRealVar effSel("effSel","effSel",0.95,0.80,1.0);
-  RooRealVar effTrk("effTrk","effTrk",0.98,0.90,1.0);
-  RooRealVar effSta("effSta","effSta",0.97,0.90,1.0);    
-  
-  // The expected background yields in the non-golden samples for extended likelihood
-  RooRealVar NfitBkgMuMuNoSel("NfitBkgMuMuNoSel","NfitBkgMuMuNoSel",0.2*nMuMuNoSel,0,nMuMuNoSel);
-  RooRealVar NfitBkgMuSta    ("NfitBkgMuSta",    "NfitBkgMuSta",    0.2*nMuSta,    0,nMuSta);
-  RooRealVar NfitBkgMuTrk    ("NfitBkgMuTrk",    "NfitBkgMuTrk",    0.2*nMuTrk,    0,nMuTrk);  
-  
-  // The expected numbers of signal events in each sample
-  RooFormulaVar NfitMuMu2HLT("NfitMuMu2HLT","NfitMuMu2HLT",
-                             "Nz*effHLT*effHLT*effTrk*effTrk*effSta*effSta*effSel*effSel",
-                             RooArgList(Nz,effHLT,effTrk,effSta,effSel));
-  RooFormulaVar NfitMuMu1HLT("NfitMuMu1HLT","NfitMuMu1HLT",
-                             "2*Nz*effHLT*(1-effHLT)*effTrk*effTrk*effSta*effSta*effSel*effSel",
-                             RooArgList(Nz,effHLT,effTrk,effSta,effSel));
-  RooFormulaVar NfitMuMuNoSel("NfitMuMuNoSel","NfitMuMuNoSel",
-                              "2*Nz*effHLT*effTrk*effTrk*effSta*effSta*effSel*(1-effSel)",
-                              RooArgList(Nz,effHLT,effTrk,effSta,effSel)); 
-  RooFormulaVar NfitMuSta("NfitMuSta","NfitMuSta",
-                          "2*Nz*effHLT*effTrk*(1-effTrk)*effSta*effSta*effSel",
-                          RooArgList(Nz,effHLT,effTrk,effSta,effSel));
-  RooFormulaVar NfitMuTrk("NfitMuTrk","NfitMuTrk",
-                          "2*Nz*effHLT*effTrk*effTrk*effSta*(1-effSta)*effSel",
-                          RooArgList(Nz,effHLT,effTrk,effSta,effSel));
-  
-  RooFormulaVar effZ("effZ","effZ","(1-(1-effHLT)*(1-effHLT))*effTrk*effTrk*effSta*effSta*effSel*effSel",RooArgList(effHLT,effTrk,effSta,effSel));
-  
-  //
-  // Put together total PDFs
-  //
-  RooAbsPdf *pdfMuMuNoSel = getModel(typeMuMuNoSelSig, typeMuMuNoSelBkg, "MuMuNoSel", tmpltMuMuNoSel, m, NfitMuMuNoSel, NfitBkgMuMuNoSel);
-  RooAbsPdf *pdfMuSta     = getModel(typeMuStaSig,     typeMuStaBkg,     "MuSta",     tmpltMuSta,     m, NfitMuSta,     NfitBkgMuSta);
-  RooAbsPdf *pdfMuTrk     = getModel(typeMuTrkSig,     typeMuTrkBkg,     "MuTrk",     tmpltMuTrk,     m, NfitMuTrk,     NfitBkgMuTrk); 
+  histFile->Write();
+  histFile->Close();
 
-  // PDF for simultaneous fit
-  RooSimultaneous pdfTotal("pdfTotal","pdfTotal",rooCat);
-  pdfTotal.addPdf(*pdfMuMuNoSel,"MuMuNoSel");
-  pdfTotal.addPdf(*pdfMuSta,    "MuSta");  
-  pdfTotal.addPdf(*pdfMuTrk,    "MuTrk");			     
-                             
-  //
-  // Define likelihood, add constraints, and run the fit
-  //
+  double MCscale=hData->Integral()/hMC->Integral();
+
+  if(normToData)
+    {
+
+      cout<<"Normalized to data: "<<MCscale<<endl;
+      
+      hZmm->Scale(MCscale);
+      hMC->Scale(MCscale);
+      hEWK->Scale(MCscale);
+      hTtb->Scale(MCscale);
+      hZmmNPV->Scale(MCscale);
+      hMCNPV->Scale(MCscale);
+      hEWKNPV->Scale(MCscale);
+      hTtbNPV->Scale(MCscale);
+      hZmmZPt->Scale(MCscale);
+      hMCZPt->Scale(MCscale);
+      hEWKZPt->Scale(MCscale);
+      hTtbZPt->Scale(MCscale);
+      hZmmLep1Pt->Scale(MCscale);
+      hMCLep1Pt->Scale(MCscale);
+      hEWKLep1Pt->Scale(MCscale);
+      hTtbLep1Pt->Scale(MCscale);
+    }
+
+  std::cout << hData->Integral() << std::endl;
+  std::cout << hMC->Integral() << std::endl;
+  std::cout << hZmm->Integral() << std::endl;
+  std::cout << hEWK->Integral() << std::endl;
+  std::cout << hTtb->Integral() << std::endl;
+
+  for(int j=0;j!=hDataZPt->GetNbinsX();++j)
+    {
+      hDataZPt->SetBinContent(j+1,hDataZPt->GetBinContent(j+1)/hDataZPt->GetBinWidth(j+1));
+      hDataZPt->SetBinError(j+1,hDataZPt->GetBinError(j+1)/hDataZPt->GetBinWidth(j+1));
+      hMCZPt->SetBinContent(j+1,hMCZPt->GetBinContent(j+1)/hMCZPt->GetBinWidth(j+1));
+      hMCZPt->SetBinError(j+1,hMCZPt->GetBinError(j+1)/hMCZPt->GetBinWidth(j+1));
+      hZmmZPt->SetBinContent(j+1,hZmmZPt->GetBinContent(j+1)/hZmmZPt->GetBinWidth(j+1));
+      hZmmZPt->SetBinError(j+1,hZmmZPt->GetBinError(j+1)/hZmmZPt->GetBinWidth(j+1));
+      hEWKZPt->SetBinContent(j+1,hEWKZPt->GetBinContent(j+1)/hEWKZPt->GetBinWidth(j+1));
+      hEWKZPt->SetBinError(j+1,hEWKZPt->GetBinError(j+1)/hEWKZPt->GetBinWidth(j+1));
+      hTtbZPt->SetBinContent(j+1,hTtbZPt->GetBinContent(j+1)/hTtbZPt->GetBinWidth(j+1));
+      hTtbZPt->SetBinError(j+1,hTtbZPt->GetBinError(j+1)/hTtbZPt->GetBinWidth(j+1));
+    }
+
+  for(int j=0;j!=hDataLep1Pt->GetNbinsX();++j)
+    {
+      hDataLep1Pt->SetBinContent(j+1,hDataLep1Pt->GetBinContent(j+1)/hDataLep1Pt->GetBinWidth(j+1));
+      hDataLep1Pt->SetBinError(j+1,hDataLep1Pt->GetBinError(j+1)/hDataLep1Pt->GetBinWidth(j+1));
+      hMCLep1Pt->SetBinContent(j+1,hMCLep1Pt->GetBinContent(j+1)/hMCLep1Pt->GetBinWidth(j+1));
+      hMCLep1Pt->SetBinError(j+1,hMCLep1Pt->GetBinError(j+1)/hMCLep1Pt->GetBinWidth(j+1));
+      hZmmLep1Pt->SetBinContent(j+1,hZmmLep1Pt->GetBinContent(j+1)/hZmmLep1Pt->GetBinWidth(j+1));
+      hZmmLep1Pt->SetBinError(j+1,hZmmLep1Pt->GetBinError(j+1)/hZmmLep1Pt->GetBinWidth(j+1));
+      hEWKLep1Pt->SetBinContent(j+1,hEWKLep1Pt->GetBinContent(j+1)/hEWKLep1Pt->GetBinWidth(j+1));
+      hEWKLep1Pt->SetBinError(j+1,hEWKLep1Pt->GetBinError(j+1)/hEWKLep1Pt->GetBinWidth(j+1));
+      hTtbLep1Pt->SetBinContent(j+1,hTtbLep1Pt->GetBinContent(j+1)/hTtbLep1Pt->GetBinWidth(j+1));
+      hTtbLep1Pt->SetBinError(j+1,hTtbLep1Pt->GetBinError(j+1)/hTtbLep1Pt->GetBinWidth(j+1));
+    }
+
   
-  // Extra terms to likelihood
-//*
-  RooGaussian constraintMuMu2HLT("constraintMuMu2HLT","constraintMuMu2HLT", NfitMuMu2HLT, RooConst(nMuMu2HLT), RooConst(sqrt(nMuMu2HLT)));
-  RooGaussian constraintMuMu1HLT("constraintMuMu1HLT","constraintMuMu1HLT", NfitMuMu1HLT, RooConst(nMuMu1HLT), RooConst(sqrt(nMuMu1HLT)));
-  RooGaussian constraintMuMuNoSel("constraintMuMuNoSel","constraintMuMuNoSel", NfitMuMuNoSel, RooConst(nMuMuNoSel), RooConst(sqrt(nMuMuNoSel)));
-  RooGaussian constraintMuSta("constraintMuSta","constraintMuSta", NfitMuSta, RooConst(nMuSta), RooConst(sqrt(nMuSta)));
-  RooGaussian constraintMuTrk("constraintMuTrk","constraintMuTrk", NfitMuTrk, RooConst(nMuTrk), RooConst(sqrt(nMuTrk)));
-//*/
-/*  
-  RooPoisson constraintMuMu2HLT("constraintMuMu2HLT","constraintMuMu2HLT", NfitMuMu2HLT, RooConst(nMuMu2HLT));
-  RooPoisson constraintMuMu1HLT("constraintMuMu1HLT","constraintMuMu1HLT", NfitMuMu1HLT, RooConst(nMuMu1HLT));
-  RooPoisson constraintMuMuNoSel("constraintMuMuNoSel","constraintMuMuNoSel", NfitMuMuNoSel, RooConst(nMuMuNoSel));
-  RooPoisson constraintMuSta("constraintMuSta","constraintMuSta", NfitMuSta, RooConst(nMuSta));
-  RooPoisson constraintMuTrk("constraintMuTrk","constraintMuTrk", NfitMuTrk, RooConst(nMuTrk));
-//*/
-  // Define goodness of fit including the constraints
-  RooArgList fitConstraints;
-  fitConstraints.add(constraintMuMu2HLT);
-  fitConstraints.add(constraintMuMu1HLT);
-  if(typeMuMuNoSelSig==eCount) fitConstraints.add(constraintMuMuNoSel);
-  if(typeMuStaSig==eCount)     fitConstraints.add(constraintMuSta);
-  if(typeMuTrkSig==eCount)     fitConstraints.add(constraintMuTrk);
-
-  RooFitResult *result = pdfTotal.fitTo(*dataNonGolden,
-                                        Extended(kTRUE),
-					Strategy(1),
-					ExternalConstraints(fitConstraints),
-					Save(kTRUE));
-
-  //
-  // Use histogram version of fitted PDFs to make ratio plots
-  // (Will also use PDF histograms later for Chi^2 and KS tests)
-  //
-  TH1D *hPdfMuMuNoSel = (TH1D*)(pdfMuMuNoSel->createHistogram("hPdfMuMuNoSel", m));
-  hPdfMuMuNoSel->Scale((NfitMuMuNoSel.getVal() + NfitBkgMuMuNoSel.getVal())/hPdfMuMuNoSel->Integral());
-  TH1D *hMuMuNoSelDiff = makeDiffHist(hMuMuNoSel,hPdfMuMuNoSel,"hMuMuNoSelDiff");
-  hMuMuNoSelDiff->SetMarkerStyle(kFullCircle);
-  hMuMuNoSelDiff->SetMarkerSize(0.9);
-   
-  TH1D *hPdfMuSta = (TH1D*)(pdfMuSta->createHistogram("hPdfMuSta", m));
-  hPdfMuSta->Scale((NfitMuSta.getVal() + NfitBkgMuSta.getVal())/hPdfMuSta->Integral());
-  TH1D *hMuStaDiff = makeDiffHist(hMuSta,hPdfMuSta,"hMuStaDiff");
-  hMuStaDiff->SetMarkerStyle(kFullCircle);
-  hMuStaDiff->SetMarkerSize(0.9);
-    
-  TH1D *hPdfMuTrk = (TH1D*)(pdfMuTrk->createHistogram("hPdfMuTrk", m));
-  hPdfMuTrk->Scale((NfitMuTrk.getVal() + NfitBkgMuTrk.getVal())/hPdfMuTrk->Integral());
-  TH1D *hMuTrkDiff = makeDiffHist(hMuTrk,hPdfMuTrk,"hMuTrkDiff");
-  hMuTrkDiff->SetMarkerStyle(kFullCircle); 
-  hMuTrkDiff->SetMarkerSize(0.9);
- 
   TH1D *hZmumuDiff = makeDiffHist(hData,hMC,"hZmumuDiff");
   hZmumuDiff->SetMarkerStyle(kFullCircle); 
   hZmumuDiff->SetMarkerSize(0.9);
 
-  //
-  // Solve simultaneous equations for signal MC
-  // Exact solution:
-  //   effHLT = 2*n1/(2*n1+n2)
-  //   effSel = 1 - 0.5*n3/(n1+n2)*(1-(1-effHLT)*(1-effHLT))
-  //   effTrk = 1 - 0.5*n4/(n1+n2)*(1-(1-effHLT)*(1-effHLT))*effSel
-  //   effSta = 1 - 0.5*n5/(n1+n2)*(1-(1-effHLT)*(1-effHLT))*effSel
-  //
-  // Below, we fit the MC events to a histogram template of itself
-  // to effectively "count" the yields in each category
-  //
-  RooCategory rooCat2("rooCat2","rooCat2");
-  rooCat2.defineType("MuMu2HLT2");
-  rooCat2.defineType("MuMu1HLT2");
-  rooCat2.defineType("MuMuNoSel2");
-  rooCat2.defineType("MuSta2");
-  rooCat2.defineType("MuTrk2");
-    
-  // Primary parameters
-  Double_t NzmmMax = 1.5*(tmpltMuMu2HLT->Integral() + tmpltMuMu1HLT->Integral() + tmpltMuMuNoSel->Integral() + tmpltMuSta->Integral() + tmpltMuTrk->Integral());
-  RooRealVar Nzmm("Nzmm","Nzmm",0.65*NzmmMax,0,NzmmMax);
-  RooRealVar effHLT_Zmm("effHLT_Zmm","effHLT_Zmm",0.90,0.80,1.0);
-  RooRealVar effSel_Zmm("effSel_Zmm","effSel_Zmm",0.95,0.80,1.0);
-  RooRealVar effTrk_Zmm("effTrk_Zmm","effTrk_Zmm",0.98,0.90,1.0);
-  RooRealVar effSta_Zmm("effSta_Zmm","effSta_Zmm",0.97,0.90,1.0);
-  
-  // The expected numbers of signal events in each sample
-  RooFormulaVar NfitMuMu2HLT_Zmm("NfitMuMu2HLT_Zmm","NfitMuMu2HLT_Zmm",
-				 "Nzmm*effHLT_Zmm*effHLT_Zmm*effTrk_Zmm*effTrk_Zmm*effSta_Zmm*effSta_Zmm*effSel_Zmm*effSel_Zmm",
-                                 RooArgList(Nzmm,effHLT_Zmm,effTrk_Zmm,effSta_Zmm,effSel_Zmm));
-  RooFormulaVar NfitMuMu1HLT_Zmm("NfitMuMu1HLT_Zmm","NfitMuMu1HLT_Zmm",
-                                 "2*Nzmm*effHLT_Zmm*(1-effHLT_Zmm)*effTrk_Zmm*effTrk_Zmm*effSta_Zmm*effSta_Zmm*effSel_Zmm*effSel_Zmm",
-                                 RooArgList(Nzmm,effHLT_Zmm,effTrk_Zmm,effSta_Zmm,effSel_Zmm));
-  RooFormulaVar NfitMuMuNoSel_Zmm("NfitMuMuNoSel_Zmm","NfitMuMuNoSel_Zmm", 
-                                  "2*Nzmm*effHLT_Zmm*effTrk_Zmm*effTrk_Zmm*effSta_Zmm*effSta_Zmm*effSel_Zmm*(1-effSel_Zmm)",
-                                  RooArgList(Nzmm,effHLT_Zmm,effTrk_Zmm,effSta_Zmm,effSel_Zmm)); 
-  RooFormulaVar NfitMuSta_Zmm("NfitMuSta_Zmm","NfitMuSta_Zmm",
-                              "2*Nzmm*effHLT_Zmm*effTrk_Zmm*(1-effTrk_Zmm)*effSta_Zmm*effSta_Zmm*effSel_Zmm",
-                              RooArgList(Nzmm,effHLT_Zmm,effTrk_Zmm,effSta_Zmm,effSel_Zmm));
-  RooFormulaVar NfitMuTrk_Zmm("NfitMuTrk_Zmm","NfitMuTrk_Zmm",
-                              "2*Nzmm*effHLT_Zmm*effTrk_Zmm*effTrk_Zmm*effSta_Zmm*(1-effSta_Zmm)*effSel_Zmm",
-                              RooArgList(Nzmm,effHLT_Zmm,effTrk_Zmm,effSta_Zmm,effSel_Zmm));  
-  
-  RooFormulaVar effZ_Zmm("effZ_Zmm","effZ_Zmm",
-                         "(1-(1-effHLT_Zmm)*(1-effHLT_Zmm))*effTrk_Zmm*effTrk_Zmm*effSta_Zmm*effSta_Zmm*effSel_Zmm*effSel_Zmm",
-			 RooArgList(effHLT_Zmm,effTrk_Zmm,effSta_Zmm,effSel_Zmm));
-  
-  RooRealVar NfitBkgDummy("NfitBkgDummy","NfitBkgDummy",10,0,100); 
-  
-  RooDataHist zmmMuMu2HLT ("zmmMuMu2HLT", "zmmMuMu2HLT", RooArgSet(m),tmpltMuMu2HLT);
-  RooDataHist zmmMuMu1HLT ("zmmMuMu1HLT", "zmmMuMu1HLT", RooArgSet(m),tmpltMuMu1HLT);
-  RooDataHist zmmMuMuNoSel("zmmMuMuNoSel","zmmMuMuNoSel",RooArgSet(m),tmpltMuMuNoSel);
-  RooDataHist zmmMuSta	  ("zmmMuSta",    "zmmMuSta",    RooArgSet(m),tmpltMuSta);
-  RooDataHist zmmMuTrk	  ("zmmMuTrk",    "zmmMuTrk",    RooArgSet(m),tmpltMuTrk);
-  RooDataHist zmmData("zmmData","zmmData", RooArgList(m), Index(rooCat2),
-                      Import("MuMu2HLT2",  zmmMuMu2HLT),
-		      Import("MuMu1HLT2",  zmmMuMu1HLT),
-		      Import("MuMuNoSel2", zmmMuMuNoSel),
-		      Import("MuSta2",     zmmMuSta),
-                      Import("MuTrk2",     zmmMuTrk));
-  
-  RooAbsPdf *pdfZmmMuMu2HLT  = getModel(eCount, eNone, "ZmmMuMu2HLT",  tmpltMuMu2HLT,  m, NfitMuMu2HLT_Zmm,  NfitBkgDummy);
-  RooAbsPdf *pdfZmmMuMu1HLT  = getModel(eCount, eNone, "ZmmMuMu1HLT",  tmpltMuMu1HLT,  m, NfitMuMu1HLT_Zmm,  NfitBkgDummy);
-  RooAbsPdf *pdfZmmMuMuNoSel = getModel(eCount, eNone, "ZmmMuMuNoSel", tmpltMuMuNoSel, m, NfitMuMuNoSel_Zmm, NfitBkgDummy);
-  RooAbsPdf *pdfZmmMuSta     = getModel(eCount, eNone, "ZmmMuSta",     tmpltMuSta,     m, NfitMuSta_Zmm,     NfitBkgDummy);
-  RooAbsPdf *pdfZmmMuTrk     = getModel(eCount, eNone, "ZmmMuTrk",     tmpltMuTrk,     m, NfitMuTrk_Zmm,     NfitBkgDummy); 			   			  
-  
-  RooSimultaneous pdfZmm("pdfZmm","pdfZmm",rooCat2);
-  pdfZmm.addPdf(*pdfZmmMuMu2HLT, "MuMu2HLT2");
-  pdfZmm.addPdf(*pdfZmmMuMu1HLT, "MuMu1HLT2");  
-  pdfZmm.addPdf(*pdfZmmMuMuNoSel,"MuMuNoSel2");
-  pdfZmm.addPdf(*pdfZmmMuSta,    "MuSta2");  
-  pdfZmm.addPdf(*pdfZmmMuTrk,    "MuTrk2");
+  TH1D *hZmumuNPVDiff = makeDiffHist(hDataNPV,hMCNPV,"hZmumuNPVDiff");
+  hZmumuNPVDiff->SetMarkerStyle(kFullCircle); 
+  hZmumuNPVDiff->SetMarkerSize(0.9);
 
-  RooFitResult *zmmResult = pdfZmm.fitTo(zmmData, Extended(kTRUE), Save(kTRUE));    
+  TH1D *hZmumuZPtDiff = makeDiffHist(hDataZPt,hMCZPt,"hZmumuZPtDiff");
+  hZmumuZPtDiff->SetMarkerStyle(kFullCircle); 
+  hZmumuZPtDiff->SetMarkerSize(0.9);
 
-
+  TH1D *hZmumuLep1PtDiff = makeDiffHist(hDataLep1Pt,hMCLep1Pt,"hZmumuLep1PtDiff");
+  hZmumuLep1PtDiff->SetMarkerStyle(kFullCircle); 
+  hZmumuLep1PtDiff->SetMarkerSize(0.9);
+  
   //--------------------------------------------------------------------------------------------------------------
   // Make plots 
   //==============================================================================================================  
 
   char ylabel[100];     // string buffer for y-axis label
-  char cattext[100];    // string buffer for category label
-  char yieldtext[100];  // string buffer for category yield
-  char nsigtext[100];   // string buffer for Nsig text
-  char nbkgtext[100];   // string buffer for Nbkg text
   
   // label for lumi
   char lumitext[100];
-  if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.2f fb^{-1}  at  #sqrt{s} = 8 TeV",lumi);  
+  sprintf(lumitext,"%.1f fb^{-1}  (13 TeV)",lumi/1000);  
+  
+  char normtext[100];
+  sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
+
+  string norm="";
+  if(normToData)norm="_norm";
   
   // plot colors
   Int_t linecolorZ   = kOrange-3;
   Int_t fillcolorZ   = kOrange-2;
   Int_t linecolorEWK = kOrange+10;
   Int_t fillcolorEWK = kOrange+7;
+  Int_t linecolorTop = kGreen+2;
+  Int_t fillcolorTop = kGreen-5;
   Int_t ratioColor   = kGray+2;
-  
-  //
-  // Dummy histograms for TLegend
-  // (I can't figure out how to properly pass RooFit objects...)
-  //
-  TH1D *hDummyData = new TH1D("hDummyData","",0,0,10);
-  hDummyData->SetMarkerStyle(kFullCircle);
-  hDummyData->SetMarkerSize(0.9);
-  
-  TH1D *hDummyZ = new TH1D("hDummyZ","",0,0,10);
-  hDummyZ->SetLineColor(linecolorZ);
-  hDummyZ->SetFillColor(fillcolorZ);
-  hDummyZ->SetFillStyle(1001);
-  
-  TH1D *hDummyEWK = new TH1D("hDummyEWK","",0,0,10);
-  hDummyEWK->SetLineColor(linecolorEWK);
-  hDummyEWK->SetFillColor(fillcolorEWK);
-  hDummyEWK->SetFillStyle(1001);
-  
-  
-  TCanvas *c0 = MakeCanvas("c0","c0",800,800);
-  c0->SetTickx(1);
-  c0->SetTicky(1);
-  
-  //
-  // MuMu2HLT category
-  //
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hMuMu2HLT->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu (2 HLT)");
-  sprintf(yieldtext,"%i events",(Int_t)hMuMu2HLT->Integral());
-  hMuMu2HLT->GetXaxis()->CenterTitle();
-  CPlot plotMuMu2HLT("mumu2hlt","","mass [GeV/c^{2}]",ylabel);
-  plotMuMu2HLT.AddHist1D(hMuMu2HLT,"histE");
-  plotMuMu2HLT.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuMu2HLT.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuMu2HLT.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuMu2HLT.Draw(c0,kTRUE,format);
-  
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",tmpltMuMu2HLT->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu (2 HLT)");
-  sprintf(yieldtext,"%i events",(Int_t)tmpltMuMu2HLT->Integral());
-  tmpltMuMu2HLT->GetXaxis()->CenterTitle();
-  CPlot plotMuMu2HLT_Zmm("mumu2hlt_zmm","","mass [GeV/c^{2}]",ylabel);
-  plotMuMu2HLT_Zmm.AddHist1D(tmpltMuMu2HLT,"histE");
-  plotMuMu2HLT_Zmm.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuMu2HLT_Zmm.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuMu2HLT_Zmm.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuMu2HLT_Zmm.Draw(c0,kTRUE,format);
 
-  //
-  // MuMu1HLT category
-  //
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hMuMu1HLT->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu (1 HLT)");
-  sprintf(yieldtext,"%i events",(Int_t)hMuMu1HLT->Integral());
-  hMuMu1HLT->GetXaxis()->CenterTitle();
-  CPlot plotMuMu1HLT("mumu1hlt","","mass [GeV/c^{2}]",ylabel);
-  plotMuMu1HLT.AddHist1D(hMuMu1HLT,"histE");
-  plotMuMu1HLT.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuMu1HLT.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuMu1HLT.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuMu1HLT.Draw(c0,kTRUE,format);
-  
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",tmpltMuMu1HLT->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu (1 HLT)");
-  sprintf(yieldtext,"%i events",(Int_t)tmpltMuMu1HLT->Integral());
-  tmpltMuMu1HLT->GetXaxis()->CenterTitle();
-  CPlot plotMuMu1HLT_Zmm("mumu1hlt_zmm","","mass [GeV/c^{2}]",ylabel);
-  plotMuMu1HLT_Zmm.AddHist1D(tmpltMuMu1HLT,"histE");
-  plotMuMu1HLT_Zmm.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuMu1HLT_Zmm.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuMu1HLT_Zmm.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuMu1HLT_Zmm.Draw(c0,kTRUE,format);
-  
-  //
-  // MuMuNoSel category
-  //
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",tmpltMuMuNoSel->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu_{No Sel}");
-  sprintf(yieldtext,"%i events",(Int_t)tmpltMuMuNoSel->Integral());
-  tmpltMuMuNoSel->GetXaxis()->CenterTitle();
-  CPlot plotMuMuNoSel_Zmm("mumunosel_zmm","","mass [GeV/c^{2}]",ylabel);
-  plotMuMuNoSel_Zmm.AddHist1D(tmpltMuMuNoSel,"histE");
-  plotMuMuNoSel_Zmm.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuMuNoSel_Zmm.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuMuNoSel_Zmm.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuMuNoSel_Zmm.Draw(c0,kTRUE,format);
-    
-  //
-  // MuSta category
-  //
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",tmpltMuSta->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu_{STA}");
-  sprintf(yieldtext,"%i events",(Int_t)tmpltMuSta->Integral());
-  tmpltMuSta->GetXaxis()->CenterTitle();
-  CPlot plotMuSta_Zmm("musta_zmm","","mass [GeV/c^{2}]",ylabel);
-  plotMuSta_Zmm.AddHist1D(tmpltMuSta,"histE");
-  plotMuSta_Zmm.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuSta_Zmm.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuSta_Zmm.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuSta_Zmm.Draw(c0,kTRUE,format);
-    
-  //
-  // MuTrk category
-  //
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",tmpltMuTrk->GetBinWidth(1));
-  sprintf(cattext,"#mu + track");
-  sprintf(yieldtext,"%i events",(Int_t)tmpltMuTrk->Integral());
-  tmpltMuTrk->GetXaxis()->CenterTitle();
-  CPlot plotMuTrk_Zmm("mutrk_zmm","","mass [GeV/c^{2}]",ylabel);
-  plotMuTrk_Zmm.AddHist1D(tmpltMuTrk,"histE");
-  plotMuTrk_Zmm.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuTrk_Zmm.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuTrk_Zmm.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuTrk_Zmm.Draw(c0,kTRUE,format);
-  
-  
   TCanvas *c = MakeCanvas("c","c",800,800);
   c->Divide(1,2,0,0);
   c->cd(1)->SetPad(0,0.3,1.0,1.0);
   c->cd(1)->SetTopMargin(0.1);
   c->cd(1)->SetBottomMargin(0.01);
-  c->cd(1)->SetLeftMargin(0.18);  
+  c->cd(1)->SetLeftMargin(0.15);  
   c->cd(1)->SetRightMargin(0.07);  
   c->cd(1)->SetTickx(1);
   c->cd(1)->SetTicky(1);  
   c->cd(2)->SetPad(0,0,1.0,0.3);
   c->cd(2)->SetTopMargin(0.05);
   c->cd(2)->SetBottomMargin(0.45);
-  c->cd(2)->SetLeftMargin(0.18);
+  c->cd(2)->SetLeftMargin(0.15);
   c->cd(2)->SetRightMargin(0.07);
   c->cd(2)->SetTickx(1);
-  c->cd(2)->SetTicky(1);
-  gStyle->SetTitleOffset(1.400,"Y");
+  c->cd(2)->SetTicky(1); 
+  TGaxis::SetMaxDigits(3);
   
-  //
-  // MuMuNoSel category
-  //
-  RooPlot *frame3 = m.frame(Bins(NBINS));    
-  dataMuMuNoSel->plotOn(frame3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  pdfMuMuNoSel->plotOn(frame3,LineColor(kBlue));
-  if(typeMuMuNoSelBkg != eNone) 
-    pdfMuMuNoSel->plotOn(frame3,Components("bkgMuMuNoSel"),LineColor(kRed),LineStyle(7));
-  dataMuMuNoSel->plotOn(frame3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
-  
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hMuMuNoSel->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu_{No Sel}");
-  sprintf(yieldtext,"%i events",(Int_t)hMuMuNoSel->Integral());
-  sprintf(nsigtext,"N_{sig} = %.1f #pm %.1f",NfitMuMuNoSel.getVal(),NfitMuMuNoSel.getPropagatedError(*result));
-  sprintf(nbkgtext,"N_{bkg} = %.1f #pm %.1f",NfitBkgMuMuNoSel.getVal(),NfitBkgMuMuNoSel.getPropagatedError(*result));
-  CPlot plotMuMuNoSel("mumunosel",frame3,"","",ylabel);
-  plotMuMuNoSel.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuMuNoSel.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuMuNoSel.AddTextBox(nsigtext,0.63,0.77,0.87,0.83,0);
-  plotMuMuNoSel.AddTextBox(nbkgtext,0.63,0.71,0.87,0.77,0);
-  plotMuMuNoSel.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuMuNoSel.SetYRange(0.01,1.1*(hMuMuNoSel->GetMaximum() + sqrt(hMuMuNoSel->GetMaximum())));
-  plotMuMuNoSel.Draw(c,kFALSE,format,1);
-
-  CPlot plotMuMuNoSelDiff("mumunosel","","mass [GeV/c^{2}]","#chi");
-  plotMuMuNoSelDiff.AddHist1D(hMuMuNoSelDiff,"EX0",ratioColor);
-  plotMuMuNoSelDiff.SetYRange(-8,8);
-  plotMuMuNoSelDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotMuMuNoSelDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotMuMuNoSelDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
-  plotMuMuNoSelDiff.Draw(c,kTRUE,format,2);
-  
-  //
-  // MuSta category
-  //
-  RooPlot *frame4 = m.frame(Bins(NBINS));    
-  dataMuSta->plotOn(frame4,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  pdfMuSta->plotOn(frame4,LineColor(kBlue));
-  if(typeMuStaBkg != eNone) 
-    pdfMuSta->plotOn(frame4,Components("bkgMuSta"),LineColor(kRed),LineStyle(7));
-  dataMuSta->plotOn(frame4,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
-  
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hMuSta->GetBinWidth(1));
-  sprintf(cattext,"#mu + #mu_{STA}");
-  sprintf(yieldtext,"%i events",(Int_t)hMuSta->Integral());
-  sprintf(nsigtext,"N_{sig} = %.1f #pm %.1f",NfitMuSta.getVal(),NfitMuSta.getPropagatedError(*result));
-  sprintf(nbkgtext,"N_{bkg} = %.1f #pm %.1f",NfitBkgMuSta.getVal(),NfitBkgMuSta.getPropagatedError(*result));
-  CPlot plotMuSta("musta",frame4,"","",ylabel);
-  plotMuSta.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuSta.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuSta.AddTextBox(nsigtext,0.63,0.77,0.87,0.83,0);
-  plotMuSta.AddTextBox(nbkgtext,0.63,0.71,0.87,0.77,0);
-  plotMuSta.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuSta.SetYRange(0.01,1.1*(hMuSta->GetMaximum() + sqrt(hMuSta->GetMaximum())));
-  plotMuSta.Draw(c,kFALSE,format,1);
-
-  CPlot plotMuStaDiff("musta","","mass [GeV/c^{2}]","#chi");
-  plotMuStaDiff.AddHist1D(hMuStaDiff,"EX0",ratioColor);
-  plotMuStaDiff.SetYRange(-8,8);
-  plotMuStaDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotMuStaDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotMuStaDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
-  plotMuStaDiff.Draw(c,kTRUE,format,2);
-  
-  //
-  // MuTrk category
-  //
-  RooPlot *frame5 = m.frame(Bins(NBINS));    
-  dataMuTrk->plotOn(frame5,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));
-  pdfMuTrk->plotOn(frame5,LineColor(kBlue));
-  if(typeMuTrkBkg != eNone) 
-    pdfMuTrk->plotOn(frame5,Components("bkgMuTrk"),LineColor(kRed),LineStyle(7));
-  dataMuTrk->plotOn(frame5,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"));  
-  
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hMuTrk->GetBinWidth(1));
-  sprintf(cattext,"#mu + track");
-  sprintf(yieldtext,"%i events",(Int_t)hMuTrk->Integral());
-  sprintf(nsigtext,"N_{sig} = %.1f #pm %.1f",NfitMuTrk.getVal(),NfitMuTrk.getPropagatedError(*result));
-  sprintf(nbkgtext,"N_{bkg} = %.1f #pm %.1f",NfitBkgMuTrk.getVal(),NfitBkgMuTrk.getPropagatedError(*result));
-  CPlot plotMuTrk("mutrk",frame5,"","",ylabel);
-  plotMuTrk.AddTextBox(cattext,0.23,0.77,0.43,0.83,0);
-  plotMuTrk.AddTextBox(yieldtext,0.23,0.68,0.43,0.74,0);
-  plotMuTrk.AddTextBox(nsigtext,0.63,0.77,0.87,0.83,0);
-  plotMuTrk.AddTextBox(nbkgtext,0.63,0.71,0.87,0.77,0);
-  plotMuTrk.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotMuTrk.SetYRange(0.01,1.1*(hMuTrk->GetMaximum() + sqrt(hMuTrk->GetMaximum())));
-  plotMuTrk.Draw(c,kFALSE,format,1);
-
-  CPlot plotMuTrkDiff("mutrk","","mass [GeV/c^{2}]","#chi");
-  plotMuTrkDiff.AddHist1D(hMuTrkDiff,"EX0",ratioColor);
-  plotMuTrkDiff.SetYRange(-8,8);
-  plotMuTrkDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotMuTrkDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotMuTrkDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
-  plotMuTrkDiff.Draw(c,kTRUE,format,2);  
-  
-  //
-  // MuMu2HLT + MuMu1HLT categories
-  //   
-  sprintf(ylabel,"Events / %.1f GeV/c^{2}",hData->GetBinWidth(1));
-  CPlot plotZmumu("zmm","","",ylabel);
+  sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
+  CPlot plotZmumu("zmm"+norm,"","",ylabel);
   plotZmumu.AddHist1D(hData,"data","E");
   plotZmumu.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumu.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);
-  plotZmumu.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotZmumu.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumu.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumu.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
   plotZmumu.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
-  plotZmumu.TransLegend(-0.35,-0.15);
+  plotZmumu.TransLegend(0.1,-0.05);
   plotZmumu.Draw(c,kFALSE,format,1);
 
-  CPlot plotZmumuDiff("zmm","","M(#mu^{+}#mu^{-}) [GeV/c^{2}]","#chi");
+  CPlot plotZmumuDiff("zmm"+norm,"","M(#mu^{+}#mu^{-}) [GeV]","#frac{Data-Pred}{Data}");
   plotZmumuDiff.AddHist1D(hZmumuDiff,"EX0",ratioColor);
-  plotZmumuDiff.SetYRange(-8,8);
+  plotZmumuDiff.SetYRange(-0.2,0.2);
   plotZmumuDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotZmumuDiff.AddLine(MASS_LOW, 5,MASS_HIGH, 5,kBlack,3);
-  plotZmumuDiff.AddLine(MASS_LOW,-5,MASS_HIGH,-5,kBlack,3);
+  plotZmumuDiff.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZmumuDiff.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
   plotZmumuDiff.Draw(c,kTRUE,format,2);
   
-  CPlot plotZmumu2("zmmlog","","",ylabel);
+  CPlot plotZmumu2("zmmlog"+norm,"","",ylabel);
   plotZmumu2.AddHist1D(hData,"data","E");
   plotZmumu2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  plotZmumu2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
   plotZmumu2.AddToStack(hZmm,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
-  plotZmumu2.AddTextBox("CMS Preliminary",0.63,0.92,0.95,0.99,0);plotZmumu2.SetName("zmmlog");
-  plotZmumu2.AddTextBox(lumitext,0.55,0.80,0.90,0.86,0);
+  plotZmumu2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumu2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumu2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
   plotZmumu2.SetLogy();
   plotZmumu2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
-  plotZmumu2.TransLegend(-0.35,-0.15);
+  plotZmumu2.TransLegend(0.1,-0.05);
   plotZmumu2.Draw(c,kTRUE,format,1);
+
+  //
+  // NPV
+  // 
+
+  sprintf(ylabel,"Events");
+  CPlot plotZmumuNPV("zmmNPV"+norm,"","",ylabel);
+  plotZmumuNPV.AddHist1D(hDataNPV,"data","E");
+  plotZmumuNPV.AddToStack(hZmmNPV,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
+  plotZmumuNPV.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumuNPV.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumuNPV.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotZmumuNPV.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
+  plotZmumuNPV.TransLegend(0.1,-0.05);
+  plotZmumuNPV.Draw(c,kFALSE,format,1);
+
+  CPlot plotZmumuNPVDiff("zmmNPV"+norm,"","npv","#frac{Data-Pred}{Data}");
+  plotZmumuNPVDiff.AddHist1D(hZmumuNPVDiff,"EX0",ratioColor);
+  plotZmumuNPVDiff.SetYRange(-0.2,0.2);
+  plotZmumuNPVDiff.AddLine(0, 0,50, 0,kBlack,1);
+  plotZmumuNPVDiff.AddLine(0, 0.1,50, 0.1,kBlack,3);
+  plotZmumuNPVDiff.AddLine(0,-0.1,50,-0.1,kBlack,3);
+  plotZmumuNPVDiff.Draw(c,kTRUE,format,2);
+  
+  CPlot plotZmumuNPV2("zmmNPVlog"+norm,"","",ylabel);
+  plotZmumuNPV2.AddHist1D(hDataNPV,"data","E");
+  plotZmumuNPV2.AddToStack(hEWKNPV,"EWK",fillcolorEWK,linecolorEWK);
+  plotZmumuNPV2.AddToStack(hTtbNPV,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotZmumuNPV2.AddToStack(hZmmNPV,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
+  plotZmumuNPV2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumuNPV2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumuNPV2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotZmumuNPV2.SetLogy();
+  plotZmumuNPV2.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
+  plotZmumuNPV2.TransLegend(0.1,-0.05);
+  plotZmumuNPV2.Draw(c,kTRUE,format,1);
+
+  //
+  // Z Pt
+  //   
+  sprintf(ylabel,"Events / 1 GeV");
+  CPlot plotZmumuZPt("zmmZPt"+norm,"","",ylabel);
+  plotZmumuZPt.AddHist1D(hDataZPt,"data","E");
+  plotZmumuZPt.AddToStack(hZmmZPt,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
+  plotZmumuZPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumuZPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumuZPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotZmumuZPt.SetLogx();
+  plotZmumuZPt.SetLogy(0);
+  plotZmumuZPt.SetYRange(0.01,1.2*(hDataZPt->GetMaximum() + sqrt(hDataZPt->GetMaximum())));
+  plotZmumuZPt.TransLegend(0.1,-0.05);
+  plotZmumuZPt.Draw(c,kFALSE,format,1);
+
+  CPlot plotZmumuZPtDiff("zmmZPt"+norm,"","p_{T}^{#mu^{+}#mu^{-}} [GeV]","#frac{Data-Pred}{Data}");
+  plotZmumuZPtDiff.AddHist1D(hZmumuZPtDiff,"EX0",ratioColor);
+  plotZmumuZPtDiff.SetLogx();
+  plotZmumuZPtDiff.SetYRange(-0.2,0.2);
+  plotZmumuZPtDiff.AddLine(0, 0,1000, 0,kBlack,1);
+  plotZmumuZPtDiff.AddLine(0, 0.1,1000, 0.1,kBlack,3);
+  plotZmumuZPtDiff.AddLine(0,-0.1,1000,-0.1,kBlack,3);
+  plotZmumuZPtDiff.Draw(c,kTRUE,format,2);
+  
+  CPlot plotZmumuZPt2("zmmZPtlog"+norm,"","",ylabel);
+  plotZmumuZPt2.AddHist1D(hDataZPt,"data","E");
+  plotZmumuZPt2.AddToStack(hEWKZPt,"EWK",fillcolorEWK,linecolorEWK);
+  plotZmumuZPt2.AddToStack(hTtbZPt,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotZmumuZPt2.AddToStack(hZmmZPt,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);\
+  plotZmumuZPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumuZPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumuZPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotZmumuZPt2.SetLogx();
+  plotZmumuZPt2.SetLogy();
+  plotZmumuZPt2.SetYRange(1e-6*(hDataZPt->GetMaximum()),10*(hDataZPt->GetMaximum()));
+  plotZmumuZPt2.TransLegend(0.1,-0.05);
+  plotZmumuZPt2.Draw(c,kTRUE,format,1);
+
+ //
+  // Lep1 Pt
+  //   
+  sprintf(ylabel,"Events / 1 GeV");
+  CPlot plotZmumuLep1Pt("zmmLep1Pt"+norm,"","",ylabel);
+  plotZmumuLep1Pt.AddHist1D(hDataLep1Pt,"data","E");
+  plotZmumuLep1Pt.AddToStack(hZmmLep1Pt,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
+  plotZmumuLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumuLep1Pt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumuLep1Pt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotZmumuLep1Pt.SetLogx();
+  plotZmumuLep1Pt.SetLogy(0);
+  plotZmumuLep1Pt.SetYRange(0.01,1.2*(hDataLep1Pt->GetMaximum() + sqrt(hDataLep1Pt->GetMaximum())));
+  plotZmumuLep1Pt.TransLegend(0.1,-0.05);
+  plotZmumuLep1Pt.Draw(c,kFALSE,format,1);
+
+  CPlot plotZmumuLep1PtDiff("zmmLep1Pt"+norm,"","p_{T}(leading muon) [GeV]","#frac{Data-Pred}{Data}");
+  plotZmumuLep1PtDiff.AddHist1D(hZmumuLep1PtDiff,"EX0",ratioColor);
+  plotZmumuLep1PtDiff.SetLogx();
+  plotZmumuLep1PtDiff.SetYRange(-0.2,0.2);
+  plotZmumuLep1PtDiff.AddLine(25, 0,300, 0,kBlack,1);
+  plotZmumuLep1PtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
+  plotZmumuLep1PtDiff.AddLine(25,-0.1,300,-0.1,kBlack,3);
+  plotZmumuLep1PtDiff.Draw(c,kTRUE,format,2);
+  
+  CPlot plotZmumuLep1Pt2("zmmLep1Ptlog"+norm,"","",ylabel);
+  plotZmumuLep1Pt2.AddHist1D(hDataLep1Pt,"data","E");
+  plotZmumuLep1Pt2.AddToStack(hEWKLep1Pt,"EWK",fillcolorEWK,linecolorEWK);
+  plotZmumuLep1Pt2.AddToStack(hTtbLep1Pt,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotZmumuLep1Pt2.AddToStack(hZmmLep1Pt,"Z#rightarrow#mu#mu",fillcolorZ,linecolorZ);
+  plotZmumuLep1Pt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZmumuLep1Pt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZmumuLep1Pt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotZmumuLep1Pt2.SetLogx();
+  plotZmumuLep1Pt2.SetLogy();
+  plotZmumuLep1Pt2.SetYRange(1e-5*(hDataLep1Pt->GetMaximum()),10*(hDataLep1Pt->GetMaximum()));
+  plotZmumuLep1Pt2.TransLegend(0.1,-0.05);
+  plotZmumuLep1Pt2.Draw(c,kTRUE,format,1);
 
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
-   
+  
+
+
   cout << "*" << endl;
   cout << "* SUMMARY" << endl;
   cout << "*--------------------------------------------------" << endl;  
   cout << endl;
-  
-  //
-  // Write fit results
-  //
-  ofstream txtfile;
-  char txtfname[100];    
-  
-  sprintf(txtfname,"%s/fitresZmm.txt",CPlot::sOutDir.Data());
-  txtfile.open(txtfname);
-  assert(txtfile.is_open());
-  
-  txtfile << setw(20) << "" << "[Data]" << setw(25) << "" << "[MC]" << endl;
-  txtfile << "   MuMu2HLT: " << setw(8) << nMuMu2HLT  << " events" << setw(15) << "" << setw(8) << tmpltMuMu2HLT->Integral()  << " events" << endl; 
-  txtfile << "   MuMu1HLT: " << setw(8) << nMuMu1HLT  << " events" << setw(15) << "" << setw(8) << tmpltMuMu1HLT->Integral()  << " events" << endl; 
-  txtfile << "  MuMuNoSel: " << setw(8) << nMuMuNoSel << " events" << setw(15) << "" << setw(8) << tmpltMuMuNoSel->Integral() << " events" << endl;
-  txtfile << "      MuSta: " << setw(8) << nMuSta     << " events" << setw(15) << "" << setw(8) << tmpltMuSta->Integral()     << " events" << endl;    
-  txtfile << "      MuTrk: " << setw(8) << nMuTrk     << " events" << setw(15) << "" << setw(8) << tmpltMuTrk->Integral()     << " events" << endl;      
-  txtfile << endl;
-  txtfile << "       N_Z: " << setw(10) << Nz.getVal()   << " +/- " << setw(10) << Nz.getPropagatedError(*result);
-  txtfile << setw(5)  << "" << setw(10) << Nzmm.getVal() << " +/- " << setw(10) << Nzmm.getPropagatedError(*zmmResult) << endl;  
 
-  txtfile << "  eff(HLT): " << setw(10) << effHLT.getVal()     << " +/- " << setw(10) << effHLT.getPropagatedError(*result);  
-  txtfile << setw(5)  << "" << setw(10) << effHLT_Zmm.getVal() << " +/- " << setw(10) << effHLT_Zmm.getPropagatedError(*zmmResult);
-  txtfile << setw(5)  << "" << setw(5)  << "  ||  " << effHLT.getVal()/effHLT_Zmm.getVal() << endl;
-  
-  txtfile << "  eff(Sel): " << setw(10) << effSel.getVal()     << " +/- " << setw(10) << effSel.getPropagatedError(*result);  
-  txtfile << setw(5)  << "" << setw(10) << effSel_Zmm.getVal() << " +/- " << setw(10) << effSel_Zmm.getPropagatedError(*zmmResult);
-  txtfile << setw(5)  << "" << setw(5)  << "  ||  " << effSel.getVal()/effSel_Zmm.getVal() << endl;
-  
-  txtfile << "  eff(Trk): " << setw(10) << effTrk.getVal()     << " +/- " << setw(10) << effTrk.getPropagatedError(*result);
-  txtfile << setw(5)  << "" << setw(10) << effTrk_Zmm.getVal() << " +/- " << setw(10) << effTrk_Zmm.getPropagatedError(*zmmResult);
-  txtfile << setw(5)  << "" << setw(5)  << "  ||  " << effTrk.getVal()/effTrk_Zmm.getVal() << endl;  
-  
-  txtfile << "  eff(Sta): " << setw(10) << effSta.getVal()     << " +/- " << setw(10) << effSta.getPropagatedError(*result);
-  txtfile << setw(5)  << "" << setw(10) << effSta_Zmm.getVal() << " +/- " << setw(10) << effSta_Zmm.getPropagatedError(*zmmResult);
-  txtfile << setw(5)  << "" << setw(5)  << "  ||  " << effSta.getVal()/effSta_Zmm.getVal() << endl;  
-/*  
-  Double_t effTotData    = (Double_t)(nMuMu2HLT+nMuMu1HLT)/Nz.getVal();
-  Double_t effTotDataErr = sqrt(effTotData*(1.-effTotData)/Nz.getVal());
-  Double_t effTotZmm     = (tmpltMuMu2HLT->Integral()+tmpltMuMu1HLT->Integral())/Nzmm.getVal();
-  Double_t effTotZmmErr  = sqrt(effTotZmm*(1.-effTotZmm)/Nzmm.getVal());
-  
-  txtfile << "    eff(Z): " << setw(10) << effTotData << " +/- " << setw(10) << effTotDataErr;
-  txtfile << setw(5)  << "" << setw(10) << effTotZmm  << " +/- " << setw(10) << effTotZmmErr;
-  txtfile << setw(5)  << "" << setw(5)  << "  ||  " << effTotData/effTotZmm << endl; 
-  txtfile << endl;
-*/    
-  txtfile << "    eff(Z): " << setw(10) << effZ.getVal()      << " +/- " << setw(10) << effZ.getPropagatedError(*result);
-  txtfile << setw(5)  << "" << setw(10) << effZ_Zmm.getVal()  << " +/- " << setw(10) << effZ_Zmm.getPropagatedError(*zmmResult);
-  txtfile << setw(5)  << "" << setw(5)  << "  ||  " << effZ.getVal()/effZ_Zmm.getVal() << endl; 
-  txtfile << endl;  
-    
-  Double_t chi2prob, chi2ndf;
-  Double_t ksprob, ksprobpe;  
-   
-  txtfile << "*" << endl;
-  txtfile << "* MuMuNoSel" << endl;
-  txtfile << "*==================================================" << endl;  
-  txtfile << endl;
-  chi2prob = hMuMuNoSel->Chi2Test(hPdfMuMuNoSel,"PUW");
-  chi2ndf  = hMuMuNoSel->Chi2Test(hPdfMuMuNoSel,"CHI2/NDFUW");
-  ksprob   = hMuMuNoSel->KolmogorovTest(hPdfMuMuNoSel);
-  ksprobpe = hMuMuNoSel->KolmogorovTest(hPdfMuMuNoSel,"DX");
-  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);  
-   
-  txtfile << "*" << endl;
-  txtfile << "* MuSta" << endl;
-  txtfile << "*==================================================" << endl;  
-  txtfile << endl;
-  chi2prob = hMuSta->Chi2Test(hPdfMuSta,"PUW");
-  chi2ndf  = hMuSta->Chi2Test(hPdfMuSta,"CHI2/NDFUW");
-  ksprob   = hMuSta->KolmogorovTest(hPdfMuSta);
-  ksprobpe = hMuSta->KolmogorovTest(hPdfMuSta,"DX");
-  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);  
-   
-  txtfile << "*" << endl;
-  txtfile << "* MuTrk" << endl;
-  txtfile << "*==================================================" << endl;  
-  txtfile << endl;
-  chi2prob = hMuTrk->Chi2Test(hPdfMuTrk,"PUW");
-  chi2ndf  = hMuTrk->Chi2Test(hPdfMuTrk,"CHI2/NDFUW");
-  ksprob   = hMuTrk->KolmogorovTest(hPdfMuTrk);
-  ksprobpe = hMuTrk->KolmogorovTest(hPdfMuTrk,"DX");
-  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
-  
-  result->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
-  txtfile << endl;
-  
-  printCorrelations(txtfile, result);
-  txtfile << endl;
-  
-  txtfile.close();
-
-  makeHTML(outputDir);
+  cout << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  cout << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  cout << " The Zmm expected event yield (no. prefire) " << yield_zmm_noPrefire << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  cout << " The Zmm stat up event yield is " << yield_zmm_up << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  cout << " The Zmm stat down event yield is " << yield_zmm_dn << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  cout << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  cout << "  -> Dib event yield is " << nDib      << " +/-" << sqrt(nDibUnc)       << "." << endl;
+  cout << "  -> Zxx event yield is " << nZxx      << " +/-" << sqrt(nZxxUnc)       << "." << endl;
+  cout << "  -> Wx  event yield is " << nWx       << " +/-" << sqrt(nWxUnc)        << "." << endl;
+  cout << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
+  cout << " The Zmm Data Yield w/ ewk&top removed: " << yield - yield_ewk - yield_top << endl;
+  cout << " Zmm yield w/ all bkg removed: " << yield - yield_ewk - yield_top - yield_wm << endl;
+  cout << " Prefire scale factor :" << yield_zmm_noPrefire/yield_zmm << endl;
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;     
+  
+  
+  ofstream txtfile;
+  char txtfname[100];  
+  sprintf(txtfname,"%s/zmm_yields.txt",CPlot::sOutDir.Data());
+  txtfile.open(txtfname);
+  assert(txtfile.is_open());
+  
+  
+  txtfile << "*" << endl;
+  txtfile << "* SUMMARY" << endl;
+  txtfile << "*--------------------------------------------------" << endl;  
+  txtfile << endl;
 
-  gBenchmark->Show("fitZmm");
+  txtfile << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  txtfile << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  txtfile << " The Zmm expected event yield (no. prefire) " << yield_zmm_noPrefire << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  txtfile << " The Zmm stat up event yield is " << yield_zmm_up << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  txtfile << " The Zmm stat down event yield is " << yield_zmm_dn << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  txtfile << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  txtfile << "  -> Dib event yield is " << nDib      << " +/-" << sqrt(nDibUnc)       << "." << endl;
+  txtfile << "  -> Zxx event yield is " << nZxx      << " +/-" << sqrt(nZxxUnc)       << "." << endl;
+  txtfile << "  -> Wx  event yield is " << nWx       << " +/-" << sqrt(nWxUnc)        << "." << endl;
+  txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
+  txtfile << " Zmm yield w/ all bkg removed: " << yield - yield_ewk - yield_top - yield_wm << endl;
+  txtfile << " Prefire scale factor :" << yield_zmm_noPrefire/yield_zmm << endl;
+  txtfile << std::endl;
+  txtfile.close();
+  
+  
+
+  gBenchmark->Show("plotZmm");
 }
 
 
 //=== FUNCTION DEFINITIONS ======================================================================================
 
 //--------------------------------------------------------------------------------------------------
+
 TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
-  TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
+  TH1D *hDiff = (TH1D*)hData->Clone("hDiff");
+  hDiff->SetName(name);
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
     
-    Double_t diff = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
-    
-    Double_t err = sqrt(hData->GetBinContent(ibin));
-    if(err==0) err= sqrt(hFit->GetBinContent(ibin));
-    
-    if(err>0) hDiff->SetBinContent(ibin,diff/err);
-    else      hDiff->SetBinContent(ibin,0);
-    hDiff->SetBinError(ibin,1);   
+    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+    Double_t diff=0;
+    Double_t err=0;
+    if(hData->GetBinContent(ibin)!=0)
+      {
+	diff = diff0/hData->GetBinContent(ibin);
+	err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+      }
+    hDiff->SetBinContent(ibin,diff);
+    hDiff->SetBinError(ibin,err);   
   }
   
-  hDiff->GetYaxis()->SetTitleOffset(0.48);
+  hDiff->GetYaxis()->SetTitleOffset(0.42);
   hDiff->GetYaxis()->SetTitleSize(0.13);
   hDiff->GetYaxis()->SetLabelSize(0.10);
   hDiff->GetYaxis()->SetNdivisions(104);
@@ -951,123 +1061,15 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
   return hDiff;
 }
 
-//--------------------------------------------------------------------------------------------------
-void printCorrelations(ostream& os, RooFitResult *res)
-{
-  ios_base::fmtflags flags = os.flags();
-  const RooArgList parlist = res->floatParsFinal();
-  
-  os << "  Correlation Matrix" << endl;
-  os << " --------------------" << endl;
-  for(Int_t i=0; i<parlist.getSize(); i++) {
-    for(Int_t j=0; j<parlist.getSize(); j++) 
-      os << "  " << setw(7) << setprecision(4) << fixed << res->correlationMatrix()(i,j);    
-    os << endl;
+void orderByLepPt(TLorentzVector &mu1, TLorentzVector &mu2,Int_t &q1, Int_t &q2, double mu_MASS){
+  if(mu2.Pt() > mu1.Pt()){
+    TLorentzVector tmp;
+    tmp.SetPtEtaPhiM(mu1.Pt(), mu1.Eta(), mu1.Phi(), mu_MASS);
+    mu1 = mu2;
+    mu2 = tmp;
+
+    q1*= -1;
+    q2*= -1;
   }
-  os.flags(flags);
-}
-
-//--------------------------------------------------------------------------------------------------
-void printChi2AndKSResults(ostream& os, 
-                           const Double_t chi2prob, const Double_t chi2ndf, 
-                           const Double_t ksprob, const Double_t ksprobpe)
-{
-  ios_base::fmtflags flags = os.flags();
-  
-  os << "  Chi2 Test" << endl;
-  os << " -----------" << endl;
-  os << "       prob = " << chi2prob << endl;
-  os << "   chi2/ndf = " << chi2ndf << endl;
-  os << endl;
-  os << "  KS Test" << endl;
-  os << " ---------" << endl;
-  os << "   prob = " << ksprob << endl;
-  os << "   prob = " << ksprobpe << " with 1000 pseudo-experiments" << endl;
-  os << endl;
- 
-  os.flags(flags);
-}
-
-//--------------------------------------------------------------------------------------------------
-void makeHTML(const TString outDir)
-{
-  ofstream htmlfile;
-  char htmlfname[100];
-  sprintf(htmlfname,"%s/ZmumuFitPlots.html",outDir.Data());
-  htmlfile.open(htmlfname);
-  htmlfile << "<!DOCTYPE html" << endl;
-  htmlfile << "    PUBLIC \"-//W3C//DTD HTML 3.2//EN\">" << endl;
-  htmlfile << "<html>" << endl;
-  htmlfile << "<head><title>Zmm</title></head>" << endl;
-  htmlfile << "<body bgcolor=\"EEEEEE\">" << endl;
-  
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl; 
-  htmlfile << "<tr>" << endl;
-  htmlfile << "<td width=\"25%\"><a target=\"_blank\" href=\"zmm.png\"><img src=\"zmm.png\" alt=\"zmm.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"25%\"><a target=\"_blank\" href=\"zmmlog.png\"><img src=\"zmmlog.png\" alt=\"zmmlog.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"25%\"></td>" << endl;
-  htmlfile << "<td width=\"25%\"></td>" << endl;
-  htmlfile << "</tr>" << endl;
-  htmlfile << "</table>" << endl;
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl; 
-  htmlfile << "<tr>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mumu2hlt.png\"><img src=\"mumu2hlt.png\" alt=\"mumu2hlt.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mumu1hlt.png\"><img src=\"mumu1hlt.png\" alt=\"mumu1hlt.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mumunosel.png\"><img src=\"mumunosel.png\" alt=\"mumunosel.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"musta.png\"><img src=\"musta.png\" alt=\"musta.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mutrk.png\"><img src=\"mutrk.png\" alt=\"mutrk.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "</tr>" << endl;
-  htmlfile << "<tr>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mumu2hlt_zmm.png\"><img src=\"mumu2hlt_zmm.png\" alt=\"mumu2hlt_zmm.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mumu1hlt_zmm.png\"><img src=\"mumu1hlt_zmm.png\" alt=\"mumu1hlt_zmm.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mumunosel_zmm.png\"><img src=\"mumunosel_zmm.png\" alt=\"mumunosel_zmm.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"musta_zmm.png\"><img src=\"musta_zmm.png\" alt=\"musta_zmm.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"mutrk_zmm.png\"><img src=\"mutrk_zmm.png\" alt=\"mutrk_zmm.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "</tr>" << endl;
-  htmlfile << "</table>" << endl;
-  htmlfile << "<hr />" << endl;
-  
-  htmlfile << "</body>" << endl;
-  htmlfile << "</html>" << endl;
-  htmlfile.close();
-}
-
-
-//--------------------------------------------------------------------------------------------------
-RooAbsPdf* getModel(Int_t sigType, Int_t bkgType, const char *label, TH1D *histTemplate,
-                    RooRealVar &m, RooFormulaVar &NfitSig, RooRealVar &NfitBkg)
-{
-  char name[100];
-  
-  sprintf(name,"sig%s",label);
-  CSignalModel *sigModel=0;  
-  if(sigType==eCount) {    
-    sprintf(name,"dataHist_%s",label); RooDataHist *dataHist = new RooDataHist(name,name,RooArgSet(m),histTemplate);
-    sprintf(name,"histPdf_%s",label);  RooHistPdf  *histPdf  = new RooHistPdf(name,name,m,*dataHist,0);
-    sprintf(name,"sig%s",label);       return new RooExtendPdf(name,name,*histPdf,NfitSig); 
-  } 
-  else if(sigType==eBWxCB)   { sigModel = new CBreitWignerConvCrystalBall(name, m); } 
-  else if(sigType==eMCxGaus) { sigModel = new CMCTemplateConvGaussian(name, m, histTemplate); ((CMCTemplateConvGaussian*)sigModel)->sigma->setMax(3); } 
-  else { 
-    cout << "Not valid background model choice for " << label << endl;
-    assert(0);
-  }
-  
-  sprintf(name,"bkg%s",label);  
-  CBackgroundModel *bkgModel=0;
-  if     (bkgType==eNone)    { NfitBkg.setVal(0); NfitBkg.setConstant(kTRUE); } 
-  else if(bkgType==eExp)     { bkgModel = new CExponential(name, m); } 
-  else if(bkgType==eErfcExp) { bkgModel = new CErfExpo(name, m); } 
-  else if(bkgType==eDblExp)  { bkgModel = new CDoubleExp(name, m); } 
-  else if(bkgType==eLinExp)  { bkgModel = new CLinearExp(name, m); } 
-  else if(bkgType==eQuadExp) { bkgModel = new CQuadraticExp(name, m); } 
-  else {    
-    cout << "Not valid signal model choice for MuSta!" << endl;
-    assert(0);
-  }
-  
-  sprintf(name,"pdf%s",label);
-  return new RooAddPdf(name,name,
-                       (bkgType==eNone) ? RooArgList(*(sigModel->model)) : RooArgList(*(sigModel->model),*(bkgModel->model)),
-		       (bkgType==eNone) ? RooArgList(NfitSig) : RooArgList(NfitSig,NfitBkg));  
+  return;
 }
