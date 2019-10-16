@@ -70,18 +70,16 @@ void fitZee(const TString  inputDir,    // input directory
   // fnamev.push_back(inputDir + TString("/") + TString("data_select_old.root")); typev.push_back(eData);
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
   // fnamev.push_back(inputDir + TString("/") + TString("zee_select_old.root"));   typev.push_back(eZee);
-  fnamev.push_back(inputDir + TString("/") + TString("zee_select.raw.root"));   typev.push_back(eZee);
+  fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   
-  // fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
-  // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
   
-  // fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  // fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
-  // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
-  // fnamev.push_back(TString("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV/Zee/ntuples/") + TString("ewk_select.root"));  typev.push_back(eEWK);
-  // fnamev.push_back(TString("/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV/Zee/ntuples/") + TString("top_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
+  fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
@@ -136,7 +134,7 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   // TString GsfSelEffSignalShapeSys = baseDir1 + "Results/EleGsfSelSigSys.root";
   // TString GsfSelEffBackgroundShapeSys = baseDir1 + "Results/EleGsfSelBkgSys.root";
 
-  const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
+  const TString corrFiles = "../EleScale/Run2017_5TeV_coarseEtaR9";
   EnergyScaleCorrection ec( corrFiles.Data());
 
   //
@@ -173,9 +171,9 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   TLorentzVector clep1, clep2;
   TLorentzVector eclep1, eclep2;
   TLorentzVector dl;
-  for(int i =0; i < treeData->GetEntriesFast();i++){
+  // for(int i =0; i < treeData->GetEntriesFast();i++){
   // for(int i =0; i <(uint)(0.1*treeData->GetEntriesFast());i++){
-  // for(int i =0; i < 1000;i++){
+  for(int i =0; i < 100;i++){
     if(i%100000==0) cout << "Processing event " << i << ". " << (double)i/(double)treeData->GetEntries()*100 << " percent done with this file." << endl;
     treeData -> SetBranchStatus("runNumber",1);
     treeData -> SetBranchStatus("lumiBlock",1);
@@ -216,10 +214,10 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     eclep1=clep1;
     eclep2=clep2;
     
-    // double scale = ec.scaleCorr(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0]);
-    // clep1*=scale;
-    // scale = ec.scaleCorr(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1]);
-    // clep2*=scale;
+    double scale = ec.scaleCorr(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0]);
+    clep1*=scale;
+    scale = ec.scaleCorr(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1]);
+    clep2*=scale;
     
     if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
     dl = clep1+clep2;
@@ -230,8 +228,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     // std::cout << "-----" << std::endl;
     
     double mass = dl.M();
-    hDataEG->Fill(invMass_ECAL_ele);
-    // hDataEG->Fill(mass);
+    // hDataEG->Fill(invMass_ECAL_ele);
+    hDataEG->Fill(mass);
     
      // hDataLep1Pt->Fill(l1.Pt()); 
      for(int i = 0; i < nbins; ++i){
@@ -243,9 +241,9 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     // if(l1.Pt()>32&&l2.Pt()>30)hDataLepPt->Fill(l1.Eta(),mass);
   }
   
-  for(int i =0; i < treeMC->GetEntriesFast();i++){
-  // for(int i =0; i <(uint)(0.1*treeMC->GetEntriesFast());i++){
-  // for(int i =0; i < 1000;i++){
+  // for(int i =0; i < treeMC->GetEntriesFast();i++){
+  // for(int i =0; i <(uint)(0.25*treeMC->GetEntriesFast());i++){
+  for(int i =0; i < 100;i++){
     if(i%100000==0) cout << "Processing event " << i << ". " << (double)i/(double)treeMC->GetEntries()*100 << " percent done with this file." << endl;
     treeMC -> SetBranchStatus("invMass",1);
     treeMC -> SetBranchStatus("runNumber",1);
@@ -278,18 +276,18 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     
     clep1.SetPtEtaPhiM(energy_ECAL_ele[0]/cosh(fabs(etaEle[0])), etaEle[0], phiEle[0],ELE_MASS);
     clep2.SetPtEtaPhiM(energy_ECAL_ele[1]/cosh(fabs(etaEle[1])), etaEle[1], phiEle[1],ELE_MASS);
-    // double rand1 = gRandom->Gaus(0,1);
-    // double rand2 = gRandom->Gaus(0,1);
-    // double tagSmear = ec.smearingSigma(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0], 12, 0., 0.);
-    // clep1*= 1+ rand1*tagSmear;
-    // tagSmear = ec.smearingSigma(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1], 12, 0., 0.);
-    // clep2*= 1+rand2*tagSmear;
+    double rand1 = gRandom->Gaus(0,1);
+    double rand2 = gRandom->Gaus(0,1);
+    double tagSmear = ec.smearingSigma(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0], 12, 0., 0.);
+    clep1*= 1+ rand1*tagSmear;
+    tagSmear = ec.smearingSigma(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1], 12, 0., 0.);
+    clep2*= 1+rand2*tagSmear;
     dl = clep1+clep2;
     
     if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
     double mass = dl.M();
-    hZeeEG->Fill(invMass_ECAL_ele);
-    // hZeeEG->Fill(mass);
+    // hZeeEG->Fill(invMass_ECAL_ele);
+    hZeeEG->Fill(mass);
     for(int i = 0; i < nbins; ++i){
           if((etaEle[0] > bins[i] && etaEle[0] < bins[i+1] ) && !(etaEle[1] > bins[i] && etaEle[1] < bins[i+1] ))continue;
     if(R9Ele[0] > 0.94 && R9Ele[1] > 0.94 )hZeeSysR9Hi->Fill(etaEle[0],mass);
@@ -531,10 +529,19 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
+        if(prefireWeight > 1 &&prefireWeight <= 2 ){
+            prefireWeight/=2;
+        }
         weight *= scale1fb*prefireWeight*lumi;
         // weight *= scale1fb*prefireUp*lumi;
         // weight *= scale1fb*prefireDown*lumi;
         // weight *= scale1fb*lumi;
+        if(prefireUp > 1 || prefireUp < 0){
+          prefireUp = prefireWeight;
+        }
+        if(prefireDown > 1 || prefireDown < 0){
+          prefireDown = prefireWeight;
+        }
       }  
       
       if(!(category==1) && !(category==2) && !(category==3)) continue;
@@ -962,8 +969,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   // double scaleme=hData->Integral()/hZee->Integral();
   double scaleyou=hDataEG->Integral()/hZeeEG->Integral();
 
-  hDataEG->Scale(scaleDat);
-  hZeeEG->Scale(MCscale);
+  // hDataEG->Scale(scaleDat);
+  hZeeEG->Scale(scaleyou);
   double GausScale = hGausRandHere->Integral()/hGausRandNtuple->Integral();
   hGausRandNtuple->Scale(GausScale);
 
@@ -1092,122 +1099,122 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   std::cout << "peak dat " << hData->GetBinCenter(hData->GetMaximumBin()) << std::endl;
   std::cout << "peak zee " << hZee->GetBinCenter(hZee->GetMaximumBin()) << std::endl;
   
-  sprintf(ylabel,"Events / %.1f GeV",hGausRandHere->GetBinWidth(1));
-  CPlot plotGaus("gaus_rand"+norm,"","",ylabel);
-  plotGaus.AddHist1D(hGausRandHere,"this code","E");
-  // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotGaus.AddToStack(hGausRandNtuple,"ntple",fillcolorZ,linecolorZ);
-  plotGaus.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotGaus.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotGaus.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotGaus.SetYRange(0.01,1.2*(hGausRandHere->GetMaximum() + sqrt(hGausRandHere->GetMaximum())));
-  plotGaus.TransLegend(0.1,-0.05);
-  plotGaus.Draw(c,kFALSE,format,1);
+  // sprintf(ylabel,"Events / %.1f GeV",hGausRandHere->GetBinWidth(1));
+  // CPlot plotGaus("gaus_rand"+norm,"","",ylabel);
+  // plotGaus.AddHist1D(hGausRandHere,"this code","E");
+  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  // plotGaus.AddToStack(hGausRandNtuple,"ntple",fillcolorZ,linecolorZ);
+  // plotGaus.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotGaus.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotGaus.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  // plotGaus.SetYRange(0.01,1.2*(hGausRandHere->GetMaximum() + sqrt(hGausRandHere->GetMaximum())));
+  // plotGaus.TransLegend(0.1,-0.05);
+  // plotGaus.Draw(c,kFALSE,format,1);
 
-  CPlot plotGausDiff("gaus_rand"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  plotGausDiff.AddHist1D(hGausDiff,"EX0",ratioColor);
-  plotGausDiff.SetYRange(-0.2,0.2);
-  plotGausDiff.AddLine(-5, 0,5, 0,kBlack,1);
-  plotGausDiff.AddLine(-5, 0.1,5, 0.1,kBlack,3);
-  plotGausDiff.AddLine(-5,-0.1,5,-0.1,kBlack,3);
-  plotGausDiff.Draw(c,kTRUE,format,2);
+  // CPlot plotGausDiff("gaus_rand"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  // plotGausDiff.AddHist1D(hGausDiff,"EX0",ratioColor);
+  // plotGausDiff.SetYRange(-0.2,0.2);
+  // plotGausDiff.AddLine(-5, 0,5, 0,kBlack,1);
+  // plotGausDiff.AddLine(-5, 0.1,5, 0.1,kBlack,3);
+  // plotGausDiff.AddLine(-5,-0.1,5,-0.1,kBlack,3);
+  // plotGausDiff.Draw(c,kTRUE,format,2);
   
-  CPlot plotGaus2("gaus_rand_log"+norm,"","",ylabel);
-  plotGaus2.AddHist1D(hGausRandHere,"mine","E");
-  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  plotGaus2.AddToStack(hGausRandNtuple,"yours",fillcolorZ,linecolorZ);
-  plotGaus2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotGaus2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotGaus2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotGaus2.SetLogy();
-  plotGaus2.SetYRange(1e-4*(hGausRandHere->GetMaximum()),10*(hGausRandHere->GetMaximum()));
-  plotGaus2.TransLegend(0.1,-0.05);
-  plotGaus2.Draw(c,kTRUE,format,1);
+  // CPlot plotGaus2("gaus_rand_log"+norm,"","",ylabel);
+  // plotGaus2.AddHist1D(hGausRandHere,"mine","E");
+  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
+  // plotGaus2.AddToStack(hGausRandNtuple,"yours",fillcolorZ,linecolorZ);
+  // plotGaus2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotGaus2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotGaus2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  // plotGaus2.SetLogy();
+  // plotGaus2.SetYRange(1e-4*(hGausRandHere->GetMaximum()),10*(hGausRandHere->GetMaximum()));
+  // plotGaus2.TransLegend(0.1,-0.05);
+  // plotGaus2.Draw(c,kTRUE,format,1);
   
   
   
-  TH1D *hDatDiff = makeDiffHist(hData,hDataEG,"hDatDiff");
-  hDatDiff->SetMarkerStyle(kFullCircle); 
-  hDatDiff->SetMarkerSize(0.9);
+  // TH1D *hDatDiff = makeDiffHist(hData,hDataEG,"hDatDiff");
+  // hDatDiff->SetMarkerStyle(kFullCircle); 
+  // hDatDiff->SetMarkerSize(0.9);
   
-  // Shitty plots: Compare data
-  sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
-  CPlot plotZeea("DATA_zee"+norm,"","",ylabel);
-  plotZeea.AddHist1D(hData,"mine","E");
-  // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZeea.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
-  plotZeea.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZeea.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotZeea.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeea.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
-  plotZeea.TransLegend(0.1,-0.05);
-  plotZeea.Draw(c,kFALSE,format,1);
+  // // Shitty plots: Compare data
+  // sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
+  // CPlot plotZeea("DATA_zee"+norm,"","",ylabel);
+  // plotZeea.AddHist1D(hData,"mine","E");
+  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  // plotZeea.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
+  // plotZeea.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZeea.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZeea.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  // plotZeea.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
+  // plotZeea.TransLegend(0.1,-0.05);
+  // plotZeea.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeDiffa("DATA_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  plotZeeDiffa.AddHist1D(hDatDiff,"EX0",ratioColor);
-  plotZeeDiffa.SetYRange(-0.2,0.2);
-  plotZeeDiffa.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotZeeDiffa.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
-  plotZeeDiffa.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
-  plotZeeDiffa.Draw(c,kTRUE,format,2);
+  // CPlot plotZeeDiffa("DATA_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  // plotZeeDiffa.AddHist1D(hDatDiff,"EX0",ratioColor);
+  // plotZeeDiffa.SetYRange(-0.2,0.2);
+  // plotZeeDiffa.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  // plotZeeDiffa.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  // plotZeeDiffa.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  // plotZeeDiffa.Draw(c,kTRUE,format,2);
   
-  CPlot plotZee2a("DATA_zeelog"+norm,"","",ylabel);
-  plotZee2a.AddHist1D(hData,"mine","E");
-  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  plotZee2a.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
-  plotZee2a.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZee2a.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotZee2a.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZee2a.SetLogy();
-  plotZee2a.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
-  plotZee2a.TransLegend(0.1,-0.05);
-  plotZee2a.Draw(c,kTRUE,format,1);
+  // CPlot plotZee2a("DATA_zeelog"+norm,"","",ylabel);
+  // plotZee2a.AddHist1D(hData,"mine","E");
+  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
+  // plotZee2a.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
+  // plotZee2a.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZee2a.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZee2a.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  // plotZee2a.SetLogy();
+  // plotZee2a.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
+  // plotZee2a.TransLegend(0.1,-0.05);
+  // plotZee2a.Draw(c,kTRUE,format,1);
   
   
-  //-------------------------------
+  // //-------------------------------
   
-  TH1D *hEGMCDiff = makeDiffHist(hZee,hZeeEG,"hEGMCDiff");
-  hEGMCDiff->SetMarkerStyle(kFullCircle); 
-  hEGMCDiff->SetMarkerSize(0.9);
+  // TH1D *hEGMCDiff = makeDiffHist(hZee,hZeeEG,"hEGMCDiff");
+  // hEGMCDiff->SetMarkerStyle(kFullCircle); 
+  // hEGMCDiff->SetMarkerSize(0.9);
   
-    // Shitty plots: Compare MC
-  sprintf(ylabel,"Events / %.1f GeV",hZee->GetBinWidth(1));
-  CPlot plotZeeb("MC_zee"+norm,"","",ylabel);
-  plotZeeb.AddHist1D(hZee,"mine","E");
-  // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  plotZeeb.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
-  plotZeeb.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZeeb.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotZeeb.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeb.SetYRange(0.01,1.2*(hZeeEG->GetMaximum() + sqrt(hZeeEG->GetMaximum())));
-  plotZeeb.TransLegend(0.1,-0.05);
-  plotZeeb.Draw(c,kFALSE,format,1);
+    // // Shitty plots: Compare MC
+  // sprintf(ylabel,"Events / %.1f GeV",hZee->GetBinWidth(1));
+  // CPlot plotZeeb("MC_zee"+norm,"","",ylabel);
+  // plotZeeb.AddHist1D(hZee,"mine","E");
+  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  // plotZeeb.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
+  // plotZeeb.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZeeb.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZeeb.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  // plotZeeb.SetYRange(0.01,1.2*(hZeeEG->GetMaximum() + sqrt(hZeeEG->GetMaximum())));
+  // plotZeeb.TransLegend(0.1,-0.05);
+  // plotZeeb.Draw(c,kFALSE,format,1);
 
-  CPlot plotZeeDiffb("MC_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  plotZeeDiffb.AddHist1D(hEGMCDiff,"EX0",ratioColor);
-  plotZeeDiffb.SetYRange(-0.2,0.2);
-  plotZeeDiffb.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  plotZeeDiffb.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
-  plotZeeDiffb.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
-  plotZeeDiffb.Draw(c,kTRUE,format,2);
+  // CPlot plotZeeDiffb("MC_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  // plotZeeDiffb.AddHist1D(hEGMCDiff,"EX0",ratioColor);
+  // plotZeeDiffb.SetYRange(-0.2,0.2);
+  // plotZeeDiffb.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  // plotZeeDiffb.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  // plotZeeDiffb.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  // plotZeeDiffb.Draw(c,kTRUE,format,2);
   
-  CPlot plotZee2b("MC_zeelog"+norm,"","",ylabel);
-  plotZee2b.AddHist1D(hZee,"mine","E");
-  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  plotZee2b.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
-  plotZee2b.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  plotZee2b.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  if(normToData)plotZee2b.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZee2b.SetLogy();
-  plotZee2b.SetYRange(1e-4*(hZeeEG->GetMaximum()),10*(hZeeEG->GetMaximum()));
-  plotZee2b.TransLegend(0.1,-0.05);
-  plotZee2b.Draw(c,kTRUE,format,1);
+  // CPlot plotZee2b("MC_zeelog"+norm,"","",ylabel);
+  // plotZee2b.AddHist1D(hZee,"mine","E");
+  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
+  // plotZee2b.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
+  // plotZee2b.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZee2b.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZee2b.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  // plotZee2b.SetLogy();
+  // plotZee2b.SetYRange(1e-4*(hZeeEG->GetMaximum()),10*(hZeeEG->GetMaximum()));
+  // plotZee2b.TransLegend(0.1,-0.05);
+  // plotZee2b.Draw(c,kTRUE,format,1);
   
  
-  // /////////////////////////////////////////////////////////////
+  // // /////////////////////////////////////////////////////////////
   
   // // EG
   // sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
