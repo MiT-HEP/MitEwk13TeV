@@ -11,11 +11,14 @@ LUMI5=294.4 # Low PU 5 TeV 2017 ele trigger
 # LUMI2=199.270 # not used in Low PU atm
 
 # NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil_wStat_2G_eff
-NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM
+NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_PP
+# NTUPLEDIR=/afs/cern.ch/user/s/sabrandt/work/public/TEST_Wenu_Corrected_v3
 # NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_5TeV_wRecoil
 OUT=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/SignalExtraction
 
-root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu13_wGM_fixHisto\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
+# root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu13_fixAll\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
+# root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu_new_all_fit2\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
+root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wenu_new_all_Print\",\"${NTUPLEDIR}\",\"Wenu\",${LUMI13},${LUMI13}\);
 # root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu5_fixRecoil\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI5},${LUMI5}\);
 # root -l -q fitWlikeZm.C+\(\"TEST_WlikeZm_Inclusive_3G_ptRW\",$LUMI13,$LUMI13\);
 
@@ -23,3 +26,4 @@ root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu13_wGM_fixHisto\",\"${NTUPLEDIR}\",\"W
 # root -l -q plotWshapes.C+\(\"${OUT}/TEST_PlotSWs\",${LUMI13}\); 
 
 #rm *.so *.d
+ 
