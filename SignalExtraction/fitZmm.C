@@ -319,8 +319,17 @@ void fitZmm(const TString  inputDir,    // input directory
       if(typev[ifile]!=eData) {
         // if prefire weight > 1, divivde by 2
         // also do up.down uncertainty by hand
-        
+        if(prefireWeight > 1 &&prefireWeight <= 2 ){
+            prefireWeight/=2;
+        }
         weight *= scale1fb*prefireWeight*lumi;
+        
+        if(prefireUp > 1 || prefireUp < 0){
+          prefireUp = prefireWeight;
+        }
+        if(prefireDown > 1 || prefireDown < 0){
+          prefireDown = prefireWeight;
+        }
       }
       
       // fill Z events passing selection
