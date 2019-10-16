@@ -45,8 +45,10 @@ void computeAccGenWe_Sys(const TString conf,       // input file
 
   const Double_t PT_CUT     = 25;
   const Double_t ETA_CUT    = 2.4;
-  const Double_t ETA_BARREL = 1.4442;
-  const Double_t ETA_ENDCAP = 1.566;
+  // const Double_t ETA_BARREL = 1.4442;
+  // const Double_t ETA_ENDCAP = 1.566;
+  const Double_t ETA_BARREL = 10.;
+  const Double_t ETA_ENDCAP = 10.;
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
@@ -157,8 +159,8 @@ void computeAccGenWe_Sys(const TString conf,       // input file
 
     // loop over events
     //
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) { 
     // for(UInt_t ientry=0; ientry<1000; ientry++) {
     // for(UInt_t ientry=0; ientry<10000; ientry++) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -177,6 +179,13 @@ void computeAccGenWe_Sys(const TString conf,       // input file
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       // int mparam = fabs(1-fabs(charge));
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
+      if(charge!=0&&charge!=lepq1) lep1=lep2;
+      if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq2<0){
+        // std::cout << "lep2 ! " << BOSON_ID*glepq2 << std::endl;
+        //genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+        lep1=lep2;
+      }
+      
       
       TLorentzVector *gph=new TLorentzVector(0,0,0,0);
       if(doDressed){

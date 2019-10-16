@@ -3,7 +3,7 @@
 #ntuple directory
 # NTUPDIR=/afs/cern.ch/work/a/amarini/Bacon/Run2/wz_flat_76X_newpu
 # NTUPDIR_13=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV
-NTUPDIR_13=/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV
+NTUPDIR_13=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV
 NTUPDIR_5=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_5TeV
 OUTDIR=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction
 
@@ -14,8 +14,10 @@ S13="13TeV"
 S5="5TeV"
 
 # root -b -l -q fitWlikeZm.C+\(\"${OUTDIR}/PLOT_ZmWlike_Wm_${S13}_RecoilClosure\",\"${NTUPDIR_13}\",\"${S13}\",${LUMI13},0\)
-# root -b -l -q fitZm.C+\(\"${OUTDIR}/PLOT_Zmm_${S13}_RecoilClosure_wBkg\",\"${S13}\",${LUMI13},0\)
-root -b -l -q  plotZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/TEST_differentRoch\",\"${S13}\",${LUMI13}\,0\)
+# root -b -l -q fitZm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_ZmmMET_rmEEjet_keys_${S13}\",\"${S13}\",${LUMI13},0\)
+root -b -l -q fitZm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_ZmmMET_Orig_fixRochRec_${S13}\",\"${S13}\",${LUMI13},0\)
+# root -b -l -q fitZm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/ZmmMET_WithRecoil_${S5}\",\"${S5}\",${LUMI5},0\)
+# root -b -l -q  fitZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/TEST_newNtuples_combine\",\"${S13}\",${LUMI13}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_Zmm_5TeV\",\"${S5}\",${LUMI5}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/plotZmm5TeV_2017Roch_noBKG\",${LUMI5}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"checkTOP\",${LUMI13}\,0\)

@@ -35,6 +35,7 @@
 #include "BaconAna/DataFormats/interface/TMuon.hh"
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
 #include "BaconAna/DataFormats/interface/TVertex.hh"
+#include "BaconAna/DataFormats/interface/TJet.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
 // lumi section selection with JSON files
@@ -77,10 +78,14 @@ void selectWm(const TString conf="wm.conf", // input file
 
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
   TFile *prefireFile = new TFile(prefireFileName);
-  CCorrUser2D prefirePhotonCorr;
-  if(!is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // Prefire for 5 TeV data  - photons
-  if(is13TeV)prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // Prefire for 13 TeV data  - photons
-  
+  CCorrUser2D prefirePhotonCorr, prefireJetCorr;
+  if(!is13TeV){
+    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // 5 TeV photon prefire
+    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017G")); // 5 TeV jet prefire
+  } else if(is13TeV){
+    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // 13 TeV photon prefire
+    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017H")); // 13 TeV jet prefire
+  }
   
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
@@ -119,9 +124,13 @@ void selectWm(const TString conf="wm.conf", // input file
   Float_t genMuonPt;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
-  Float_t scale1fb, scale1fbUp, scale1fbDown, puWeight,puWeightUp,puWeightDown;
+  Float_t scale1fb, scale1fbUp, scale1fbDown;
+  Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
+  Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
+  Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
   Float_t prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
+  Float_t metDJee, metPhiDJee, sumEtDJee, u1DJee, u2DJee;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
@@ -144,6 +153,7 @@ void selectWm(const TString conf="wm.conf", // input file
   TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
   TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
   TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
+  TClonesArray *jetArr         = new TClonesArray("baconhep::TJet");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -213,10 +223,15 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("genVMass",   &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
     outTree->Branch("genLepPt",   &genLepPt,   "genLepPt/F");    // GEN lepton pT (signal MC)
     outTree->Branch("genLepPhi",  &genLepPhi,  "genLepPhi/F");   // GEN lepton phi (signal MC)
-    outTree->Branch("prefireWeight", &prefireWeight,   "prefireWeight/F");   
+    outTree->Branch("prefireWeight", &prefireWeight, "prefireWeight/F");
     outTree->Branch("prefireUp",     &prefireUp,     "prefireUp/F");
-    outTree->Branch("prefireDown",   &prefireDown,   "prefireDown/F"); 
-
+    outTree->Branch("prefireDown",   &prefireDown,   "prefireDown/F");
+    outTree->Branch("prefirePhoton", &prefirePhoton, "prefirePhoton/F");
+    outTree->Branch("prefirePhotUp",     &prefirePhotUp,     "prefirePhotUp/F");
+    outTree->Branch("prefirePhotDown",   &prefirePhotDown,   "prefirePhotDown/F");
+    outTree->Branch("prefireJet",    &prefireJet,    "prefireJet/F");
+    outTree->Branch("prefireJetUp",  &prefireJetUp,  "prefireJetUp/F");
+    outTree->Branch("prefireJetDown",&prefireJetDown,"prefireJetDown/F");
     outTree->Branch("scale1fb",   &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",   &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -226,6 +241,11 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
+    outTree->Branch("metDJee",        &metDJee,        "metDJee/F");         // MET
+    outTree->Branch("metPhiDJee",     &metPhiDJee,     "metPhiDJee/F");      // phi(MET)
+    outTree->Branch("sumEtDJee",      &sumEtDJee,      "sumEtDJee/F");       // Sum ET
+    outTree->Branch("u1DJee",         &u1DJee,         "u1DJee/F");          // parallel component of recoil
+    outTree->Branch("u2DJee",         &u2DJee,         "u2DJee/F");          // perpendicular component of recoil
     outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
     outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
     outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
@@ -288,6 +308,7 @@ void selectWm(const TString conf="wm.conf", // input file
       eventTree->SetBranchAddress("Muon", &muonArr); TBranch *muonBr = eventTree->GetBranch("Muon");
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
+      eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
       Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -424,6 +445,82 @@ void selectWm(const TString conf="wm.conf", // input file
 	  passSel=kTRUE;
 	  goodMuon = mu;
 	}
+
+// Loop through Jets
+      // set up the met variable, default is PF met
+      metDJee      = info->pfMETC;
+      metPhiDJee   = info->pfMETCphi;
+      sumEtDJee = 0;
+      // if(category==1||category==2||category==3) cout << "Selected! " << endl;
+      TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
+      for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+        const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+        if(fabs(jet->eta) < 2.65 || fabs(jet->eta) > 3.139) continue;
+        if(jet->pt > 50) continue;
+        TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
+        vMetEE += vJet;
+        // if(category==1||category==2||category==3)cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
+      } 
+      metDJee      = vMetEE.Mod();
+      metPhiDJee   = vMetEE.Phi();
+      // sumEtDJee = 0;
+        
+      if(!isData){
+        // Loop through the photons to determine the Prefiring scale factor
+        prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+        for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+          const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+          if(fabs(photon->eta) < 2) continue;
+          prefirePhoton *= 1. - TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 );
+          prefirePhotUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+          prefirePhotDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+          // cout << "photon current prob. " << prefirePhotonCorr.getCorr(photon->eta, photon->pt)  << "  totalW " <<  prefirePhoton << endl;
+          // if(prefirePhotonCorr.getCorr(photon->eta, photon->pt) < 0 || prefirePhotonCorr.getCorr(photon->eta, photon->pt) > 1) cout << " " << photon->eta<< " " << photon->pt << endl;
+          // if(photon->pt<10)std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+        } 
+        
+        prefireJet=1; prefireJetUp=1; prefireJetDown=1;
+        for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+          const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
+          if(fabs(jet->eta) < 2.0) continue;
+          // prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
+          prefireJet*= 1. - prefireJetCorr.getCorr(jet->eta, jet->pt);
+          prefireJetUp     *= TMath::Max((1.-(1.2*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
+          prefireJetDown   *= TMath::Max((1.-(0.8*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
+          // if(prefireJetCorr.getCorr(jet->eta, jet->pt) < 0 || prefireJetCorr.getCorr(jet->eta, jet->pt) > 1) {
+          // }
+        } 
+        
+        // loop through photons and jets
+        // overlap is anything within deltaR < 0.4.
+        // take max prefire prob for any overlap cases
+        //toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi))<0.4
+        // total prefire probability = product of all (1-prob) for photons,jets, & remove the overlap
+        prefireWeight=prefireJet*prefirePhoton;
+        prefireUp=prefireJetUp*prefirePhotUp;
+        prefireDown=prefireJetDown*prefirePhotDown;
+        for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+          const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+          if(fabs(photon->eta) < 2) continue;
+          // now loop through jets:
+          double rmP = 0, rmU = 0, rmD = 0;
+
+          for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+            const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+            if(fabs(jet->eta) < 2) continue;
+            // check if the jet and photon overlap: 
+            if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
+            // photon & jet overlap, now get min to divide out 
+              rmP = min(prefirePhotonCorr.getCorr(photon->eta, photon->pt), prefireJetCorr.getCorr(jet->eta, jet->pt));
+              rmU = TMath::Max(1.-(1.2*rmP),0.0);
+              rmD = TMath::Max(1.-(0.8*rmP),0.0);
+          }
+          // divide out the lesser of the two probabilities
+          prefireWeight = prefireWeight / (1 - rmP);
+          prefireUp = prefireUp / rmU;
+          prefireDown = prefireDown / rmD;
+        } 
+      }
 
 	if(passSel) {
 	  /******** We have a W candidate! HURRAY! ********/
@@ -576,6 +673,11 @@ void selectWm(const TString conf="wm.conf", // input file
         TVector2 vU = -1.0*(vMet+vLepPt);
         u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
         u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
+        TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
+        TVector2 vUDJ = -1.0*(vMetDJ+vZPt);
+        u1DJee = ((vDilep.Px())*(vUDJ.Px()) + (vDilep.Py())*(vUDJ.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+        u2DJee = ((vDilep.Px())*(vUDJ.Py()) - (vDilep.Py())*(vUDJ.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
 
         TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
         TVector2 vTkU = -1.0*(vTkMet+vLepPt);

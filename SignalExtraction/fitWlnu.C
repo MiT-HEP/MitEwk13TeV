@@ -163,8 +163,8 @@ double isoTrkCut=9999;
   // int ns=nMET-nNV;
   // front half should be nMET-nNV
   
-  enum{main,mc,fsr,bkg,tagpt,sdu,sdd,smu,smd,pfireu,pfired};
-  const string vaWeight[]={"eff","mc","fsr","bkg","tagpt","sdu","sdd","smu","smd","pfireu","pfired"};
+  enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
+  const string vaWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
   // enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
   // const string vaWeight[]={"main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
   // const vector<string> v{ "main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"}; 
@@ -172,12 +172,16 @@ double isoTrkCut=9999;
   std::vector<string> vWeight;
   for(int i = 0; i < nWeight; i++){vWeight.push_back(vaWeight[i]);}
   
+  // enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
+  // const string vWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
+  // int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
+  
   std::cout << "size of weight array is " << nWeight << std::endl;
   std::cout << "size of met array is " << nMET << std::endl;
   
   // Double_t vIsoBins[] = {0.0,0.20,0.30,0.40,0.50,0.60,0.70};
-  // Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
-  Double_t vIsoBins[] = {0.0,0.25,0.35,0.45,0.55,0.65};
+  Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
+  // Double_t vIsoBins[] = {0.0,0.25,0.35,0.45,0.55,0.65};
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
@@ -235,21 +239,38 @@ double isoTrkCut=9999;
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
+  
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eW0j);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eW1j);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eW2j);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.root"));  typev.push_back(eWx);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eZxx);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.root"));  typev.push_back(eDib);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.root"));  typev.push_back(eDib);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.root"));  typev.push_back(eDib);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.root")); typev.push_back(eTtb);
+
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we_select.root")); typev.push_back(eAntiWlnu);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+  
+  // 13 TEV Muon Channel
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eW0j);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eW1j);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eW2j);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/RCprob/wx_select.raw.root"));  typev.push_back(eWx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("_testGen/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
-  // // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/EleMu/ntuples/data_select.root")); typev.push_back(eTtb);
-  // // // fnamev.push_back(TString("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_wRecoil/Wmunu_ttbar2l2nu/ntuples/top_select.raw.root")); typev.push_back(eTtb);
 
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
@@ -259,6 +280,7 @@ double isoTrkCut=9999;
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+   
  /* 
   // For the 5 TeV
   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
@@ -644,20 +666,12 @@ double isoTrkCut=9999;
     for(int j=0; j < nWeight; ++j){
       char hname[150]; char type[50];
       //sdu,sdd,smu,smd,pfireu,pfired
-      if(j==sdu){
-        sprintf(type,"%i_stdatUp",i);
-      } else if (j==sdd){
-        sprintf(type,"%i_stdatDown",i);
-      } else if (j==smu){
-        sprintf(type,"%i_stmcUp",i);
-      } else if (j==smd){
-        sprintf(type,"%i_stmcDown",i);
-      } else if (j==pfireu){
+      if (j==pfireu){
         sprintf(type,"%i_prefireUp",i);
       } else if (j==pfired){
         sprintf(type,"%i_prefireDown",i);
       } else {
-        sprintf(type,"%i_%sUp",i,(vMET[j]).c_str());
+        sprintf(type,"%i_%sUp",i,(vWeight[j]).c_str());
       }
       
       // Wlnu
@@ -764,7 +778,7 @@ double isoTrkCut=9999;
   //
   UInt_t  runNum, lumiSec, evtNum, npv, npu;
   Float_t genVPt, genVPhi, genVy, genLepPt, genLepPhi;
-  Float_t scale1fb, scale1fbUp, scale1fbDown, prefireWeight;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, prefireWeight, prefirePhoton, prefireJet;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
   TLorentzVector *lep=0, *lep_raw=0, *genV=0, *genLep=0;
@@ -783,6 +797,9 @@ double isoTrkCut=9999;
   
   TFile *infile=0;
   TTree *intree=0;
+
+  double noPrefire_Wp = 0, prefire_Wp=0, prefireJet_Wp=0, prefirePhoton_Wp=0;
+  double noPrefire_Wm = 0, prefire_Wm=0, prefireJet_Wm=0, prefirePhoton_Wm=0;
 
   //
   // Loop over files
@@ -806,6 +823,8 @@ double isoTrkCut=9999;
     intree->SetBranchAddress("genLepPt",   &genLepPt);    // GEN lepton pT (signal MC)
     intree->SetBranchAddress("genLepPhi",  &genLepPhi);   // GEN lepton phi (signal MC)
     intree->SetBranchAddress("prefireWeight",  &prefireWeight);  // eventwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("prefirePhoton",  &prefirePhoton);  // eventwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("prefireJet",    &prefireJet);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fb",      &scale1fb);  // MCwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",    &scale1fbUp);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",  &scale1fbDown);  // eventwgtLum[main] per 1/fb (MC)
@@ -828,8 +847,8 @@ double isoTrkCut=9999;
     intree->SetBranchAddress("metVarsPhi",    &metVarsPhi);         // met phi for variations
     intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
   
-    // UInt_t iterator=30;
-    UInt_t iterator=10;
+    UInt_t iterator=100;
+    // UInt_t iterator=10;
     // if(typev[ifile]==eTtb)iterator=1;
     // // if(typev[ifile]==eData||typev[ifile]==eAntiData)iterator=1;
     //
@@ -842,7 +861,7 @@ double isoTrkCut=9999;
     // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
     // for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
-      if(ientry%100000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+      if(ientry%1000000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
 
 // figure out later what to do
@@ -858,7 +877,19 @@ double isoTrkCut=9999;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
       if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
       vector<double> wgtLum;
-      for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt]));
+      // for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/prefireWeight);
+      for(int jt=0; jt < nWeight; jt++) {
+        if((jt==pfireu||jt==pfired) && ((*evtWeight)[jt] > 1 ||(*evtWeight)[jt] < 0 )){
+          (*evtWeight)[jt] = 1;
+          // continue;
+        } // prefire shit is slightly messed up
+        // also divide by 2 if > 2...
+        wgtLum.push_back(lumi*((*evtWeight)[jt]));
+        
+        if(typev[ifile]==eW0j||typev[ifile]==eW1j||typev[ifile]==eW2j||typev[ifile]==eWx||typev[ifile]==eAntiWlnu||typev[ifile]==eAntiWx){
+          wgtLum.back()*=0.96084;
+        }
+      }
       // if(typev[ifile]==eTtb){
         // for(int jt=0; jt < nWeight; jt++) wgtLum[jt]=1;
       // }
@@ -902,6 +933,22 @@ double isoTrkCut=9999;
         if(trkIso > isoTrkCut) continue;
         // std::cout << "doing signal" << std::endl;
         int bin=0;
+        if(typev[ifile]==eWlnu|| typev[ifile]==eW0j|| typev[ifile]==eW1j||typev[ifile]==eW2j){
+          // cout << "in wlnu " <<  scale1fb << " " << lumi << " " << prefireWeight << endl;
+          // start filling the counters
+          if(q > 0){
+            noPrefire_Wp+=scale1fb*lumi;
+            prefire_Wp+=scale1fb*lumi*prefireWeight;
+            prefireJet_Wp+=scale1fb*lumi*prefireJet;
+            prefirePhoton_Wp+=scale1fb*lumi*prefirePhoton;
+          } else {
+            noPrefire_Wm+=scale1fb*lumi;
+            prefire_Wm+=scale1fb*lumi*prefireWeight;
+            prefireJet_Wm+=scale1fb*lumi*prefireJet;
+            prefirePhoton_Wm+=scale1fb*lumi*prefirePhoton;
+          }
+          
+        }
         // for(int i = 0; i <= hh_diff->GetNbinsX();++i){
           // if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
         // }
@@ -1240,8 +1287,26 @@ double isoTrkCut=9999;
   delete infile;
   infile=0, intree=0;   
    
+  ofstream txtfilePF;
+  char txtfname2[150];
+  std::cout << "Printing prefiring  values" << std::endl;
+  sprintf(txtfname2,"%s/prefire_yields.txt",CPlot::sOutDir.Data());
+  txtfilePF.open(txtfname2);
+  assert(txtfilePF.is_open());
+  txtfilePF << "---- W+ ----- " << endl;
+  txtfilePF << "No PF: " << noPrefire_Wp << endl;
+  txtfilePF << "PF: " << prefire_Wp << "  scale factor: " << noPrefire_Wp/prefire_Wp << endl;
+  txtfilePF << "PF (jet only): " << prefireJet_Wp << endl;
+  txtfilePF << "PF (photon only): " << prefirePhoton_Wp << endl << endl;
+  txtfilePF << "---- W- ----- " << endl;
+  txtfilePF << "No PF: " << noPrefire_Wm << endl;
+  txtfilePF << "PF: " << prefire_Wm << "  scale factor: " << noPrefire_Wm/prefire_Wm << endl;
+  txtfilePF << "PF (jet only): " << prefireJet_Wm << endl;
+  txtfilePF << "PF (photon only): " << prefirePhoton_Wm << endl << endl;
+  txtfilePF.close();
+   
     ofstream txtfile2;
-    char txtfname2[100];
+    // char txtfname2[100];
     std::cout << "Printing We+. " << std::endl;
     sprintf(txtfname2,"%s/isoAvg.txt",CPlot::sOutDir.Data());
     txtfile2.open(txtfname2);
@@ -1678,7 +1743,7 @@ double isoTrkCut=9999;
     }
     
     for(int k=0; k < nWeight; ++k){
-      if(k==sdu||k==sdd||k==smu||k==smd||k==pfireu||k==pfired)continue;
+      if(k==pfireu||k==pfired)continue;
         // sprintf(type,"%i_prefireDown",i);
 
       sprintf(nname,"hWlnuMetpBin%d_%sDown",j,vWeight[k].c_str());
@@ -2195,7 +2260,7 @@ double isoTrkCut=9999;
       hTtbpWeightU[j][k]->Write();
       hTtbmWeightU[j][k]->Write();
       std::cout << "writing weight DOWN" << std::endl;
-      if(k==sdu||k==sdd||k==smu||k==smd||k==pfireu||k==pfired)continue;
+      if(k==pfireu||k==pfired)continue;
             
       hWlnupWeightD[j][k]->Write();
       hWlnumWeightD[j][k]->Write();
@@ -2274,8 +2339,8 @@ double isoTrkCut=9999;
   // RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),PrintEvalErrors(-1));
   // RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),PrintEvalErrors(-1));
   
-  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
-  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),RooFit::Strategy(2),Minos(kTRUE),/*Minimizer("Minuit2","minimize"),*/PrintEvalErrors(-1));
+  RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),/*ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),*/RooFit::Strategy(2),Minos(kTRUE),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
+  RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),/*ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),*/RooFit::Strategy(2),Minos(kTRUE),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
   
   TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", pfmet));
   hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
