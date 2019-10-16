@@ -39,6 +39,7 @@
 // helper class to handle efficiency tables
 #include "../Utils/CEffUser1D.hh"
 #include "../Utils/CEffUser2D.hh"
+#include "../Utils/AppEffSF.cc"
 #endif
 
 //=== MAIN MACRO ================================================================================================= 
@@ -66,51 +67,21 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 13;
   
-  // efficiency files
-  // const TString inputDir = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/Zmm/";
+  const int NBptSta  = 2;
+  const float ptrangeSta[NBptSta +1]   = {25., 40., 8000.};
+
+  const int NBeta = 12;
+  const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
+  const int NBptSIT = 8;
+  const float ptrangeSIT[NBptSIT+1] = {25,30,35,40,45,50,60,80,8000};
   
-  const TString dataHLTEffName_pos = inputDir + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString dataHLTEffName_neg = inputDir + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
-  const TString zmmHLTEffName_pos  = inputDir + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString zmmHLTEffName_neg  = inputDir + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataSelEffName_pos = inputDir + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString dataSelEffName_neg = inputDir + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
-  const TString zmmSelEffName_pos  = inputDir + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString zmmSelEffName_neg  = inputDir + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataStaEffName_pos = inputDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString dataStaEffName_neg = inputDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEffName_pos  = inputDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEffName_neg  = inputDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-
-  // uncertainty files
-  TFile *fSysSIT = TFile::Open(sysFileSIT);
-  TFile *fSysSta = TFile::Open(sysFileSta);
-
-  TH2D  *hSysSITSigFSRNeg = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRNeg");
-  TH2D  *hSysSITSigFSRPos = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRPos"); 
-  TH2D  *hSysSITSigMCNeg  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCNeg"); 
-  TH2D  *hSysSITSigMCPos  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCPos"); 
-  TH2D  *hSysSITBkgNeg    = (TH2D*) fSysSIT->Get("hMuSITEffBkgNeg"); 
-  TH2D  *hSysSITBkgPos    = (TH2D*) fSysSIT->Get("hMuSITEffBkgPos"); 
+  AppEffSF effs(inputDir);
+  effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
+  effs.loadUncSel(sysFileSIT);
+  effs.loadUncSta(sysFileSta);
   
-  // the real one but i don't have the files done yet
-  TH2D  *hSysStaSigFSRNeg = (TH2D*) fSysSta->Get("hMuStaEffSigFSRNeg");
-  TH2D  *hSysStaSigFSRPos = (TH2D*) fSysSta->Get("hMuStaEffSigFSRPos"); 
-  TH2D  *hSysStaSigMCNeg  = (TH2D*) fSysSta->Get("hMuStaEffSigMCNeg"); 
-  TH2D  *hSysStaSigMCPos  = (TH2D*) fSysSta->Get("hMuStaEffSigMCPos"); 
-  TH2D  *hSysStaBkgNeg    = (TH2D*) fSysSta->Get("hMuStaEffBkgNeg"); 
-  TH2D  *hSysStaBkgPos    = (TH2D*) fSysSta->Get("hMuStaEffBkgPos"); 
-  
-  // // placeholder
-  // TH2D  *hSysStaSigFSRNeg = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRNeg");
-  // TH2D  *hSysStaSigFSRPos = (TH2D*) fSysSIT->Get("hMuSITEffSigFSRPos"); 
-  // TH2D  *hSysStaSigMCNeg  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCNeg"); 
-  // TH2D  *hSysStaSigMCPos  = (TH2D*) fSysSIT->Get("hMuSITEffSigMCPos"); 
-  // TH2D  *hSysStaBkgNeg    = (TH2D*) fSysSIT->Get("hMuSITEffBkgNeg"); 
-  // TH2D  *hSysStaBkgPos    = (TH2D*) fSysSIT->Get("hMuSITEffBkgPos"); 
-
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
@@ -152,86 +123,14 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
 
   TH2D *h=0;
 
-  //
-  // HLT efficiency
-  //
-  cout << "Loading trigger efficiencies..." << endl;
+  TH2D *hSelErr_pos = new TH2D("hSelErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hSelErr_neg = new TH2D("hSelErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
   
-  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
-  CEffUser2D dataHLTEff_pos;
-  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
-  CEffUser2D dataHLTEff_neg;
-  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
-    
-  TFile *zmmHLTEffFile_pos = new TFile(zmmHLTEffName_pos);
-  CEffUser2D zmmHLTEff_pos;
-  zmmHLTEff_pos.loadEff((TH2D*)zmmHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);
-  CEffUser2D zmmHLTEff_neg;
-  zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
+  TH2D *hStaErr_pos = new TH2D("hStaErr_pos", "",NBeta,etarange,NBptSta,ptrangeSta);
+  TH2D *hStaErr_neg = new TH2D("hStaErr_neg", "",NBeta,etarange,NBptSta,ptrangeSta);
 
-  h =(TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt");
-  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  
-  //
-  // Selection efficiency
-  //
-  cout << "Loading selection efficiencies..." << endl;
-  
-  TFile *dataSelEffFile_pos = new TFile(dataSelEffName_pos);
-  CEffUser2D dataSelEff_pos;
-  dataSelEff_pos.loadEff((TH2D*)dataSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataSelEffFile_neg = new TFile(dataSelEffName_neg);
-  CEffUser2D dataSelEff_neg;
-  dataSelEff_neg.loadEff((TH2D*)dataSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmSelEffFile_pos = new TFile(zmmSelEffName_pos);
-  CEffUser2D zmmSelEff_pos;
-  zmmSelEff_pos.loadEff((TH2D*)zmmSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrhEtaPt"));
-
-  TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);
-  CEffUser2D zmmSelEff_neg;
-  zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
-
-  h =(TH2D*)dataSelEffFile_pos->Get("hEffEtaPt");
-  TH2D *hSelErr_pos = new TH2D("hSelErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  TH2D *hSelErr_neg = new TH2D("hSelErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-
-  //
-  // Standalone efficiency
-  //
-  cout << "Loading standalone efficiencies..." << endl;
-  
-  TFile *dataStaEffFile_pos = new TFile(dataStaEffName_pos);
-  CEffUser2D dataStaEff_pos;
-  dataStaEff_pos.loadEff((TH2D*)dataStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataStaEffFile_neg = new TFile(dataStaEffName_neg);
-  CEffUser2D dataStaEff_neg;
-  dataStaEff_neg.loadEff((TH2D*)dataStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEffFile_pos = new TFile(zmmStaEffName_pos);
-  CEffUser2D zmmStaEff_pos;
-  zmmStaEff_pos.loadEff((TH2D*)zmmStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);
-  CEffUser2D zmmStaEff_neg;
-  zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt"));
-
-  h =(TH2D*)dataStaEffFile_pos->Get("hEffEtaPt");
-  TH2D *hStaErr_pos = new TH2D("hStaErr_pos", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  TH2D *hStaErr_neg = new TH2D("hStaErr_neg", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-			       h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
 
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -248,10 +147,14 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   vector<Double_t> nSelCorrv, nSelCorrVarv;
   vector<Double_t> accv, accCorrv;
   vector<Double_t> accErrv, accErrCorrv;
-  vector<Double_t> nSelCorrvFSR, nSelCorrvMC, nSelCorrvBkg;
-  vector<Double_t> nSelCorrVarvFSR, nSelCorrVarvMC, nSelCorrVarvBkg;
-  vector<Double_t> accCorrvFSR, accCorrvMC, accCorrvBkg;
-  vector<Double_t> accErrCorrvFSR, accErrCorrvMC, accErrCorrvBkg;
+  vector<Double_t> nSelCorrvFSR, nSelCorrvMC, nSelCorrvBkg, nSelCorrvTag;//, nSelCorrvStat;
+  vector<Double_t> nSelCorrvFSR_I, nSelCorrvMC_I, nSelCorrvBkg_I, nSelCorrvTag_I;//, nSelCorrvStat_I;
+  vector<Double_t> nSelCorrvFSR_S, nSelCorrvMC_S, nSelCorrvBkg_S, nSelCorrvTag_S;//, nSelCorrvStat_S;
+  vector<Double_t> nSelCorrVarvFSR, nSelCorrVarvMC, nSelCorrVarvBkg, nSelCorrVarvTag;//, nSelCorrVarvStat;
+  vector<Double_t> accCorrvFSR, accCorrvMC, accCorrvBkg, accCorrvTag;//, accCorrvStat;
+  vector<Double_t> accCorrvFSR_I, accCorrvMC_I, accCorrvBkg_I, accCorrvTag_I;//, accCorrvStat_I;
+  vector<Double_t> accCorrvFSR_S, accCorrvMC_S, accCorrvBkg_S, accCorrvTag_S;//, accCorrvStat_S;
+  vector<Double_t> accErrCorrvFSR, accErrCorrvMC, accErrCorrvBkg, accErrCorrvTag;//, accErrCorrvStat;
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
   
   //
@@ -276,24 +179,24 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     nSelv.push_back(0);
     nSelCorrv.push_back(0);
     nSelCorrVarv.push_back(0);
-    nSelCorrvFSR.push_back(0);
-    nSelCorrVarvFSR.push_back(0);
-    nSelCorrvMC.push_back(0);
-    nSelCorrVarvMC.push_back(0);
-    nSelCorrvBkg.push_back(0);
-    nSelCorrVarvBkg.push_back(0);
-
+    nSelCorrvFSR.push_back(0);  nSelCorrVarvFSR.push_back(0);
+    nSelCorrvMC.push_back(0);   nSelCorrVarvMC.push_back(0);
+    nSelCorrvBkg.push_back(0);  nSelCorrVarvBkg.push_back(0);
+    nSelCorrvTag.push_back(0);  nSelCorrVarvTag.push_back(0);
+    nSelCorrvFSR_I.push_back(0);  nSelCorrvFSR_S.push_back(0);
+    nSelCorrvMC_I.push_back(0);   nSelCorrvMC_S.push_back(0);
+    nSelCorrvBkg_I.push_back(0);  nSelCorrvBkg_S.push_back(0);
+    nSelCorrvTag_I.push_back(0);  nSelCorrvTag_S.push_back(0);
     //
     // loop over events
     //      
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
-    // for(UInt_t ientry=895100; ientry<895102; ientry++) {
-      if(ientry%1000000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<(uint)(0.01*eventTree->GetEntries()); ientry++) {
+      if(ientry%100000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
-      // if(info->evtNum!=6768167)continue;
+
       Int_t glepq1=-99;
       Int_t glepq2=-99;
       bool alreadyDid=false;
@@ -317,7 +220,6 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
       nEvtsv[ifile]+=weight;
       
       // trigger requirement               
-      // if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
       if (!isMuonTrigger(triggerMenu, info->triggerBits,kFALSE,is13TeV)) continue;
 
       // good vertex requirement
@@ -327,14 +229,15 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
       muonBr->GetEntry(ientry);
 
       for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
-  	const baconhep::TMuon *mu1 = (baconhep::TMuon*)((*muonArr)[i1]);
+        const baconhep::TMuon *mu1 = (baconhep::TMuon*)((*muonArr)[i1]);
 
         if(mu1->pt	  < PT_CUT)  continue;  // lepton pT cut
         if(fabs(mu1->eta) > ETA_CUT) continue;  // lepton |eta| cut
         if(!passMuonID(mu1))	     continue;  // lepton selection
 	
-	TLorentzVector vMu1(0,0,0,0);
-	vMu1.SetPtEtaPhiM(mu1->pt, mu1->eta, mu1->phi, MUON_MASS);
+        TLorentzVector vMu1(0,0,0,0);
+        vMu1.SetPtEtaPhiM(mu1->pt, mu1->eta, mu1->phi, MUON_MASS);
+        if(!isMuonTriggerObj(triggerMenu, mu1->hltMatchBits, kFALSE,is13TeV)) continue;
 
         for(Int_t i2=i1+1; i2<muonArr->GetEntriesFast(); i2++) {
           const baconhep::TMuon *mu2 = (baconhep::TMuon*)((*muonArr)[i2]);
@@ -342,241 +245,78 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
           if(mu1->q == mu2->q)	       continue;  // opposite charge requirement
           if(mu2->pt        < PT_CUT)  continue;  // lepton pT cut
           if(fabs(mu2->eta) > ETA_CUT) continue;  // lepton |eta| cut
-	  if(!passMuonID(mu2))	       continue;  // lepton selection
+          if(!passMuonID(mu2))	       continue;  // lepton selection
 
           TLorentzVector vMu2(0,0,0,0);
-	  vMu2.SetPtEtaPhiM(mu2->pt, mu2->eta, mu2->phi, MUON_MASS);  
+          vMu2.SetPtEtaPhiM(mu2->pt, mu2->eta, mu2->phi, MUON_MASS);  
 
           // trigger match
-	  // if(!isMuonTriggerObj(triggerMenu, mu1->hltMatchBits, kFALSE) && !isMuonTriggerObj(triggerMenu, mu2->hltMatchBits, kFALSE)) continue;
-	  if(!isMuonTriggerObj(triggerMenu, mu1->hltMatchBits, kFALSE,is13TeV)&& !isMuonTriggerObj(triggerMenu, mu2->hltMatchBits, kFALSE,is13TeV)) continue;
-	  // mass window
+          if(!isMuonTriggerObj(triggerMenu, mu2->hltMatchBits, kFALSE,is13TeV)) continue;
+          // mass window
           TLorentzVector vDilep = vMu1 + vMu2;
           if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
           
           /******** We have a Z candidate! HURRAY! ********/
-          Double_t effdata, effmc;
-          Double_t effdataFSR, effdataMC, effdataBkg;
-	      Double_t corr=1;
-	      Double_t corrFSR=1;
-	      Double_t corrMC=1;
-	      Double_t corrBkg=1;
-	  
-	      effdata=1; effmc=1;    
-	      effdataFSR=1; effdataMC=1; effdataBkg=1;  
-          if(mu1->q>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(mu1->eta, mu1->pt)); 
-            effmc   *= (1.-zmmHLTEff_pos.getEff(mu1->eta, mu1->pt)); 
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(mu1->eta, mu1->pt)); 
-            effmc   *= (1.-zmmHLTEff_neg.getEff(mu1->eta, mu1->pt)); 
-          }
-          if(mu2->q>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff(mu2->eta, mu2->pt)); 
-            effmc   *= (1.-zmmHLTEff_pos.getEff(mu2->eta, mu2->pt));
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(mu2->eta, mu2->pt)); 
-            effmc   *= (1.-zmmHLTEff_neg.getEff(mu2->eta, mu2->pt));
-          }
-          effdata = 1.-effdata;
-          effmc   = 1.-effmc;
-          corrFSR *= effdata/effmc; // alternate fsr model
-          corrMC *= effdata/effmc; // alternate mc gen model
-          corrBkg *= effdata/effmc; // alternate bkg model
-          corr *= effdata/effmc; // orig
-    
-          effdata=1; effmc=1;
-          if(mu1->q>0) {
-            effdataFSR *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * hSysSITSigFSRPos->GetBinContent(hSysSITSigFSRPos->GetXaxis()->FindBin(mu1->eta), hSysSITSigFSRPos->GetYaxis()->FindBin(mu1->pt));
-            effdataMC  *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * hSysSITSigMCPos->GetBinContent(hSysSITSigMCPos->GetXaxis()->FindBin(mu1->eta), hSysSITSigMCPos->GetYaxis()->FindBin(mu1->pt));
-            effdataBkg *= dataSelEff_pos.getEff(mu1->eta, mu1->pt) * hSysSITBkgPos->GetBinContent(hSysSITBkgPos->GetXaxis()->FindBin(mu1->eta), hSysSITBkgPos->GetYaxis()->FindBin(mu1->pt));
-            effdata *= dataSelEff_pos.getEff(mu1->eta, mu1->pt); // original
-            // std::cout << "original " << effdata << "  unc " << effdataFSR << "  ratio " << effdata/effdataFSR << std::endl;
-            effmc   *= zmmSelEff_pos.getEff(mu1->eta, mu1->pt);
-          } else {
-            effdataFSR *= dataSelEff_neg.getEff(mu1->eta, mu1->pt) * hSysSITSigFSRNeg->GetBinContent(hSysSITSigFSRNeg->GetXaxis()->FindBin(mu1->eta), hSysSITSigFSRNeg->GetYaxis()->FindBin(mu1->pt));
-            effdataMC  *= dataSelEff_neg.getEff(mu1->eta, mu1->pt) * hSysSITSigMCNeg->GetBinContent(hSysSITSigMCNeg->GetXaxis()->FindBin(mu1->eta), hSysSITSigMCNeg->GetYaxis()->FindBin(mu1->pt));
-            effdataBkg *= dataSelEff_neg.getEff(mu1->eta, mu1->pt) * hSysSITBkgNeg->GetBinContent(hSysSITBkgNeg->GetXaxis()->FindBin(mu1->eta), hSysSITBkgNeg->GetYaxis()->FindBin(mu1->pt));
-            effdata *= dataSelEff_neg.getEff(mu1->eta, mu1->pt);//orig
-            // std::cout << "original " << effdata << "  unc " << effdataFSR << std::endl;
-            effmc   *= zmmSelEff_neg.getEff(mu1->eta, mu1->pt);
-          }
-          if(mu2->q>0) {
-            effdataFSR *= dataSelEff_pos.getEff(mu2->eta, mu2->pt) * hSysSITSigFSRPos->GetBinContent(hSysSITSigFSRPos->GetXaxis()->FindBin(mu2->eta), hSysSITSigFSRPos->GetYaxis()->FindBin(mu2->pt));
-            effdataMC  *= dataSelEff_pos.getEff(mu2->eta, mu2->pt) * hSysSITSigMCPos->GetBinContent(hSysSITSigMCPos->GetXaxis()->FindBin(mu2->eta), hSysSITSigMCPos->GetYaxis()->FindBin(mu2->pt));
-            effdataBkg *= dataSelEff_pos.getEff(mu2->eta, mu2->pt) * hSysSITBkgPos->GetBinContent(hSysSITBkgPos->GetXaxis()->FindBin(mu2->eta), hSysSITBkgPos->GetYaxis()->FindBin(mu2->pt));
-            effdata *= dataSelEff_pos.getEff(mu2->eta, mu2->pt);// orig
-            effmc   *= zmmSelEff_pos.getEff(mu2->eta, mu2->pt);
-          } else {
-            effdataFSR *= dataSelEff_neg.getEff(mu2->eta, mu2->pt) * hSysSITSigFSRNeg->GetBinContent(hSysSITSigFSRNeg->GetXaxis()->FindBin(mu2->eta), hSysSITSigFSRNeg->GetYaxis()->FindBin(mu2->pt));
-            effdataMC  *= dataSelEff_neg.getEff(mu2->eta, mu2->pt) * hSysSITSigMCNeg->GetBinContent(hSysSITSigMCNeg->GetXaxis()->FindBin(mu2->eta), hSysSITSigMCNeg->GetYaxis()->FindBin(mu2->pt));
-            effdataBkg *= dataSelEff_neg.getEff(mu2->eta, mu2->pt) * hSysSITBkgNeg->GetBinContent(hSysSITBkgNeg->GetXaxis()->FindBin(mu2->eta), hSysSITBkgNeg->GetYaxis()->FindBin(mu2->pt));
-            effdata *= dataSelEff_neg.getEff(mu2->eta, mu2->pt);// orig
-            effmc   *= zmmSelEff_neg.getEff(mu2->eta, mu2->pt);
-          }
-          corrFSR *= effdataFSR/effmc; // alternate fsr model
-          corrMC *= effdataMC/effmc; // alternate mc gen model
-          corrBkg *= effdataBkg/effmc; // alternate bkg model
-          corr *= effdata/effmc; // orig
-    
-    // std::cout << "corr/corrFSR1  " << (corr/corrFSR-1)*100 << std::endl;
-    
-          effdata=1; effmc=1;
-	     effdataFSR=1; effdataMC=1; effdataBkg=1;  
-          if(mu1->q>0) {
-            effdataFSR *= dataStaEff_pos.getEff(mu1->eta, mu1->pt) * hSysStaSigFSRPos->GetBinContent(hSysStaSigFSRPos->GetXaxis()->FindBin(mu1->eta), hSysStaSigFSRPos->GetYaxis()->FindBin(mu1->pt));
-            effdataMC  *= dataStaEff_pos.getEff(mu1->eta, mu1->pt) * hSysStaSigMCPos->GetBinContent(hSysStaSigMCPos->GetXaxis()->FindBin(mu1->eta), hSysStaSigMCPos->GetYaxis()->FindBin(mu1->pt));
-            effdataBkg *= dataStaEff_pos.getEff(mu1->eta, mu1->pt) * hSysStaBkgPos->GetBinContent(hSysStaBkgPos->GetXaxis()->FindBin(mu1->eta), hSysStaBkgPos->GetYaxis()->FindBin(mu1->pt));
-            effdata *= dataStaEff_pos.getEff(mu1->eta, mu1->pt);//orig
-            effmc   *= zmmStaEff_pos.getEff(mu1->eta, mu1->pt);
-          } else {
-            effdataFSR *= dataStaEff_neg.getEff(mu1->eta, mu1->pt) * hSysStaSigFSRNeg->GetBinContent(hSysStaSigFSRNeg->GetXaxis()->FindBin(mu1->eta), hSysStaSigFSRNeg->GetYaxis()->FindBin(mu1->pt));
-            effdataMC  *= dataStaEff_neg.getEff(mu1->eta, mu1->pt) * hSysStaSigMCNeg->GetBinContent(hSysStaSigMCNeg->GetXaxis()->FindBin(mu1->eta), hSysStaSigMCNeg->GetYaxis()->FindBin(mu1->pt));
-            effdataBkg *= dataStaEff_neg.getEff(mu1->eta, mu1->pt) * hSysStaBkgNeg->GetBinContent(hSysStaBkgNeg->GetXaxis()->FindBin(mu1->eta), hSysStaBkgNeg->GetYaxis()->FindBin(mu1->pt));
-            effdata *= dataStaEff_neg.getEff(mu1->eta, mu1->pt);//orig
-            effmc   *= zmmStaEff_neg.getEff(mu1->eta, mu1->pt);
-          }
-          if(mu2->q>0) {
-            effdataFSR *= dataStaEff_pos.getEff(mu2->eta, mu2->pt) * hSysStaSigFSRPos->GetBinContent(hSysStaSigFSRPos->GetXaxis()->FindBin(mu2->eta), hSysStaSigFSRPos->GetYaxis()->FindBin(mu2->pt));
-            effdataMC *= dataStaEff_pos.getEff(mu2->eta, mu2->pt) * hSysStaSigMCPos->GetBinContent(hSysStaSigMCPos->GetXaxis()->FindBin(mu2->eta), hSysStaSigMCPos->GetYaxis()->FindBin(mu2->pt));
-            effdataBkg *= dataStaEff_pos.getEff(mu2->eta, mu2->pt) * hSysStaBkgPos->GetBinContent(hSysStaBkgPos->GetXaxis()->FindBin(mu2->eta), hSysStaBkgPos->GetYaxis()->FindBin(mu2->pt));
-            effdata *= dataStaEff_pos.getEff(mu2->eta, mu2->pt);//orig
-            effmc   *= zmmStaEff_pos.getEff(mu2->eta, mu2->pt);
-          } else {
-            effdataFSR *= dataStaEff_neg.getEff(mu2->eta, mu2->pt) * hSysStaSigFSRNeg->GetBinContent(hSysStaSigFSRNeg->GetXaxis()->FindBin(mu2->eta), hSysStaSigFSRNeg->GetYaxis()->FindBin(mu2->pt));
-            effdataMC *= dataStaEff_neg.getEff(mu2->eta, mu2->pt) * hSysStaSigMCNeg->GetBinContent(hSysStaSigMCNeg->GetXaxis()->FindBin(mu2->eta), hSysStaSigMCNeg->GetYaxis()->FindBin(mu2->pt));
-            effdataBkg *= dataStaEff_neg.getEff(mu2->eta, mu2->pt) * hSysStaBkgNeg->GetBinContent(hSysStaBkgNeg->GetXaxis()->FindBin(mu2->eta), hSysStaBkgNeg->GetYaxis()->FindBin(mu2->pt));
-            effdata *= dataStaEff_neg.getEff(mu2->eta, mu2->pt);//orig
-            effmc   *= zmmStaEff_neg.getEff(mu2->eta, mu2->pt);
-          }
-          corrFSR *= effdataFSR/effmc;
-          corrMC  *= effdataMC/effmc;
-          corrBkg *= effdataBkg/effmc;
-          corr *= effdata/effmc;
-    
-    // std::cout << "corr/corrFSR2  " << (corr/corrFSR-1)*100 << std::endl;
-	  // scale factor uncertainties                                                                                                                                         
-	  // STANDALONE
-          if(mu1->q>0) {
-            Double_t effdata = dataStaEff_pos.getEff(mu1->eta, mu1->pt);
-            Double_t errdata = TMath::Max(dataStaEff_pos.getErrLow(mu1->eta, mu1->pt), dataStaEff_pos.getErrHigh(mu1->eta, mu1->pt));
-            Double_t effmc   = zmmStaEff_pos.getEff(mu1->eta, mu1->pt);
-            Double_t errmc   = TMath::Max(zmmStaEff_pos.getErrLow(mu1->eta, mu1->pt), zmmStaEff_pos.getErrHigh(mu1->eta, mu1->pt));
-            isnan(errdata)?errdata=errmc:errdata=errdata; // stupid b/c fits for standalone are stupid
-            Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            // std::cout << " pos effdata " << effdata << "  effmc " << effmc << "  errdata " << errdata << "  errmc " << errmc <<   std::endl;
-            hStaErr_pos->Fill(mu1->eta, mu1->pt, errSta);
-          } else {
-            Double_t effdata = dataStaEff_neg.getEff(mu1->eta, mu1->pt);
-            Double_t errdata = TMath::Max(dataStaEff_neg.getErrLow(mu1->eta, mu1->pt), dataStaEff_neg.getErrHigh(mu1->eta, mu1->pt));
-            Double_t effmc   = zmmStaEff_neg.getEff(mu1->eta, mu1->pt);
-            Double_t errmc   = TMath::Max(zmmStaEff_neg.getErrLow(mu1->eta, mu1->pt), zmmStaEff_neg.getErrHigh(mu1->eta, mu1->pt));
-            isnan(errdata)?errdata=errmc:errdata=errdata; // stupid b/c fits for standalone are stupid
-            Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            // std::cout << " neg effdata " << effdata << "  effmc " << effmc << std::endl;
-            hStaErr_neg->Fill(mu1->eta, mu1->pt, errSta);
-          }
-
-          if(mu2->q>0) {
-            Double_t effdata = dataStaEff_pos.getEff(mu2->eta, mu2->pt);
-            Double_t errdata = TMath::Max(dataStaEff_pos.getErrLow(mu2->eta, mu2->pt), dataStaEff_pos.getErrHigh(mu2->eta, mu2->pt));
-            Double_t effmc   = zmmStaEff_pos.getEff(mu2->eta, mu2->pt);
-            Double_t errmc   = TMath::Max(zmmStaEff_pos.getErrLow(mu2->eta, mu2->pt), zmmStaEff_pos.getErrHigh(mu2->eta, mu2->pt));
-            isnan(errdata)?errdata=errmc:errdata=errdata;
-            Double_t errSta = ((effdata/effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            // std::cout << " pos effdata " << effdata << "  effmc " << effmc << "  errdata " << errdata << "  errmc " << errmc <<   std::endl;
-            hStaErr_pos->Fill(mu2->eta, mu2->pt, errSta);
-          } else {
-            Double_t effdata = dataStaEff_neg.getEff(mu2->eta, mu2->pt);
-            Double_t errdata = TMath::Max(dataStaEff_neg.getErrLow(mu2->eta, mu2->pt), dataStaEff_neg.getErrHigh(mu2->eta, mu2->pt));
-            Double_t effmc   = zmmStaEff_neg.getEff(mu2->eta, mu2->pt);
-            Double_t errmc   = TMath::Max(zmmStaEff_neg.getErrLow(mu2->eta, mu2->pt), zmmStaEff_neg.getErrHigh(mu2->eta, mu2->pt));
-            isnan(errdata)?errdata=errmc:errdata=errdata; // stupid b/c fits for standalone are stupid
-            Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            // std::cout << " neg effdata " << effdata << "  effmc " << effmc << std::endl;
-            hStaErr_neg->Fill(mu2->eta, mu2->pt, errSta);
-	  }
-
+          Double_t effdata, effmc, emTag;
+          Double_t edFSR, edMC, edBkg, edTag;//, edStat;
+          Double_t corr=1;
+          Double_t corrFSR=1, corrMC=1, corrBkg=1, corrTag=1;//, corrStat=1;
+          Double_t corrFSR_I=1, corrMC_I=1, corrBkg_I=1, corrTag_I=1;//, corrStat_I=1;
+          Double_t corrFSR_S=1, corrMC_S=1, corrBkg_S=1, corrTag_S=1;//, corrStat_S=1;
       
-	  // SELECTION
-          if(mu1->q>0) {
-            Double_t effdata = dataSelEff_pos.getEff(mu1->eta, mu1->pt);
-            Double_t errdata = TMath::Max(dataSelEff_pos.getErrLow(mu1->eta, mu1->pt), dataSelEff_pos.getErrHigh(mu1->eta, mu1->pt));
-            Double_t effmc   = zmmSelEff_pos.getEff(mu1->eta, mu1->pt);
-            Double_t errmc   = TMath::Max(zmmSelEff_pos.getErrLow(mu1->eta, mu1->pt), zmmSelEff_pos.getErrHigh(mu1->eta, mu1->pt));
-            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hSelErr_pos->Fill(mu1->eta, mu1->pt, errSel);
-          } else {
-            Double_t effdata = dataSelEff_neg.getEff(mu1->eta, mu1->pt);
-            Double_t errdata = TMath::Max(dataSelEff_neg.getErrLow(mu1->eta, mu1->pt), dataSelEff_neg.getErrHigh(mu1->eta, mu1->pt));
-            Double_t effmc   = zmmSelEff_neg.getEff(mu1->eta, mu1->pt);
-            Double_t errmc   = TMath::Max(zmmSelEff_neg.getErrLow(mu1->eta, mu1->pt), zmmSelEff_neg.getErrHigh(mu1->eta, mu1->pt));
-            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hSelErr_neg->Fill(mu1->eta, mu1->pt, errSel);
-          }
-
-          if(mu2->q>0) {
-            Double_t effdata = dataSelEff_pos.getEff(mu2->eta, mu2->pt);
-            Double_t errdata = TMath::Max(dataSelEff_pos.getErrLow(mu2->eta, mu2->pt), dataSelEff_pos.getErrHigh(mu2->eta, mu2->pt));
-            Double_t effmc   = zmmSelEff_pos.getEff(mu2->eta, mu2->pt);
-            Double_t errmc   = TMath::Max(zmmSelEff_pos.getErrLow(mu2->eta, mu2->pt), zmmSelEff_pos.getErrHigh(mu2->eta, mu2->pt));
-            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hSelErr_pos->Fill(mu2->eta, mu2->pt, errSel);
-          } else {
-            Double_t effdata = dataSelEff_neg.getEff(mu2->eta, mu2->pt);
-            Double_t errdata = TMath::Max(dataSelEff_neg.getErrLow(mu2->eta, mu2->pt), dataSelEff_neg.getErrHigh(mu2->eta, mu2->pt));
-            Double_t effmc   = zmmSelEff_neg.getEff(mu2->eta, mu2->pt);
-            Double_t errmc   = TMath::Max(zmmSelEff_neg.getErrLow(mu2->eta, mu2->pt), zmmSelEff_neg.getErrHigh(mu2->eta, mu2->pt));
-            Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hSelErr_neg->Fill(mu2->eta, mu2->pt, errSel);
-	  }
-
-      
-	  //HLT
-          if(mu1->q>0) {
-            Double_t effdata = dataHLTEff_pos.getEff(mu1->eta, mu1->pt);
-            Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(mu1->eta, mu1->pt), dataHLTEff_pos.getErrHigh(mu1->eta, mu1->pt));
-            Double_t effmc   = zmmHLTEff_pos.getEff(mu1->eta, mu1->pt);
-            Double_t errmc   = TMath::Max(zmmHLTEff_pos.getErrLow(mu1->eta, mu1->pt), zmmHLTEff_pos.getErrHigh(mu1->eta, mu1->pt));
-            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hHLTErr_pos->Fill(mu1->eta, mu1->pt, errHLT);
-          } else {
-            Double_t effdata = dataHLTEff_neg.getEff(mu1->eta, mu1->pt);
-            Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(mu1->eta, mu1->pt), dataHLTEff_neg.getErrHigh(mu1->eta, mu1->pt));
-            Double_t effmc   = zmmHLTEff_neg.getEff(mu1->eta, mu1->pt);
-            Double_t errmc   = TMath::Max(zmmHLTEff_neg.getErrLow(mu1->eta, mu1->pt), zmmHLTEff_neg.getErrHigh(mu1->eta, mu1->pt));
-            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hHLTErr_neg->Fill(mu1->eta, mu1->pt, errHLT);
-          }
-
-          if(mu2->q>0) {
-            Double_t effdata = dataHLTEff_pos.getEff(mu2->eta, mu2->pt);
-            Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(mu2->eta, mu2->pt), dataHLTEff_pos.getErrHigh(mu2->eta, mu2->pt));
-            Double_t effmc   = zmmHLTEff_pos.getEff(mu2->eta, mu2->pt);
-            Double_t errmc   = TMath::Max(zmmHLTEff_pos.getErrLow(mu2->eta, mu2->pt), zmmHLTEff_pos.getErrHigh(mu2->eta, mu2->pt));
-            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hHLTErr_pos->Fill(mu2->eta, mu2->pt, errHLT);
-          } else {
-            Double_t effdata = dataHLTEff_neg.getEff(mu2->eta, mu2->pt);
-            Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(mu2->eta, mu2->pt), dataHLTEff_neg.getErrHigh(mu2->eta, mu2->pt));
-            Double_t effmc   = zmmHLTEff_neg.getEff(mu2->eta, mu2->pt);
-            Double_t errmc   = TMath::Max(zmmHLTEff_neg.getErrLow(mu2->eta, mu2->pt), zmmHLTEff_neg.getErrHigh(mu2->eta, mu2->pt));
-            Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-            hHLTErr_neg->Fill(mu2->eta, mu2->pt, errHLT);
-          }
+          effdata=1; effmc=1;   emTag=1; 
+          edFSR=1; edMC=1; edBkg=1; edTag=1;//edStat=1;  
+          // }
           if(alreadyDid) continue;
           alreadyDid=true;
-	  // std::cout << info->evtNum << " " << corr << " " << std::endl;
-	  nSelv[ifile]    +=weight;
-	  nSelCorrvFSR[ifile]+=weight*corrFSR;
-	  nSelCorrvMC[ifile]+=weight*corrMC;
-	  nSelCorrvBkg[ifile]+=weight*corrBkg;
-	  nSelCorrv[ifile]+=weight*corr;
-      // std::cout << "corr " << corr << " corr FSR " << corrFSR << "  corr MC " << corrMC << "  corr Bkg " << corrBkg << std::endl;
-	  nSelCorrVarvFSR[ifile]+=weight*weight*corrFSR*corrFSR;
-	  nSelCorrVarvMC[ifile]+=weight*weight*corrMC*corrMC;
-	  nSelCorrVarvBkg[ifile]+=weight*weight*corrBkg*corrBkg;
-	  nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+          
+          
+          
+          int q1 = mu1->q;
+          int q2 = mu2->q;
+          
+          corr = effs.fullEfficiencies(&vMu1,q1,&vMu2,q2);
+          vector<double> uncs_sta = effs.getUncSta(&vMu1,q1,&vMu2,q2);
+          vector<double> uncs_sit = effs.getUncSel(&vMu1,q1,&vMu2,q2);
+          
+          corrFSR *= uncs_sta[0]*uncs_sit[0]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2); // alternate fsr model
+          corrMC  *= uncs_sta[1]*uncs_sit[1]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2); // alternate mc gen model
+          corrBkg *= uncs_sta[2]*uncs_sit[2]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2); // alternate bkg model
+          corrTag *= uncs_sta[3]*uncs_sit[3]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2); // alternate bkg model
+          // corr *= effdata/effmc; // orig
+          
+          corrFSR_I *= uncs_sit[0]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeStaSF(&vMu1,q1,&vMu2,q2); 
+          corrMC_I  *= uncs_sit[1]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeStaSF(&vMu1,q1,&vMu2,q2); 
+          corrBkg_I *= uncs_sit[2]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeStaSF(&vMu1,q1,&vMu2,q2); 
+          corrTag_I *= uncs_sit[3]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeStaSF(&vMu1,q1,&vMu2,q2); 
+           
+          corrFSR_S *= uncs_sta[0]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeSelSF(&vMu1,q1,&vMu2,q2); 
+          corrMC_S  *= uncs_sta[1]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeSelSF(&vMu1,q1,&vMu2,q2); 
+          corrBkg_S *= uncs_sta[2]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeSelSF(&vMu1,q1,&vMu2,q2); 
+          corrTag_S *= uncs_sta[3]*effs.computeHLTSF(&vMu1,q1,&vMu2,q2)*effs.computeSelSF(&vMu1,q1,&vMu2,q2); 
+           
+          double var=0.;        
+          // var += effs.statUncSta(&l1, q1) + effs.statUncSta(&l2, q2);
+          var += effs.statUncSta(&vMu1, q1, hStaErr_pos, hStaErr_neg, fabs(weight)*corr);
+          var += effs.statUncSta(&vMu2, q2, hStaErr_pos, hStaErr_neg, fabs(weight)*corr);
+          var += effs.statUncSel(&vMu1, q1, hSelErr_pos, hSelErr_neg, fabs(weight)*corr);
+          var += effs.statUncSel(&vMu2, q2, hSelErr_pos, hSelErr_neg, fabs(weight)*corr);
+          var += effs.statUncHLT(&vMu1, q1, hHLTErr_pos, hHLTErr_neg, fabs(weight)*corr);
+          var += effs.statUncHLT(&vMu2, q2, hHLTErr_pos, hHLTErr_neg, fabs(weight)*corr);
+          
+          // std::cout << info->evtNum << " " << corr << " " << std::endl;
+          nSelv[ifile]    +=weight;
+          nSelCorrvFSR[ifile] +=weight*corrFSR;  nSelCorrvFSR_I[ifile] +=weight*corrFSR_I;  nSelCorrvFSR_S[ifile] +=weight*corrFSR_S;
+          nSelCorrvMC[ifile]  +=weight*corrMC;   nSelCorrvMC_I[ifile]  +=weight*corrMC_I;   nSelCorrvMC_S[ifile]  +=weight*corrMC_S;
+          nSelCorrvBkg[ifile] +=weight*corrBkg;  nSelCorrvBkg_I[ifile] +=weight*corrBkg_I;  nSelCorrvBkg_S[ifile] +=weight*corrBkg_S;
+          nSelCorrvTag[ifile] +=weight*corrTag;  nSelCorrvTag_I[ifile] +=weight*corrTag_I;  nSelCorrvTag_S[ifile] +=weight*corrTag_S;
+          
+          nSelCorrv[ifile]+=weight*corr;
+          nSelCorrVarvFSR[ifile]+=weight*weight*corrFSR*corrFSR;
+          nSelCorrVarvMC[ifile]+=weight*weight*corrMC*corrMC;
+          nSelCorrVarvBkg[ifile]+=weight*weight*corrBkg*corrBkg;
+          nSelCorrVarvTag[ifile]+=weight*weight*corrTag*corrTag;
+          nSelCorrVarv[ifile]+=weight*weight*corr*corr;
         }
       }      
     }
@@ -588,71 +328,73 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
       for(Int_t ix=0; ix<=hHLTErr_pos->GetNbinsX(); ix++) {
         Double_t err=hHLTErr_pos->GetBinContent(ix,iy);
         var+=err*err;
+        err=hHLTErr_neg->GetBinContent(ix,iy);
+        var+=err*err;
         // std::cout << "hlt pos " << var << std::endl;
       }
     }
-    for(Int_t iy=0; iy<=hHLTErr_neg->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hHLTErr_neg->GetNbinsX(); ix++) {
-        Double_t err=hHLTErr_neg->GetBinContent(ix,iy);
-        var+=err*err;
-        // std::cout << "hlt neg " << var << std::endl;
-      }
-    }
+
     for(Int_t iy=0; iy<=hSelErr_pos->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hSelErr_pos->GetNbinsX(); ix++) {
         Double_t err=hSelErr_pos->GetBinContent(ix,iy);
         var+=err*err;
+        err=hSelErr_neg->GetBinContent(ix,iy);
+        var+=err*err;
         // std::cout << "sel pos " << var << std::endl;
       }
     }
-    for(Int_t iy=0; iy<=hSelErr_neg->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hSelErr_neg->GetNbinsX(); ix++) {
-        Double_t err=hSelErr_neg->GetBinContent(ix,iy);
-        var+=err*err;
-        // std::cout << "sel neg " << var << std::endl;
-      }
-    }
+
     for(Int_t iy=0; iy<=hStaErr_pos->GetNbinsY(); iy++) {
       for(Int_t ix=0; ix<=hStaErr_pos->GetNbinsX(); ix++) {
         Double_t err=hStaErr_pos->GetBinContent(ix,iy);
-	    var+=err*err;
-        // std::cout << "sta pos " << var << std::endl;
+	      var+=err*err;
+        err=hStaErr_neg->GetBinContent(ix,iy);
+	      var+=err*err;
       }
     }
-    for(Int_t iy=0; iy<=hStaErr_neg->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hStaErr_neg->GetNbinsX(); ix++) {
-        Double_t err=hStaErr_neg->GetBinContent(ix,iy);
-        // err=0;// for now
-	    var+=err*err;
-        // std::cout << "sta neg " << var << std::endl;
-      }
-    }
-    // std::cout << "blah  " << std::endl;
+
     nSelCorrVarvFSR[ifile]+=var;
     nSelCorrVarvMC[ifile]+=var;
     nSelCorrVarvBkg[ifile]+=var;
+    nSelCorrVarvTag[ifile]+=var;
     nSelCorrVarv[ifile]+=var;
-    // std::cout << "comput acceptances" << std::endl;
     // compute acceptances
     accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(accv[ifile]*sqrt((1.+accv[ifile])/nEvtsv[ifile]));
-    accCorrvFSR.push_back(nSelCorrvFSR[ifile]/nEvtsv[ifile]); 
+    
+        
+    accCorrvFSR.push_back(nSelCorrvFSR[ifile]/nEvtsv[ifile]);
+    accCorrvMC.push_back(nSelCorrvMC[ifile]/nEvtsv[ifile]);
+    accCorrvBkg.push_back(nSelCorrvBkg[ifile]/nEvtsv[ifile]);
+    accCorrvTag.push_back(nSelCorrvTag[ifile]/nEvtsv[ifile]);
+    
+    accCorrvFSR_I.push_back(nSelCorrvFSR_I[ifile]/nEvtsv[ifile]);
+    accCorrvMC_I.push_back(nSelCorrvMC_I[ifile]/nEvtsv[ifile]);
+    accCorrvBkg_I.push_back(nSelCorrvBkg_I[ifile]/nEvtsv[ifile]);
+    accCorrvTag_I.push_back(nSelCorrvTag_I[ifile]/nEvtsv[ifile]);
+    
+    accCorrvFSR_S.push_back(nSelCorrvFSR_S[ifile]/nEvtsv[ifile]);
+    accCorrvMC_S.push_back(nSelCorrvMC_S[ifile]/nEvtsv[ifile]);
+    accCorrvBkg_S.push_back(nSelCorrvBkg_S[ifile]/nEvtsv[ifile]);
+    accCorrvTag_S.push_back(nSelCorrvTag_S[ifile]/nEvtsv[ifile]);
+
     accErrCorrvFSR.push_back(accCorrvFSR[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvFSR[ifile]*nSelCorrvFSR[ifile]) + 1./nEvtsv[ifile]));
-    // std::cout << "acccorrvfsr " << accCorrvFSR[ifile] << "  nSelCorrVarv[ifile] " << nSelCorrVarv[ifile] << " nSelCorrvFSR[ifile] " << nSelCorrvFSR[ifile] << "  nEvtsv[ifile] " << nEvtsv[ifile] << std::endl;
-    accCorrvMC.push_back(nSelCorrvMC[ifile]/nEvtsv[ifile]);   accErrCorrvMC.push_back(accCorrvMC[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvMC[ifile]*nSelCorrvMC[ifile]) + 1./nEvtsv[ifile]));
-    accCorrvBkg.push_back(nSelCorrvBkg[ifile]/nEvtsv[ifile]); accErrCorrvBkg.push_back(accCorrvBkg[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvBkg[ifile]*nSelCorrvBkg[ifile]) + 1./nEvtsv[ifile]));
-    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); accErrCorrv.push_back(accCorrv[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
+    accErrCorrvMC.push_back(accCorrvMC[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvMC[ifile]*nSelCorrvMC[ifile]) + 1./nEvtsv[ifile]));
+    accErrCorrvBkg.push_back(accCorrvBkg[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvBkg[ifile]*nSelCorrvBkg[ifile]) + 1./nEvtsv[ifile]));
+    accErrCorrvTag.push_back(accCorrvTag[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvTag[ifile]*nSelCorrvTag[ifile]) + 1./nEvtsv[ifile]));
+    
+    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); 
+    accErrCorrv.push_back(accCorrv[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
     
     delete infile;
     infile=0, eventTree=0;  
   } 
   
-    // std::cout << "clean up memeory sturff" << std::endl;
   delete info;
   delete gen;
   delete muonArr;
 
     
-    std::cout << "print output" << std::endl;
+  std::cout << "print output" << std::endl;
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================    
@@ -672,10 +414,12 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     cout << endl;
     cout << "    *** Acceptance ***" << endl;
     cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
-    cout << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
-    cout << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
-    cout << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
+    cout << "     SF corrected: " << accCorrv[ifile]     << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "          FSR unc: " << accCorrvFSR[ifile]  << " / Sel: " << accCorrvFSR_I[ifile] << " / Sta: " << accCorrvFSR_S[ifile] << endl;
+    cout << "           MC unc: " << accCorrvMC[ifile]   << " / Sel: " << accCorrvMC_I[ifile]  << " / Sta: " << accCorrvMC_S[ifile]  << endl;
+    cout << "          Bkg unc: " << accCorrvBkg[ifile]  << " / Sel: " << accCorrvBkg_I[ifile] << " / Sta: " << accCorrvBkg_S[ifile] << endl;
+    cout << "          Tag unc: " << accCorrvTag[ifile]  << " / Sel: " << accCorrvTag_I[ifile] << " / Sta: " << accCorrvTag_S[ifile] << endl;
+    // cout << "         Stat unc: " << accCorrvStat[ifile] << " / Sel: " << accCorrvStat_I[ifile]<< " / Sta: " << accCorrvStat_S[ifile] << endl;
     cout << "  fraction passing gen cut: " << nEvtsv[ifile] << " / " << nAllv[ifile] << " = " << nEvtsv[ifile]/nAllv[ifile] << endl;
     cout << endl;
   }
@@ -701,13 +445,67 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     txtfile << "    *** Acceptance ***" << endl;
     txtfile << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     txtfile << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
-    txtfile << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
-    txtfile << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
-    txtfile << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
+    txtfile << "          FSR unc: " << accCorrvFSR[ifile]  << " / Sel: " << accCorrvFSR_I[ifile] << " / Sta: " << accCorrvFSR_S[ifile] << endl;
+    txtfile << "           MC unc: " << accCorrvMC[ifile]   << " / Sel: " << accCorrvMC_I[ifile]  << " / Sta: " << accCorrvMC_S[ifile]  << endl;
+    txtfile << "          Bkg unc: " << accCorrvBkg[ifile]  << " / Sel: " << accCorrvBkg_I[ifile] << " / Sta: " << accCorrvBkg_S[ifile] << endl;
+    txtfile << "          Tag unc: " << accCorrvTag[ifile]  << " / Sel: " << accCorrvTag_I[ifile] << " / Sta: " << accCorrvTag_S[ifile] << endl;
+    // txtfile << "         Stat unc: " << accCorrvStat[ifile] << " / Sel: " << accCorrvStat_I[ifile]<< " / Sta: " << accCorrvStat_S[ifile] << endl;
     txtfile << "  fraction passing gen cut: " << nEvtsv[ifile] << " / " << nAllv[ifile] << " = " << nEvtsv[ifile]/nAllv[ifile] << endl;
     txtfile << endl;
   }
   txtfile.close();
+  
+    // char txtfname[100];
+  sprintf(txtfname,"%s/sel_nums_only.txt",outputDir.Data());
+  ofstream txtfile2;
+  txtfile2.open(txtfname);
+  
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+    txtfile2 << accCorrv[ifile]     << " " << accErrCorrv[ifile]    << endl;
+    txtfile2 << accCorrvFSR[ifile]  << " " << accCorrvFSR_I[ifile] << " " << accCorrvFSR_S[ifile] << endl;
+    txtfile2 << accCorrvMC[ifile]   << " " << accCorrvMC_I[ifile]  << " " << accCorrvMC_S[ifile]  << endl;
+    txtfile2 << accCorrvBkg[ifile]  << " " << accCorrvBkg_I[ifile] << " " << accCorrvBkg_S[ifile] << endl;
+    txtfile2 << accCorrvTag[ifile]  << " " << accCorrvTag_I[ifile] << " " << accCorrvTag_S[ifile] << endl;
+    // txtfile << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
+    txtfile2 << endl;
+  }
+  txtfile2.close();  
+  
+     // char txtfname[100];
+  sprintf(txtfname,"%s/sit_unc.txt",outputDir.Data());
+  ofstream txtfile3;
+  txtfile3.open(txtfname);
+  
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+    txtfile3 << accCorrv[ifile]      << endl;
+    txtfile3 << accCorrvFSR_I[ifile] << endl;
+    txtfile3 << accCorrvMC_I[ifile]  << endl;
+    txtfile3 << accCorrvBkg_I[ifile] << endl;
+    txtfile3 << accCorrvTag_I[ifile] << endl;
+    // txtfile << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
+    txtfile3 << endl;
+  }
+  txtfile3.close();
+  
+      // char txtfname[100];
+  sprintf(txtfname,"%s/sta_unc.txt",outputDir.Data());
+  ofstream txtfile4;
+  txtfile4.open(txtfname);
+  
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+    txtfile4 << accCorrv[ifile]   << endl;
+    txtfile4 << accCorrvFSR_S[ifile] << endl;
+    txtfile4 << accCorrvMC_S[ifile]  << endl;
+    txtfile4 << accCorrvBkg_S[ifile] << endl;
+    txtfile4 << accCorrvTag_S[ifile] << endl;
+    // txtfile << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
+    txtfile4 << endl;
+  }
+  txtfile4.close();
+  
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
