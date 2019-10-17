@@ -70,7 +70,7 @@ void fitZmm(const TString  inputDir,    // input directory
   fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
   // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
   // fnamev.push_back(TString("/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV/Zmumu_testGen/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
   
   fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eWx);
@@ -122,6 +122,7 @@ void fitZmm(const TString  inputDir,    // input directory
   Double_t yield_zmm_up = 0, yield_zmm_dn = 0;
   Double_t yield_zmm_noPrefire = 0;
   Double_t yield_wm = 0;
+  Double_t yield_zmm_pfJet=0, yield_zmm_pfPhoton=0;
   Double_t yield_zmm = 0, yield_zmm_unc=0;
   Double_t yield_ewk = 0, yield_ewk_unc=0;
   Double_t yield_top = 0, yield_top_unc=0;
@@ -230,6 +231,7 @@ void fitZmm(const TString  inputDir,    // input directory
   UInt_t  npv, npu;
   Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
   Float_t prefireWeight, prefireUp, prefireDown;
+  Float_t prefirePhoton, prefireJet;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
   TLorentzVector *genlep1=0, *genlep2=0;
@@ -259,6 +261,8 @@ void fitZmm(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
     intree -> SetBranchStatus("prefireWeight",1);
+    intree -> SetBranchStatus("prefirePhoton",1);
+    intree -> SetBranchStatus("prefireJet",1);
     intree -> SetBranchStatus("prefireUp",1);
     intree -> SetBranchStatus("prefireDown",1);
     intree -> SetBranchStatus("scale1fb",1);
@@ -281,6 +285,8 @@ void fitZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
     intree->SetBranchAddress("prefireWeight",   &prefireWeight);    // prefire weights for 2017 (MC)
+    intree->SetBranchAddress("prefireJet",   &prefireJet);    // prefire weights for 2017 (MC)
+    intree->SetBranchAddress("prefirePhoton",   &prefirePhoton);    // prefire weights for 2017 (MC)
     intree->SetBranchAddress("prefireUp",   &prefireUp);    // prefire weights for 2017 (MC)
     intree->SetBranchAddress("prefireDown",   &prefireDown);    // prefire weights for 2017 (MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
@@ -319,8 +325,23 @@ void fitZmm(const TString  inputDir,    // input directory
       if(typev[ifile]!=eData) {
         // if prefire weight > 1, divivde by 2
         // also do up.down uncertainty by hand
-        
+        if(prefireWeight > 1 &&prefireWeight <= 2 ){
+            prefireWeight/=2;
+        }
+        if(prefireJet > 1 &&prefireJet <= 2 ){
+            prefireJet/=2;
+        }
+        if(prefirePhoton > 1 &&prefirePhoton <= 2 ){
+            prefirePhoton/=2;
+        }
         weight *= scale1fb*prefireWeight*lumi;
+        
+        if(prefireUp > 1 || prefireUp < 0){
+          prefireUp = prefireWeight;
+        }
+        if(prefireDown > 1 || prefireDown < 0){
+          prefireDown = prefireWeight;
+        }
       }
       
       // fill Z events passing selection
@@ -466,6 +487,8 @@ void fitZmm(const TString  inputDir,    // input directory
         yield_zmm_up += weight*corrUp;
         yield_zmm_dn += weight*corrDown;
         yield_zmm_noPrefire += scale1fb*lumi*corr;
+        yield_zmm_pfPhoton += scale1fb*lumi*corr*prefirePhoton;
+        yield_zmm_pfJet += scale1fb*lumi*corr*prefireJet;
         
         hZmmUnc[mcUp]->Fill(mass,weight*corrMC);
         hZmmUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
@@ -564,7 +587,7 @@ void fitZmm(const TString  inputDir,    // input directory
         hDibUnc[pfireUp]->Fill(mass,prefireUp*corr);
         hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
         // cout << "blah " << endl;
-    } if(typev[ifile]==eEWK) {
+    } if(typev[ifile]==eEWK || typev[ifile]==eDib || typev[ifile]==eZxx || typev[ifile]==eWx) {
 	      yield_ewk += weight*corr;
 	      yield_ewk_unc += weight*weight*corr*corr;
 	      hEWK->Fill(mass,weight*corr); 
@@ -987,6 +1010,8 @@ void fitZmm(const TString  inputDir,    // input directory
   cout << " The Zmm Data Yield w/ ewk&top removed: " << yield - yield_ewk - yield_top << endl;
   cout << " Zmm yield w/ all bkg removed: " << yield - yield_ewk - yield_top - yield_wm << endl;
   cout << " Prefire scale factor :" << yield_zmm_noPrefire/yield_zmm << endl;
+  cout << " Prefire Jets only : " << yield_zmm_pfJet << "  scale fac: " << yield_zmm_noPrefire/yield_zmm_pfJet << endl;
+  cout << " Prefire Photons only : " << yield_zmm_pfPhoton << "  scale fac: " << yield_zmm_noPrefire/yield_zmm_pfPhoton << endl;
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
@@ -1017,6 +1042,8 @@ void fitZmm(const TString  inputDir,    // input directory
   txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
   txtfile << " Zmm yield w/ all bkg removed: " << yield - yield_ewk - yield_top - yield_wm << endl;
   txtfile << " Prefire scale factor :" << yield_zmm_noPrefire/yield_zmm << endl;
+  txtfile << " Prefire Jets only : " << yield_zmm_pfJet << "  scale fac: " << yield_zmm_noPrefire/yield_zmm_pfJet << endl;
+  txtfile << " Prefire Photons only : " << yield_zmm_pfPhoton << "  scale fac: " << yield_zmm_noPrefire/yield_zmm_pfPhoton << endl;
   txtfile << std::endl;
   txtfile.close();
   

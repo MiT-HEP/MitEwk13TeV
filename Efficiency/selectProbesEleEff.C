@@ -60,9 +60,9 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   const int massBin = 60;
 
   const int muEtaNB = 12;
-  const float muEtaRange[muEtaNB+1] = {-2.5,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.5};
-  const int muPtNB = 8;
-  const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+  const float muEtaRange[muEtaNB+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
+  const int muPtNB = 4;
+  const float muPtRange[muPtNB+1] = {25,35,45,60,8000};
   
   
   // const int muEtaNB = 2;
@@ -76,10 +76,10 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
     TH1D *h_mll_photos[muEtaNB][muPtNB];
 
       // Set up to load both the photos and pythia extra weighting
-    TFile *inAMCNLO = new TFile(TString("GenReweightMassHist/zee-amc-pyth-mll.root"),"OPEN");
-    TFile *inPhotos = new TFile(TString("GenReweightMassHist/zee-pow-phot-mll.root"),"OPEN");
+    TFile *inAMCNLO = new TFile(TString("GenReweightMassHist/EleGSF/zee-amc-pyth-mll.root"),"OPEN");
+    TFile *inPhotos = new TFile(TString("GenReweightMassHist/EleGSF/zee-pow-phot-mll.root"),"OPEN");
     // TH1D * = (TH1F*)f.Get(“h1”);
-    TFile *inPythia = new TFile(TString("GenReweightMassHist/zee-pow-pyth-mll.root"),"OPEN"); 
+    TFile *inPythia = new TFile(TString("GenReweightMassHist/EleGSF/zee-pow-pyth-mll.root"),"OPEN"); 
     
   for(int iEtaBin = 0; iEtaBin < muEtaNB; iEtaBin ++){
     for(int iPtBin = 0; iPtBin < muPtNB; iPtBin ++){
@@ -129,7 +129,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   UInt_t  category;
   //UInt_t  npv, npu;
   Float_t scale1fb;
-  Float_t genWeight, PUWeight;
+  Float_t genWeight, PUWeight, prefireWeight=1;
   Float_t met, metPhi, sumEt, u1, u2;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Int_t   q1, q2;
@@ -152,6 +152,7 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
   intree->SetBranchAddress("npu",      &npu);	     // number of in-time PU events (MC)
   intree->SetBranchAddress("genWeight",  &genWeight);
   intree->SetBranchAddress("PUWeight",   &PUWeight);
+  // intree->SetBranchAddress("prefireWeight",   &prefireWeight);
   intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
   intree->SetBranchAddress("met",      &met);	     // MET
   intree->SetBranchAddress("metPhi",   &metPhi);     // phi(MET)
@@ -298,7 +299,8 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
       else if(category==eTrkNoSC)  { pass=kFALSE; }
       else                         { continue; }
     }
-    
+    weightPowPhot=1;
+    weightPowPyth=1;
     nProbes += doWeighted ? genWeight*PUWeight/std::abs(genWeight) : 1;
     if(doWeighted){
      Float_t geneta = -99.;
@@ -324,10 +326,12 @@ void selectProbesEleEff(const TString infilename,           // input ntuple
               // std::cout << "stupid Mass iterator " << h_mll_photos[iEtaBin][iPtBin]->GetBinLowEdge(iMassBin) << std::endl;
               if(genVMass < h_mll_photos[iEtaBin][iPtBin]->GetBinLowEdge(iMassBin)||genVMass > h_mll_photos[iEtaBin][iPtBin]->GetBinLowEdge(iMassBin+1)) continue;
               // std::cout << "mass bin = " << iMassBin << std::endl;
+              if(h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin) !=0 ){
                 weightPowPhot = h_mll_photos[iEtaBin][iPtBin]->GetBinContent(iMassBin)/h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin);
                 // std::cout << h_mll_photos[iEtaBin][iPtBin]->GetBinContent(iMassBin) << "  " << h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin) << std::endl;
                 // std::cout << "blah = " << weightPowPhot << std::endl;
                 weightPowPyth = h_mll_pythia[iEtaBin][iPtBin]->GetBinContent(iMassBin)/h_mll_amcnlo[iEtaBin][iPtBin]->GetBinContent(iMassBin);
+              }
                 break;
             // h_mll_powheg[iEtaBin][iPtBin] = (TH1D*)inPowheg.Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));
             // h_mll_pythia[iEtaBin][iPtBin] = (TH1D*)inPythia.Get(Form("h_mll_etaBin%d_ptBin%d", iEtaBin, iPtBin));

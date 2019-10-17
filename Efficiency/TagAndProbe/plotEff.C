@@ -1538,8 +1538,8 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		  TCanvas *cpass, TCanvas *cfail,const double lumi)
 {
   // skip ECAL gap region
-  if(xbinLo==1.4442 && xbinHi==1.566) return;
-  if(xbinLo==-1.566 && xbinHi==-1.4442) return;
+  // if(xbinLo==1.4442 && xbinHi==1.566) return;
+  // if(xbinLo==-1.566 && xbinHi==-1.4442) return;
 
   Float_t m;
   Double_t w;
@@ -1669,8 +1669,8 @@ void performFitBkgOnly(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail, const double lumi, const TString yaxislabel, const int charge)
 {
   // skip ECAL gap region
-  if(xbinLo==1.4442 && xbinHi==1.566) return;
-  if(xbinLo==-1.566 && xbinHi==-1.4442) return;
+  // if(xbinLo==1.4442 && xbinHi==1.566) return;
+  // if(xbinLo==-1.566 && xbinHi==-1.4442) return;
 
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
   m.setBins(60);
@@ -1879,9 +1879,9 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && ib
   if(bkgpass==0) NbkgPass.setVal(0);
   RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);
   if(yaxislabel.CompareTo("stand-alone")==0 && fabs(xbinLo) >= 0.9 ) {
-      NbkgFail.setVal(0.98*NbkgFailMax);
-      NbkgFail.setRange(0.9*NbkgFailMax,NbkgFailMax);
-      eff.setVal(0.98);
+      NbkgFail.setVal(0.95*NbkgFailMax);
+      NbkgFail.setRange(0.85*NbkgFailMax,NbkgFailMax);
+      eff.setVal(0.95);
   }
    else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && xbinLo== 1.2 && xbinHi== 2.1 && ybinLo==25 && ybinHi==40  ){
        NbkgFail.setVal(0.5*NbkgFailMax);
@@ -2195,9 +2195,9 @@ void performFit(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
 		const TString name, const Double_t massLo, const Double_t massHi, const Double_t fitMassLo, const Double_t fitMassHi,
 		const TString format, const Bool_t doAbsEta, TCanvas *cpass, TCanvas *cfail, const double lumi, const TString yaxislabel, const int charge)
 {
-  // skip ECAL gap region
-  if(xbinLo==1.4442 && xbinHi==1.566) return;
-  if(xbinLo==-1.566 && xbinHi==-1.4442) return;
+  // // skip ECAL gap region
+  // if(xbinLo==1.4442 && xbinHi==1.566) return;
+  // if(xbinLo==-1.566 && xbinHi==-1.4442) return;
 
   RooRealVar m("m","mass",fitMassLo,fitMassHi);
   m.setBins(60);
@@ -2379,10 +2379,13 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==8 && charge==0 && ib
 } else if (yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0) {
     std::cout << "open" << std::endl;
     char templatename[200];
-    // sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_aMCxPythia_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
-    // sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_POWxPythia_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
-    // sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_POWxPhotos_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
-    sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_minloxPythia_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"../afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
+    // 
+    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_POWxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_POWxPhotos_BKG/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_minloxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
+    sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_5TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
     TFile *f = new TFile(templatename);
     std::cout << "opeend" << std::endl;
     RooWorkspace *w = (RooWorkspace*) f->Get("w");
@@ -2420,7 +2423,8 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==8 && charge==0 && ib
  } else if (yaxislabel.CompareTo("stand-alone")==0       && bkgfail==7 && charge==0) {
     std::cout << "open" << std::endl;
     char templatename[200];
-    sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_POWBKG_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
+    sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_5TeV/results/Zmm/Data/MuStaEff_POWBKG_BKG/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_POWBKG_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
     TFile *f = new TFile(templatename);
     std::cout << "opeend" << std::endl;
     RooWorkspace *w = (RooWorkspace*) f->Get("w");
@@ -2484,7 +2488,7 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==8 && charge==0 && ib
   RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);
   if(yaxislabel.CompareTo("stand-alone")==0 && fabs(xbinLo) >= 0.9 ) {
       NbkgFail.setVal(0.98*NbkgFailMax);
-      NbkgFail.setRange(0.9*NbkgFailMax,NbkgFailMax);
+      NbkgFail.setRange(0.9*NbkgFailMax,NbkgFailMax*1.0);
       eff.setVal(0.98);
   }
    else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && xbinLo== 1.2 && xbinHi== 2.1 && ybinLo==25 && ybinHi==40  ){

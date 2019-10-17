@@ -17,8 +17,8 @@ NTUPLEDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_PP
 OUT=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/SignalExtraction
 
 # root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu13_fixAll\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
-root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu_new_all_Print\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
-# root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wenu_new_all_Print\",\"${NTUPLEDIR}\",\"Wenu\",${LUMI13},${LUMI13}\);
+# root -l -q fitWlnu.C+\(\"${OUT}/PRELIM_Wmunu_fixPF\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI13},${LUMI13}\);
+root -l -q fitWlnu.C+\(\"${OUT}/PRELIM_Wenu_fixPF\",\"${NTUPLEDIR}\",\"Wenu\",${LUMI13},${LUMI13}\);
 # root -l -q fitWlnu.C+\(\"${OUT}/TEST_Wmunu5_fixRecoil\",\"${NTUPLEDIR}\",\"Wmunu\",${LUMI5},${LUMI5}\);
 # root -l -q fitWlikeZm.C+\(\"TEST_WlikeZm_Inclusive_3G_ptRW\",$LUMI13,$LUMI13\);
 

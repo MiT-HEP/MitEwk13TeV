@@ -175,6 +175,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0, *dilepSC = 0;
   TLorentzVector *genlep1=0;
   TLorentzVector *genlep2=0;
+  Double_t lep1EcalE = 0;
+  Double_t lep2EcalE = 0;
   
   ///// electron specific /////
   Float_t trkIso1, emIso1, hadIso1, trkIso2, emIso2, hadIso2;
@@ -220,7 +222,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     //flag to save the info for recoil corrections
     Bool_t isRecoil = ((snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWboson);
     // flag to reject Z->ee events when selecting at wrong-flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);  
+    Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0); 
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
   
@@ -302,6 +305,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("genlep2",       "TLorentzVector",  &genlep2);     // probe lepton 4-vector
     outTree->Branch("lep1_raw",       "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
     outTree->Branch("lep2_raw",       "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
+    outTree->Branch("lep1EcalE",       &lep1EcalE,  "lep1EcalE/d");     // probe lepton 4-vector
+    outTree->Branch("lep2EcalE",       &lep2EcalE,  "lep2EcalE/d");     // probe lepton 4-vector
     ///// electron specific /////
     outTree->Branch("trkIso1",    &trkIso1,    "trkIso1/F");     // track isolation of tag lepton
     outTree->Branch("trkIso2",    &trkIso2,    "trkIso2/F");     // track isolation of probe lepton
@@ -377,7 +382,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       eventTree->SetBranchAddress("Photon",   &scArr      ); TBranch *scBr       = eventTree->GetBranch("Photon");
       eventTree->SetBranchAddress("PV",       &vertexArr  ); TBranch *vertexBr   = eventTree->GetBranch("PV");
       eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
-      Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
+      Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
@@ -395,6 +400,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
       if (hasGen) {
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.1); ientry++) {
         // // for(UInt_t ientry=0; ientry<1000; ientry++) {
           infoBr->GetEntry(ientry);
@@ -410,6 +416,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       else if (not isData){
         // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.01); ientry++) {
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         // for(UInt_t ientry=0; ientry<1000; ientry++) {
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
@@ -493,6 +500,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
           vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
           // vTagSC.SetPtEtaPhiM(eTregress, tag->eta, tag->phi, ELE_MASS);
+          
           
           
           // std::cout << tagRandom << std::endl;
@@ -598,6 +606,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           itag=i1;
           tagscID=tag->scID;
           // random = tagRandom;
+          lep1EcalE = tagEcalE;
           vTagfinal = vTag;
           vTagSCfinal = vTagSC;
           vTag_raw.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
@@ -700,8 +709,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           TLorentzVector vEleProbe(0,0,0,0), vEleProbeSC(0,0,0,0);
           if(eleProbe){
             
-            double tagEcalE = eleProbe->ecalEnergy;
-            double eTregress = tagEcalE/cosh(fabs(eleProbe->eta));
+            double probeEcalE = eleProbe->ecalEnergy;
+            double eTregress = probeEcalE/cosh(fabs(eleProbe->eta));
             vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
             // vEleProbeSC.SetPtEtaPhiM(eTregress, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
             // vEleProbeSC.SetPtEtaPhiM(eTregress, eleProbe->eta, eleProbe->phi, ELE_MASS);
@@ -784,6 +793,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
         if(eleProbe) vProbe_raw.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
         vProbeSC = (eleProbe) ? vEleProbeSC : vProbe ;
+        lep2EcalE = probeEcalE;
 
         trkIso2    = (eleProbe) ? eleProbe->trkIso        : -1;
         emIso2     = (eleProbe) ? eleProbe->ecalIso       : -1;
@@ -872,10 +882,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           prefireJet*= 1. - prefireJetCorr.getCorr(jet->eta, jet->pt);
           prefireJetUp     *= TMath::Max((1.-(1.2*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
           prefireJetDown   *= TMath::Max((1.-(0.8*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
-          cout << "JET current prob. " << prefireJetCorr.getCorr(jet->eta, jet->pt)  << "  totalW " <<  prefireJet << endl;
+          // cout << "JET current prob. " << prefireJetCorr.getCorr(jet->eta, jet->pt)  << "  totalW " <<  prefireJet << endl;
           if(prefireJetCorr.getCorr(jet->eta, jet->pt) < 0 || prefireJetCorr.getCorr(jet->eta, jet->pt) > 1) {
-            cout << " " << jet->eta<< " " << jet->pt << endl;
-            std::cout << "jet eta " << jet->eta << "  jet pT " << jet->pt << "  prefire weight " << prefireJet << std::endl;
+            // cout << " " << jet->eta<< " " << jet->pt << endl;
+            // std::cout << "jet eta " << jet->eta << "  jet pT " << jet->pt << "  prefire weight " << prefireJet << std::endl;
           }
         } 
         

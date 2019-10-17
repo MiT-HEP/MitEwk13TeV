@@ -58,14 +58,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // Settings 
   //==============================================================================================================   
   // flage to control applying the recoil corrections
-  bool doInclusive = false; // This should be the standard recoil correction: 3-gaussian inclusive eta
-  bool doKeys = false; // RooKeysPDF instead of 3-Gaus
-  bool doEta = false; // eta-binned 3-Gaus fit
-  bool doStat = false; //  Statistical Uncertainty
+  bool doInclusive = true; // This should be the standard recoil correction: 3-gaussian inclusive eta
+  bool doKeys = true; // RooKeysPDF instead of 3-Gaus
+  bool doEta = true; // eta-binned 3-Gaus fit
+  bool doStat = true; //  Statistical Uncertainty
   int nNV = 10;
   // which MET type we use
   bool doPF = true;
-  bool doNewMET = true;
+  bool doNewMET = false;
   
   std::string u1_name; std::string u2_name;
   std::string met_name; std::string metPhi_name;
@@ -135,7 +135,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
  //   Load the Recoil Correction Files
  // ------------------------------------------------------------------------------------------------------------------------------------------
   // ===================== Recoil correction files ============================
-  const TString directory("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil");
+  const TString directory("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil_Orig");
  
   // New Recoil Correctors for everything
   RecoilCorrector *rcMainWp    = new  RecoilCorrector("",""); RecoilCorrector *rcMainWm    = new  RecoilCorrector("","");
@@ -154,12 +154,12 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   if(doInclusive){
     // rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
-    rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg/",directory.Data(),sqrts.Data()));
+    rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     
     // rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
-    rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg/",directory.Data(),sqrts.Data()));
+    rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
   } 
   if (doStat){
@@ -309,11 +309,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-   // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
    // for(UInt_t ientry=0; ientry<0.33*((uint)intree->GetEntries()); ientry++) {
    // for(UInt_t ientry=0.33*((uint)intree->GetEntries()); ientry<0.67*((uint)intree->GetEntries()); ientry++) {
    // for(UInt_t ientry=0.67*((uint)intree->GetEntries()); ientry<intree->GetEntries(); ientry++) {
-  for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.05; ientry+=iterator) {
+  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.05; ientry+=iterator) {
     intree->GetEntry(ientry);
     if(ientry%100000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
@@ -418,7 +418,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       evtWeight[pfireu]=corr*scale1fb*prefireUp;
       evtWeight[pfired]=corr*scale1fb*prefireDown;
 
-      cout << "test " << evtWeight[main] << " " << evtWeight[mc] << " " << evtWeight[effstat] << endl;
+      // cout << "test " << evtWeight[main] << " " << evtWeight[fsr] << " " << evtWeight[mc] << " " << evtWeight[bkg] << " " << evtWeight[tagpt] << " " << evtWeight[effstat] <<" " << evtWeight[pfireu] <<" " << evtWeight[pfired] << endl;
 
       double rand = gRandom->Uniform(1);
       double mcSF1 = 1;

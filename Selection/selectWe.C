@@ -117,7 +117,7 @@ void selectWe(const TString conf="we.conf", // input file
 
   // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
   // const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
-  const TString corrFiles = "../EleScale/Run2017_LowPU_v1";
+  const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
 
   // EnergyScaleCorrection_class eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
   EnergyScaleCorrection eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
@@ -161,7 +161,7 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
-  Float_t prefireWeight, prefireUp, prefireDown;
+  // Float_t prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t metDJee, metPhiDJee, sumEtDJee, u1DJee, u2DJee;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
@@ -169,6 +169,7 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
   Int_t   q;
   TLorentzVector *lep=0, *lep_raw=0;
+  Float_t lepError=0;
   
   // vector<Double_t> lheweight;
   // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
@@ -182,8 +183,8 @@ void selectWe(const TString conf="we.conf", // input file
   UInt_t  isConv, nexphits, typeBits;
   TLorentzVector *sc=0;
 
-  vector<Double_t> lheweight;
-  for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
+  vector<Double_t> lheweight(NPDF+NQCD,0);
+  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
@@ -222,7 +223,7 @@ void selectWe(const TString conf="we.conf", // input file
     }
     //flag to save the info for recoil corrections
     Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
-
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
 
@@ -300,6 +301,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("lep_raw",       "TLorentzVector", &lep_raw);        // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
     ///// electron specific /////
+    outTree->Branch("lepError",   &lepError,   "lepError/F");      // track isolation of tag lepton
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");      // track isolation of tag lepton
     outTree->Branch("emIso",      &emIso,      "emIso/F");       // ECAL isolation of tag lepton
     outTree->Branch("hadIso",     &hadIso,     "hadIso/F");      // HCAL isolation of tag lepton
@@ -351,7 +353,7 @@ void selectWe(const TString conf="we.conf", // input file
       
           // UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.01);
       
-      Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
+      Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
@@ -362,8 +364,12 @@ void selectWe(const TString conf="we.conf", // input file
       Double_t totalWeight=0;
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
+      Double_t puWeight=0;
+      Double_t puWeightUp=0;
+      Double_t puWeightDown=0;
       if (hasGen) {
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
             infoBr->GetEntry(ientry);
             genBr->GetEntry(ientry);
@@ -377,6 +383,7 @@ void selectWe(const TString conf="we.conf", // input file
       }
       else if (not isData){
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
             puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
             puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
@@ -396,7 +403,7 @@ void selectWe(const TString conf="we.conf", // input file
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         Double_t weight=1;
 	    Double_t weightUp=1;
-	    Double_t weightDown=1;
+	    Double_t weightDown=1;      
         if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
 	    if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
 	    if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
@@ -431,6 +438,9 @@ void selectWe(const TString conf="we.conf", // input file
     electronBr->GetEntry(ientry);
     scArr->Clear();
 	scBr->GetEntry(ientry);
+  
+        jetArr->Clear();
+        jetBr->GetEntry(ientry);
 
 	Int_t nLooseLep=0;
     const baconhep::TElectron *goodEle=0;
@@ -442,10 +452,13 @@ void selectWe(const TString conf="we.conf", // input file
 
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
-	  vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
-	  // check ECAL gap
-	  //if(fabs(ele->scEta)>=ECAL_GAP_LOW && fabs(ele->scEta)<=ECAL_GAP_HIGH) continue;
-	  if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;
+          vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
+          
+          double eleEcalE = ele->ecalEnergy;
+          double eTregress = eleEcalE/cosh(fabs(ele->eta));
+          // check ECAL gap
+          //if(fabs(ele->scEta)>=ECAL_GAP_LOW && fabs(ele->scEta)<=ECAL_GAP_HIGH) continue;
+          if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;
 
           if(doScaleCorr && (ele->r9 < 1.)){
             float eleSmear = 0.;
@@ -459,10 +472,8 @@ void selectWe(const TString conf="we.conf", // input file
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              eleScale = eleCorr.scaleCorr(info->runNum, eleEt, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(info->runNum, eleEt, eleAbsEta, ele->r9);
-              // eleScale = eleCorr.scaleCorr(306155, eleEt, eleAbsEta, ele->r9);
-              // eleError = eleCorr.scaleCorrUncert(306155, eleEt, eleAbsEta, ele->r9);
+              eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
+              eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
               
               
               if(sigma==0){
@@ -472,31 +483,22 @@ void selectWe(const TString conf="we.conf", // input file
               }else if(sigma==-1){
                 (vEle) *= eleScale * (1 - eleError);
               }
-
+              lepError = eleError;
             }else{//MC
 
               float eleR9Prime = ele->r9; // r9 corrections MC only
-              if(eleisBarrel){
-                        eleR9Prime = gR9EB->Eval(ele->r9);}
-              else {
-                        eleR9Prime = gR9EE->Eval(ele->r9);
-              }
-
-
+              eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, eleR9Prime, gainSeed, 0., 0.);
+              float eleSmearEP = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, eleR9Prime, gainSeed, 1., 0.);
+              float eleSmearEM = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, eleR9Prime, gainSeed, -1., 0.);
               if(sigma==0){
-                // // eleSmear = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 0., 0.);
-                eleSmear = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, 0., 0.);
-                // std::cout << "eleSmear " << eleSmear << std::endl;
                 (vEle) *= 1. + eleSmear * eleRamdom;
               }else if(sigma==1){
-                // float eleSmearEP = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, 1., 0.);
-                float eleSmearEP = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, 1., 0.);
                 (vEle) *= 1. + eleSmearEP * eleRamdom;
               }else if(sigma==-1){
-                // float eleSmearEM = eleCorr.getSmearingSigma(info->runNum, eleisBarrel, eleR9Prime, eleAbsEta, eleEt, -1., 0.);
-                float eleSmearEM = eleCorr.smearingSigma(info->runNum, eleEt, eleAbsEta, eleR9Prime, gainSeed, -1., 0.);
                 (vEle) *= 1.  + eleSmearEM * eleRamdom;
               }
+              
+              lepError = eleRamdom * std::hypot(eleSmearEP - eleSmear, eleSmearEM - eleSmear);
 
             }
           }
@@ -519,7 +521,24 @@ void selectWe(const TString conf="we.conf", // input file
           vGoodEle = vEle;
 	}
   
-  // Loop through Jets
+
+
+	if(passSel) {
+	  //******* We have a W candidate! HURRAY! ********
+	  nsel+=weight;
+    nselvar+=weight*weight;
+    
+    // Loop through the photons to determine the Prefiring scale factor
+    // prefireWeight=1;prefireUp=1; prefireDown=1;
+    // for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+      // const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+      // prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+      // prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      // prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      // // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    // }
+      
+        // Loop through Jets
       // set up the met variable, default is PF met
       metDJee      = info->pfMETC;
       metPhiDJee   = info->pfMETCphi;
@@ -556,8 +575,8 @@ void selectWe(const TString conf="we.conf", // input file
         for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
           const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
           if(fabs(jet->eta) < 2.0) continue;
-          // prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
-          prefireJet*= 1. - prefireJetCorr.getCorr(jet->eta, jet->pt);
+          prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
+          // prefireJet*= 1. - prefireJetCorr.getCorr(jet->eta, jet->pt);
           prefireJetUp     *= TMath::Max((1.-(1.2*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
           prefireJetDown   *= TMath::Max((1.-(0.8*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
           // cout << "JET current prob. " << prefireJetCorr.getCorr(jet->eta, jet->pt)  << "  totalW " <<  prefireJet << endl;
@@ -579,7 +598,7 @@ void selectWe(const TString conf="we.conf", // input file
           const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
           if(fabs(photon->eta) < 2) continue;
           // now loop through jets:
-          double rmP = 0, rmU = 0, rmD = 0;
+          double rmP = 0, rmU = 1, rmD = 1;
 
           for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
             const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
@@ -597,21 +616,6 @@ void selectWe(const TString conf="we.conf", // input file
           prefireDown = prefireDown / rmD;
         } 
       }
-
-	if(passSel) {
-	  //******* We have a W candidate! HURRAY! ********
-	  nsel+=weight;
-    nselvar+=weight*weight;
-    
-    // Loop through the photons to determine the Prefiring scale factor
-    prefireWeight=1;prefireUp=1; prefireDown=1;
-    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-      const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-      prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-      prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-      prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-      // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-    }
       
     TLorentzVector vLep(0,0,0,0); TLorentzVector vSC(0,0,0,0); TLorentzVector vLep_raw(0,0,0,0);
 	  vLep = vGoodEle;
@@ -716,9 +720,9 @@ void selectWe(const TString conf="we.conf", // input file
 	      u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
         
         TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
-        TVector2 vUDJ = -1.0*(vMetDJ+vZPt);
-        u1DJee = ((vDilep.Px())*(vUDJ.Px()) + (vDilep.Py())*(vUDJ.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-        u2DJee = ((vDilep.Px())*(vUDJ.Py()) - (vDilep.Py())*(vUDJ.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
+        TVector2 vUDJ = -1.0*(vMetDJ+vLepPt);
+        u1DJee = ((vWPt.Px())*(vUDJ.Px()) + (vWPt.Py())*(vUDJ.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        u2DJee = ((vWPt.Px())*(vUDJ.Py()) - (vWPt.Py())*(vUDJ.Px()))/(genVPt);  // u2 = (pT x u)/|peleProbe	
 
 	      TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
 	      TVector2 vTkU = -1.0*(vTkMet+vLepPt);

@@ -128,7 +128,7 @@ void selectWm(const TString conf="wm.conf", // input file
   Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
-  Float_t prefireWeight, prefireUp, prefireDown;
+  // Float_t prefireWeight, prefireUp, prefireDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Float_t metDJee, metPhiDJee, sumEtDJee, u1DJee, u2DJee;
   Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
@@ -137,8 +137,7 @@ void selectWm(const TString conf="wm.conf", // input file
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
-  vector<Double_t> lheweight;
-  for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
+  vector<Double_t> lheweight(NPDF+NQCD,0);
   ///// muon specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
@@ -188,7 +187,7 @@ void selectWm(const TString conf="wm.conf", // input file
     // Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
     //flag to save the info for recoil corrections
     Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
-
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
 
@@ -309,7 +308,7 @@ void selectWm(const TString conf="wm.conf", // input file
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
       eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
-      Bool_t hasGen = eventTree->GetBranchStatus("GenEvtInfo");
+      Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
@@ -321,16 +320,21 @@ void selectWm(const TString conf="wm.conf", // input file
       Double_t totalWeight=0;
       Double_t totalWeightUp=0;
       Double_t totalWeightDown=0;
-
+      Double_t puWeight=1;
+      Double_t puWeightUp=1;
+      Double_t puWeightDown=1;
 
       if (hasGen) {
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          if(ientry%1000000==0) cout << "Pre-processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
+          
+          // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
           infoBr->GetEntry(ientry);
           genBr->GetEntry(ientry);
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          // puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          // puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          // puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
           totalWeight+=gen->weight*puWeight; // mine has pu and gen separated
           totalWeightUp+=gen->weight*puWeightUp;
           totalWeightDown+=gen->weight*puWeightDown;
@@ -338,10 +342,11 @@ void selectWm(const TString conf="wm.conf", // input file
       }
       else if (not isData){
         for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          if(ientry%1000000==0) cout << "Pre-processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          // puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          // puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          // puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
           totalWeight+= 1.0*puWeight;
           totalWeightUp+= 1.0*puWeightUp;
           totalWeightDown+= 1.0*puWeightDown;
@@ -410,8 +415,11 @@ void selectWm(const TString conf="wm.conf", // input file
 	//  (1) Look for 1 good muon matched to trigger
 	//  (2) Reject event if another muon is present passing looser cuts
 	//
-	muonArr->Clear();
-    muonBr->GetEntry(ientry);
+      muonArr->Clear();
+      muonBr->GetEntry(ientry);
+    
+        jetArr->Clear();
+        jetBr->GetEntry(ientry);
 
 	Int_t nLooseLep=0;
 	const baconhep::TMuon *goodMuon=0;
@@ -445,6 +453,23 @@ void selectWm(const TString conf="wm.conf", // input file
 	  passSel=kTRUE;
 	  goodMuon = mu;
 	}
+
+
+
+	if(passSel) {
+	  /******** We have a W candidate! HURRAY! ********/
+	  nsel+=weight;
+    nselvar+=weight*weight;
+      
+    // Loop through the photons to determine the Prefiring scale factor
+    // prefireWeight=1; prefireUp=1; prefireDown=1;
+    // for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+      // const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+      // prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
+      // prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      // prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
+      // // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
+    // } 
 
 // Loop through Jets
       // set up the met variable, default is PF met
@@ -521,21 +546,6 @@ void selectWm(const TString conf="wm.conf", // input file
           prefireDown = prefireDown / rmD;
         } 
       }
-
-	if(passSel) {
-	  /******** We have a W candidate! HURRAY! ********/
-	  nsel+=weight;
-    nselvar+=weight*weight;
-      
-    // Loop through the photons to determine the Prefiring scale factor
-    prefireWeight=1; prefireUp=1; prefireDown=1;
-    for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-      const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-      prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-      prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-      prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-      // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-    } 
 
     // apply scale and resolution corrections to MC
     Double_t goodMuonpt_corr = goodMuon->pt;
@@ -675,9 +685,9 @@ void selectWm(const TString conf="wm.conf", // input file
         u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
         
         TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
-        TVector2 vUDJ = -1.0*(vMetDJ+vZPt);
-        u1DJee = ((vDilep.Px())*(vUDJ.Px()) + (vDilep.Py())*(vUDJ.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-        u2DJee = ((vDilep.Px())*(vUDJ.Py()) - (vDilep.Py())*(vUDJ.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
+        TVector2 vUDJ = -1.0*(vMetDJ+vLepPt);
+        u1DJee = ((vWPt.Px())*(vUDJ.Px()) + (vWPt.Py())*(vUDJ.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        u2DJee = ((vWPt.Px())*(vUDJ.Py()) - (vWPt.Py())*(vUDJ.Px()))/(genVPt);  // u2 = (pT x u)/|peleProbe	
 
         TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
         TVector2 vTkU = -1.0*(vTkMet+vLepPt);

@@ -38,9 +38,9 @@
 #define BIN_SIZE_PASS 2
 #define BIN_SIZE_FAIL 2
 
-void toyGenAndPull(const TString sigDir, // toy sig template
-		    const TString bkgDir, // toy bkg template
-		    const TString masDir, // templates used for the fit
+void toyGenAndPull(const TString tmpDir, // toy sig template
+		    // const TString bkgDir, // toy bkg template
+		    const TString fitDir, // templates used for the fit
 		    const TString binName ="eta_0",
 		    const TString outputDir=".",
             const TString outputName="pull_0",
@@ -56,16 +56,16 @@ void toyGenAndPull(const TString sigDir, // toy sig template
   
   TCanvas *c = new TCanvas("c","c",800,800);
   // RETRIEVE TRUTH PDFS 
-  TFile *fsig = new TFile(sigDir+binName+".root");
-  TFile *fbkg = new TFile(bkgDir+binName+".root");
-  TFile *fmas = new TFile(masDir+binName+".root");
-  RooWorkspace *wsig = (RooWorkspace*) fsig->Get("w");
+  TFile *ftmp = new TFile(tmpDir+binName+".root");
+  // TFile *fbkg = new TFile(bkgDir+binName+".root");
+  TFile *ffit = new TFile(fitDir+binName+".root");
+  RooWorkspace *wtmp = (RooWorkspace*) ftmp->Get("w");
   // std::cout << "Signal Workspace" << std::endl;
-  // wsig->Print();
-  RooWorkspace *wbkg = (RooWorkspace*) fbkg->Get("w");
-  RooWorkspace *wmas = (RooWorkspace*) fmas->Get("w");
+  // wtmp->Print();
+  // RooWorkspace *wtmp = (RooWorkspace*) fbkg->Get("w");
+  RooWorkspace *wfit = (RooWorkspace*) ffit->Get("w");
   // std::cout << "BKG Workspace" << std::endl;
-  // wbkg->Print();
+  // wtmp->Print();
   // std::cout << "blah" << std::endl;
   RooCategory sample("sample", "");
   sample.defineType("Pass", 1);
@@ -74,64 +74,67 @@ void toyGenAndPull(const TString sigDir, // toy sig template
   // RooRealVar m("m","mass",60, 120);
   // m.setBins(NBINS);
   // m.setBins(10000);
-  RooRealVar *m =  wmas->var("m");
+  RooRealVar *m =  wfit->var("m");
 
-  // Double_t nsigPass = wsig->var("eff")->getVal() * wsig->var("Nsig")->getVal();
-  // Double_t nsigFail = (1. - wsig->var("eff")->getVal()) * wsig->var("Nsig")->getVal();
-  // Double_t nbkgPass = wbkg->var("NbkgPass")->getVal();
-  // Double_t nbkgFail = wbkg->var("NbkgFail")->getVal();
-  RooRealVar *Nsig = wsig->var("Nsig");
-  RooRealVar *effGen = wsig->var("eff");
+  // Double_t nsigPass = wtmp->var("eff")->getVal() * wtmp->var("Nsig")->getVal();
+  // Double_t nsigFail = (1. - wtmp->var("eff")->getVal()) * wtmp->var("Nsig")->getVal();
+  // Double_t nbkgPass = wtmp->var("NbkgPass")->getVal();
+  // Double_t nbkgFail = wtmp->var("NbkgFail")->getVal();
+  RooRealVar *Nsig = wtmp->var("Nsig");
+  RooRealVar *effGen = wtmp->var("eff");
   // effGen->setConstant(kTRUE);
-  std::cout << "wsig_eff " << effGen->getVal()<<std::endl;
+  std::cout << "wtmp_eff " << effGen->getVal()<<std::endl;
   RooFormulaVar NsigPass("NsigPass","eff*Nsig",RooArgList(*effGen,*Nsig));
   RooFormulaVar NsigFail("NsigFail","(1.0-eff)*Nsig",RooArgList(*effGen,*Nsig));
-  RooRealVar NbkgPass = *(wbkg->var("NbkgPass"));
-  RooRealVar NbkgFail = *(wbkg->var("NbkgFail"));
+  RooRealVar NbkgPass = *(wtmp->var("NbkgPass"));
+  RooRealVar NbkgFail = *(wtmp->var("NbkgFail"));
   // NbkgPass.setConstant(kTRUE);
   // NbkgFail.setConstant(kTRUE);
 
   
-  Double_t effMaster = wsig->var("eff")->getVal();
+  Double_t effMaster = wtmp->var("eff")->getVal();
 
 
-  RooAbsPdf *sigPass;
-  RooAbsPdf *sigFail;
-  if(siglabel==-1){
-      // std::cout <<"wat"<<std::endl;
-    sigPass = wsig->pdf("signalPass");
-    sigFail = wsig->pdf("signalFail");
-  }else{
-      // std:cout << "looking for signal model" << std::endl;
-    char sigpassname[20];
-    char sigfailname[20];
-    sprintf(sigpassname,"signalPass_%d",siglabel);
-    sprintf(sigfailname,"signalFail_%d",siglabel);
-    // std::cout << "names " << sigpassname << "  " << sigfailname << std::endl;
-    sigPass = wsig->pdf(sigpassname);
-    sigFail = wsig->pdf(sigfailname);
-  }
-  sigPass->Print();
-  sigFail->Print();
-  // std::cout << "look for bkg" << std::endl;
+  // RooAbsPdf *sigPass;
+  // RooAbsPdf *sigFail;
+  // if(siglabel==-1){
+      // // std::cout <<"wat"<<std::endl;
+    // sigPass = wtmp->pdf("signalPass");
+    // sigFail = wtmp->pdf("signalFail");
+  // }else{
+      // // std:cout << "looking for signal model" << std::endl;
+    // char sigpassname[20];
+    // char sigfailname[20];
+    // sprintf(sigpassname,"signalPass_%d",siglabel);
+    // sprintf(sigfailname,"signalFail_%d",siglabel);
+    // // std::cout << "names " << sigpassname << "  " << sigfailname << std::endl;
+    // sigPass = wtmp->pdf(sigpassname);
+    // sigFail = wtmp->pdf(sigfailname);
+  // }
+  // sigPass->Print();
+  // sigFail->Print();
+  // // std::cout << "look for bkg" << std::endl;
 
-  char bkgpassname[20];
-  char bkgfailname[20];
-  sprintf(bkgpassname,"backgroundPass_%d",bkglabel);
-  sprintf(bkgfailname,"backgroundFail_%d",bkglabel);
-  RooAbsPdf *bkgPass = wbkg->pdf(bkgpassname);
-  RooAbsPdf *bkgFail = wbkg->pdf(bkgfailname);
-  bkgPass->Print();
-  bkgFail->Print();
-  // std::cout << "lbbbbbbbbb" << std::endl;
+  // char bkgpassname[20];
+  // char bkgfailname[20];
+  // sprintf(bkgpassname,"backgroundPass_%d",bkglabel);
+  // sprintf(bkgfailname,"backgroundFail_%d",bkglabel);
+  // RooAbsPdf *bkgPass = wtmp->pdf(bkgpassname);
+  // RooAbsPdf *bkgFail = wtmp->pdf(bkgfailname);
+  // bkgPass->Print();
+  // bkgFail->Print();
+  // // std::cout << "lbbbbbbbbb" << std::endl;
 
-  RooAddPdf *modelPass, *modelFail;
-  modelPass = new RooAddPdf("modelPass","Model for PASS sample", RooArgList(*sigPass, *bkgPass), RooArgList(NsigPass,NbkgPass));
-  modelFail = new RooAddPdf("modelFail","Model for FAIL sample", RooArgList(*sigFail, *bkgFail), RooArgList(NsigFail,NbkgFail));
+  // RooAddPdf *modelPass, *modelFail;
+  // modelPass = new RooAddPdf("modelPass","Model for PASS sample", RooArgList(*sigPass, *bkgPass), RooArgList(NsigPass,NbkgPass));
+  // modelFail = new RooAddPdf("modelFail","Model for FAIL sample", RooArgList(*sigFail, *bkgFail), RooArgList(NsigFail,NbkgFail));
+  
+  RooAbsPdf *modelFail = wfit->pdf("modelFail");
+  RooAbsPdf *modelPass = wfit->pdf("modelPass");
 // std::cout << "aaaaaaaaaaaaaa" << std::endl;
-  RooSimultaneous totalPdfGen("totalPdfGen","totalPdfGen",sample);
-  totalPdfGen.addPdf(*modelPass,"Pass");  
-  totalPdfGen.addPdf(*modelFail,"Fail");
+  RooSimultaneous templatePdf("templatePdf","templatePdf",sample);
+  templatePdf.addPdf(*modelPass,"Pass");  
+  templatePdf.addPdf(*modelFail,"Fail");
 // std::cout << "cccccccccccc" << std::endl;
   // TTree *intree = (TTree*)fsig->Get("Bin");
   char outHistName[20];
@@ -145,36 +148,36 @@ void toyGenAndPull(const TString sigDir, // toy sig template
   // TFile *f = new TFile(binfile);  
   // RooWorkspace *w = (RooWorkspace*) f->Get("w");
 
-  TTree *intree = (TTree*)fsig->Get("Bin");
+  TTree *intree = (TTree*)ftmp->Get("Bin");
 
   UInt_t nEvents;
   intree->SetBranchAddress("nEvents",  &nEvents);
   intree->GetEntry(0);
   
-  RooAbsPdf *fitmodelFail = wmas->pdf("modelFail");
-  RooAbsPdf *fitmodelPass = wmas->pdf("modelPass");
+  RooAbsPdf *fitmodelFail = wfit->pdf("modelFail");
+  RooAbsPdf *fitmodelPass = wfit->pdf("modelPass");
   
-  double sigInit=fabs(wmas->var("eff")->getErrorLo());
-  double meanInit=wmas->var("eff")->getVal();
-  std::cout << "err lo " << fabs(wmas->var("eff")->getErrorLo()) << "  err hi " << fabs(wmas->var("eff")->getErrorHi()) << std::endl;
+  double sigInit=fabs(wfit->var("eff")->getErrorLo());
+  double meanInit=wfit->var("eff")->getVal();
+  std::cout << "err lo " << fabs(wfit->var("eff")->getErrorLo()) << "  err hi " << fabs(wfit->var("eff")->getErrorHi()) << std::endl;
 
-  RooSimultaneous totalPdf("totalPdf","totalPdf",sample);
-  totalPdf.addPdf(*fitmodelPass,"Pass");
-  totalPdf.addPdf(*fitmodelFail,"Fail");
+  RooSimultaneous fitPdf("fitPdf","fitPdf",sample);
+  fitPdf.addPdf(*fitmodelPass,"Pass");
+  fitPdf.addPdf(*fitmodelFail,"Fail");
   // RooAbsData *dataPass=0;
   // RooAbsData *dataFail=0;
   // RooAbsData *dataCombined=0;
   
   // RooFitResult *fitResult=0;
-  RooRealVar* eff =wmas->var("eff");
-  std::cout << "wmas_eff " << eff->getVal()<<std::endl;
+  RooRealVar* eff =wfit->var("eff");
+  std::cout << "wfit_eff " << eff->getVal()<<std::endl;
   
-  totalPdf.Print();
-  totalPdfGen.Print();
+  fitPdf.Print();
+  templatePdf.Print();
   // RooRealVar* eff0 =0;
   
-  RooMCStudy mgr(totalPdfGen,  RooArgList(*m, sample),FitModel(totalPdf),Silence(),Extended(), FitOptions(Save(kTRUE),PrintEvalErrors(-1)));
-  // RooMCStudy mgr(totalPdfGen,  RooArgList(*m, sample),Silence(),Extended(), FitOptions(Save(kTRUE),PrintEvalErrors(-1)));
+  RooMCStudy mgr(templatePdf,  RooArgList(*m, sample),FitModel(fitPdf),Silence(),Extended(), FitOptions(Save(kTRUE),PrintEvalErrors(-1)));
+  // RooMCStudy mgr(templatePdf,  RooArgList(*m, sample),Silence(),Extended(), FitOptions(Save(kTRUE),PrintEvalErrors(-1)));
   // RooMCStudy* mcstudy = new RooMCStudy(model,x,Binned(kTRUE),Silence(),Extended(),
 				       // FitOptions(Save(kTRUE),PrintEvalErrors(0))) ;
                        
@@ -194,20 +197,28 @@ void toyGenAndPull(const TString sigDir, // toy sig template
     // std::cout << "blahblha" << std::endl;
    RooPlot* mpframe = mgr.plotPull(*eff,-5,5,100,kTRUE);
    // std::cout << "plotted" << std::endl;
-   mpframe->Draw();
+   // mpframe->Draw();
 
 
-    sprintf(outputfile, "%s/%s.png",outputDir.Data(), outputName.Data());
+    // sprintf(outputfile, "%s/%s.png",outputDir.Data(), outputName.Data());
     // TCanvas *c = new TCanvas("c","c");
-    gStyle->SetOptFit();
+
+  
+  
+   RooPlot* mpframepar = mgr.plotParam(*eff,Bins(100));
+    mpframepar->Draw();
+
+
+    sprintf(outputfile, "%s/%s_Vals.png",outputDir.Data(), outputName.Data());
+        gStyle->SetOptFit();
 	// h->Draw();
 	c->SaveAs(outputfile);
     
     // std::cout << "The official one" << std::endl;
 	c->Clear();
      mpframe->Print();
-     RooHist *pullHist =mpframe->getHist("h_fitParData_totalPdf_totalPdfGen");
-     // RooHist *pullHist =mpframe->getHist("h_fitParData_totalPdfGen");
+     RooHist *pullHist =mpframe->getHist("h_fitParData_fitPdf_templatePdf");
+     // RooHist *pullHist =mpframe->getHist("h_fitParData_templatePdf");
      for(int i=0; i < pullHist->GetN();++i){
          double x=0; double y=0;
          pullHist->GetPoint(i,x,y);
@@ -229,7 +240,7 @@ void toyGenAndPull(const TString sigDir, // toy sig template
     pullGauss.paramOn(frame,&pullDataHist) ;
     
     frame->Draw();
-    sprintf(outputfile, "%s/%s_v2.png",outputDir.Data(), outputName.Data());
+    sprintf(outputfile, "%s/%s.png",outputDir.Data(), outputName.Data());
 	c->SaveAs(outputfile);
 	c->Clear();
 
@@ -270,12 +281,12 @@ void toyGenAndPull(const TString sigDir, // toy sig template
       
       
 
-      // // dataCombined = totalPdfGen.generate(RooArgList(m,sample),nEvents,Extended());
-      // dataCombined = totalPdfGen.generate(RooArgList(*m,sample),nEvents,Extended());
+      // // dataCombined = templatePdf.generate(RooArgList(m,sample),nEvents,Extended());
+      // dataCombined = templatePdf.generate(RooArgList(*m,sample),nEvents,Extended());
                                      
 
       // RooMsgService::instance().setSilentMode(kTRUE);
-      // RooFitResult *fitResult = totalPdf.fitTo(*dataCombined,
+      // RooFitResult *fitResult = fitPdf.fitTo(*dataCombined,
                      // RooFit::PrintEvalErrors(-1),
                                  // RooFit::Extended(),
                                  // RooFit::Strategy(2),
@@ -286,7 +297,7 @@ void toyGenAndPull(const TString sigDir, // toy sig template
       // eff0 = (RooRealVar*)fitResult->floatParsInit().find("eff");
 
       // if((fabs(eff->getErrorLo())<5e-5) || (eff->getErrorHi()<5e-5) || fitResult->status()!=0){
-        // fitResult = totalPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(), RooFit::Strategy(1), RooFit::Save());
+        // fitResult = fitPdf.fitTo(*dataCombined, RooFit::PrintEvalErrors(-1), RooFit::Extended(), RooFit::Strategy(1), RooFit::Save());
       // }
       // std::cout << "RooFit Status " << fitResult->status() << std::endl;
       // std::cout <<"EFFICIENCY: "<< eff->getVal()<<" "<<eff0->getVal()<< " " << effMaster <<  std::endl;
@@ -302,7 +313,7 @@ void toyGenAndPull(const TString sigDir, // toy sig template
       // RooPlot* framePass = m->frame(Name(filename),Title("Plot and Fit Pass"),Bins(m->getBins())) ;
       // dataCombined->plotOn(framePass,Cut("sample==sample::Pass"));
       // dataCombined->statOn(framePass,Layout(0.55,0.99,0.99),Cut("sample==sample::Pass")) ;
-      // totalPdf.plotOn(framePass,Slice(sample,"Pass"),ProjWData(sample,*dataCombined));
+      // fitPdf.plotOn(framePass,Slice(sample,"Pass"),ProjWData(sample,*dataCombined));
       // c->cd(1);
       // framePass->Draw();
       // sprintf(filename,"%s/Pass_%d.png",outputDir.Data(),i);
@@ -312,7 +323,7 @@ void toyGenAndPull(const TString sigDir, // toy sig template
       // RooPlot* frameFail = m->frame(Name(filename),Title("Plot and Fit Fail"),Bins(m->getBins())) ;
       // dataCombined->plotOn(frameFail,Cut("sample==sample::Fail"));
       // dataCombined->statOn(frameFail,Layout(0.55,0.99,0.99),Cut("sample==sample::Fail")) ;
-      // totalPdf.plotOn(frameFail,Slice(sample,"Fail"),ProjWData(sample,*dataCombined));
+      // fitPdf.plotOn(frameFail,Slice(sample,"Fail"),ProjWData(sample,*dataCombined));
       // c->cd(1);
       // frameFail->Draw();
       // sprintf(filename,"%s/Fail_%d.png",outputDir.Data(),i);
@@ -401,6 +412,6 @@ void toyGenAndPull(const TString sigDir, // toy sig template
     
     RooTrace::dump();
   
-  // RooMCStudy mgr(totalPdfGen, totalPdfGen, RooArgList(m, sample), "", "2r");
+  // RooMCStudy mgr(templatePdf, templatePdf, RooArgList(m, sample), "", "2r");
   // mgr.generate(nPsExp, nEvents, kFALSE, outputDir+binName+"_%d.dat");
 }
