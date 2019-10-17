@@ -67,18 +67,13 @@ void fitZee(const TString  inputDir,    // input directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
-  // fnamev.push_back(inputDir + TString("/") + TString("data_select_old.root")); typev.push_back(eData);
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  // fnamev.push_back(inputDir + TString("/") + TString("zee_select_old.root"));   typev.push_back(eZee);
   fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   
-  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
-  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
   
   fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
   fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
   fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
-  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
  
   //
@@ -110,209 +105,25 @@ void fitZee(const TString  inputDir,    // input directory
   effs.loadUncSel(SysFileGSFSel);
   
   
-  double bins[] = {0,1.0,1.4,2.0,2.4};
-  int nbins = sizeof(bins)/sizeof(double)-1; // calculate the number of bins
-  TH2D *hDataSysR9Hi = new TH2D("hDataSysR9Hi","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hZeeSysR9Hi = new TH2D("hZeeSysR9Hi","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  
-  TH2D *hDataSysR9Lo = new TH2D("hDataSysR9Lo","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hZeeSysR9Lo = new TH2D("hZeeSysR9Lo","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  
-  TH2D *hDataLepPtH = new TH2D("hDataLepPtH","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hZeeLepPtH = new TH2D("hZeeLepPtH","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hDataLepPtL = new TH2D("hDataLepPtL","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hZeeLepPtL = new TH2D("hZeeLepPtL","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  
-  
-  TH2D *hDataNoCutH = new TH2D("hDataNoCutH","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hZeeNoCutH = new TH2D("hZeeNoCutH","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  
-  TH2D *hDataNoCutL = new TH2D("hDataNoCutL","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  TH2D *hZeeNoCutL = new TH2D("hZeeNoCutL","",nbins,bins,NBINS,MASS_LOW,MASS_HIGH);
-  
-TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
-  // TString GsfSelEffSignalShapeSys = baseDir1 + "Results/EleGsfSelSigSys.root";
-  // TString GsfSelEffBackgroundShapeSys = baseDir1 + "Results/EleGsfSelBkgSys.root";
+  TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
 
-  const TString corrFiles = "../EleScale/Run2017_5TeV_coarseEtaR9";
-  EnergyScaleCorrection ec( corrFiles.Data());
-
-  //
-  // Set up output file
+  // //
+  // // Set up output file
   //
   TString outfilename = outputDir + TString("/") + TString("Zee_DataBkg.root");
   TFile *outFile = new TFile(outfilename,"RECREATE");
   TH1::AddDirectory(kFALSE);
 
-  // TFile *rajdeepData = new TFile("root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalelf/ntuples/13TeV/MINIAODNTUPLE/94X_dataRun2_ReReco_EOY17_v6/HighEGJet-Run2017H-noSkim-17Nov2017-ReReco-miniAOD/306896-307082/306896-307082_13TeV_LowPU/Moriond18MC1042s/HighEGJet-Run2017H-noSkim-17Nov2017-ReReco-miniAOD-allRange.root","OPEN");
-  // TFile *rajdeepMC = new TFile("/eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalelf/ntuples/13TeV/MINIAODNTUPLE/94X_mc2017_realistic_v10/DYJetsToLL_fixECALGT_LowPU/allRange/MCfixECAL/DYJetsToLL_fixECALGT_LowPU-allRange.root","OPEN");
-  
-    TFile *rajdeepData = new TFile(" root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalelf/ntuples/5020GeV/MINIAODNTUPLE/94X_dataRun2_ReReco_EOY17_v4/HighEGJet5020GeV-Run2017G/306553-306826/306546-306826_5020GeV/Data5020GeV/HighEGJet5020GeV-Run2017G-allRange.root","OPEN");
-  TFile *rajdeepMC = new TFile("root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalelf/ntuples/5020GeV/MINIAODNTUPLE/94X_mc2017_realistic_forppRef5TeV/DYJetsToLL5020GeV_amcatnloFXFX_5TeVpp/allRange/MC5020GeV/DYJetsToLL5020GeV_amcatnloFXFX_5TeVpp-allRange.root","OPEN");
-  
-  TTree *treeData = (TTree*)rajdeepData->Get("selected");// assert(intree);
-  TTree *treeMC = (TTree*)rajdeepMC->Get("selected");// assert(intree);
 
-  TH1D *hDataEG = new TH1D("hDataEG","",NBINS,MASS_LOW,MASS_HIGH); //hDataEG->Sumw2();
-  TH1D *hZeeEG  = new TH1D("hZeeEG", "",NBINS,MASS_LOW,MASS_HIGH); //hZeeEG->Sumw2();
-  // treeData->Draw("invMass_ECAL_ele>>hDataEGa");
-  Float_t invMass=0;
-  UInt_t runNumber=0;
-  UShort_t lumiBlock=0;
-  ULong64_t eventNumber=0;
-  Float_t invMass_ECAL_ele=0;
-  Float_t etaEle[3];
-  Float_t phiEle[3];
-  Float_t R9Ele[3];
-  Float_t etaSCEle[3];
-  Float_t energy_ECAL_ele[3];
-  Float_t ele1E;
-  Float_t ele2E;
-  TLorentzVector clep1, clep2;
-  TLorentzVector eclep1, eclep2;
-  TLorentzVector dl;
-  // for(int i =0; i < treeData->GetEntriesFast();i++){
-  // for(int i =0; i <(uint)(0.1*treeData->GetEntriesFast());i++){
-  for(int i =0; i < 100;i++){
-    if(i%100000==0) cout << "Processing event " << i << ". " << (double)i/(double)treeData->GetEntries()*100 << " percent done with this file." << endl;
-    treeData -> SetBranchStatus("runNumber",1);
-    treeData -> SetBranchStatus("lumiBlock",1);
-    treeData -> SetBranchStatus("eventNumber",1);
-    treeData -> SetBranchStatus("invMass",1);
-    treeData -> SetBranchStatus("invMass_ECAL_ele",1);
-    treeData -> SetBranchStatus("etaEle",1);
-    treeData -> SetBranchStatus("phiEle",1);
-    treeData -> SetBranchStatus("R9Ele",1);
-    treeData -> SetBranchStatus("etaSCEle",1);
-    treeData -> SetBranchStatus("energy_ECAL_ele",1);
-    treeData -> SetBranchStatus("ele1E",1);
-    treeData -> SetBranchStatus("ele2E",1);
-    treeData->SetBranchAddress("invMass",       &invMass);        // sc2 4-vector
-    treeData->SetBranchAddress("runNumber",       &runNumber);        // sc2 4-vector
-    treeData->SetBranchAddress("lumiBlock",       &lumiBlock);        // sc2 4-vector
-    treeData->SetBranchAddress("eventNumber",       &eventNumber);        // sc2 4-vector
-    treeData->SetBranchAddress("invMass_ECAL_ele",       &invMass_ECAL_ele);        // sc2 4-vector
-    treeData->SetBranchAddress("etaEle",       &etaEle);        // sc2 4-vector
-    treeData->SetBranchAddress("phiEle",       &phiEle);        // sc2 4-vector
-    treeData->SetBranchAddress("R9Ele",        &R9Ele);        // sc2 4-vector
-    treeData->SetBranchAddress("etaSCEle",       &etaSCEle);        // sc2 4-vector
-    treeData->SetBranchAddress("energy_ECAL_ele",       &energy_ECAL_ele);        // sc2 4-vector
-    treeData->SetBranchAddress("ele1E",       &ele1E);// sc2 4-vector
-    treeData->SetBranchAddress("ele2E",       &ele2E);        // sc2 4-vector
-    treeData->GetEntry(i);
-    // let's look at run 30717
-    // if(runNumber!=307017)continue;// || lumiBlock != 81) continue;
-    // if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
-    if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
-    if(fabs(etaEle[0])>=ECAL_GAP_LOW && fabs(etaEle[0])<=ECAL_GAP_HIGH) continue;
-    if(fabs(etaEle[1])>=ECAL_GAP_LOW && fabs(etaEle[1])<=ECAL_GAP_HIGH) continue;
-    // std::cout << "eta e9le " << fabs(etaEle[0]) << " " << fabs(etaEle[1]) << std::endl;
-    // if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
-    if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
-    clep1.SetPtEtaPhiM(energy_ECAL_ele[0]/cosh(fabs(etaEle[0])), etaEle[0], phiEle[0],ELE_MASS);
-    clep2.SetPtEtaPhiM(energy_ECAL_ele[1]/cosh(fabs(etaEle[1])), etaEle[1], phiEle[1],ELE_MASS);
-    eclep1=clep1;
-    eclep2=clep2;
-    
-    double scale = ec.scaleCorr(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0]);
-    clep1*=scale;
-    scale = ec.scaleCorr(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1]);
-    clep2*=scale;
-    
-    if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
-    dl = clep1+clep2;
-    
-    // std::cout << eventNumber << " " << eclep1.Pt() << " " << eclep1.Eta() << " " << eclep1.Phi() << " " << eclep2.Pt() << " " << eclep2.Eta() << " " << eclep2.Phi() << " " << (eclep1+eclep2).M() << std::endl; 
-    // std::cout << eventNumber << " " << clep1.Pt() << " " << clep1.Eta() << " " << clep1.Phi() << " " << clep2.Pt() << " " << clep2.Eta() << " " << clep2.Phi() << " " << dl.M() << std::endl; 
-    // std::cout << R9Ele[0] << " " << R9Ele[1] << std::endl;
-    // std::cout << "-----" << std::endl;
-    
-    double mass = dl.M();
-    // hDataEG->Fill(invMass_ECAL_ele);
-    hDataEG->Fill(mass);
-    
-     // hDataLep1Pt->Fill(l1.Pt()); 
-     for(int i = 0; i < nbins; ++i){
-          if((etaEle[0] > bins[i] && etaEle[0] < bins[i+1] ) && !(etaEle[1] > bins[i] && etaEle[1] < bins[i+1] ))continue;
-    if(R9Ele[0] > 0.94 && R9Ele[1] > 0.94 )hDataSysR9Hi->Fill(etaEle[0],mass);
-    if(R9Ele[0] < 0.94 && R9Ele[1] < 0.94 )hDataSysR9Lo->Fill(etaEle[0],mass);
-     }
-    // hDataNoCut->Fill(l1.Eta(),mass);
-    // if(l1.Pt()>32&&l2.Pt()>30)hDataLepPt->Fill(l1.Eta(),mass);
-  }
-  
-  // for(int i =0; i < treeMC->GetEntriesFast();i++){
-  // for(int i =0; i <(uint)(0.25*treeMC->GetEntriesFast());i++){
-  for(int i =0; i < 100;i++){
-    if(i%100000==0) cout << "Processing event " << i << ". " << (double)i/(double)treeMC->GetEntries()*100 << " percent done with this file." << endl;
-    treeMC -> SetBranchStatus("invMass",1);
-    treeMC -> SetBranchStatus("runNumber",1);
-    treeMC -> SetBranchStatus("invMass_ECAL_ele",1);
-    treeMC -> SetBranchStatus("etaEle",1);
-    treeMC -> SetBranchStatus("phiEle",1);
-    treeMC -> SetBranchStatus("R9Ele",1);
-    treeMC -> SetBranchStatus("etaSCEle",1);
-    treeMC -> SetBranchStatus("ele1E",1);
-    treeMC -> SetBranchStatus("ele2E",1);
-    treeMC -> SetBranchStatus("energy_ECAL_ele",1);
-    treeMC->SetBranchAddress("invMass",       &invMass);        // sc2 4-vector
-    treeMC->SetBranchAddress("runNumber",       &runNumber);        // sc2 4-vector
-    treeMC->SetBranchAddress("invMass_ECAL_ele",       &invMass_ECAL_ele);        // sc2 4-vector
-    treeMC->SetBranchAddress("etaEle",       &etaEle);        // sc2 4-vector
-    treeMC->SetBranchAddress("phiEle",       &phiEle);        // sc2 4-vector
-    treeMC->SetBranchAddress("R9Ele",        &R9Ele);        // sc2 4-vector
-    treeMC->SetBranchAddress("etaSCEle",       &etaSCEle);        // sc2 4-vector
-    treeMC->SetBranchAddress("energy_ECAL_ele",       &energy_ECAL_ele);        // sc2 4-vector
-    treeMC->SetBranchAddress("ele1E",       &ele1E);        // sc2 4-vector
-    treeMC->SetBranchAddress("ele2E",       &ele2E);        // sc2 4-vector
-    treeMC->GetEntry(i);
-    // std::cout << "eta ele " << fabs(etaEle[0]) << " " << fabs(etaEle[1]) << std::endl;
-    // if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
-    if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
-    if(fabs(etaEle[0])>=ECAL_GAP_LOW && fabs(etaEle[0])<=ECAL_GAP_HIGH) continue;
-    if(fabs(etaEle[1])>=ECAL_GAP_LOW && fabs(etaEle[1])<=ECAL_GAP_HIGH) continue;
-    // if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
-    if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
-    
-    clep1.SetPtEtaPhiM(energy_ECAL_ele[0]/cosh(fabs(etaEle[0])), etaEle[0], phiEle[0],ELE_MASS);
-    clep2.SetPtEtaPhiM(energy_ECAL_ele[1]/cosh(fabs(etaEle[1])), etaEle[1], phiEle[1],ELE_MASS);
-    double rand1 = gRandom->Gaus(0,1);
-    double rand2 = gRandom->Gaus(0,1);
-    double tagSmear = ec.smearingSigma(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0], 12, 0., 0.);
-    clep1*= 1+ rand1*tagSmear;
-    tagSmear = ec.smearingSigma(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1], 12, 0., 0.);
-    clep2*= 1+rand2*tagSmear;
-    dl = clep1+clep2;
-    
-    if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
-    double mass = dl.M();
-    // hZeeEG->Fill(invMass_ECAL_ele);
-    hZeeEG->Fill(mass);
-    for(int i = 0; i < nbins; ++i){
-          if((etaEle[0] > bins[i] && etaEle[0] < bins[i+1] ) && !(etaEle[1] > bins[i] && etaEle[1] < bins[i+1] ))continue;
-    if(R9Ele[0] > 0.94 && R9Ele[1] > 0.94 )hZeeSysR9Hi->Fill(etaEle[0],mass);
-    if(R9Ele[0] < 0.94 && R9Ele[1] < 0.94 )hZeeSysR9Lo->Fill(etaEle[0],mass);
-    }
-  }
-  
-  // // TH1D *hDataEG = (TH1D*)gDirectory->Get("hDataEGa");
-  // // treeMC->Draw("invMass_ECAL_ele>>hZeeEGa");
-  // // TH1D *hZeeEG = (TH1D*)gDirectory->Get("hZeeEGa");
-  
-  std::cout << "integrals " <<  hZeeEG->Integral() << " " << hDataEG->Integral() << std::endl;
   
   // plot output file format
   const TString format("all");
 
-  // // setup efficiency shape systematics
-  // TFile *GsfSelSigSysFile = new TFile(GsfSelEffSignalShapeSys);
-  // TH2D *hGsfSelSigSys = (TH2D*)GsfSelSigSysFile->Get("h");
-  // TFile *GsfSelBkgSysFile = new TFile(GsfSelEffBackgroundShapeSys);
-  // TH2D *hGsfSelBkgSys = (TH2D*)GsfSelBkgSysFile->Get("h");
 
   Int_t yield = 0;
   Double_t yield_zee_up = 0, yield_zee_dn = 0;
   Double_t yield_zee_noPrefire = 0;
+  Double_t yield_zee_pfJet=0, yield_zee_pfPhoton=0;
   Double_t yield_wm = 0;
   Double_t yield_zee = 0, yield_zee_unc=0;
   Double_t yield_ewk = 0, yield_ewk_unc=0;
@@ -340,16 +151,6 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
 
 
   TH2D *hCompareElePtEcalE = new TH2D("hCompare","",200,0,100,200,0,100);
-
-  // TH1D *hData = new TH1D("hDataEG","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
-  // TH1D *hZee  = new TH1D("hZeeEG", "",NBINS,MASS_LOW,MASS_HIGH); hZee->Sumw2();
-
-  // TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
-  // TH1D *hZee  = new TH1D("hZee", "",NBINS,MASS_LOW,MASS_HIGH); hZee->Sumw2();
-  // TH1D *hEWK  = new TH1D("hEWK", "",NBINS,MASS_LOW,MASS_HIGH); hEWK->Sumw2();
-  // TH1D *hTtb  = new TH1D("hTtb", "",NBINS,MASS_LOW,MASS_HIGH); hTtb->Sumw2();
-  // TH1D *hMC   = new TH1D("hMC",  "",NBINS,MASS_LOW,MASS_HIGH); hMC->Sumw2();
-  
    
   enum{mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown};
   const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effstatUp","effstatDown","lepsfUp","lepsfDown","pfireUp","pfireDown"};
@@ -408,6 +209,7 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   UInt_t  npv, npu;
   Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
   Float_t prefireWeight, prefireUp=1, prefireDown=1;
+  Float_t prefireJet, prefirePhoton;
   Float_t lep1error, lep2error;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
@@ -440,6 +242,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     intree -> SetBranchStatus("category",1);
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
+    intree -> SetBranchStatus("prefirePhoton",1);
+    intree -> SetBranchStatus("prefireJet",1);
     intree -> SetBranchStatus("prefireWeight",1);
     intree -> SetBranchStatus("prefireUp",1);
     intree -> SetBranchStatus("prefireDown",1);
@@ -469,6 +273,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
+    intree->SetBranchAddress("prefirePhoton", &prefirePhoton);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireJet", &prefireJet);    // prefire weight for 2017 conditions (MC)
     intree->SetBranchAddress("prefireWeight", &prefireWeight);    // prefire weight for 2017 conditions (MC)
     intree->SetBranchAddress("prefireUp",     &prefireUp);    // prefire weight for 2017 conditions (MC)
     intree->SetBranchAddress("prefireDown",   &prefireDown);    // prefire weight for 2017 conditions (MC)
@@ -507,16 +313,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
       if(q1*q2>0) continue;
       if(lep1->Pt()        < PT_CUT)    continue;
       if(lep2->Pt()       < PT_CUT)    continue;
-       // if(lep1->Pt()        > 40)    continue;
-      // if(lep2->Pt()       > 40)    continue;
-      
-      // if(r91 > 0.94 && r92 > 0.94 ) continue;
       
       hCompareElePtEcalE->Fill(lep1->Pt(),sc1->Pt());
-      // hCompareElePtEcalE->Fill(lep2->Pt(),sc2->Pt());
-      // if(fabs(lep1->Eta()) > 2.4)   continue;      
-      // if(fabs(lep2->Eta()) > 2.4)   continue;
-      // if(fabs(lep1->Eta()) < ETA_CUT || fabs(lep2->Eta()) < ETA_CUT) continue;
       if(fabs(lep1->Eta())>=ECAL_GAP_LOW && fabs(lep1->Eta())<=ECAL_GAP_HIGH) continue;
       if(fabs(lep2->Eta())>=ECAL_GAP_LOW && fabs(lep2->Eta())<=ECAL_GAP_HIGH) continue;
       
@@ -529,13 +327,19 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
+        // if prefire weight > 1, divivde by 2
+        // also do up.down uncertainty by hand
         if(prefireWeight > 1 &&prefireWeight <= 2 ){
             prefireWeight/=2;
         }
+        if(prefireJet > 1 &&prefireJet <= 2 ){
+            prefireJet/=2;
+        }
+        if(prefirePhoton > 1 &&prefirePhoton <= 2 ){
+            prefirePhoton/=2;
+        }
         weight *= scale1fb*prefireWeight*lumi;
-        // weight *= scale1fb*prefireUp*lumi;
-        // weight *= scale1fb*prefireDown*lumi;
-        // weight *= scale1fb*lumi;
+        
         if(prefireUp > 1 || prefireUp < 0){
           prefireUp = prefireWeight;
         }
@@ -599,17 +403,6 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
         hData->Fill(mass); 
         hDataUp->Fill(massD); 
         hDataDown->Fill(massU); 
-        // hDataLep1Pt->Fill(l1.Pt()); 
-        // if(r91 > 0.945)hDataSysR9Hi->Fill(l1.Eta(),mass);
-        // if(r91 > 0.935)hDataSysR9Lo->Fill(l1.Eta(),mass);
-        for(int i = 0; i < nbins; ++i){
-          if((l1.Eta() > bins[i] && l1.Eta() < bins[i+1] ) && !(l2.Eta() > bins[i] && l2.Eta() < bins[i+1] ))continue;
-          if(r91 > 0.94 && r91 > 0.94)hDataNoCutH->Fill(l1.Eta(),mass);
-          if(r91 < 0.94 && r91 < 0.94)hDataNoCutL->Fill(l1.Eta(),mass);
-          if(l1.Pt()>32&&l2.Pt()>30 && r91 > 0.94 && r91 > 0.94)hDataLepPtH->Fill(l1.Eta(),mass,weight);
-          if(l1.Pt()>32&&l2.Pt()>30 && r91 < 0.94 && r91 < 0.94)hDataLepPtL->Fill(l1.Eta(),mass,weight);
-        
-        }
         yield++;
 	  
       } else {
@@ -628,12 +421,6 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
         TLorentzVector l1, l2;
 	      l1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
 	      l2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
-        // l1.SetPtEtaPhiM(lep1_raw->Pt(),lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
-	      // l2.SetPtEtaPhiM(lep2_raw->Pt(),lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
-        double tagSmear1 = ec.smearingSigma(runNumber, sc1->Pt(), fabs(sc1->Eta()), r91, 12, 0., 0.);
-        double tagSmear2 = ec.smearingSigma(runNumber, sc2->Pt(), fabs(sc2->Eta()), r92, 12, 0., 0.);
-
-        // hGausRandNtuple->Fill(random);
 	  
         double mll=(l1+l2).M();
         Double_t effdata, effmc;
@@ -695,6 +482,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
         yield_zee_up += weight*corrUp;
         yield_zee_dn += weight*corrDown;
         yield_zee_noPrefire += scale1fb*lumi*corr;
+        yield_zee_pfPhoton += scale1fb*lumi*corr*prefirePhoton;
+        yield_zee_pfJet += scale1fb*lumi*corr*prefireJet;
         yield_zee_unc += weight*weight*corr*corr;
         if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
         
@@ -721,17 +510,6 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
         // hZeeEG->Fill(dilepSC->M(),weight*corr); 
         hMC->Fill(mass,weight*corr);
         hZeeLep1Pt->Fill(l1.Pt(),weight*corr); 
-            
-        // if(r91 > 0.945)hZeeSysR9Hi->Fill(l1.Eta(),mass);
-        // if(r91 > 0.935)hZeeSysR9Lo->Fill(l1.Eta(),mass);
-        for(int i = 0; i < nbins; ++i){
-          if((l1.Eta() > bins[i] && l1.Eta() < bins[i+1] ) && !(l2.Eta() > bins[i] && l2.Eta() < bins[i+1] ))continue;
-          if(r91 > 0.94 && r91 > 0.94)hZeeNoCutH->Fill(l1.Eta(),mass);
-          if(r91 < 0.94 && r91 < 0.94)hZeeNoCutL->Fill(l1.Eta(),mass);
-          if(l1.Pt()>32&&l2.Pt()>30 && r91 > 0.94 && r91 > 0.94)hZeeLepPtH->Fill(l1.Eta(),mass,weight*corr);
-          if(l1.Pt()>32&&l2.Pt()>30 && r91 < 0.94 && r91 < 0.94)hZeeLepPtL->Fill(l1.Eta(),mass,weight*corr);
-
-        }
       }
       if(typev[ifile]==eZxx){
         nZxx+=weight*corr;
@@ -806,7 +584,7 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
         hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
         // cout << "blah " << endl;
     }
-      if(typev[ifile]==eEWK)  {
+      if(typev[ifile]==eEWK || typev[ifile]==eWx || typev[ifile]==eZxx || typev[ifile]==eDib)  {
 	      yield_ewk += weight*corr;
 	      yield_ewk_unc += weight*weight*corr*corr;
 	      hEWK->Fill(mass,weight*corr); 
@@ -872,82 +650,6 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   
   TCanvas *ca = new TCanvas("ca","ca",800,800);
 
-  cout << "R9 Variation " << endl;
-  for(int i = 1; i <= nbins; ++i){
-
-    TH1F* datapHi = (TH1F*)hDataSysR9Hi->ProjectionY("datapHi",i, i);
-    TH1F* zeepHi = (TH1F*)hZeeSysR9Hi->ProjectionY("zeepHi",i, i);
-    
-    datapHi->Draw();
-    zeepHi->SetLineColor(2);
-    zeepHi->Draw();
-    ca->SaveAs((outputDir+"/highr9_r9_"+to_string(i)+".png").Data());
-    
-    TH1F* datapLo = (TH1F*)hDataSysR9Lo->ProjectionY("datapLo",i, i);
-    TH1F* zeepLo = (TH1F*)hZeeSysR9Lo->ProjectionY("zeepLo",i, i);
-    //cout << "r9 " << i << ", data " << dataProjR9->GetMean() << ", zee " << zeeProjR9->GetMean() << " ratio " <<  dataProjR9->GetMean()/zeeProjR9->GetMean() << endl;
-    datapLo->Draw();
-    zeepLo->SetLineColor(2);
-    zeepLo->Draw();
-    ca->SaveAs((outputDir+"/lor9_r9_"+to_string(i)+".png").Data());
-    
-    cout << datapHi->GetMean()<< ", " << zeepHi->GetMean() << ", " <<  datapHi->GetMean()/zeepHi->GetMean() << endl;
-    cout << datapLo->GetMean()<< ", " << zeepLo->GetMean() << ", " <<  datapLo->GetMean()/zeepLo->GetMean() << endl;
-    // cout << "r9h " << i << " ratio " <<  dataProjR9->GetMean()/zeeProjR9->GetMean() << " pct " <<  100*(1-dataProjR9->GetMean()/zeeProjR9->GetMean()) << endl;
-
-
-  }
-  
-  cout << "Lepton Pt variation " << endl;
-  for(int i = 1; i <= nbins; ++i){
-
-
-    TH1F* datapHi = (TH1F*)hDataLepPtH->ProjectionY("datapHi",i, i);
-    TH1F* zeepHi = (TH1F*)hZeeLepPtH->ProjectionY("zeepHi",i, i);
-    
-    datapHi->Draw();
-    zeepHi->SetLineColor(2);
-    zeepHi->Draw();
-    ca->SaveAs((outputDir+"/highr9_leppt_"+to_string(i)+".png").Data());
-    TH1F* datapLo = (TH1F*)hDataLepPtL->ProjectionY("datapLo",i, i);
-    TH1F* zeepLo = (TH1F*)hZeeLepPtL->ProjectionY("zeepLo",i, i);
-    datapLo->Draw();
-    zeepLo->SetLineColor(2);
-    zeepLo->Draw();
-    ca->SaveAs((outputDir+"/lor9_leppt_"+to_string(i)+".png").Data());
-    cout << datapHi->GetMean()<< ", " << zeepHi->GetMean() << ", " <<  datapHi->GetMean()/zeepHi->GetMean() << endl;
-    cout << datapLo->GetMean()<< ", " << zeepLo->GetMean() << ", " <<  datapLo->GetMean()/zeepLo->GetMean() << endl;
-    // cout << "eta " << i << ", data " << dataProjPt->GetMean() << ", zee " << zeeProjPt->GetMean() << " ratio " <<  dataProjPt->GetMean()/zeeProjPt->GetMean() << endl;
-  // cout << "leppt " << i << " ratio " <<  dataProjPt->GetMean()/zeeProjPt->GetMean() << " pct " <<  100*(1-dataProjPt->GetMean()/zeeProjPt->GetMean()) << endl;
-
-  }
-  
-  
-  for(int i = 1; i <= nbins; ++i){
-
-    TH1F* datapHi = (TH1F*)hDataNoCutH->ProjectionY("datapHi",i, i);
-    TH1F* zeepHi = (TH1F*)hZeeNoCutH->ProjectionY("zeepHi",i, i);
-    
-    datapHi->Draw();
-    zeepHi->SetLineColor(2);
-    zeepHi->Draw();
-    ca->SaveAs((outputDir+"/highr9_nocut_"+to_string(i)+".png").Data());
-    
-    TH1F* datapLo = (TH1F*)hDataNoCutL->ProjectionY("datapLo",i, i);
-    TH1F* zeepLo = (TH1F*)hZeeNoCutL->ProjectionY("zeepLo",i, i);
-    datapLo->Draw();
-    zeepLo->SetLineColor(2);
-    zeepLo->Draw();
-    ca->SaveAs((outputDir+"/lor9_nocut_"+to_string(i)+".png").Data());
-    cout << datapHi->GetMean()<< ", " << zeepHi->GetMean() << ", " <<  datapHi->GetMean()/zeepHi->GetMean() << endl;
-    cout << datapLo->GetMean()<< ", " << zeepLo->GetMean() << ", " <<  datapLo->GetMean()/zeepLo->GetMean() << endl;
-    //cout << "r9 " << i << ", data " << dataProjR9->GetMean() << ", zee " << zeeProjR9->GetMean() << " ratio " <<  dataProjR9->GetMean()/zeeProjR9->GetMean() << endl;
-    
-    // cout << "r9 " << i << " ratio " <<  dataProjR9->GetMean()/zeeProjR9->GetMean() << " pct " <<  100*(1-dataProjR9->GetMean()/zeeProjR9->GetMean()) << endl;
-
-
-  }
-  
   cout << "Main values " << endl;
   cout << hData->GetMean()<< ", " << hZee->GetMean() << ", " <<  hData->GetMean()/hZee->GetMean() << endl;
   
@@ -960,17 +662,10 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   outFile->Close();
   
 
- std::cout << "egamma ntuples size, MC: " << hZeeEG->Integral() << "  data: " << hDataEG->Integral() << std::endl;
+ // std::cout << "egamma ntuples size, MC: " << hZeeEG->Integral() << "  data: " << hDataEG->Integral() << std::endl;
  std::cout << "ours   ntuples size, MC: " << hZee->Integral()   << "  data: " << hData->Integral()   << std::endl;
 
   double MCscale=hData->Integral()/hMC->Integral();
-  double scaleDat=hData->Integral()/hDataEG->Integral();
-  // double scaleMC=hZee->Integral()/hZeeEG->Integral();
-  // double scaleme=hData->Integral()/hZee->Integral();
-  double scaleyou=hDataEG->Integral()/hZeeEG->Integral();
-
-  // hDataEG->Scale(scaleDat);
-  hZeeEG->Scale(scaleyou);
   double GausScale = hGausRandHere->Integral()/hGausRandNtuple->Integral();
   hGausRandNtuple->Scale(GausScale);
 
@@ -1018,10 +713,6 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   TH1D *hZeeDiff = makeDiffHist(hData,hMC,"hZeeDiff");
   hZeeDiff->SetMarkerStyle(kFullCircle); 
   hZeeDiff->SetMarkerSize(0.9);
-
-  TH1D *hZeeDiff_EGcomp = makeDiffHist(hDataEG,hZeeEG,"hZeeDiff_EGcomp");
-  hZeeDiff_EGcomp->SetMarkerStyle(kFullCircle); 
-  hZeeDiff_EGcomp->SetMarkerSize(0.9);
 
 
   TH1D *massUnc = new TH1D("massUnc","massUnc",NBINS, MASS_LOW, MASS_HIGH);
@@ -1099,157 +790,7 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   std::cout << "peak dat " << hData->GetBinCenter(hData->GetMaximumBin()) << std::endl;
   std::cout << "peak zee " << hZee->GetBinCenter(hZee->GetMaximumBin()) << std::endl;
   
-  // sprintf(ylabel,"Events / %.1f GeV",hGausRandHere->GetBinWidth(1));
-  // CPlot plotGaus("gaus_rand"+norm,"","",ylabel);
-  // plotGaus.AddHist1D(hGausRandHere,"this code","E");
-  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  // plotGaus.AddToStack(hGausRandNtuple,"ntple",fillcolorZ,linecolorZ);
-  // plotGaus.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotGaus.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotGaus.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  // plotGaus.SetYRange(0.01,1.2*(hGausRandHere->GetMaximum() + sqrt(hGausRandHere->GetMaximum())));
-  // plotGaus.TransLegend(0.1,-0.05);
-  // plotGaus.Draw(c,kFALSE,format,1);
 
-  // CPlot plotGausDiff("gaus_rand"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  // plotGausDiff.AddHist1D(hGausDiff,"EX0",ratioColor);
-  // plotGausDiff.SetYRange(-0.2,0.2);
-  // plotGausDiff.AddLine(-5, 0,5, 0,kBlack,1);
-  // plotGausDiff.AddLine(-5, 0.1,5, 0.1,kBlack,3);
-  // plotGausDiff.AddLine(-5,-0.1,5,-0.1,kBlack,3);
-  // plotGausDiff.Draw(c,kTRUE,format,2);
-  
-  // CPlot plotGaus2("gaus_rand_log"+norm,"","",ylabel);
-  // plotGaus2.AddHist1D(hGausRandHere,"mine","E");
-  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  // plotGaus2.AddToStack(hGausRandNtuple,"yours",fillcolorZ,linecolorZ);
-  // plotGaus2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotGaus2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotGaus2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  // plotGaus2.SetLogy();
-  // plotGaus2.SetYRange(1e-4*(hGausRandHere->GetMaximum()),10*(hGausRandHere->GetMaximum()));
-  // plotGaus2.TransLegend(0.1,-0.05);
-  // plotGaus2.Draw(c,kTRUE,format,1);
-  
-  
-  
-  // TH1D *hDatDiff = makeDiffHist(hData,hDataEG,"hDatDiff");
-  // hDatDiff->SetMarkerStyle(kFullCircle); 
-  // hDatDiff->SetMarkerSize(0.9);
-  
-  // // Shitty plots: Compare data
-  // sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
-  // CPlot plotZeea("DATA_zee"+norm,"","",ylabel);
-  // plotZeea.AddHist1D(hData,"mine","E");
-  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  // plotZeea.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
-  // plotZeea.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotZeea.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotZeea.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  // plotZeea.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
-  // plotZeea.TransLegend(0.1,-0.05);
-  // plotZeea.Draw(c,kFALSE,format,1);
-
-  // CPlot plotZeeDiffa("DATA_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  // plotZeeDiffa.AddHist1D(hDatDiff,"EX0",ratioColor);
-  // plotZeeDiffa.SetYRange(-0.2,0.2);
-  // plotZeeDiffa.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  // plotZeeDiffa.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
-  // plotZeeDiffa.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
-  // plotZeeDiffa.Draw(c,kTRUE,format,2);
-  
-  // CPlot plotZee2a("DATA_zeelog"+norm,"","",ylabel);
-  // plotZee2a.AddHist1D(hData,"mine","E");
-  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  // plotZee2a.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
-  // plotZee2a.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotZee2a.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotZee2a.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  // plotZee2a.SetLogy();
-  // plotZee2a.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
-  // plotZee2a.TransLegend(0.1,-0.05);
-  // plotZee2a.Draw(c,kTRUE,format,1);
-  
-  
-  // //-------------------------------
-  
-  // TH1D *hEGMCDiff = makeDiffHist(hZee,hZeeEG,"hEGMCDiff");
-  // hEGMCDiff->SetMarkerStyle(kFullCircle); 
-  // hEGMCDiff->SetMarkerSize(0.9);
-  
-    // // Shitty plots: Compare MC
-  // sprintf(ylabel,"Events / %.1f GeV",hZee->GetBinWidth(1));
-  // CPlot plotZeeb("MC_zee"+norm,"","",ylabel);
-  // plotZeeb.AddHist1D(hZee,"mine","E");
-  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  // plotZeeb.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
-  // plotZeeb.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotZeeb.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotZeeb.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  // plotZeeb.SetYRange(0.01,1.2*(hZeeEG->GetMaximum() + sqrt(hZeeEG->GetMaximum())));
-  // plotZeeb.TransLegend(0.1,-0.05);
-  // plotZeeb.Draw(c,kFALSE,format,1);
-
-  // CPlot plotZeeDiffb("MC_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  // plotZeeDiffb.AddHist1D(hEGMCDiff,"EX0",ratioColor);
-  // plotZeeDiffb.SetYRange(-0.2,0.2);
-  // plotZeeDiffb.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  // plotZeeDiffb.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
-  // plotZeeDiffb.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
-  // plotZeeDiffb.Draw(c,kTRUE,format,2);
-  
-  // CPlot plotZee2b("MC_zeelog"+norm,"","",ylabel);
-  // plotZee2b.AddHist1D(hZee,"mine","E");
-  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  // plotZee2b.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
-  // plotZee2b.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotZee2b.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotZee2b.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  // plotZee2b.SetLogy();
-  // plotZee2b.SetYRange(1e-4*(hZeeEG->GetMaximum()),10*(hZeeEG->GetMaximum()));
-  // plotZee2b.TransLegend(0.1,-0.05);
-  // plotZee2b.Draw(c,kTRUE,format,1);
-  
- 
-  // // /////////////////////////////////////////////////////////////
-  
-  // // EG
-  // sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
-  // CPlot plotZee_EGcomp("zee_EGcomp"+norm,"","",ylabel);
-  // plotZee_EGcomp.AddHist1D(hDataEG,"data","E");
-  // plotZee_EGcomp.AddToStack(hZeeEG,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  // plotZee_EGcomp.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotZee_EGcomp.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotZee_EGcomp.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  // plotZee_EGcomp.SetYRange(0.01,1.2*(hDataEG->GetMaximum() + sqrt(hDataEG->GetMaximum())));
-  // plotZee_EGcomp.TransLegend(0.1,-0.05);
-  // plotZee_EGcomp.Draw(c,kFALSE,format,1);
-
-  // CPlot plotZeeDiff_EGcomp("zee_EGcomp"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  // plotZeeDiff_EGcomp.AddHist1D(hZeeDiff_EGcomp,"EX0",ratioColor);
-  // plotZeeDiff_EGcomp.SetYRange(-0.2,0.2);
-  // plotZeeDiff_EGcomp.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
-  // plotZeeDiff_EGcomp.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
-  // plotZeeDiff_EGcomp.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
-  // plotZeeDiff_EGcomp.Draw(c,kTRUE,format,2);
-  
-  // CPlot plotZee2_EGcomp("zeelog_EGcomp"+norm,"","",ylabel);
-  // plotZee2_EGcomp.AddHist1D(hDataEG,"data","E");
-  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
-  // // plotZee2.AddToStack(hTtb,"t#bar{t}",fillcolorTop,linecolorTop);
-  // plotZee2_EGcomp.AddToStack(hZeeEG,"Z#rightarrowee",fillcolorZ,linecolorZ);
-  // plotZee2_EGcomp.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
-  // plotZee2_EGcomp.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
-  // if(normToData)plotZee2_EGcomp.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  // plotZee2_EGcomp.SetLogy();
-  // plotZee2_EGcomp.SetYRange(1e-4*(hDataEG->GetMaximum()),10*(hDataEG->GetMaximum()));
-  // plotZee2_EGcomp.TransLegend(0.1,-0.05);
-  // plotZee2_EGcomp.Draw(c,kTRUE,format,1);
-  // //
-  
   sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
   CPlot plotZee("zee"+norm,"","",ylabel);
   plotZee.AddHist1D(hData,"data","E");
@@ -1308,7 +849,9 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   cout << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
   cout << " The Zee Data Yield w/ ewk&top removed: " << yield - yield_ewk - yield_top << endl;
   cout << " Zee yield w/ all bkg removed: " << yield - yield_ewk - yield_top - yield_wm << endl;
-  cout << " Prefire scale factor :" << yield_zee_noPrefire/yield_zee << endl;
+  cout << " Prefire scale factor :" << yield_zee_noPrefire/yield_zee << endl;  
+  cout << " Prefire Jets only : " << yield_zee_pfJet << "  scale fac: " << yield_zee_noPrefire/yield_zee_pfJet << endl;
+  cout << " Prefire Photons only : " << yield_zee_pfPhoton << "  scale fac: " << yield_zee_noPrefire/yield_zee_pfPhoton << endl;
   
 
   
@@ -1342,6 +885,8 @@ TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   txtfile << " The Zee Data Yield w/ ewk&top removed: " << yield - yield_ewk - yield_top << endl;
   txtfile << " Zee yield w/ all bkg removed: " << yield - yield_ewk - yield_top - yield_wm << endl;
   txtfile << " Prefire scale factor :" << yield_zee_noPrefire/yield_zee << endl;
+  txtfile << " Prefire Jets only : " << yield_zee_pfJet << "  scale fac: " << yield_zee_noPrefire/yield_zee_pfJet << endl;
+  txtfile << " Prefire Photons only : " << yield_zee_pfPhoton << "  scale fac: " << yield_zee_noPrefire/yield_zee_pfPhoton << endl;
   txtfile << std::endl;
   txtfile.close();
   
