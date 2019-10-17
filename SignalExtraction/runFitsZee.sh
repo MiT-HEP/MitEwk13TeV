@@ -18,5 +18,5 @@ S5="5TeV"
 # root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_LooseNoTrig_RawCorr_Compare_txt_SCALE_SMEAR_MINE\",${LUMI}\,1\)
 # root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_corrEcalE_all_SCCorr_startRaw\",${LUMI}\,1\)
 # root -l -q  plotZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_13TeVZee_RootOutput\",\"${S13}\",${LUMI}\,1\)
-root -l -q  fitZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_13TeVZee_RootOutput-1_origBroken\",\"${S13}\",${LUMI}\,1\)
+root -l -q  fitZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_13TeVZee_RootOutput\",\"${S13}\",${LUMI}\,1\)
 
