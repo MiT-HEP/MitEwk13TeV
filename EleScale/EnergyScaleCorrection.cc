@@ -33,6 +33,32 @@ EnergyScaleCorrection::EnergyScaleCorrection(const std::string& correctionFileNa
 
 }
 
+EnergyScaleCorrection::EnergyScaleCorrection(const std::string& correctionFileName, FileFormat type):
+  smearingType_(type)
+{
+  cout << "smearing type  " << smearingType_ << endl;
+  cout << "Read the scales " << endl;
+  if(!correctionFileName.empty()) { 
+    std::string filename = correctionFileName+"_scales.dat";
+    readScalesFromFile(filename);
+    if(scales_.empty()) {
+      std::cerr << "[ERROR] scale correction map empty" << std::endl;
+      exit(1);
+    }
+  }
+  
+  cout << "Read the smearings " << endl;
+  if(!correctionFileName.empty()) { 
+    std::string filename = correctionFileName+"_smearings.dat";
+    readSmearingsFromFile(filename);
+    if(smearings_.empty()) {
+      std::cerr << "[ERROR] scale correction map empty" << std::endl;
+      exit(1);
+    }
+  }
+
+}
+
 float EnergyScaleCorrection::scaleCorr(unsigned int runNumber, double et, double eta, double r9,
 				       unsigned int gainSeed, std::bitset<kErrNrBits> uncBitMask) const
 {
@@ -150,18 +176,42 @@ void EnergyScaleCorrection::addScale(const std::string& category, int runMin, in
 {
   
   CorrectionCategory cat(category,runMin,runMax); // build the category from the string
-  // std::cout << "adding category " << cat << std::endl;
-  auto result = std::equal_range(scales_.begin(),scales_.end(),cat,Sorter<CorrectionCategory,ScaleCorrection>());
-  if(result.first!=result.second){
-    //throw cms::Exception("ConfigError") << "Category already defined! "<<cat;
-    std::cerr << "Category already defined" << std::endl;
-  }
+
   // std::cout << energyScale << " " << energyScaleErrStat << " " << energyScaleErrSyst << " " << energyScaleErrGain << " " << std::endl;
   ScaleCorrection corr(energyScale,energyScaleErrStat,energyScaleErrSyst,energyScaleErrGain);
   scales_.push_back({cat,corr});
   std::sort(scales_.begin(),scales_.end(),Sorter<CorrectionCategory,ScaleCorrection>()); 
   
 }
+
+// this method adds the correction values read from the txt file to the map
+void EnergyScaleCorrection::addScale(int runMin_, int runMax_, 
+										   float etaMin, float etaMax,
+										   float r9Min, float r9Max,
+										   float etMin, float etMax,
+										   unsigned int gain,
+										   double energyScale, double energyScaleErrStat, 
+                       double energyScaleErrSyst, double energyScaleErrGain)
+{
+	//if(gain==0) gain=12;
+	CorrectionCategory cat(runMin_, runMax_, etaMin, etaMax, r9Min, r9Max, etMin, etMax, gain); // build the category from the string
+
+  // std::cout << "adding category " << cat << std::endl;
+  auto result = std::equal_range(scales_.begin(),scales_.end(),cat,Sorter<CorrectionCategory,ScaleCorrection>());
+  if(result.first!=result.second){
+    //throw cms::Exception("ConfigError") << "Category already defined! "<<cat;
+    std::cerr << "Category already defined" << std::endl;
+  }
+	ScaleCorrection corr(energyScale,energyScaleErrStat,energyScaleErrSyst,energyScaleErrGain);
+	// scales[cat] = corr;
+  scales_.push_back({cat,corr});
+  std::sort(scales_.begin(),scales_.end(),Sorter<CorrectionCategory,ScaleCorrection>()); 
+
+	std::cout << "[INFO:scale correction] " << cat << "\t" << corr << std::endl;
+
+	return;
+}
+
 
 void EnergyScaleCorrection::addSmearing(const std::string& category,int runMin, int runMax,
 					double rho, double errRho, 
@@ -206,16 +256,49 @@ void EnergyScaleCorrection::readScalesFromFile(const std::string& filename)
   int runMin, runMax;
   std::string category, region2;
   double energyScale, energyScaleErr, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain;
-  // std::cout << "reading file" << std::endl;
-  for(file >> category; file.good(); file >> category) {
+	float etaMin; ///< Min eta value for the bin
+	float etaMax; ///< Max eta value for the bin
+	float r9Min;  ///< Min R9 vaule for the bin
+	float r9Max;  ///< Max R9 value for the bin
+	float etMin;  ///< Min Et value for the bin
+	float etMax;  ///< Max Et value for the bin
+	unsigned int gain; ///< 12, 6, 1, 61 (double gain switch)
+  
+  std::cout << "reading file" << std::endl;
+  // for(file >> category; file.good(); file >> category) {
     
-    file >> region2
-	 >> runMin >> runMax
-	 >> energyScale >> energyScaleErr >> energyScaleErrStat >> energyScaleErrSyst >> energyScaleErrGain;
+    // file >> region2
+	 // >> runMin >> runMax
+	 // >> energyScale >> energyScaleErr >> energyScaleErrStat >> energyScaleErrSyst >> energyScaleErrGain;
    // std::cout << category << " " << region2 << std::endl;
    // std::cout << energyScale << " " << energyScaleErr << " " << energyScaleErrStat << " " << energyScaleErrSyst << " " << energyScaleErrGain << std::endl; 
-    addScale(category, runMin, runMax, energyScale, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain);
-  }
+    // addScale(category, runMin, runMax, energyScale, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain);
+  // }
+
+
+	if(smearingType_ == ECALELF){
+		for(file >> category; file.good(); file >> category) {
+			file >> region2
+				 >> runMin >> runMax
+				 >> energyScale >> energyScaleErr >> energyScaleErrStat >> energyScaleErrSyst >> energyScaleErrGain;
+
+			addScale(category, runMin, runMax, energyScale, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain);
+		}
+	}else{
+		if(file.peek()=='r') file.ignore(1000,10);
+		for(file >> runMin; file.good(); file >> runMin) {
+			file >> runMax >> etaMin >> etaMax >> r9Min >> r9Max >> etMin >> etMax >> gain
+				 >> energyScale >> energyScaleErr;
+			std::cout <<  energyScaleErr << " ##" <<  (char) file.peek() << "$$" << std::endl;
+			file.ignore(1000,10);//			if(file.peek()!=10) file>> err_deltaP_stat >> energyScaleErrSyst >> energyScaleErrGain;
+			//else 
+			energyScaleErrStat=energyScaleErr;
+			std::cout << runMin << "\t" << runMax << std::endl;
+			addScale(runMin, runMax, etaMin, etaMax, r9Min, r9Max, etMin, etMax, gain, energyScale, energyScaleErrStat, energyScaleErrSyst, energyScaleErrGain);
+
+		}
+	}
+
   
   file.close();  
   return;
@@ -258,16 +341,16 @@ void EnergyScaleCorrection::readSmearingsFromFile(const std::string& filename)
       
     }else if(smearingType_ == GLOBE) {
       file >> category >> unused >> etaMin >> etaMax >> r9Min >> r9Max >> runMin >> runMax >>
-	eMean >> errEMean >>
-	rho >> errRho >> phi >> errPhi;
+      eMean >> errEMean >>
+      rho >> errRho >> phi >> errPhi;
       
       addSmearing(category, runMin, runMax, rho,  errRho, phi, errPhi, eMean, errEMean);
       
-    } else if(smearingType_ == ECALELF) {
-        // std::cout << "hello ECALELF" << std::endl;
+    } else if(smearingType_ == ECALELF || smearingType_ == TABLE) {
+        std::cout << "hello TABLE" << std::endl;
       file >> category >> 
-	eMean >> errEMean >>
-	rho >> errRho >> phiString >> errPhiString;
+      eMean >> errEMean >>
+      rho >> errRho >> phiString >> errPhiString;
     // std::cout << "emean " << eMean << "  errEMean " << errEMean << "  ro " << rho << std::endl;
       // std::cout << "category name " << category << std::endl;
       if(phiString=="M_PI_2") phi=M_PI_2;
@@ -336,23 +419,36 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
 // std::cout << "before: " << r9Max_ << " " << etaMax_ << " " << etMax_ << " " << gain_ << std::endl;
   // eta region
   p1 = category.find("absEta_");
-  if(category.find("absEta_0_1") != std::string::npos) {
+  
+  if(category.find("absEta_0_1.4442") != std::string::npos) {
+    cout << "cat 0a" << endl;
+    etaMin_ = 0;
+    etaMax_ = 1.479;
+  } else if(category.find("absEta_1.566_2.5") != std::string::npos) {
+    
+    cout << "cat 0b" << endl;
+    etaMin_ = 1.479;
+    etaMax_ = 3;
+  } else if(category.find("absEta_0_1") != std::string::npos) {
+    cout << "cat a" << endl;
     etaMin_ = 0;
     etaMax_ = 1;
   } else if(category.find("absEta_1_1.4442") != std::string::npos) {
+    
+    cout << "cat b" << endl;
     etaMin_ = 1;
     etaMax_ = 1.479;
-  }
-  else if(category.find("absEta_1.566_2") != std::string::npos) {
+  } else if(category.find("absEta_1.566_2") != std::string::npos) {
+    cout << "cat c" << endl;
     etaMin_ = 1.479;
     etaMax_ = 2;
-  }
-  else if(category.find("absEta_2_2.5") != std::string::npos) {
+  } else if(category.find("absEta_2_2.5") != std::string::npos) {
+    cout << "cat d" << endl;
     etaMin_ = 2;
     etaMax_ = 3;
   } else {
     if(p1 != std::string::npos) {
-      // std::cout << "hello" << std::endl;
+      std::cout << "hello" << std::endl;
       p1 = category.find("_", p1);
       p2 = category.find("_", p1 + 1);
       etaMin_ = std::stof(category.substr(p1 + 1, p2 - p1 - 1));
@@ -361,6 +457,7 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
       etaMax_ = std::stof(category.substr(p1 + 1, p2 - p1 - 1));
     }
   }
+  cout << "eta min " << etaMin_ << "  eta Max " << etaMax_ << endl;
   
   if(category.find("EBlowEta") != std::string::npos) {
     etaMin_ = 0;
@@ -418,6 +515,7 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
       if(r9Max_>=1.0) r9Max_ = std::numeric_limits<float>::max();
     }
   }
+  cout << "r9 min " << r9Min_ << "  r9 max " << r9Max_ << endl;
   //------------------------------
   p1 = category.find("gainEle_");      // Position of first character
   if(p1 != std::string::npos) {

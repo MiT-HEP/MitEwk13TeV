@@ -171,7 +171,7 @@ class AppEffSF {
     
     
     double statUncHLT(TLorentzVector *l1,  int q1, TH2D *pos, TH2D *neg, double wgt){
-      return statUnc(hlt, l1, q1, pos, neg, wgt);
+      return statUncTrigger(hlt, l1, q1, pos, neg, wgt);
     }
     double statUncSel(TLorentzVector *l1,  int q1, TH2D *pos, TH2D *neg, double wgt){
       return statUnc(sel, l1, q1, pos, neg, wgt);
@@ -257,6 +257,28 @@ class AppEffSF {
         Double_t effmc   = eff.mcNeg.getEff(l1->Eta(), l1->Pt());
         Double_t errmc   = TMath::Max(eff.mcNeg.getErrLow(l1->Eta(), l1->Pt()), eff.mcNeg.getErrHigh(l1->Eta(), l1->Pt()));
         Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+        neg->Fill(l1->Eta(), l1->Pt(), errSta*wgt);
+        var+=errSta*errSta;
+      }
+      return var;
+    }
+    
+    double statUncTrigger(basicEff eff, TLorentzVector *l1,  int q1, TH2D *pos, TH2D *neg, double wgt){
+      double var = 0.0;
+      if(q1>0) {
+        Double_t effdata = 1-eff.dataPos.getEff(l1->Eta(), l1->Pt());
+        Double_t errdata = TMath::Max(eff.dataPos.getErrLow(l1->Eta(), l1->Pt()), eff.dataPos.getErrHigh(l1->Eta(), l1->Pt()));
+        Double_t effmc   = 1-eff.mcPos.getEff(l1->Eta(), l1->Pt());
+        Double_t errmc   = TMath::Max(eff.mcPos.getErrLow(l1->Eta(), l1->Pt()), eff.mcPos.getErrHigh(l1->Eta(), l1->Pt()));
+        Double_t errSta = ((1 - effdata)/(1 - effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+        pos->Fill(l1->Eta(), l1->Pt(), errSta*wgt);
+        var+=errSta*errSta;
+      } else {
+        Double_t effdata = 1-eff.dataNeg.getEff(l1->Eta(), l1->Pt());
+        Double_t errdata = TMath::Max(eff.dataNeg.getErrLow(l1->Eta(), l1->Pt()), eff.dataNeg.getErrHigh(l1->Eta(), l1->Pt()));
+        Double_t effmc   = 1-eff.mcNeg.getEff(l1->Eta(), l1->Pt());
+        Double_t errmc   = TMath::Max(eff.mcNeg.getErrLow(l1->Eta(), l1->Pt()), eff.mcNeg.getErrHigh(l1->Eta(), l1->Pt()));
+        Double_t errSta = ((1 - effdata)/(1 - effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
         neg->Fill(l1->Eta(), l1->Pt(), errSta*wgt);
         var+=errSta*errSta;
       }

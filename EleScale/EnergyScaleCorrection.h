@@ -23,7 +23,8 @@ public:
     UNKNOWN=0,
     GLOBE,
     ECALELF_TOY,
-    ECALELF
+    ECALELF,
+    TABLE
   };
 
   enum ParamSmear{
@@ -68,7 +69,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const ScaleCorrection& a){return a.print(os);}
     std::ostream& print(std::ostream& os)const;
-  private:    
+  // private:    
     float scale_, scaleErrStat_, scaleErrSyst_, scaleErrGain_;
   };
   
@@ -112,6 +113,20 @@ public:
 		       const unsigned int gainSeed):
       runMin_(runnr),runMax_(runnr),etaMin_(std::abs(eta)),etaMax_(std::abs(eta)),
       r9Min_(r9),r9Max_(r9),etMin_(et),etMax_(et),gain_(gainSeed){}
+      
+    CorrectionCategory(const unsigned int runMin, const unsigned int runMax,
+									const float etaMin, const float etaMax,
+									const float R9Min, const float R9Max,
+									const float EtMin, const float EtMax,
+									const unsigned int gainSeed):
+		runMin_(runMin), runMax_(runMax),
+		etaMin_(fabs(etaMin)), etaMax_(etaMax),
+		r9Min_(R9Min), r9Max_(R9Max),
+		etMin_(EtMin), etMax_(EtMax),
+		gain_(gainSeed){
+      cout << runMin_ << " " << runMax_ << " " << etaMin_ << endl;
+	}
+
     
     bool operator<(const CorrectionCategory& b) const;
     bool inCategory(const unsigned int runnr, const float et, const float eta, const float r9, 
@@ -136,6 +151,7 @@ public:
     
 public:
   EnergyScaleCorrection(const std::string& correctionFileName, unsigned int genSeed=0);
+  EnergyScaleCorrection(const std::string& correctionFileName, FileFormat type=ECALELF);
   EnergyScaleCorrection(){};
   ~EnergyScaleCorrection(){}
   
@@ -158,7 +174,15 @@ public:
  private:
 
   void addScale(const std::string& category, int runMin, int runMax, 
-		double deltaP, double errDeltaP, double errSystDeltaP, double errDeltaPGain);
+                        double deltaP, double errDeltaP, double errSystDeltaP, double errDeltaPGain);
+  void addScale(int runMin_, int runMax_, 
+										   float etaMin, float etaMax,
+										   float r9Min, float r9Max,
+										   float etMin, float etMax,
+										   unsigned int gain,
+										   double energyScale, double energyScaleErrStat, 
+                       double energyScaleErrSyst, double energyScaleErrGain);
+
   void addSmearing(const std::string& category, int runMin, int runMax,
 		   double rho, double errRho, double phi, double errPhi, 
 		   double eMean, double errEMean);
