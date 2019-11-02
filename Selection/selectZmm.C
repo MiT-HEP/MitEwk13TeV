@@ -335,11 +335,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       }
   
       eventTree = (TTree*)infile->Get("Events"); assert(eventTree);  
+      
+      Bool_t hasJet = eventTree->GetBranchStatus("AK4");
+      
       eventTree->SetBranchAddress("Info", &info);      TBranch *infoBr = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon", &muonArr);   TBranch *muonBr = eventTree->GetBranch("Muon");
       eventTree->SetBranchAddress("PV",   &vertexArr); TBranch *vertexBr = eventTree->GetBranch("PV");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
-      eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
+      if(hasJet) eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
       Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
@@ -438,7 +441,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         scBr->GetEntry(ientry);
         
         jetArr->Clear();
-        jetBr->GetEntry(ientry);
+        if(hasJet)jetBr->GetEntry(ientry);
 
         TLorentzVector vTag(0,0,0,0);
         TLorentzVector vTagSta(0,0,0,0);
@@ -596,6 +599,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         metPhiDJee   = info->pfMETCphi;
         sumEtDJee = 0;
         // if(category==1||category==2||category==3) cout << "Selected! " << endl;
+        if(hasJet){
         TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
         for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
 // cout << "hellojett" << endl;
@@ -605,9 +609,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
           vMetEE += vJet;
           // cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
-        } 
+        }
         metDJee      = vMetEE.Mod();
         metPhiDJee   = vMetEE.Phi();
+        
+        }
         // sumEtDJee = 0;
           
         if(!isData){
@@ -615,30 +621,25 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
           for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
             const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-            if(fabs(photon->eta) < 2) continue;
+            if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
             prefirePhoton *= 1. - TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 );
-            prefirePhotUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-            prefirePhotDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-            // cout << "photon current prob. " << prefirePhotonCorr.getCorr(photon->eta, photon->pt)  << "  totalW " <<  prefirePhoton << endl;
-            // if(prefirePhotonCorr.getCorr(photon->eta, photon->pt) < 0 || prefirePhotonCorr.getCorr(photon->eta, photon->pt) > 1) cout << " " << photon->eta<< " " << photon->pt << endl;
-            // if(photon->pt<10)std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
           } 
+          prefirePhotUp = max(prefirePhoton+(1-prefirePhoton)*0.20,1.0);
+          prefirePhotDown = max(prefirePhoton-(1-prefirePhoton)*0.20,1.0);
+          
         
           prefireJet=1; prefireJetUp=1; prefireJetDown=1;
-          for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-            const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
-            if(fabs(jet->eta) < 2.0) continue;
-            // prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
-            prefireJet*= 1. - prefireJetCorr.getCorr(jet->eta, jet->pt);
-            prefireJetUp     *= TMath::Max((1.-(1.2*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
-            prefireJetDown   *= TMath::Max((1.-(0.8*prefireJetCorr.getCorr(jet->eta, jet->pt))),0.0);
-            // cout << "JET current prob. " << prefireJetCorr.getCorr(jet->eta, jet->pt)  << "  totalW " <<  prefireJet << endl;
-            // if(prefireJetCorr.getCorr(jet->eta, jet->pt) < 0 || prefireJetCorr.getCorr(jet->eta, jet->pt) > 1) {
-              // cout << " " << jet->eta<< " " << jet->pt << endl;
-              // std::cout << "jet eta " << jet->eta << "  jet pT " << jet->pt << "  prefire weight " << prefireJet << std::endl;
-            // }
-          } 
-        
+          
+          if(hasJet){
+            for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+              const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
+              if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
+              prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
+            }
+          }
+          prefireJetUp = max(prefireJet+(1-prefireJet)*0.20,1.0);
+          prefireJetDown = max(prefireJet-(1-prefireJet)*0.20,1.0);
+          
           // loop through photons and jets
           // overlap is anything within deltaR < 0.4.
           // take max prefire prob for any overlap cases
@@ -647,27 +648,28 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           prefireWeight=prefireJet*prefirePhoton;
           prefireUp=prefireJetUp*prefirePhotUp;
           prefireDown=prefireJetDown*prefirePhotDown;
-          for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-            const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-            if(fabs(photon->eta) < 2) continue;
-            // now loop through jets:
-            double rmP = 0, rmU = 0, rmD = 0;
+          if(hasJet){
+            for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+              const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+              if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
+              // now loop through jets:
+              double rmP = 1;
 
-            for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-              const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-              if(fabs(jet->eta) < 2) continue;
-              // check if the jet and photon overlap: 
-              if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
-              // photon & jet overlap, now get min to divide out 
-                rmP = min(prefirePhotonCorr.getCorr(photon->eta, photon->pt), prefireJetCorr.getCorr(jet->eta, jet->pt));
-                rmU = TMath::Max(1.-(1.2*rmP),0.0);
-                rmD = TMath::Max(1.-(0.8*rmP),0.0);
+              for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+                const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+                if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
+                // check if the jet and photon overlap: 
+                if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
+                // photon & jet overlap, now get min to divide out 
+                  rmP = min(TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 ), TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.));
+              }
+              // divide out the lesser of the two probabilities
+              if(rmP<1.0)prefireWeight = prefireWeight / (1 - rmP);
             }
-            // divide out the lesser of the two probabilities
-            prefireWeight = prefireWeight / (1 - rmP);
-            prefireUp = prefireUp / rmU;
-            prefireDown = prefireDown / rmD;
-          } 
+          }
+          
+          prefireUp = min(prefireWeight+(1-prefireWeight)*0.20,1.0);
+          prefireDown = min(prefireWeight-(1-prefireWeight)*0.20,1.0);
         }
   // cout << "blah " << endl;
         /******** We have a Z candidate! HURRAY! ********/
