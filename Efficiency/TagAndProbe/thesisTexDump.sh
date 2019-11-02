@@ -18,19 +18,29 @@ mkdir -p ${OUTDIR}/tab
 # for i in "${my_array[@]}"; do echo "$i"; done
 
 
-LEPS=("Mu")
-LEPWS=("muons")
-Q=("Combined")
-CAT_MU=("Sta")
-PFX=("Zmm")
 # LEPS=("Ele" "Mu")
 # LEPWS=("electrons" "muons")
-# Q=("Positive" "Negative")
-# CAT_ELE=("GSFSel" "HLT")
-# CAT_MU=("Sel" "Sta" "HLT")
-# CAT_MU=("SIT" "HLT")
+# Q=("Combined")
+# CAT_ELE=("GSFSel")
+# CAT_MU=("SIT" "Sta")
+# # CAT_MU=("HLT")
 # PFX=("Zee" "Zmm")
+# SAMP=("Data" "MC")
+
+# # # # LEPS=("Mu")
+# # # # LEPWS=("muons")
+# # # # Q=("Combined")
+# # # # CAT_MU=("Sta")
+# # # # PFX=("Zmm")
+LEPS=("Ele" "Mu")
+LEPWS=("electrons" "muons")
+Q=("Positive" "Negative")
+CAT_ELE=("HLT")
+# CAT_MU=("Sel" "Sta" "HLT")
+CAT_MU=("HLT")
+PFX=("Zee" "Zmm")
 SAMP=("Data" "MC")
+
 TXTF="PtBins_scalefactors_niceTable.txt"
 TABPFX="tab/tab.07.04.Eff"
 FIGPFX="fig/fig.07.04.Eff"
