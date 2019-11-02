@@ -21,7 +21,7 @@
 #include "../Utils/CPlot.hh"          // helper class for plots
 #include "../Utils/MitStyleRemix.hh"  // style settings for drawing
 
-#include <../RochesterCorr/RoccoR.cc>
+#include "../RochesterCorr/RoccoR.cc"
 
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
@@ -51,7 +51,7 @@ using namespace std;
 bool doLikelihoodScan=false;
 
 // bool do_keys=false;
-bool do_5TeV=false;
+bool do_5TeV=true;
 bool doLog=false; // true for data; false for MC
 bool doElectron=false;
 
@@ -179,9 +179,9 @@ void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Doubl
 void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuples/data_select.root",  // input ntuple
                   Int_t   pfu1model=2,   // u1 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
                   Int_t   pfu2model=2,   // u2 model (1 => single Gaussian, 2 => double Gaussian, 3 => triple Gaussian)
-		  Bool_t  sigOnly=1,     // signal event only?
-                  std::string uparName = "u1",
-                  std::string uprpName = "u2",
+                  Bool_t  sigOnly=1,     // signal event only?
+                  std::string metVar = "met",
+                  std::string metPhiVar = "metPhi",
                   std::string metName = "pf",
                   TString outputDir="./", // output directory
                   Double_t lumi=1,
@@ -196,26 +196,12 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   bool doFootprint = false;
   CPlot::sOutDir = outputDir + TString("/plots");
   gSystem->mkdir(outputDir,kTRUE);
-//   Double_t ptbins[] = {5,10,20,30,40,50};
-//   
-  // specify your desired pT binning here. Currently using very narrow bins
-  // oct2 binning below
-  //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-  // oct7 binning below
-  //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-
-  // may22 binning
-  // full binning
-   // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-   
-   // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300}; // regular ones for 13 TeV 2017 
-   Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; // regular ones for 5 TeV 2017 
-   
-   // Double_t ptbins[] = {0,2.5,5.0,10,20,30,40,50,60,80,100,125,150,200,250,300}; // rebin to check effect of bin size on statitiscal unc (2017, 13 TeV)
-
-  // nov5 5TeV
-  //  Double_t ptbins[] = {0,2.0,4.0,5.0,6.0,8.0,10.0,12.5,15,17.5,20,25,30,40,50,60,75,100,150};
   
+  // preserving the fine binning at low pT but the higher-pT bins (>75 GeV have been adjusted to be slightly wider)
+   Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; 
+   
+  
+  // probably get rid of this shit soon
        // Double_t vEtaBinsFP[] = {2.5,2.1,1.5,0,-1.5,-2.1,-2.5};
   Double_t vEtaBinsFP[] = {2.5,2.3,2.1,1.9,1.7,1.5,1.2,0.8,0.4,0,-0.4,-0.8,-1.2,-1.5,-1.7,-1.9,-2.1,-2.3,-2.5};
   Int_t nBinsFP = sizeof(vEtaBinsFP)/sizeof(vEtaBinsFP[0])-1;
@@ -223,7 +209,6 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   vector<Float_t> lower(nBinsFP);
   std::cout << "nEtaBins = " << nBinsFP << std::endl;
    Double_t vListOfFPs[] = {-0.00785963,-0.00993125,-0.0148858,-0.0130871,-0.0250669,-0.0173248,-0.0146016,-0.0136755,-0.0108911,-0.0116117,-0.0157723,-0.0194445,-0.0163345,-0.0230202,-0.0145553,-0.0160693,-0.00196283,-0.00298555};
-   // Double_t vListOfFPs[] = {0, -0.00109938, -0.00267664, -0.00935168, -0.0116393, -0.00877814, -0.00073066, -0.00168777, -0.0114005, -0.0102761, -0.010612, -0.00345421, -0.0092375, -0.00850389, -0.00988786, -0.00506354, -0.0064118, -0.00408221, -0.00398614, -0.0172608, -0.0104789, -0.007598, -0.0177603, -0.0129501, -0.00846278, -0.010801, -0.0179897, -0.014265, -0.004627, -0.00198961, -0.00940792, -0.0137091, -0.00842374, -0.00451072, -0.0134227, -0.013647, -0.000902762, -0.00728768, -0.00516646, -0.0112141, -0.000557311, -0.0124703, -0.0169047, -0.00473276, -0.00623816, -0.00367185, -0.0133091, -0.00340216, -0.0278066, 0};
   vector<Float_t> fpcorr;
   // std::cout << "size of list " << 
   for(int i = 0; i < nBinsFP; ++i){
@@ -232,6 +217,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
 	  fpcorr.push_back(vListOfFPs[i]);
   }
 
+// ^^ clearn up that
 
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
   Double_t corrbins[] = { 0, 10, 30, 50 };
@@ -245,31 +231,31 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
   fnamev.push_back(infilename); isBkgv.push_back(kFALSE);
-  // comment this part out until we have the correct MC Samples for the background
-  // 13 TeV low pu
-  // not doin any of the backgrounds
-   // if(!do_5TeV) {
-     // if(doElectron) {
+  // // comment this part out until we have the correct MC Samples for the background
+  // // 13 TeV low pu
+  // // not doin any of the backgrounds
+   if(!do_5TeV) {
+     if(doElectron) {
        // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/top_select.root"); isBkgv.push_back(kTRUE);
        // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_Fixed/Zee/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
-     // } else {
-       // //newPuppi, may11
-       // // ekw_select1.root is ttbar, wz, ww, zz
-       // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-       // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
-       // // RAW puppi
-       // ///eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/rawPuppiNtuples
+     } else {
+       //newPuppi, may11
+       // ekw_select1.root is ttbar, wz, ww, zz
+       fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV/Zmumu/ntuples/zxx_select.raw.root"); isBkgv.push_back(kTRUE);
+       // fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV/Zmumu/ntuples/wx_select.raw.root"); isBkgv.push_back(kTRUE);
+       fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
 
-     // }
-     // // used for nov26
-     // //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-     // //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
-   // }
-   // if(do_5TeV) {
-     // // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
-     // // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
-   // }
-  //
+     }
+     // used for nov26
+     //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+     //    fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Zmumu/ntuples/ewk_select.root"); isBkgv.push_back(kTRUE);
+   }
+   if(do_5TeV) {
+     fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_5TeV/Zmumu/ntuples/top_select.raw.root"); isBkgv.push_back(kTRUE);
+     fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_5TeV/Zmumu/ntuples/ewk_select.raw.root"); isBkgv.push_back(kTRUE);
+   }
+  
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
@@ -387,14 +373,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
 
-    // intree->SetBranchAddress("puppiMet",               &met);        // Uncorrected Puppi MET
-    // intree->SetBranchAddress("puppiMetPhi",            &metPhi);     // phi(MET)
-// using PF MET for low PU 13 TeV // not sure we actually need this variable?
-    intree->SetBranchAddress("met",            &met);        // Uncorrected PF MET
-    intree->SetBranchAddress("metPhi",         &metPhi);     // phi(MET)
-    intree->SetBranchAddress("sumEt",          &sumEt);      // Sum ET
-    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
-    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
+    intree->SetBranchAddress(metVar.c_str(),        &met);        // Uncorrected PF MET
+    intree->SetBranchAddress(metPhiVar.c_str(),     &metPhi);     // phi(MET)
+    intree->SetBranchAddress("sumEt",               &sumEt);      // Sum ET
     
     intree->SetBranchAddress("q1",	 &q1);         // charge of tag lepton
     intree->SetBranchAddress("q2",	 &q2);         // charge of probe lepton
@@ -410,7 +391,9 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
     //
     // Loop over events
     //
+    int iterator=5;
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(Int_t ientry=0; ientry<intree->GetEntries(); ientry+=iterator) {
     // for(Int_t ientry=0; ientry<1000; ientry++) {
       intree->GetEntry(ientry);
     
@@ -420,15 +403,6 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
       mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
       mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
 	  
-	  
-	  // std::cout << "evt  " << evtNum << "  pt1 " << lep1->Pt() << "  eta1 " << lep1->Eta() << "  phi1  " << lep1->Phi() << "  q1 " << q1 << std::endl;
-	  // std::cout << "evt  " << evtNum << "  pt1 " << mu1.Pt() << "  eta1 " << mu1.Eta() << "  phi1  " << mu1.Phi() << std::endl;
-	  // std::cout << "evt  " << evtNum << "  pt2 " << lep2->Pt() << "  eta2 " << lep2->Eta() << "  phi2  " << lep2->Phi() << "  q2 " << q2 << std::endl;
-	  // std::cout << "evt  " << evtNum << "  pt2 " << mu2.Pt() << "  eta2 " << mu2.Eta() << "  phi2  " << mu2.Phi() << std::endl;
-	  // std::cout << "evt  " << evtNum << "  dilep0 " << dilep->Pt() << "  l1a " << lep1->Pt() << "  l2a  " << lep2->Pt() << std::endl;
-      // std::cout << "evt  " << evtNum << "  dilep0 " << dilep->Pt() << "  l10 " << mu1.Pt() << "  l20  " << mu2.Pt() << std::endl;
-
-      
       double SF1=1;
       double SF2=1;
       
@@ -439,6 +413,7 @@ void fitRecoilZmm(TString infilename="/data/blue/Bacon/Run2/wz_flat/Zmumu/ntuple
         SF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
         SF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genlep2->Pt());//, s=0, m=0);
       }
+      if(genlep1->Pt()==0 && genlep2->Pt()==0) {SF1=1; SF2=1;}
       
       mu1*=SF1;
       mu2*=SF2;
@@ -1423,21 +1398,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),0.1*hv[ibin]->GetRMS(),9*hv[ibin]->GetRMS());
     //    RooRealVar sigma3(name.str().c_str(),name.str().c_str(),2.0*(hv[ibin]->GetRMS()),10 ,std::min(int(9*hv[ibin]->GetRMS()),100));
 
-    /*
-    if(doLog) {
-      mean1.setVal(hvLOG->GetMean());
-      mean2.setVal(hvLOG->GetMean());
-      mean3.setVal(hvLOG->GetMean());
-
-      sigma1.setVal(0.3*hvLOG->GetRMS());
-      sigma2.setVal(1.0*hvLOG->GetRMS());
-      sigma3.setVal(2.0*hvLOG->GetRMS());
-      sigma1.setRange(0,2.5*(hvLOG[ibin]->GetRMS()));
-      sigma2.setRange(0,4.5*(hvLOG[ibin]->GetRMS()));
-      sigma3.setRange(0,9*hv[ibin]->GetRMS());
-    }
-    */
-
     // fraction
     name.str(""); name << "frac2_" << ibin;
     RooRealVar frac2(name.str().c_str(),name.str().c_str(),0.5,0.15,0.85);
@@ -1502,110 +1462,8 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     RooGaussian constGauss1("constGauss1","constGauss1",mean1,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
     RooGaussian constGauss2("constGauss2","constGauss2",mean2,RooConst(hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
     RooGaussian constGauss3("constGauss3","constGauss3",mean3,RooConst(0.85*hv[ibin]->GetMean()),RooConst(0.15*hv[ibin]->GetRMS()));
-
-
-/*    // Works for Zmm Data no bkg-sub to get all U1 set
-    if(ibin>0) {
-      mean1.setVal(hv[ibin]->GetMean());
-      mean2.setVal(hv[ibin]->GetMean());
-      mean3.setVal(hv[ibin]->GetMean());
-
-      sigma1.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-      sigma1.setVal(0.3*(hv[ibin-1]->GetRMS()));
-      sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-      sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
-      sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-      sigma3.setVal(1.5*(hv[ibin-1]->GetRMS()));
-      
-      if(ibin == 10 || ibin == 28){
-      mean1.setVal(hv[ibin]->GetMean());
-      mean2.setVal(hv[ibin]->GetMean());
-      mean3.setVal(hv[ibin]->GetMean());
-
-      sigma1.setMin(0.1*(hv[ibin]->GetRMS()));
-      sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-      sigma1.setVal(0.5*(hv[ibin-1]->GetRMS()));
-      sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-      sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
-      sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-      sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
-      }
-      
-    }*/
     
-    
-    if(ibin>0) {
-      /* // stephanie settings
 
-      mean1.setVal(hv[ibin]->GetMean());
-      mean2.setVal(hv[ibin]->GetMean());
-      mean3.setVal(hv[ibin]->GetMean());
-
-      sigma1.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-      sigma1.setVal(0.3*(hv[ibin-1]->GetRMS()));
-      sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-      sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
-      sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-      sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-      sigma3.setVal(1.5*(hv[ibin-1]->GetRMS()));
-      */
-
-//       if(ibin==1||ibin==24||ibin==36||ibin==37||ibin==40||ibin==52||ibin==33/* || ibin==40*/){
-//         mean1.setVal(hv[ibin]->GetMean());
-//         mean2.setVal(hv[ibin]->GetMean());
-//         mean3.setVal(hv[ibin]->GetMean());
-// 
-//         sigma1.setMin(0.1*(hv[ibin]->GetRMS()));
-//         sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-//         sigma1.setVal(0.5*(hv[ibin-1]->GetRMS()));
-//         sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-//         sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-//         sigma2.setVal(0.8*(hv[ibin-1]->GetRMS()));
-//         sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-//         sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-//         sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
-//       }
-// // // // //       
-//     if( ibin == 51 || ibin==53){
-//       mean1.setVal(hv[ibin]->GetMean());
-//       mean2.setVal(hv[ibin]->GetMean());
-//       mean3.setVal(hv[ibin]->GetMean());
-// 
-//       sigma1.setMin(0.1*(hv[ibin]->GetRMS()));
-//       sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-//       sigma1.setVal(0.8*(hv[ibin-1]->GetRMS()));
-//       sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-//       sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-//       sigma2.setVal(1.5*(hv[ibin-1]->GetRMS()));
-//       sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-//       sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-//       sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
-//       }
-// //       
-//     if( ibin == 0){
-//       mean1.setVal(hv[ibin]->GetMean());
-//       mean2.setVal(hv[ibin]->GetMean());
-//       mean3.setVal(hv[ibin]->GetMean());
-// 
-//       sigma1.setMin(0.1*(hv[ibin]->GetRMS()));
-//       sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-//       sigma1.setVal(1.0*(hv[ibin-1]->GetRMS()));
-//       sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-//       sigma2.setMax(2.0*(hv[ibin]->GetRMS()));
-//       sigma2.setVal(1.8*(hv[ibin-1]->GetRMS()));
-//       sigma3.setMin(0.0*(hv[ibin]->GetRMS()));
-//       sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-//       sigma3.setVal(3.0*(hv[ibin-1]->GetRMS()));
-//       }
-      
-    }
     
     //
     // Define formula for overall width (sigma0)
@@ -1662,9 +1520,10 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     //    RooRealVar nsig(name.str().c_str(),name.str().c_str(),0.98*(hv[ibin]->Integral()),0.,hv[ibin]->Integral());
     RooRealVar nsig(name.str().c_str(),name.str().c_str(),0.98*(hv[ibin]->Integral()),0.,1.1*hv[ibin]->Integral()); // just to be sure that doesn't it the boundary
     name.str(""); name << "nbkg_" << ibin;
-    RooRealVar nbkg(name.str().c_str(),name.str().c_str(),0.01*(hv[ibin]->Integral()),0.,0.25*(hv[ibin]->Integral()));
-
-    RooRealVar *lAbkgFrac =new RooRealVar("AbkgFrac","AbkgFrac",0.98,0.95,0.999);
+    RooRealVar nbkg(name.str().c_str(),name.str().c_str(),(hbkgv[ibin]->Integral()),0.,0.25*(hv[ibin]->Integral()));
+    // nbkg.setConstant(kTRUE);
+    RooRealVar *lAbkgFrac =new RooRealVar("AbkgFrac","AbkgFrac",(hv[ibin]->Integral()/(hv[ibin]->Integral()+hbkgv[ibin]->Integral())),0.9,1.0);
+    // lAbkgFrac->setConstant(kTRUE);
 
     if(sigOnly) {
       yields.add(nsig);
@@ -1673,6 +1532,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
       //      else         nbkg.setVal(0);
 
     } else {
+      cout << "doing background??? what is this shit" << endl;
       RooFormulaVar * sigbkgFrac= new RooFormulaVar("bkgfrac","@0",RooArgSet(*lAbkgFrac));
       yields.add(*sigbkgFrac);
     }
@@ -2351,9 +2211,10 @@ void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Doubl
     RooArgList yields;
     RooRealVar nsig("nsig","nsig",0.98*(hv[ibin]->Integral()),0.,hv[ibin]->Integral());
     yields.add(nsig);
-    RooRealVar nbkg("nbkg","nbkg",0.01*(hv[ibin]->Integral()),0.,0.50*(hv[ibin]->Integral()));
+    RooRealVar nbkg("nbkg","nbkg",(hbkgv[ibin]->Integral()),0.,2.0*(hbkgv[ibin]->Integral()));
     if(!sigOnly) yields.add(nbkg);
     else         nbkg.setVal(0);
+    nbkg.setConstant(kTRUE);
     
 //     std::stringstream name;
     name << "modelpdf_" << ibin << std::endl;

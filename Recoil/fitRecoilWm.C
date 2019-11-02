@@ -27,7 +27,7 @@
 // #include "../SignalExtraction/muresolution_run2r.cc"
 
 #include <../RochesterCorr/RoccoR.cc>
-
+#include "TRandom.h"
 #include "RooGlobalFunc.h"
 #include "RooRealVar.h"
 #include "RooGaussian.h"
@@ -51,7 +51,7 @@
 using namespace RooFit;
 using namespace std;
 
-bool do_keys=false;
+// bool do_keys=false;
 bool doElectron=false;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -141,7 +141,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
                 Double_t *frac2Arr,  Double_t *frac2ErrArr,
                 Double_t *frac3Arr,  Double_t *frac3ErrArr,
                 RooWorkspace *workspace,
-		int etaBinCategory);
+		int etaBinCategory, bool do_keys);
                 
 void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
                 const Int_t model, const Bool_t sigOnly,
@@ -166,12 +166,13 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 		 Bool_t  sigOnly,       // signal event only?
 		 Int_t   charge,        // charge requirement
 		 Bool_t  useData,       // use Data? (0 = signal MC, 1 = data)
-		 std::string uparName = "u1",
-		 std::string uprpName = "u2",
+     std::string metVar = "met",
+     std::string metPhiVar = "metPhi",
 		 std::string metName = "pf",
 		 TString outputDir ="./",     // output directory
 		 Double_t lumi=1,
-		 int etaBinCategory=0 // 0 is inclusive, 1 is fabs(eta)<=0.5,  2 is fabs(eta)=[0.5,1], 3 is fabs(eta)>=1
+		 int etaBinCategory=0, // 0 is inclusive, 1 is fabs(eta)<=0.5,  2 is fabs(eta)=[0.5,1], 3 is fabs(eta)>=1
+     bool do_keys=0
 ) {
 
   //--------------------------------------------------------------------------------------------------------------
@@ -182,16 +183,8 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   CPlot::sOutDir = outputDir + TString("/plots");
 
 
-//   Double_t ptbins[] = {0,2,6,10,20,30,40,55,70,100};
-  // may22 binning
-  // shortened the binning a bit
-  Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,120,140,160,180,200,220,250,300};
-
-// oct7 binning below
-//  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-// oct2 binning below
-  //  Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,275,300};
-//   Double_t ptbins[] = {0,0.5,1.0,1.5,2.0,2.5,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,62.5,65,67.5,70,72.5,75,77.5,80,82.5,85,87.5,90,92.5,95,97.5,100};
+  // preserving the fine binning at low pT but the higher-pT bins (>75 GeV have been adjusted to be slightly wider)
+   Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; 
 
   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
@@ -206,29 +199,19 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 
   if (useData == 0){
 	  if(doElectron){
-          fnamev.push_back(TString(infoldername) + TString("/Wenu/ntuples/we_select.root")); isBkgv.push_back(kFALSE);
-		  // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Wenu/ntuples/we_select.root"); isBkgv.push_back(kFALSE);
+      fnamev.push_back(TString(infoldername) + TString("/Wenu/ntuples/we_select.root")); isBkgv.push_back(kFALSE);
 	  } else {
-    //    fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/NewBacon_MediumEleID/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
-    // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Wmunu/ntuples/wm_select.raw.root"); isBkgv.push_back(kFALSE);
-	  fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/wm_select.raw.root")); isBkgv.push_back(kFALSE);
+	  // fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/wm0_select.raw.root")); isBkgv.push_back(kFALSE);
+	  // fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/wm1_select.raw.root")); isBkgv.push_back(kFALSE);
+	  // fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/wm2_select.raw.root")); isBkgv.push_back(kFALSE);
+    fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/wm_select.raw.root")); isBkgv.push_back(kFALSE);
       }
-    //    fnamev.push_back(TString(infoldername) + TString("wm_select.raw.root")); isBkgv.push_back(kFALSE);
   } else if (useData == 1){
-    // fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU_5TeV_Try2/Wmunu/ntuples/data_select.root"); isBkgv.push_back(kFALSE);
       fnamev.push_back(TString(infoldername) + TString("/Wmunu/ntuples/data_select.root")); isBkgv.push_back(kFALSE);
   } else {
     cout << "useData value doesn't make sense" << endl;
   }
 
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/top_select.root"); isBkgv.push_back(kTRUE); 
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zz_select.root");  isBkgv.push_back(kTRUE); 
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wz_select.root");  isBkgv.push_back(kTRUE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/ww_select.root");  isBkgv.push_back(kTRUE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/wx_select.root");  isBkgv.push_back(kTRUE);
-//   fnamev.push_back("/data/blue/Bacon/Run2/wz_flat_07_23/Wmunu/ntuples/zxx_select.root"); isBkgv.push_back(kTRUE);
-
-  
   // bool doMTCut = true;
   const Double_t PT_CUT  = 25;
   const Double_t ETA_CUT = 2.4;
@@ -337,9 +320,11 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   UInt_t  runNum, lumiSec, evtNum;
   UInt_t  npv, npu;
   Float_t genVPt, genVPhi, genVy;
+  Float_t genMuonPt;
   Float_t scale1fb, puWeight, scale1fbUp, scale1fbDown;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
+  UInt_t nTkLayers;
   TLorentzVector *lep=0, *lep_raw=0, *genV = 0, *genLep =0;
 
 //   Float_t puWeight;
@@ -355,46 +340,49 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     intree->SetBranchAddress("evtNum",   &evtNum);    // event number
     intree->SetBranchAddress("npv",      &npv);       // number of primary vertices
     intree->SetBranchAddress("npu",      &npu);       // number of in-time PU events (MC)
+    intree->SetBranchAddress("genMuonPt",   &genMuonPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)   
     intree->SetBranchAddress("genVy",    &genVy);     // GEN W boson rapidity (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
-    // intree->SetBranchAddress("puppiMet",      &met);       // MET
-    // intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
-       intree->SetBranchAddress("met",      &met);       // MET
-       intree->SetBranchAddress("metPhi",   &metPhi);    // phi(MET)
-    intree->SetBranchAddress("sumEt",    &sumEt);     // Sum ET
+    intree->SetBranchAddress(metVar.c_str(),        &met);        // Uncorrected PF MET
+    intree->SetBranchAddress(metPhiVar.c_str(),     &metPhi);     // phi(MET)
+    intree->SetBranchAddress("sumEt",               &sumEt);      // Sum ET
+    
     intree->SetBranchAddress("mt",       &mt);        // transverse mass
-    intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
-    intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
+    // intree->SetBranchAddress(uparName.c_str(), &u1);         // parallel component of recoil      
+    // intree->SetBranchAddress(uprpName.c_str(), &u2);         // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
     intree->SetBranchAddress("genLep",      &genLep);       // gen lepton 4-vector 
     intree->SetBranchAddress("genV",      &genV);       // lepton 4-vector 
     intree->SetBranchAddress("puWeight",     &puWeight); 
-	if(doElectron) intree->SetBranchAddress("lep_raw",         &lep_raw);       // probe lepton 4-vector
-    //     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
+    intree->SetBranchAddress("nTkLayers",   &nTkLayers);       // lepton 4-vector
+	  if(doElectron) intree->SetBranchAddress("lep_raw",         &lep_raw);       // probe lepton 4-vector
     //
     // Loop over events
     //
-
+    int iterator=5;
     for(Int_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(Int_t ientry=0; ientry<intree->GetEntries(); ientry+=iterator) {
       intree->GetEntry(ientry);
 
       // apply rochester correction
       TLorentzVector mu;
       mu.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
-      // comment out for now 
-      // float qter=1.0;
+      double rand = gRandom->Uniform(1);
       double SF1=1;
       if(infoldername.Contains("data_")) {
 	    SF1 = rc.kScaleDT(q, mu.Pt(), mu.Eta(), mu.Phi());
       } else {
-	    SF1 = rc.kSpreadMC(q, mu.Pt(), mu.Eta(), mu.Phi(), genLep->Pt());
-        // mu*=SF1;
-      } 
+        if(genMuonPt > 0){
+          SF1 = rc.kSpreadMC(q, mu.Pt(), mu.Eta(), mu.Phi(), genMuonPt);
+        } else {
+          SF1 = rc.kSmearMC(q, mu.Pt(),  mu.Eta(), mu.Phi(), nTkLayers, rand);
+        }
+      }
       mu*=SF1;
 
       if(charge== 1 && q<0) continue;
@@ -525,7 +513,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 	     pfu1Frac2,  pfu1Frac2Err,
 	     pfu1Frac3,  pfu1Frac3Err,
 	     &pdfsU1,
-	     etaBinCategory);
+	     etaBinCategory, do_keys);
 
           
   std::cout << "writing" << std::endl;
@@ -549,7 +537,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
 	     pfu2Frac2,  pfu2Frac2Err,
 	     pfu2Frac3,  pfu2Frac3Err,
 	     &pdfsU2,
-	     etaBinCategory);
+	     etaBinCategory, do_keys);
          
   sprintf(outpdfname,"%s/%s.root",outputDir.Data(),"pdfsU2");
   pdfsU2.writeToFile(outpdfname);
@@ -1221,7 +1209,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 		Double_t *frac2Arr,  Double_t *frac2ErrArr,
 		Double_t *frac3Arr,  Double_t *frac3ErrArr,
 		RooWorkspace *wksp,
-		int etaBinCategory
+		int etaBinCategory, bool do_keys
 ) {
   char pname[50];
   char lumi[50];
@@ -1334,7 +1322,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
       // sigma3.setMax(5.0*(hv[ibin-1]->GetRMS()));
       // sigma3.setVal(1.5*(hv[ibin-1]->GetRMS()));
      
-     if( ibin == 38 || ibin == 30){
+     if( ibin == 38 || ibin == 30 || ibin == 7 || ibin ==27){
         mean1.setVal(hv[ibin]->GetMean());
         mean2.setVal(hv[ibin]->GetMean());
         mean3.setVal(hv[ibin]->GetMean());
@@ -1468,47 +1456,43 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     int nTries = 0;
 
     do {
+      // if(ibin==22||ibin==27)break;
       fitResult = modelpdf.fitTo(dataHist,
-				 NumCPU(4),
-				 //				 Minimizer("Minuit2","minimize"),
-				 Minimizer("Minuit2","scan"),
-				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 RooFit::Minos(),
-				 RooFit::Strategy(2),
-				 RooFit::Save());
+         NumCPU(4),
+         Minimizer("Minuit2","scan"),
+         ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+         RooFit::Minos(),
+         RooFit::Strategy(2),
+         RooFit::Save());
                  
         // nTries++;
 
       fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
-				 //				 Minimizer("Minuit2","minimize"),
 				 Minimizer("Minuit2","migrad"),
 				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				 RooFit::Hesse(),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
-       fitResult = modelpdf.fitTo(dataHist,
+         
+      fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
-				 //				 Minimizer("Minuit2","minimize"),
 				 Minimizer("Minuit2","improve"),
 				 ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-				 //				 ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
 				 RooFit::Minos(),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
 				 
-	fitResult = modelpdf.fitTo(dataHist,
-			       NumCPU(4),
-			       Minimizer("Minuit2","minimize"),
-			       ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-			       //			       ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
-			       RooFit::Minos(),
-			       RooFit::Strategy(2),
-	               RooFit::Save());
+      fitResult = modelpdf.fitTo(dataHist,
+         NumCPU(4),
+         Minimizer("Minuit2","minimize"),
+         ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
+         RooFit::Minos(),
+         RooFit::Strategy(2),
+         RooFit::Save());
+         
         nTries++;
-    }while((fitResult->status()>0 || fitResult->covQual()<3)&&nTries < 10);
+    } while((fitResult->status()>0 || fitResult->covQual()<3)&&nTries < 10);
 
     c->SetFillColor(kWhite);
     if(fitResult->status()>0) c->SetFillColor(kYellow);
@@ -1633,7 +1617,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     sprintf(sig1text,"#sigma = %.1f #pm %.1f",sigma1Arr[ibin],sigma1ErrArr[ibin]);
     if(model>=2) {
       sprintf(mean2text,"#mu_{2} = %.1f #pm %.1f",mean2Arr[ibin],mean2ErrArr[ibin]);
-      sprintf(sig0text,"#sigma = %.1f #pm %.1f",sigma0Arr[ibin],sigma0ErrArr[ibin]);
+      // sprintf(sig0text,"#sigma = %.1f #pm %.1f",sigma0Arr[ibin],sigma0ErrArr[ibin]);
       sprintf(sig1text,"#sigma_{1} = %.1f #pm %.1f",sigma1Arr[ibin],sigma1ErrArr[ibin]);          
       sprintf(sig2text,"#sigma_{2} = %.1f #pm %.1f",sigma2Arr[ibin],sigma2ErrArr[ibin]);
     }
