@@ -36,7 +36,7 @@ EnergyScaleCorrection::EnergyScaleCorrection(const std::string& correctionFileNa
 EnergyScaleCorrection::EnergyScaleCorrection(const std::string& correctionFileName, FileFormat type):
   smearingType_(type)
 {
-  cout << "smearing type  " << smearingType_ << endl;
+  // cout << "smearing type  " << smearingType_ << endl;
   cout << "Read the scales " << endl;
   if(!correctionFileName.empty()) { 
     std::string filename = correctionFileName+"_scales.dat";
@@ -98,10 +98,7 @@ float EnergyScaleCorrection::smearingSigma(int runnr, double et, double eta, dou
 					   unsigned int gainSeed, float nrSigmaRho, 
 					   float nrSigmaPhi) const
 {
-  // std::cout << "get smear corr. run " << runnr << ", et " << et << ", eta " << eta << ", r9 " << r9 << ", gain " << gainSeed << std::endl;  
-
   const SmearCorrection* smearCorr = getSmearCorr(runnr,et,eta,r9,gainSeed);
-  // std::cout << "print smear" << std::endl;
   // smearCorr->print();
 						  // std::cout << "rho " << nrSigmaRho << "  phi " << nrSigmaPhi << std::endl;
                           // std::cout << "smear correction " << smearCorr << std::endl;
@@ -264,7 +261,7 @@ void EnergyScaleCorrection::readScalesFromFile(const std::string& filename)
 	float etMax;  ///< Max Et value for the bin
 	unsigned int gain; ///< 12, 6, 1, 61 (double gain switch)
   
-  std::cout << "reading file" << std::endl;
+  // std::cout << "reading file" << std::endl;
   // for(file >> category; file.good(); file >> category) {
     
     // file >> region2
@@ -347,7 +344,7 @@ void EnergyScaleCorrection::readSmearingsFromFile(const std::string& filename)
       addSmearing(category, runMin, runMax, rho,  errRho, phi, errPhi, eMean, errEMean);
       
     } else if(smearingType_ == ECALELF || smearingType_ == TABLE) {
-        std::cout << "hello TABLE" << std::endl;
+        // std::cout << "hello TABLE" << std::endl;
       file >> category >> 
       eMean >> errEMean >>
       rho >> errRho >> phiString >> errPhiString;
@@ -421,34 +418,34 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
   p1 = category.find("absEta_");
   
   if(category.find("absEta_0_1.4442") != std::string::npos) {
-    cout << "cat 0a" << endl;
+    // cout << "cat 0a" << endl;
     etaMin_ = 0;
     etaMax_ = 1.479;
   } else if(category.find("absEta_1.566_2.5") != std::string::npos) {
     
-    cout << "cat 0b" << endl;
+    // cout << "cat 0b" << endl;
     etaMin_ = 1.479;
     etaMax_ = 3;
   } else if(category.find("absEta_0_1") != std::string::npos) {
-    cout << "cat a" << endl;
+    // cout << "cat a" << endl;
     etaMin_ = 0;
     etaMax_ = 1;
   } else if(category.find("absEta_1_1.4442") != std::string::npos) {
     
-    cout << "cat b" << endl;
+    // cout << "cat b" << endl;
     etaMin_ = 1;
     etaMax_ = 1.479;
   } else if(category.find("absEta_1.566_2") != std::string::npos) {
-    cout << "cat c" << endl;
+    // cout << "cat c" << endl;
     etaMin_ = 1.479;
     etaMax_ = 2;
   } else if(category.find("absEta_2_2.5") != std::string::npos) {
-    cout << "cat d" << endl;
+    // cout << "cat d" << endl;
     etaMin_ = 2;
     etaMax_ = 3;
   } else {
     if(p1 != std::string::npos) {
-      std::cout << "hello" << std::endl;
+      // std::cout << "hello" << std::endl;
       p1 = category.find("_", p1);
       p2 = category.find("_", p1 + 1);
       etaMin_ = std::stof(category.substr(p1 + 1, p2 - p1 - 1));
@@ -457,7 +454,7 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
       etaMax_ = std::stof(category.substr(p1 + 1, p2 - p1 - 1));
     }
   }
-  cout << "eta min " << etaMin_ << "  eta Max " << etaMax_ << endl;
+  // cout << "eta min " << etaMin_ << "  eta Max " << etaMax_ << endl;
   
   if(category.find("EBlowEta") != std::string::npos) {
     etaMin_ = 0;
@@ -515,7 +512,7 @@ EnergyScaleCorrection::CorrectionCategory::CorrectionCategory(const std::string&
       if(r9Max_>=1.0) r9Max_ = std::numeric_limits<float>::max();
     }
   }
-  cout << "r9 min " << r9Min_ << "  r9 max " << r9Max_ << endl;
+  // cout << "r9 min " << r9Min_ << "  r9 max " << r9Max_ << endl;
   //------------------------------
   p1 = category.find("gainEle_");      // Position of first character
   if(p1 != std::string::npos) {
