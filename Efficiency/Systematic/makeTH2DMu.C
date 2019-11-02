@@ -15,8 +15,8 @@
 #include "TStyle.h"
 #include "TMinuit.h"
 
-const int NBpt  = 2;
-const float ptrange[NBpt+1]   = {25., 40., 8000.};
+const int NBpt  = 3;
+const float ptrange[NBpt+1]   = {25., 35.0, 50., 10000.};
 const int NBeta = 12;
 const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
 
@@ -28,7 +28,7 @@ const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6
 
 // TString mainDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
 // TString mainDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV_v0/results/TOYS/";
-TString mainDir="/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/TOYS_v2/";
+TString mainDir="/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/TOYS/";
 TString sigDirFSR="_POWxPythia_POWxPhotos/";
 TString sigDirMC ="_aMCxPythia_minloxPythia/";
 TString bkgDir   ="_aMCxPythia_POWBKG/"; // should be exp vs Powerlaw
@@ -38,7 +38,7 @@ TString effDirM = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Effici
 TString amc="_aMCxPythia/";
 TString tagpt="_aMCxPythia_tagPt/"; // should be exp vs Powerlaw
 
-TString outDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics";
+TString outDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics_test";
 TString subf="";
 
 // TString sigDirMC="_aMCxPythia_v0_POWBKG_v0/";
@@ -115,7 +115,7 @@ void makeTH2DMu(TString eType = "MuStaEff"){
     sprintf(infilename,"%s%s%s%s%s/Sig_pull_%d.txt",mainDir.Data(),eType.Data(),bkgDir.Data(),subf.Data(),charges[1].Data(),i);
     ifstream infile6(infilename); infile6>>value; value=(doAbs?fabs(value):value); vBkgPos.push_back(value); value=0; 
     
-    if(i==2||i==10||i==14) {vFSRNeg[i]=fsrReplace[i]-1;vFSRPos[i]=fsrReplace[i]-1;}
+    // if(i==2||i==10||i==14) {vFSRNeg[i]=fsrReplace[i]-1;vFSRPos[i]=fsrReplace[i]-1;}
     // if(i==2||i==10||i==14) {vMCNeg[i]=mcReplace[i]-1;vMCPos[i]=mcReplace[i]-1;}
     // if(i==10||i==14) {vBkgNeg[i]=bkgReplace[i]-1;vBkgPos[i]=bkgReplace[i]-1;}
   }
@@ -142,7 +142,7 @@ void makeTH2DMu(TString eType = "MuStaEff"){
 
 		for(int ieta=0; ieta<NBeta; ieta++){
       
-      std::cout << ipt*NBeta+ieta << "  " << 1.+vFSRNeg[ipt*NBeta+ieta] << " " << 1.+vMCNeg[ipt*NBeta+ieta] << std::endl;
+      // std::cout << ipt*NBeta+ieta << "  " << 1.+vFSRNeg[ipt*NBeta+ieta] << " " << 1.+vMCNeg[ipt*NBeta+ieta] << std::endl;
 			hFSRNeg->SetBinContent(ieta+1, ipt+1, 1.+vFSRNeg[ipt*NBeta+ieta]);
 			hFSRPos->SetBinContent(ieta+1, ipt+1, 1.+vFSRPos[ipt*NBeta+ieta]);
 			hMCNeg ->SetBinContent(ieta+1, ipt+1, 1.+vMCNeg[ipt*NBeta+ieta]);
@@ -156,14 +156,19 @@ void makeTH2DMu(TString eType = "MuStaEff"){
 			// hSigMCPos->SetBinContent(ieta+1, ipt+1, 1.-vMCPos[ipt*NBeta+ieta]);
 			// hBkgNeg->SetBinContent(ieta+1, ipt+1, 1.-vBkgNeg[ipt*NBeta+ieta]);
 			// hBkgPos->SetBinContent(ieta+1, ipt+1, 1.-vBkgPos[ipt*NBeta+ieta]);
+      // fits are trash, do something...
       
+      cout << tagPosDat->GetBinContent(ieta+1, ipt+1) << " " << amcPosDat->GetBinContent(ieta+1, ipt+1) << endl;
       double num = tagPosDat->GetBinContent(ieta+1, ipt+1) / amcPosDat->GetBinContent(ieta+1, ipt+1);
       double dnm = tagPosMC ->GetBinContent(ieta+1, ipt+1) / amcPosMC ->GetBinContent(ieta+1, ipt+1);
-      hTagNeg->SetBinContent(ieta+1, ipt+1, num/dnm);
+      // if(num < 0.99 )num = 0.995;
+      
+      hTagPos->SetBinContent(ieta+1, ipt+1, num/dnm);
       
       num = tagNegDat->GetBinContent(ieta+1, ipt+1) / amcNegDat->GetBinContent(ieta+1, ipt+1);
       dnm = tagNegMC ->GetBinContent(ieta+1, ipt+1) / amcNegMC ->GetBinContent(ieta+1, ipt+1);
-			hTagPos->SetBinContent(ieta+1, ipt+1, num/dnm);
+      // if(num < 0.99 )num = 0.995;
+			hTagNeg->SetBinContent(ieta+1, ipt+1, num/dnm);
 		}
 	}
   char outfilename[500];

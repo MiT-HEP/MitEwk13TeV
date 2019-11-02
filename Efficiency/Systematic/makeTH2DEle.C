@@ -22,13 +22,14 @@
 
 const int NBeta = 12;
 const float etarange[NBeta+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
-const int NBpt = 4;
-const float ptrange[NBpt+1] = {25,35,45,60,8000};
+const int NBpt  = 3;
+const float ptrange[NBpt+1]   = {25., 35.0, 50., 10000.};
 
-const vector<TString> charges{"Negative","Positive"};
+// const vector<TString> charges{"Negative","Positive"};
+const vector<TString> charges{"Combined","Combined"};
 
 // TString masterDir="/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/testReweights_v2_2/results/";
-TString masterDir="/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/TOYS_v2/";
+TString masterDir="/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/TOYS/";
 TString DirFSR="_POWxPythia_POWxPhotos/"; // change this once i finish all my shit
 TString DirMC="_aMCxPythia_minloxPythia/";
 TString bkgDir="_aMCxPythia_POWBKG/"; // should be exp vs Powerlaw
@@ -84,22 +85,22 @@ void makeTH2DEle(TString eType = "EleGSFSelEff"){
   for(int i = 0; i < NBeta*NBpt+1; ++i){
     // double value=0;
     // char infilename[250];
-    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirFSR.Data(),"Negative",i);
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirFSR.Data(),charges[0].Data(),i);
     // std::cout << infilename << std::endl;
     
     // std::cout << "what" << std::endl;
     ifstream infile1(infilename); assert (infile1);  infile1>>value; vFSRNeg.push_back(value); value=0;
     std::cout << infilename << vFSRNeg.back() << std::endl;
     // std::cout << "blah" << std::endl;
-    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirFSR.Data(),"Positive",i);
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirFSR.Data(),charges[1].Data(),i);
     ifstream infile2(infilename); infile2>>value; vFSRPos.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirMC.Data(),"Negative",i);
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirMC.Data(),charges[0].Data(),i);
     ifstream infile3(infilename); infile3>>value; vMCNeg.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirMC.Data(),"Positive",i);
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),DirMC.Data(),charges[1].Data(),i);
     ifstream infile4(infilename); infile4>>value; vMCPos.push_back(value); value=0;    
-    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),bkgDir.Data(),"Negative",i);
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),bkgDir.Data(),charges[0].Data(),i);
     ifstream infile5(infilename); infile5>>value; vBkgNeg.push_back(value); value=0;
-    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),bkgDir.Data(),"Positive",i);
+    sprintf(infilename,"%s%s%s%s/Sig_pull_%d.txt",masterDir.Data(),eType.Data(),bkgDir.Data(),charges[1].Data(),i);
     ifstream infile6(infilename); infile6>>value; vBkgPos.push_back(value); value=0; 
   }
   std::cout << "done loop" << std::endl;
@@ -125,6 +126,8 @@ void makeTH2DEle(TString eType = "EleGSFSelEff"){
 	for(int ipt=0; ipt<NBpt; ipt++){
 
 		for(int ieta=0; ieta<NBeta; ieta++){
+      
+      std::cout << ipt*NBeta+ieta << "  " << 1.+vFSRNeg[ipt*NBeta+ieta] << " " << 1.+vMCNeg[ipt*NBeta+ieta] << std::endl;
 			hFSRNeg->SetBinContent(ieta+1, ipt+1, 1.+vFSRNeg[ipt*NBeta+ieta]);
 			hFSRPos->SetBinContent(ieta+1, ipt+1, 1.+vFSRPos[ipt*NBeta+ieta]);
 			hMCNeg->SetBinContent(ieta+1, ipt+1, 1.+vMCNeg[ipt*NBeta+ieta]);
