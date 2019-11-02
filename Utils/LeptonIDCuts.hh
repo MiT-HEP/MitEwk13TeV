@@ -603,8 +603,8 @@ Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t 
   }
   else {
     if(is13TeV) return triggerMenu.pass("HLT_Ele27_WPTight_Gsf_v*",hltBits); // 13 TeV
-    else return triggerMenu.pass("HLT_HIEle20_WPLoose_Gsf_v*",hltBits); // 5 TeV
-    // else return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // 5 TeV
+    // else return triggerMenu.pass("HLT_HIEle20_WPLoose_Gsf_v*",hltBits); // 5 TeV
+    else return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // 5 TeV
   }
 }
 Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData, Bool_t is13TeV=true) {
@@ -614,8 +614,8 @@ Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBi
   }
   else {
     if(is13TeV){return triggerMenu.passObj("HLT_Ele27_WPTight_Gsf_v*","hltEle27WPTightGsfTrackIsoFilter",hltMatchBits);} // 13 TeV
-    else{ return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits);} // 5 TeV
-    // else return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // 5 TeV
+    // else{ return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits);} // 5 TeV
+    else return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // 5 TeV
     // return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
   }
 }

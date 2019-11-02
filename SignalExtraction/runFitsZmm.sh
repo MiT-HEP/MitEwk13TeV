@@ -15,11 +15,17 @@ S5="5TeV"
 
 # root -b -l -q fitWlikeZm.C+\(\"${OUTDIR}/PLOT_ZmWlike_Wm_${S13}_RecoilClosure\",\"${NTUPDIR_13}\",\"${S13}\",${LUMI13},0\)
 # root -b -l -q fitZm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_ZmmMET_rmEEjet_keys_${S13}\",\"${S13}\",${LUMI13},0\)
-# root -b -l -q fitZm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_ZmmMET_Orig_fixRochRec_${S13}\",\"${S13}\",${LUMI13},0\)
-# root -b -l -q fitZm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/ZmmMET_WithRecoil_${S5}\",\"${S5}\",${LUMI5},0\)
-root -b -l -q  fitZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/TEST_currentZmm_13\",\"${S13}\",${LUMI13}\,0\)
+# root -b -l -q fitZm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/TEST_print_${S13}\",\"${S13}\",${LUMI13},0\)
+root -b -l -q  fitZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_Zmm_13TeV_v3\",\"${S13}\",${LUMI13}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_Zmm_5TeV\",\"${S5}\",${LUMI5}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/plotZmm5TeV_2017Roch_noBKG\",${LUMI5}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"checkTOP\",${LUMI13}\,0\)
 # root -b -l -q  plotZmm.C+\(\"${NTUPDIR_13}/Zmumu/ntuples\",\"Zmm\",${LUMI13}\,1\)
 # root -l -q  plotResiduals.C+\(\"${OUTDIR}/Zmm_METenv_all\",${LUMI13}\)
+
+### 
+# 5TeV 
+
+# root -b -l -q fitZm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/PRELIM_Zmm_5TeV_Recoil\",\"${S5}\",${LUMI5},0\)
+
+# root -b -l -q  fitZmm.C+\(\"${NTUPDIR_5}/Zmumu/ntuples\",\"${OUTDIR}/FINAL_Zmm_5TeV_noRoch\",\"${S5}\",${LUMI5}\,0\)

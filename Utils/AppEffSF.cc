@@ -168,10 +168,17 @@ class AppEffSF {
     }
   
 
-    
+    double statHLTdilep(TH2D *pos, TH2D *neg, double wgt, TLorentzVector *l1,  int q1, TLorentzVector *l2 = nullptr,  int q2 = 0){
+      double stat1 = statUnc(hlt, l1, q1, pos, neg, wgt);
+      double stat2 = statUnc(hlt, l2, q2, pos, neg, wgt);
+      double eff1 = 1-computeHLTSF(l1,q1);
+      double eff2 = 1-computeHLTSF(l2,q2);
+      cout << stat1 << " " << stat2 << " " << eff1 << " " << eff2 << endl;
+      return sqrt(stat1*stat1*eff1*eff1+stat2*stat2*eff2*eff2);
+    }
     
     double statUncHLT(TLorentzVector *l1,  int q1, TH2D *pos, TH2D *neg, double wgt){
-      return statUncTrigger(hlt, l1, q1, pos, neg, wgt);
+      return statUnc(hlt, l1, q1, pos, neg, wgt);
     }
     double statUncSel(TLorentzVector *l1,  int q1, TH2D *pos, TH2D *neg, double wgt){
       return statUnc(sel, l1, q1, pos, neg, wgt);
@@ -263,25 +270,54 @@ class AppEffSF {
       return var;
     }
     
-    double statUncTrigger(basicEff eff, TLorentzVector *l1,  int q1, TH2D *pos, TH2D *neg, double wgt){
+    double statUncHLTDilep(TLorentzVector *lep1,  int q1, TLorentzVector* lep2 = nullptr, int q2 = 0){
+      // double effdata1 = 1.0, effdata2 = 1.0; 
+      // double effmc1 = 1.0, effmc2 = 1.0;
+      double deff1 = 0.0, deff2 = 0.0;
+      double corr1 = 1.0, corr2 = 1.0;
+      // double test1 = 1.0, test2 = 1.0;
       double var = 0.0;
-      if(q1>0) {
-        Double_t effdata = 1-eff.dataPos.getEff(l1->Eta(), l1->Pt());
-        Double_t errdata = TMath::Max(eff.dataPos.getErrLow(l1->Eta(), l1->Pt()), eff.dataPos.getErrHigh(l1->Eta(), l1->Pt()));
-        Double_t effmc   = 1-eff.mcPos.getEff(l1->Eta(), l1->Pt());
-        Double_t errmc   = TMath::Max(eff.mcPos.getErrLow(l1->Eta(), l1->Pt()), eff.mcPos.getErrHigh(l1->Eta(), l1->Pt()));
-        Double_t errSta = ((1 - effdata)/(1 - effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-        pos->Fill(l1->Eta(), l1->Pt(), errSta*wgt);
-        var+=errSta*errSta;
+      TLorentzVector *l1,*l2;
+      if(q1 > 0){
+        l1 = lep1;
+        l2 = lep2;
       } else {
-        Double_t effdata = 1-eff.dataNeg.getEff(l1->Eta(), l1->Pt());
-        Double_t errdata = TMath::Max(eff.dataNeg.getErrLow(l1->Eta(), l1->Pt()), eff.dataNeg.getErrHigh(l1->Eta(), l1->Pt()));
-        Double_t effmc   = 1-eff.mcNeg.getEff(l1->Eta(), l1->Pt());
-        Double_t errmc   = TMath::Max(eff.mcNeg.getErrLow(l1->Eta(), l1->Pt()), eff.mcNeg.getErrHigh(l1->Eta(), l1->Pt()));
-        Double_t errSta = ((1 - effdata)/(1 - effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-        neg->Fill(l1->Eta(), l1->Pt(), errSta*wgt);
-        var+=errSta*errSta;
+        l1 = lep2;
+        l2 = lep1;
       }
+      //sqrt((1-e2)^2*de1^2 + (1-e1)^2*de2^2))
+      Double_t effdata = hlt.dataPos.getEff(l1->Eta(), l1->Pt());
+      Double_t errdata = TMath::Max(hlt.dataPos.getErrLow(l1->Eta(), l1->Pt()), hlt.dataPos.getErrHigh(l1->Eta(), l1->Pt()));
+      Double_t effmc   = hlt.mcPos.getEff(l1->Eta(), l1->Pt());
+      Double_t errmc   = TMath::Max(hlt.mcPos.getErrLow(l1->Eta(), l1->Pt()), hlt.mcPos.getErrHigh(l1->Eta(), l1->Pt()));
+      deff1 = sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+      double deff1d = sqrt(errdata*errdata/effdata/effdata);
+      double deff1m = sqrt(errmc*errmc/effmc/effmc);
+
+      double corr1d = (1 - effdata);
+      double corr1m = (1 - effmc);
+
+      effdata = hlt.dataNeg.getEff(l2->Eta(), l2->Pt());
+      errdata = TMath::Max(hlt.dataNeg.getErrLow(l2->Eta(), l2->Pt()), hlt.dataNeg.getErrHigh(l2->Eta(), l2->Pt()));
+      effmc   = hlt.mcNeg.getEff(l2->Eta(), l2->Pt());
+      errmc   = TMath::Max(hlt.mcNeg.getErrLow(l2->Eta(), l2->Pt()), hlt.mcNeg.getErrHigh(l2->Eta(), l2->Pt()));
+      deff2 = sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+      double deff2d = sqrt(errdata*errdata/effdata/effdata);
+      double deff2m = sqrt(errmc*errmc/effmc/effmc);
+
+      double corr2d = (1 - effdata);
+      double corr2m = (1 - effmc);
+
+      double corr = (1 - corr1d*corr2d)/(1 - corr1m*corr2m);
+      
+      // var = corr*sqrt(deff1*deff1+deff2*deff2);
+      var += corr1d*corr1d*deff2d*deff2d;
+      var += corr1m*corr1m*deff2m*deff2m;
+      var += corr2d*corr2d*deff1d*deff1d;
+      var += corr2m*corr2m*deff1m*deff1m;
+      
+      
+      
       return var;
     }
     

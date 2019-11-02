@@ -51,8 +51,8 @@ const int massBin = 60;
 //const float elEtaRange[elEtaNB+1] = {-2.4,-2.3,-2.2,-2.1,-2.0,-1.7,-1.6,-1.566,-1.4442,-1.4,-1.2,-0.8,-0.5,-0.3,-0.2,0.0,0.2,0.3,0.5,0.8,1.2,1.4442,1.566,1.6,1.7,2.0,2.1,2.2,2.3,2.4};
 const int muEtaNB = 12;
 const float muEtaRange[muEtaNB+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
-const int muPtNB = 8;
-const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+const int muPtNB = 3;
+const float muPtRange[muPtNB+1] = {25,35,50,10000};
 // const int muPtNB = 2;
 // const float muPtRange[muPtNB+1] = {25,40,8000};
 

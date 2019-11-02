@@ -67,7 +67,7 @@
 
 // bin size constants
 #define BIN_SIZE_PASS 1
-#define BIN_SIZE_FAIL 1
+#define BIN_SIZE_FAIL 2
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
@@ -155,8 +155,9 @@ void plotEff(const TString conf,            // input binning file
 	     const UInt_t  runNumHi=999999  // upper bound of run range
 ) {
   gBenchmark->Start("plotEff");
-  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-
+  // RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setSilentMode(true);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
@@ -1566,6 +1567,7 @@ void performCount(Double_t &resEff, Double_t &resErrl, Double_t &resErrh,
     if(m<massLo || m>massHi) continue;
     ntotal+=w;
   }
+  if(ntotal < npass) ntotal = npass;
   resEff  = (ntotal>0) ? npass/ntotal : 0;
   if(method==0) {
     resErrl = resEff - TEfficiency::ClopperPearson((UInt_t)ntotal, (UInt_t)npass, 0.68269, kFALSE);
@@ -2379,13 +2381,10 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==8 && charge==0 && ib
 } else if (yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0) {
     std::cout << "open" << std::endl;
     char templatename[200];
-    // sprintf(templatename,"../afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
-    // 
-    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_POWxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
-    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_POWxPhotos_BKG/Combined/plots/etapt_%d.root",ibin);
-    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_minloxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
-    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
-    sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_5TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
+    sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_5TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG_v2/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_aMCxPythia_BKG/Combined/plots/etapt_%d.root",ibin);
+    // sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_aMCxPythia_tagPt_BKG/Combined/plots/etapt_%d.root",ibin);
+
     TFile *f = new TFile(templatename);
     std::cout << "opeend" << std::endl;
     RooWorkspace *w = (RooWorkspace*) f->Get("w");
@@ -2423,7 +2422,7 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==8 && charge==0 && ib
  } else if (yaxislabel.CompareTo("stand-alone")==0       && bkgfail==7 && charge==0) {
     std::cout << "open" << std::endl;
     char templatename[200];
-    sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_v2/LowPU2017ID_5TeV/results/Zmm/Data/MuStaEff_POWBKG_BKG/Combined/plots/etapt_%d.root",ibin);
+    sprintf(templatename,"/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/Data/MuStaEff_POWBKG_BKG/Combined/plots/etapt_%d.root",ibin);
     // sprintf(templatename,"../LowPU2017ID_13TeV_v1/results/Zmm/Data/MuStaEff_POWBKG_v2_BkgFailOnly/Combined/plots/etapt_%d.root",ibin);
     TFile *f = new TFile(templatename);
     std::cout << "opeend" << std::endl;
@@ -2487,8 +2486,8 @@ if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==8 && charge==0 && ib
   if(bkgpass==0) NbkgPass.setVal(0);
   RooRealVar NbkgFail("NbkgFail","Background count in FAIL sample",0.1*NbkgFailMax,0.01,NbkgFailMax);
   if(yaxislabel.CompareTo("stand-alone")==0 && fabs(xbinLo) >= 0.9 ) {
-      NbkgFail.setVal(0.98*NbkgFailMax);
-      NbkgFail.setRange(0.9*NbkgFailMax,NbkgFailMax*1.0);
+      NbkgFail.setVal(0.0);
+      NbkgFail.setRange(0.0,NbkgFailMax*2.0);
       eff.setVal(0.98);
   }
    else if(yaxislabel.CompareTo("stand-alone")==0       && bkgfail==6 && charge==0 && xbinLo== 1.2 && xbinHi== 2.1 && ybinLo==25 && ybinHi==40  ){
@@ -2594,7 +2593,7 @@ std::cout << "-----------------" << std::endl;
 			       RooFit::Strategy(2),
 	               RooFit::Save());
         nTries++;
-    }while((fitResult->status()>0)&&nTries < 10);
+    }while((fitResult->status()>0)&&nTries < 1);
                  
   // Refit w/o MINOS if MINOS errors are strange...
   if((fabs(eff.getErrorLo())<5e-4) || (eff.getErrorHi()<5e-4) || fitResult->status()!=0){

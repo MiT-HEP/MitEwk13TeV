@@ -5,15 +5,15 @@ PU=`echo "${2}"`
 ID=`echo "${3}"`
 # NBINS=96 #96 bins for muon channels
 # NBINS=24 #24 bins for STANDALONE MUON channels
-NBINS=48 #48 bins for electron channels
+NBINS=36 #36 for Zee and Zmm
 NTOYS=1000 # should be default 1000
 # EFFTYPE=MuSITEff
 # EFFTYPE=MuStaEff
 EFFTYPE=EleGSFSelEff
 
 # declare -a EFFTYPES=("MuHLTEff" "MuSelEff" "MuStaEff") #for muons
-# declare -a CHARGES=("Combined") #for muons
-declare -a CHARGES=("Positive" "Negative") #for muons
+declare -a CHARGES=("Combined") #for muons
+# declare -a CHARGES=("Positive" "Negative") #for muons
 # declare -a CHARGES=("Negative") #for muons
 # FOLDER=Zmm # or Zee
 FOLDER=Zee # or Zee
@@ -24,8 +24,8 @@ FOLDER=Zee # or Zee
 VERS=
 
 # ## FSR alternative shape evaluation
-# POSTFIX=_POWxPythia${VERS}
-# POSTFIX_alt=_POWxPhotos${VERS}
+POSTFIX=_POWxPythia${VERS}
+POSTFIX_alt=_POWxPhotos${VERS}
 
 
 # MC alternative shape eval
@@ -33,8 +33,8 @@ VERS=
 # POSTFIX_alt=_minloxPythia${VERS}
 
 ## BKG alternative shape eval
-POSTFIX=_aMCxPythia${VERS}
-POSTFIX_alt=_POWBKG${VERS}
+# POSTFIX=_aMCxPythia${VERS}
+# POSTFIX_alt=_POWBKG${VERS}
 
 # POSTFIX=_aMCxPythia_staFit7
 # POSTFIX_alt=_POWBKG_staFit7

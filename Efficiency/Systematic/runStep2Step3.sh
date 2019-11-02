@@ -40,7 +40,7 @@ echo "running job w Cluster ID ${ClusterID}, binnum ${binnum}, NTOYS ${NTOYS}, F
 # TOP="$PWD"
 #
 BINVAR=etapt # probably don't need to change
-OUTPUTDIR=${FILEDIR}/TOYS_v2/${EFFTYPE}${POSTFIX}${POSTFIX_alt}/${CHARGE}/
+OUTPUTDIR=${FILEDIR}/TOYS/${EFFTYPE}${POSTFIX}${POSTFIX_alt}/${CHARGE}/
 # STAGEDIR=${TOP}/${EFFTYPE}/${CHARGE}/Step2Output/${POSTFIX}v${POSTFIX_alt}
 STAGEDIR=.
 # FOLDER=Zmm

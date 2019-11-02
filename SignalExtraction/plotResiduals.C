@@ -131,12 +131,10 @@ void plotResiduals(const TString  outputDir,   // output directory
     
   TString lumiSec = "";
   
+  TString inputDirectory = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction";
   // MAIN FILE
   // Read in the Wmunu_pdfTemplates file here and start to get pdfs.
-  // TString inputName = "./Zmm_plot_full/Zmumu_pdfTemplates.root";
-  // TString inputName = "./Zmm_plot_eta_new/Zmumu_pdfTemplates.root";
-  TString inputName = "./TEST_Zm"+lumiSec+"_Main_2G_ZptReweight/Zmumu_pdfTemplates.root";
-  // TString inputName = "./Wmunu_etaBins/Wmunu_pdfTemplates_3.root";
+  TString inputName = inputDirectory+"/Zmm_MET_mainRecoil/Zmumu_pdfTemplates.root";
   TFile *inWmunuShapes = new TFile(inputName); assert(inWmunuShapes);
   RooWorkspace* combine_workspace = (RooWorkspace*) inWmunuShapes->Get("combine_workspace");
   combine_workspace->Print();
@@ -205,12 +203,18 @@ void plotResiduals(const TString  outputDir,   // output directory
   // fnamev.push_back(inputName);  
   // inputName = "./Zmm_plot_diag2/Zmumu_pdfTemplates.root";
   // fnamev.push_back(inputName);  
-  inputName = "./TEST_Zm"+lumiSec+"_Keys_2G_ZptReweight/Zmumu_pdfTemplates.root";
+  inputName = inputDirectory+"/Zmm_MET_mainRecoil_rc1/Zmumu_pdfTemplates.root";
   fnamev.push_back(inputName);
-  inputName = "./TEST_Zm"+lumiSec+"_Eta_2G_ZptReweight/Zmumu_pdfTemplates.root";
+  inputName = inputDirectory+"/Zmm_MET_etaRecoil/Zmumu_pdfTemplates.root";
   fnamev.push_back(inputName);
-  inputName = "./TEST_Zm"+lumiSec+"m_StatFixed_PlotCheck/Zmumu_pdfTemplates.root";
+  inputName = inputDirectory+"/Zmm_MET_keysRecoil/Zmumu_pdfTemplates.root";
   fnamev.push_back(inputName);
+  inputName = inputDirectory+"/Zmm_MET_statRecoil/Zmumu_pdfTemplates.root";
+  fnamev.push_back(inputName);
+  // inputName = "./TEST_Zm"+lumiSec+"_Eta_2G_ZptReweight/Zmumu_pdfTemplates.root";
+  // fnamev.push_back(inputName);
+  // inputName = "./TEST_Zm"+lumiSec+"m_StatFixed_PlotCheck/Zmumu_pdfTemplates.root";
+  // fnamev.push_back(inputName);
   
   int nShapes = fnamev.size();
   // loop through the alternate shapes:

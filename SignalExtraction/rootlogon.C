@@ -22,7 +22,7 @@
    gROOT->Macro("../EleScale/EnergyScaleCorrection.cc++");
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");  
-  //gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
+  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
 
   //gROOT->Macro("RooVoigtianShape.cc+");
   //gROOT->Macro("RooCMSShape.cc+");
@@ -34,7 +34,8 @@
   //gROOT->Macro("rochcor2015r.cc+");
  // gROOT->Macro("../RochesterCorr/RoccoR.cc+");
  
-  //gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
+  // gROOT->Macro("../Utils/PdfDiagonalizer.h++"); 
+  // gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
   //{  
    // //TString path = gSystem->GetIncludePath();
    // //path += " -I../EleScale/ ";
