@@ -154,6 +154,9 @@ double isoTrkCut=9999;
   
   // Control the types of uncertainties
   // enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
+  // systematics
+  // enum{no,ru,eta,keys,cent,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
+  // main set
   enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
   const string vaMET[]={"no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"};
   // const vector<string> vMET{ "no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"}; 
@@ -220,17 +223,17 @@ double isoTrkCut=9999;
   hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
   // -----------------------------------------------------
   
-  // Load the Z data and Z MC Pt spectra
-  TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
-  TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal"); 
-  hh_mc->Scale(1/hh_mc->Integral()); // normalize
+  // // Load the Z data and Z MC Pt spectra
+  // TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
+  // TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  // hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal"); 
+  // hh_mc->Scale(1/hh_mc->Integral()); // normalize
   
-  // TFile *_rat2 = new TFile("shapeDiff/UnfoldingOutputZPt.root");
-  // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // hh_diff = (TH1D*)_rat2->Get("hUnfold");
-  // hh_diff->Scale(1/hh_diff->Integral()); // normalize
-  // hh_diff->Divide(hh_mc);
+  // // TFile *_rat2 = new TFile("shapeDiff/UnfoldingOutputZPt.root");
+  // // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  // // hh_diff = (TH1D*)_rat2->Get("hUnfold");
+  // // hh_diff->Scale(1/hh_diff->Integral()); // normalize
+  // // hh_diff->Divide(hh_mc);
    
   //
   // input ntuple file names
@@ -240,37 +243,16 @@ double isoTrkCut=9999;
   vector<Int_t>   typev;
   
   
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));  typev.push_back(eData);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eW0j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eW1j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eW2j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.root"));  typev.push_back(eWx);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eZxx);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.root")); typev.push_back(eTtb);
-
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we_select.root")); typev.push_back(eAntiWlnu);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
-  
-  // // 13 TEV Muon Channel
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eW0j);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eW1j);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eW2j);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));  typev.push_back(eData);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/test/we0_select.root"));  typev.push_back(eW0j);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eW1j);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eW2j);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.root"));  typev.push_back(eWx);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eZxx);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.root"));  typev.push_back(eDib);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.root"));  typev.push_back(eDib);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.root"));  typev.push_back(eDib);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.root")); typev.push_back(eTtb);
 
    // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
    // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
@@ -278,8 +260,29 @@ double isoTrkCut=9999;
    // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we_select.root")); typev.push_back(eAntiWlnu);
    // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+  
+  // // 13 TEV Muon Channel
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eW0j);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eW1j);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eW2j);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
    
  /* 
   // For the 5 TeV
@@ -768,9 +771,9 @@ double isoTrkCut=9999;
 
   cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " tolerance " << tolerance << " strategy " << strategy << " precision " << precision << " MaxIterations " << MaxIterations << " MaxFunctionCalls " << MaxFunctionCalls << endl;
 
-  TFile *_rat2 = new TFile("TEST_Zmm_13TeV_incl_ZpTrw_v0/zPt_Normal13TeV.root");
-  TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  hh_diff = (TH1D*)_rat2->Get("hZptRatio");  
+  // TFile *_rat2 = new TFile("TEST_Zmm_13TeV_incl_ZpTrw_v0/zPt_Normal13TeV.root");
+  // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
+  // hh_diff = (TH1D*)_rat2->Get("hZptRatio");  
 
 //   
   //
@@ -854,7 +857,7 @@ double isoTrkCut=9999;
     //
     // loop over events
     //
-    double frac=0.01;
+    double frac=0.1;
     // if(typev[ifile]==eTtb) frac=1;
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
@@ -879,20 +882,13 @@ double isoTrkCut=9999;
       vector<double> wgtLum;
       // for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/prefireWeight);
       for(int jt=0; jt < nWeight; jt++) {
-        if((jt==pfireu||jt==pfired) && ((*evtWeight)[jt] > 1 ||(*evtWeight)[jt] < 0 )){
-          (*evtWeight)[jt] = 1;
-        }
-        if(jt==main && (prefireWeight > 1 &&prefireWeight <= 2 )){
-          (*evtWeight)[jt] /= 2;
-        }
-        
         // prefire shit is slightly messed up
         // also divide by 2 if > 2...
         wgtLum.push_back(lumi*((*evtWeight)[jt]));
         
-        if(typev[ifile]==eW0j||typev[ifile]==eW1j||typev[ifile]==eW2j||typev[ifile]==eWx||typev[ifile]==eAntiWlnu||typev[ifile]==eAntiWx){
-          wgtLum.back()*=0.96084;
-        }
+        // if(typev[ifile]==eW0j||typev[ifile]==eW1j||typev[ifile]==eW2j||typev[ifile]==eWx||typev[ifile]==eAntiWlnu||typev[ifile]==eAntiWx){
+          // wgtLum.back()*=0.96084;
+        // }
       }
       // if(typev[ifile]==eTtb){
         // for(int jt=0; jt < nWeight; jt++) wgtLum[jt]=1;
@@ -1140,13 +1136,13 @@ double isoTrkCut=9999;
               doMET ? hDibMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[it]->Fill(mtCorr,wgtLum[main]);
               // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hDibpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hDibpLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
+              fillLHE(hDibpLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             } else {
               hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hDibMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[it]->Fill(mtCorr,wgtLum[main]);
               // fillMETs(doMET,hDibmWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hDibmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hDibmLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
+              fillLHE(hDibmLHE[it],(*metVars)[no], wgtLum[main],lheweight);
               // for(int k=mc; k < nWeight; k++){
                 // doMET ? hDibmWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibmWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
               // }
@@ -1162,7 +1158,7 @@ double isoTrkCut=9999;
               doMET ? hTtbMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[it]->Fill(mtCorr,wgtLum[main]);
               // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hTtbpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hTtbpLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
+              fillLHE(hTtbpLHE[it],(*metVars)[no], wgtLum[main],lheweight);
               // for(int k=mc; k < nWeight; k++){
                 // doMET ? hTtbpWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbpWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
               // }
@@ -1171,7 +1167,7 @@ double isoTrkCut=9999;
               doMET ? hTtbMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[it]->Fill(mtCorr,wgtLum[main]);
               // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hTtbmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hTtbmLHE[it],(*metVars)[cent], wgtLum[main],lheweight);
+              fillLHE(hTtbmLHE[it],(*metVars)[no], wgtLum[main],lheweight);
               // for(int k=mc; k < nWeight; k++){
                 // doMET ? hTtbmWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbmWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
               // }
@@ -1209,7 +1205,7 @@ double isoTrkCut=9999;
     std::cout << hWlnupThyUncU[it][0]->Integral() << std::endl;
     std::cout << hWlnupThyUncU[it][1]->Integral() << std::endl;
     calcLHE(hWlnupThyUncU[it][uqcd], hWlnupThyUncU[it][pdf], hWlnupLHE[it], hWlnuMetp2d[it], 1);
-    calcLHE(hWlnumThyUncU[it][uqcd], hWlnumThyUncU[it][pdf], hWlnumLHE[it], hWlnuMetp2d[it], 1);
+    calcLHE(hWlnumThyUncU[it][uqcd], hWlnumThyUncU[it][pdf], hWlnumLHE[it], hWlnuMetm2d[it], 1);
     // std::cout << "calc lhe2" << std::endl;
     calcLHE(hEWKpThyUncU[it][uqcd], hEWKpThyUncU[it][pdf], hEWKpLHE[it], hEWKMetp2d[it], 0);
     calcLHE(hEWKmThyUncU[it][uqcd], hEWKmThyUncU[it][pdf], hEWKmLHE[it], hEWKMetm2d[it], 0);
@@ -1652,10 +1648,10 @@ double isoTrkCut=9999;
   
   std::cout << "blah here" << std::endl;
   
-  TH1D *hIsoBinQCDp = (TH1D*) hDataMetp2d[1]->Clone("hQCDMetpBin");
-  TH1D *hIsoBinQCDm = (TH1D*) hDataMetm2d[1]->Clone("hQCDMetmBin");
-  hIsoBinQCDp->Add(hWlnuMetp2d[1],-1); hIsoBinQCDp->Add(hEWKMetp2d[1],-1);
-  hIsoBinQCDm->Add(hWlnuMetm2d[1],-1); hIsoBinQCDm->Add(hEWKMetm2d[1],-1);
+  TH1D *hIsoBinQCDp = (TH1D*) hDataMetp2d[2]->Clone("hQCDMetpBin");
+  TH1D *hIsoBinQCDm = (TH1D*) hDataMetm2d[2]->Clone("hQCDMetmBin");
+  hIsoBinQCDp->Add(hWlnuMetp2d[2],-1); hIsoBinQCDp->Add(hEWKMetp2d[2],-1);
+  hIsoBinQCDm->Add(hWlnuMetm2d[2],-1); hIsoBinQCDm->Add(hEWKMetm2d[2],-1);
   
   c2->Clear();
   TH1D **hRatios2  = new TH1D*[nIsoBins];
@@ -2613,39 +2609,56 @@ void calcLHE(TH1D* hQCD, TH1D* hPDF, TH1D** hlhe, TH1D* hMain,  bool isSignal){
   
   // rescale the histograms if it's the signal shape
   // std::cout << "1" << std::endl;
-  if(isSignal){
     double sigNorm=hMain->Integral();
+    // cout << "other norm " << sigNorm << endl;
+  if(isSignal){
     for(int i=0; i < nQCD+nPDF; i++){
       double norm=hlhe[i]->Integral();
+      // cout << "old norm " << norm << endl;
       if(norm!=0)hlhe[i]->Scale(sigNorm/norm);
+      // cout << "new norm " << hlhe[i]->Integral() << endl;
     }
   }
 
   // std::cout << "1" << std::endl;
   // star loop through the bins
-  for(int ibin=0; ibin<hMain->GetNbinsX(); ibin++){
+  for(int ibin=1; ibin<=hMain->GetNbinsX(); ibin++){
+    // cout << "WORKING WITH BIN " << ibin << " with content " << hMain->GetBinContent(ibin) << endl;
     double qcdval=0;
     // loop through the 6 for QCD
     // std::cout <<"nqcd" << nQCD << std::endl;
     for(int k=0; k < nQCD; k++){
      // std::cout << k<< std::endl;
      // std::cout << hlhe[k]->Integral() << std::endl;
+     // cout << "qcd bin contents orig: " << hMain->GetBinContent(ibin) << " qcd " <<  hlhe[k]->GetBinContent(ibin) << endl;
        fabs(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin)) > qcdval ? qcdval=fabs(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin)) : 0;
     }
     // std::cout << "blah" << std::endl;
     // std::cout << hMain->Integral() << std::endl;
     // std::cout << hQCD->Integral() << std::endl;
+    // cout << "qcd val " << qcdval << endl;
+    // cout << "with bin content " << hMain->GetBinContent(ibin) << "  , sum : " << hMain->GetBinContent(ibin)+qcdval << endl;
     hQCD->SetBinContent(ibin,hMain->GetBinContent(ibin)+qcdval);
     
     // std::cout << "done qcd" << std::endl;
+    
+    // cout << "Do the PDF calculation on bin with : " << hMain->GetBinContent(ibin) <<  endl;
     double pdfval=0;
     for(int k=nQCD; k < nQCD+nPDF; k++ ){
-      pdfval+=(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin))*(hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin))/hMain->GetBinContent(ibin);
+      // cout << "pdf bin contents orig: " << hMain->GetBinContent(ibin) << " pdf " <<  hlhe[k]->GetBinContent(ibin) << endl;
+      double diff = (hlhe[k]->GetBinContent(ibin)-hMain->GetBinContent(ibin))/hMain->GetBinContent(ibin);
+      pdfval+=diff*diff;
       
-  // std::cout << k << std::endl;
+    // std::cout << diff << std::endl;
     }
     pdfval=sqrt(pdfval/nPDF);
+    
+    // cout << "pdf? " << endl;
+    // std::cout << pdfval << endl;
+    // cout << "make sure its empty " << hPDF->GetBinContent(ibin) << endl;;
     hPDF->SetBinContent(ibin,hMain->GetBinContent(ibin)*(1+pdfval));
+    
+    // cout << "orig content " << hMain->GetBinContent(ibin) <<  " new "  << hMain->GetBinContent(ibin)*(1+pdfval) << endl; 
     
   // std::cout << "2" << std::endl;
   }
