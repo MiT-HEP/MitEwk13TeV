@@ -1,5 +1,6 @@
 #include "PdfDiagonalizer.h"
 
+PdfDiagonalizer::PdfDiagonalizer(){};
 
 PdfDiagonalizer::PdfDiagonalizer(const char *name, RooWorkspace *w, RooFitResult &result) :
     // eigen_gl(new TVectorD()),
@@ -58,13 +59,14 @@ RooAbsPdf *PdfDiagonalizer::diagonalize(RooAbsPdf &pdf)
 
   RooAbsPdf *ret = dynamic_cast<RooAbsPdf *>(custom.build());
   ret->SetName((std::string(pdf.GetName()) + "_" + name_).c_str());
-  ret->Print();
+  // ret->Print();
   return ret;
 }
 
 RooAbsPdf *PdfDiagonalizer::diagonalizeWithEigenVariations(RooAbsPdf &pdf, RooFitResult &result, int index_eig, int nSigma)
 {
-    
+    RooMsgService::instance().setSilentMode(true);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
     // Check that the fit status is reasonable and that the covariance matrix is OK
     if(result.status() != 0 || result.covQual() !=3){return &pdf;}
     TMatrixDSym cov(result.covarianceMatrix()); 

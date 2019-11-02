@@ -20,6 +20,7 @@
 
 class PdfDiagonalizer {
     public:
+        PdfDiagonalizer();
         PdfDiagonalizer(const char *name, RooWorkspace *w, RooFitResult &result);
 
         RooAbsPdf *diagonalize(RooAbsPdf &pdf) ;
