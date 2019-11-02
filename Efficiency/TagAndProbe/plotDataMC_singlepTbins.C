@@ -208,7 +208,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
   TGaxis::SetMaxDigits(3);
 
   // Data/MC legend
-  TLegend* legend = new TLegend(0.50,0.24,0.93,0.4);
+  TLegend* legend = new TLegend(0.50,0.10,0.93,0.25);
 
   // Luminosity and 'CMS Preliminary' text boxes
   TPaveText *lumitb = new TPaveText(0.62,0.92,0.94,0.99,"NDC");
@@ -364,20 +364,6 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
       delete hDummyScale;
     }
 
-    // To make an eta-phi scale factor table using LaTex
-    ofstream latexfile;
-    char latexfname[300];    
-    sprintf(latexfname,"%s/%s_scalefactors.txt",outdir.Data(),fname.Data());
-    latexfile.open(latexfname);
-    assert(latexfile.is_open());
-
-    for(int a=0; a<etaBinEdgesv.size()-1; a++) {
-      if(a==0) latexfile << "& ";
-      latexfile << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
-    }
-    latexfile << "\\\\";
-    latexfile << endl;
-
     vector<double> sfv;
     vector<double> sf_errv;
     for(UInt_t w=0; w<scale_vs_pt_per_etav.size(); w++) {
@@ -392,22 +378,117 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
       }
     }
 
-    // For each bin in pT
-    //cout<<"ptBinEdgesv.size() is "<<ptBinEdgesv.size()<<endl;
+    // This is the code for the simple table... not very nice looking
+    // // To make an eta-phi scale factor table using LaTex
+    ofstream latexfile0;
+    char latexfname0[300];    
+    sprintf(latexfname0,"%s/%s_scalefactors.txt",outdir.Data(),fname.Data());
+    latexfile0.open(latexfname0);
+    assert(latexfile0.is_open());
+
+    for(int a=0; a<etaBinEdgesv.size()-1; a++) {
+      if(a==0) latexfile0 << "& ";
+      latexfile0 << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
+    }
+    latexfile0 << "\\\\";
+    latexfile0 << endl;
+    
+      // For each bin in pT
+    // cout<<"ptBinEdgesv.size() is "<<ptBinEdgesv.size()<<endl;
     for(UInt_t b=0; b<ptBinEdgesv.size()-1; b++) {
+    // for(UInt_t b=0; b<binEdgeLimitbinEdgeLimit; b++) {
       //cout<<"pt bin "<<ptBinEdgesv[b]<<" to "<<ptBinEdgesv[b+1]<<endl;
-      latexfile << "& $" << ptBinEdgesv[b] << "<p_{T}<" << ptBinEdgesv[b+1] << "$ ";
+      latexfile0 << "$" << ptBinEdgesv[b] << "<p_{T}<" << ptBinEdgesv[b+1] << "$ ";
       // Get scale factors for each bin in eta
       for(UInt_t c=0; c<etaBinEdgesv.size()-1; c++) {
         //cout<<"---eta bin "<<etaBinEdgesv[c]<<" to "<<etaBinEdgesv[c+1]<<": b = "<<sfv[b+c*(ptBinEdgesv.size()-1)]<<" ± "<<sf_errv[b+c*(ptBinEdgesv.size()-1)]<<endl;
+        ios_base::fmtflags flags = latexfile0.flags();
+	    latexfile0.precision(3);
+        latexfile0 << "& $" << fixed << sfv[b+c*(ptBinEdgesv.size()-1)] << " \\pm " << sf_errv[b+c*(ptBinEdgesv.size()-1)] << "$ ";
+        latexfile0.flags(flags);
+      }
+      latexfile0 << " \\\\" << endl;
+    }
+    
+    
+    // -----------------------------------------
+    // Make the table not an ugly POS
+    // split into 2 rows & add some fuckin formatting
+    ofstream latexfile;
+    char latexfname[300];    
+    sprintf(latexfname,"%s/%s_scalefactors_niceTable.txt",outdir.Data(),fname.Data());
+    latexfile.open(latexfname);
+    assert(latexfile.is_open());
+    int binEdgeLimit = 0;
+    if((etaBinEdgesv.size()-1)%2==0) binEdgeLimit = (etaBinEdgesv.size()-1)/2;
+    std::cout << "regular bins " << (etaBinEdgesv.size()-1) << std::endl;
+    std::cout << "binEdgeLimit " << binEdgeLimit << std::endl;
+    
+    // Make some stuff for the header of the table
+    latexfile << "\\begin{tabular}{c";
+    for(int a=0; a<binEdgeLimit; a++) {
+      // if(a==0) latexfile << "& ";
+      latexfile << "c";
+    }
+    latexfile << "}" << std::endl;
+    latexfile << "\\hline" << std::endl;
+    
+    // The first row of the table (first half of the eta bins)
+    // for(int a=0; a<etaBinEdgesv.size()-1; a++) {
+    for(int a=0; a<binEdgeLimit; a++) {
+      // if(a==0) latexfile << "& ";
+      latexfile << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
+    }
+    latexfile << "\\\\";
+    latexfile << endl;
+    latexfile << "\\hline \\hline" << std::endl;
+    
+
+    // For each bin in pT
+    //cout<<"ptBinEdgesv.size() is "<<ptBinEdgesv.size()<<endl;
+    for(UInt_t b=0; b<ptBinEdgesv.size()-1; b++) {
+    // for(UInt_t b=0; b<binEdgeLimitbinEdgeLimit; b++) {
+      //cout<<"pt bin "<<ptBinEdgesv[b]<<" to "<<ptBinEdgesv[b+1]<<endl;
+      latexfile << "$" << ptBinEdgesv[b] << "<p_{T}<" << ptBinEdgesv[b+1] << "$ ";
+      // Get scale factors for each bin in eta
+      for(UInt_t c=0; c<binEdgeLimit; c++) {
+        //cout<<"---eta bin "<<etaBinEdgesv[c]<<" to "<<etaBinEdgesv[c+1]<<": b = "<<sfv[b+c*(ptBinEdgesv.size()-1)]<<" ± "<<sf_errv[b+c*(ptBinEdgesv.size()-1)]<<endl;
         ios_base::fmtflags flags = latexfile.flags();
-	latexfile.precision(3);
+	    latexfile.precision(3);
         latexfile << "& $" << fixed << sfv[b+c*(ptBinEdgesv.size()-1)] << " \\pm " << sf_errv[b+c*(ptBinEdgesv.size()-1)] << "$ ";
         latexfile.flags(flags);
       }
       latexfile << " \\\\" << endl;
     }
-  }
+    latexfile << "\\hline" << std::endl;
+    for(int a=binEdgeLimit; a<etaBinEdgesv.size()-1; a++) {
+      // if(a==0) latexfile << "& ";
+      latexfile << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
+    }
+    latexfile << "\\\\";
+    latexfile << endl;
+    latexfile << "\\hline \\hline" << std::endl;
+        // For each bin in pT
+    //cout<<"ptBinEdgesv.size() is "<<ptBinEdgesv.size()<<endl;
+    // for(UInt_t b=0; b<ptBinEdgesv.size()-1; b++) {
+    for(UInt_t b=0; b<ptBinEdgesv.size()-1; b++) {
+      //cout<<"pt bin "<<ptBinEdgesv[b]<<" to "<<ptBinEdgesv[b+1]<<endl;
+      latexfile << "$" << ptBinEdgesv[b] << "<p_{T}<" << ptBinEdgesv[b+1] << "$ ";
+      // Get scale factors for each bin in eta
+      // for(UInt_t c=0; c<etaBinEdgesv.size()-1; c++) {
+      for(UInt_t c=binEdgeLimit; c<etaBinEdgesv.size()-1; c++) {
+        //cout<<"---eta bin "<<etaBinEdgesv[c]<<" to "<<etaBinEdgesv[c+1]<<": b = "<<sfv[b+c*(ptBinEdgesv.size()-1)]<<" ± "<<sf_errv[b+c*(ptBinEdgesv.size()-1)]<<endl;
+        ios_base::fmtflags flags = latexfile.flags();
+	    latexfile.precision(3);
+        latexfile << "& $" << fixed << sfv[b+c*(ptBinEdgesv.size()-1)] << " \\pm " << sf_errv[b+c*(ptBinEdgesv.size()-1)] << "$ ";
+        latexfile.flags(flags);
+      }
+      latexfile << " \\\\" << endl;
+    }
+    latexfile << "\\hline" << std::endl;
+    latexfile << "\\end{tabular}}" << std::endl;
+    // end of the section to make the non-shit latex table
 
+    }
   gBenchmark->Show("plotDataMC_singlepTbins");
 }
