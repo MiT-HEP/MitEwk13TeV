@@ -47,8 +47,8 @@ const int massBin = 60;
 
 const int muEtaNB = 12;
 const float muEtaRange[muEtaNB+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
-const int muPtNB = 8;
-const float muPtRange[muPtNB+1] = {25,30,35,40,45,50,60,80,8000};
+const int muPtNB = 3;
+const float muPtRange[muPtNB+1] = {25,35,50,10000};
 
   // const int muEtaNB = 2;
   // const float muEtaRange[muEtaNB+1] = {-2.4,0,2.4};
@@ -161,7 +161,7 @@ void makeGenMllTemplate_forElectron_v2(
     //      
 
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<10000; ientry++) {
+    // for(UInt_t ientry=0; ientry<1000; ientry++) {
       if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
