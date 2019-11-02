@@ -17,31 +17,31 @@
 
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
 
-    gROOT->Macro("../Utils/RooVoigtianShape.cc+");
-    gROOT->Macro("../Utils/RooCMSShape.cc+");
+  //  gROOT->Macro("../Utils/RooVoigtianShape.cc+");
+ //   gROOT->Macro("../Utils/RooCMSShape.cc+");
 
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");  
-  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
+//  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
 
-  gROOT->Macro("../SignalExtraction/RooVoigtianShape.cc+");
-  gROOT->Macro("../SignalExtraction/RooCMSShape.cc+");
+ // gROOT->Macro("../SignalExtraction/RooVoigtianShape.cc+");
+ // gROOT->Macro("../SignalExtraction/RooCMSShape.cc+");
 
-  gROOT->Macro("../SignalExtraction/CEffUser1D.cc+");
-  gROOT->Macro("../SignalExtraction/CEffUser2D.cc+");
+ // gROOT->Macro("../SignalExtraction/CEffUser1D.cc+");
+ // gROOT->Macro("../SignalExtraction/CEffUser2D.cc+");
 
   gROOT->Macro("../RochesterCorr/RoccoR.cc+");
  
   //gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
-  {  
+  //{  
     //TString path = gSystem->GetIncludePath();
     //path += " -I../EleScale/ ";
     //gSystem->SetIncludePath(path.Data());
-    gSystem->AddIncludePath("-I../EleScale");
-    gInterpreter->AddIncludePath("../EleScale");
-    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
-    gROOT->Macro("../SignalExtraction/EnergyScaleCorrection_class.cc+");
-  }
+   // gSystem->AddIncludePath("-I../EleScale");
+   // gInterpreter->AddIncludePath("../EleScale");
+   // gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+   // gROOT->Macro("../SignalExtraction/EnergyScaleCorrection_class.cc+");
+ // }
 
   }
                
