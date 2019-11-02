@@ -97,10 +97,12 @@ void fitZee(const TString  inputDir,    // input directory
 
   TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
   AppEffSF effs(baseDir);
+  // effs.loadHLT("EleHLTEff_aMCxPythia","Combined","Combined");
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
+  // effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
   // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
-  string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/";
+  string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/RebinForStat/Systematics/";
   string SysFileGSFSel = sysDir + "SysUnc_EleGSFSelEff.root";
   effs.loadUncSel(SysFileGSFSel);
   
@@ -327,25 +329,7 @@ void fitZee(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-        // if prefire weight > 1, divivde by 2
-        // also do up.down uncertainty by hand
-        if(prefireWeight > 1 &&prefireWeight <= 2 ){
-            prefireWeight/=2;
-        }
-        if(prefireJet > 1 &&prefireJet <= 2 ){
-            prefireJet/=2;
-        }
-        if(prefirePhoton > 1 &&prefirePhoton <= 2 ){
-            prefirePhoton/=2;
-        }
         weight *= scale1fb*prefireWeight*lumi;
-        
-        if(prefireUp > 1 || prefireUp < 0){
-          prefireUp = prefireWeight;
-        }
-        if(prefireDown > 1 || prefireDown < 0){
-          prefireDown = prefireWeight;
-        }
       }  
       
       if(!(category==1) && !(category==2) && !(category==3)) continue;
@@ -410,14 +394,14 @@ void fitZee(const TString  inputDir,    // input directory
         Double_t lp2 = lep2->Pt();
         Double_t lq1 = q1;
         Double_t lq2 = q2;
-        double rand1;
+        // double rand1;
         
-        // set the smearings here
-        for(int i = 0; i < 5; ++i){
-          double rand = gRandom->Gaus(0,1);
-          if(i==2) rand1=rand;
-        }
-        hGausRandHere->Fill(rand1);
+        // // set the smearings here
+        // for(int i = 0; i < 5; ++i){
+          // double rand = gRandom->Gaus(0,1);
+          // if(i==2) rand1=rand;
+        // }
+        // hGausRandHere->Fill(rand1);
         TLorentzVector l1, l2;
 	      l1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
 	      l2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
@@ -456,8 +440,7 @@ void fitZee(const TString  inputDir,    // input directory
         // var += effs.statUncSta(&l1, q1) + effs.statUncSta(&l2, q2);
         var += effs.statUncSel(&l1, q1, hErr, hErr, fabs(weight)*corr);
         var += effs.statUncSel(&l2, q2, hErr, hErr, fabs(weight)*corr);
-        var += effs.statUncHLT(&l1, q1, hErr, hErr, fabs(weight)*corr); 
-        var += effs.statUncHLT(&l2, q2, hErr, hErr, fabs(weight)*corr);
+        var += effs.statUncHLTDilep(&l1, q1, &l2, q2);
         // cout << var1 << " " << var << endl;
         
         corrUp=corr+sqrt(var);
@@ -803,8 +786,8 @@ void fitZee(const TString  inputDir,    // input directory
   plotZee.Draw(c,kFALSE,format,1);
 
   CPlot plotZeeDiff("zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  plotZeeDiff.AddHist1D(massUnc,"E3",kGray,1,1);
-  plotZeeDiff.AddHist1D(massUnc2,"E3",kBlack,1,1);
+  // plotZeeDiff.AddHist1D(massUnc,"E3",kGray,1,1);
+  // plotZeeDiff.AddHist1D(massUnc2,"E3",kBlack,1,1);
   plotZeeDiff.AddHist1D(hZeeDiff,"EX0",ratioColor);
   plotZeeDiff.SetYRange(-0.2,0.2);
   plotZeeDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);

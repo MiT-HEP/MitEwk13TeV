@@ -25,8 +25,8 @@
 #include "TLorentzVector.h"           // 4-vector class
 
 // helper class to handle efficiency tables
-#include "../Utils/CEffUser1D.hh"
-#include "../Utils/CEffUser2D.hh"
+// #include "../Utils/CEffUser1D.hh"
+// #include "../Utils/CEffUser2D.hh"
 
 #include "BaconAna/DataFormats/interface/TGenParticle.hh"  
 
@@ -163,7 +163,7 @@ void fitZm(const TString inputDir, // input directory
   const TString format("png"); 
   RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
 
-  const TString directory2("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil_Orig");
+  const TString directory2("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil");
   int rec_sig = 1;
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
   // RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
@@ -177,8 +177,13 @@ void fitZm(const TString inputDir, // input directory
   
     recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory2.Data(),sqrts.Data()));
     recoilCorr->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory2.Data(),sqrts.Data()));
-    // recoilCorr->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory2.Data(),sqrts.Data()));
+    // // recoilCorr->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory2.Data(),sqrts.Data()));
     recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory2.Data(),sqrts.Data()));
+    
+    // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory2.Data(),sqrts.Data()));
+    // recoilCorr->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory2.Data(),sqrts.Data()));
+    // recoilCorr->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory2.Data(),sqrts.Data()));
+    // recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory2.Data(),sqrts.Data()));
   
   } else if (doInclusive && doDiago){
     
@@ -207,17 +212,18 @@ void fitZm(const TString inputDir, // input directory
   recoilCorrKeys->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Keys/",directory2.Data(),sqrts.Data()));
   }
  
-  TFile *_rat2 = new TFile("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction/Zmm_HistZpT/zPt_Normal13TeV.root");
+  TFile *_rat2 = new TFile("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction/Zmm_HistZpT/zPt_Normal5TeV.root");
   TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
   hh_diff = (TH1D*)_rat2->Get("hZptRatio");
   // hh_diff->Scale(1/hh_diff->Integral()); // normalize
   // hh_diff->Divide(hh_mc);
 
-  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
+  // TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
+  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
   // std::string baseDirs = baseDir.Data();
   AppEffSF effs(baseDir);
   effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
   effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
 
   //
@@ -232,8 +238,8 @@ void fitZm(const TString inputDir, // input directory
   fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmumu);
   fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eEWK);
-  fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eBKG);
-  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eBKG);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eBKG);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eBKG);
  
   // fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZmumu);
   // fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
@@ -382,12 +388,12 @@ void fitZm(const TString inputDir, // input directory
     
     
     Double_t mt=-999;
-
+// return;
     //
     // loop over events
     //
     // for(UInt_t ientry=0; ientry<500; ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*0.01); ientry++) {
+    // for(UInt_t ientry=0; ientry<(UInt_t)(intree->GetEntries()*0.1); ientry++) {
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);
 
@@ -911,9 +917,12 @@ void fitZm(const TString inputDir, // input directory
 //   c2->cd(2)->SetTicky(1);
   gStyle->SetTitleOffset(1.400,"Y");
 //   TGaxis::SetMaxDigits(3);
-  TFile f("zPt_Normal13TeV.root","RECREATE");
+  TFile f("zPt_Normal5TeV.root","RECREATE");
   c2->cd(1);
   TH1D* hZptRatio = (TH1D*) hDataZpt->Clone("hZptRatio");
+  double mcnorm = hWmunuZpt->Integral();
+  double dtnorm = hZptRatio->Integral();
+  hWmunuZpt->Scale(dtnorm/mcnorm);
   hZptRatio->Divide(hWmunuZpt);
   hZptRatio->Draw();
   hZptRatio->Write();
@@ -1000,7 +1009,7 @@ void fitZm(const TString inputDir, // input directory
   std::vector<double> CorrU2Sigma_MC; std::vector<double> CorrU2SigmaErr_MC;
   std::vector<double> CorrU2Sigma_MC_raw; std::vector<double> CorrU2SigmaErr_MC_raw;
   
-  for(int i = 0; i < Z_pT.size(); ++i){
+  for(int i = 0; i < (int)Z_pT.size(); ++i){
     CorrU1Sigma.push_back(U1_Sigma[i]/U1_Mean_rsp[i]);
     CorrU1SigmaErr.push_back(U1_Sigma_Err[i]/U1_Mean_rsp[i]);
     
@@ -1191,7 +1200,7 @@ void fitZm(const TString inputDir, // input directory
   // label for lumi
   char lumitext[100];
   if(lumi<0.1) sprintf(lumitext,"%.1f pb^{-1}  at  #sqrt{s} = 8 TeV",lumi*1000.);
-  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);
+  else         sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 5 TeV",lumi);
   
   // plot colors
   Int_t linecolorW   = kOrange-3;
