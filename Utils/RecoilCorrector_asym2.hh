@@ -13,6 +13,7 @@
 #include "TRandom1.h"
 #include "TGraphErrors.h"
 
+#include "RooRealIntegral.h"
 #include "RooRealVar.h"
 #include "RooFormulaVar.h"
 #include "RooGaussian.h"
@@ -59,24 +60,15 @@ public:
   void loadRooWorkspacesMCtoCorrectKeys(string iNameFile);
   void loadRooWorkspacesMCtoCorrect(string iNameFile);
   void loadRooWorkspacesMC(string iNameFile);
+  void loadRooWorkspacesData(string iNameFile);
   void loadRooWorkspacesDiagMCtoCorrect(string iNameFile,int iPar, int sigma);
   void loadRooWorkspacesDiagMC(string iNameFile,int iPar, int sigma);
   void loadRooWorkspacesDiagData(string iNameFile,int iPar, int sigma);
-  void loadRooWorkspacesData(string iNameFile);
-  // what's this? 
-  void loadFileRatio(string iNameFile);
   
   void CorrectInvCdf(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0, bool dokeys=false, bool doDiago=false);
 
-  // deletable?
-  // delte?
-  void addDataFile(std::string iNameDat);
-  void addMCFile  (std::string iNameMC);
-  void addFileWithGraph  (std::string iNameMC);
   Double_t dMean(const TF1 *fcn, const Double_t x, const TFitResult  *fs);
   Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResult *fs);
-  TFitResult *fitresPFu1mean, *fitresPFu1sigma1, *fitresPFu1sigma2,  *fitresPFu1sigma0;
-  TFitResult *fitresPFu2mean, *fitresPFu2sigma1, *fitresPFu2sigma2,  *fitresPFu2sigma0;
   
   // Set up the diagonalized PDF
   void runDiago(RooWorkspace *w, RooFitResult *result,int i, RooAbsReal *&pdfUiCdf, int iPar, int sigma);
@@ -139,9 +131,6 @@ protected:
   RooWorkspace* rooWDataDiag[2];
   RooWorkspace* rooWMCDiag[2];
   RooWorkspace* rooWMCtoCorrDiag[2];
-  RooWorkspace* pdfsU1zData, pdfsU2zData;
-  RooWorkspace* pdfsU1zMC, pdfsU2zMC;
-  RooWorkspace* pdfsU1sigMC, pdfsU2sigMC;
   int fId; int fJet;
   bool dokeys; bool doDiago;
   
@@ -150,8 +139,6 @@ protected:
    std::vector<double> vZPtBins ={0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; 
 
   int nBins = vZPtBins.size()-1;
-  // TH1D **hRatiosU1 = new TH1D*[nBins];
-  // TH1D **hRatiosU2 = new TH1D*[nBins];
 
 };
 
@@ -165,7 +152,6 @@ RecoilCorrector::RecoilCorrector(string iNameZ, int iSeed) {
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-
 void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
   
   std::cout << iFName << std::endl;
@@ -185,9 +171,9 @@ void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
     RooRealVar* myX1 = (RooRealVar*) rooWData[0]->var(name);
     RooRealVar* myX2 = (RooRealVar*) rooWData[1]->var(name);
     RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
-    rooWData[0]->import(*cdfU1, RooFit::Silence());
+    rooWData[0]->import(*cdfU1, RooFit::RecycleConflictNodes() ,RooFit::Silence());
     RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
-    rooWData[1]->import(*cdfU2, RooFit::Silence());
+    rooWData[1]->import(*cdfU2, RooFit::RecycleConflictNodes() ,RooFit::Silence() );
     
   }
   
@@ -195,9 +181,11 @@ void RecoilCorrector::loadRooWorkspacesData(std::string iFName){
 }
 
 
+
+
 void RecoilCorrector::loadRooWorkspacesDiagMCtoCorrect(std::string iFName,int iPar, int sigma){
   std::cout << iFName << std::endl;
-  std::cout << "aaaaaaa" << std::endl;
+  // std::cout << "aaaaaaa" << std::endl;
   TFile *lFile  = new TFile((iFName+"pdfsU1.root").c_str());
   rooWMCtoCorrDiag[0] = (RooWorkspace*) lFile->Get("pdfsU1");
   TFile *lFile2  = new TFile((iFName+"pdfsU2.root").c_str());
@@ -210,7 +198,6 @@ void RecoilCorrector::loadRooWorkspacesDiagMCtoCorrect(std::string iFName,int iP
     iPar2=iPar-6;
     sigma2=sigma;
   }
-  std::cout <<iPar << " " << iPar1 << "  " << sigma1 << " " <<  iPar2 << "  " << sigma2 << std::endl;
   
   for(uint i = 0; i < vZPtBins.size()-1; ++i){
     RooFitResult* fitresultU1; //= (RooFitResult*)lFile->FindObject(Form("fitResultU1_%d",i));
@@ -222,6 +209,9 @@ void RecoilCorrector::loadRooWorkspacesDiagMCtoCorrect(std::string iFName,int iP
     RooAbsReal *cdfU1, *cdfU2;
     runDiago(rooWMCtoCorrDiag[0],fitresultU1,i,cdfU1,iPar1,sigma1);
     runDiago(rooWMCtoCorrDiag[1],fitresultU2,i,cdfU2,iPar2,sigma2);
+    
+    delete fitresultU1;
+    delete fitresultU2;
   }
 
   lFile->Delete();
@@ -243,7 +233,6 @@ void RecoilCorrector::loadRooWorkspacesDiagMC(std::string iFName,int iPar,int si
     iPar2=iPar-6;
     sigma2=sigma;
   }
-  std::cout <<iPar << " " << iPar1 << "  " << sigma1 << " " <<  iPar2 << "  " << sigma2 << std::endl;
   for(uint i = 0; i < vZPtBins.size()-1; ++i){
     RooFitResult* fitresultU1; //= (RooFitResult*)lFile->FindObject(Form("fitResultU1_%d",i));
     lFile->GetObject(Form("fitResultU1_%d",i),fitresultU1);
@@ -254,7 +243,11 @@ void RecoilCorrector::loadRooWorkspacesDiagMC(std::string iFName,int iPar,int si
     RooAbsReal *cdfU1, *cdfU2;
 	  runDiago(rooWMCDiag[0],fitresultU1,i,cdfU1,iPar1,sigma1);
 	  runDiago(rooWMCDiag[1],fitresultU2,i,cdfU2,iPar2,sigma2);
+    
+    delete fitresultU1;
+    delete fitresultU2;
   }
+  
   lFile->Delete();
   lFile2->Delete();
   std::cout << "Loaded Workspaces Z MC - Stat Unc"<< std::endl;
@@ -285,7 +278,11 @@ void RecoilCorrector::loadRooWorkspacesDiagData(std::string iFName,int iPar,int 
     RooAbsReal *cdfU1, *cdfU2;
     runDiago(rooWDataDiag[0],fitresultU1,i,cdfU1,iPar1,sigma1);
     runDiago(rooWDataDiag[1],fitresultU2,i,cdfU2,iPar2,sigma2);
+    
+    delete fitresultU1;
+    delete fitresultU2;
   }
+  
   lFile->Delete();
   lFile2->Delete();
   std::cout << "Loaded Workspaces Data - Stat Unc "<< std::endl;
@@ -298,7 +295,9 @@ void RecoilCorrector::loadRooWorkspacesMC(std::string iFName){
   lFile->Delete();
   TFile *lFile2  = new TFile((iFName+"pdfsU2.root").c_str());
   rooWMC[1] = (RooWorkspace*) lFile2->Get("pdfsU2");
+  
   lFile2->Delete();
+  // cout << "what" << endl;
   for(uint i = 0; i < vZPtBins.size()-1; ++i){
     std::stringstream name;
     name << "sig_" << i;
@@ -308,10 +307,11 @@ void RecoilCorrector::loadRooWorkspacesMC(std::string iFName){
     RooRealVar* myX1 = (RooRealVar*) rooWMC[0]->var(name.str().c_str());
     RooRealVar* myX2 = (RooRealVar*) rooWMC[1]->var(name.str().c_str());
     RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
-    rooWMC[0]->import(*cdfU1, RooFit::Silence());
+    rooWMC[0]->import(*cdfU1, RooFit::RecycleConflictNodes() ,RooFit::Silence() );
     RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
-    rooWMC[1]->import(*cdfU2, RooFit::Silence());
+    rooWMC[1]->import(*cdfU2, RooFit::RecycleConflictNodes() ,RooFit::Silence() );
   }
+
   std::cout << "Loaded Workspaces...Z MC "<< std::endl;
 }
 
@@ -333,10 +333,11 @@ void RecoilCorrector::loadRooWorkspacesMCtoCorrect(std::string iFName){
     RooRealVar* myX1 = (RooRealVar*) rooWMCtoCorr[0]->var(name);
     RooRealVar* myX2 = (RooRealVar*) rooWMCtoCorr[1]->var(name);
     RooAbsReal *cdfU1 = pdf1->createCdf(*myX1);
-    rooWMCtoCorr[0]->import(*cdfU1, RooFit::Silence());
+    rooWMCtoCorr[0]->import(*cdfU1, RooFit::RecycleConflictNodes() ,RooFit::Silence());
     RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
-    rooWMCtoCorr[1]->import(*cdfU2, RooFit::Silence());
+    rooWMCtoCorr[1]->import(*cdfU2, RooFit::RecycleConflictNodes() ,RooFit::Silence());
   }
+
   std::cout << "Loaded Workspaces...Source MC "<< std::endl;
 }
 
@@ -362,6 +363,7 @@ void RecoilCorrector::loadRooWorkspacesMCtoCorrectKeys(std::string iFName){
     RooAbsReal *cdfU2 = pdf2->createCdf(*myX2);
     rooWMCtoCorr[1]->import(*cdfU2, RooFit::Silence());
   }
+  
   std::cout << "Loaded Workspaces Source MC - Keys"<< std::endl;
 }
 
@@ -372,18 +374,19 @@ void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, 
   metDistributionInvCdf(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2,iFluc,iScale);
 }
 
-
+// this could be cleaned up a bit... i think some of the PDFs are unnecessary
 double RecoilCorrector::invertCDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbsReal *pdfDATAcdf, RooAbsPdf *wMC, RooAbsPdf *wDATA, RooRealVar *myXd, RooRealVar *myXm, int bin, double max) {
+
   if(iPVal< myXm->getMin()) return iPVal;
   if(iPVal> myXm->getMax()) return iPVal;
   myXm->setVal(iPVal);
   myXd->setVal(iPVal);
   pdfDATAcdf->getVal(); // do not delete this line, for some reason is necessary when using the diagonalized cdfs for the statistical uncertainty
   double pVal=pdfDATAcdf->findRoot(*myXd,myXd->getMin(),myXd->getMax(),pdfMCcdf->getVal());
+  
   myXd->setVal(pVal);
   return pVal;
 }
-
 // The one we actually use, clean it up a bit
 void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                        double iLepPt,double iLepPhi,
@@ -455,24 +458,27 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
     name << "sig_" << iBin << "_eig_" << iBin;
     thisPdfMCU1 = rooWMCDiag[0]->pdf(name.str().c_str()); name.str("");
 
+    // name << "sig_" << iBin <<"_eig_" << iBin << "_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
     // std::cout << "get cdfs" << std::endl;
     name << "sig_" << iBin <<"_eig_" << iBin << "_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
     thisCdfDataU1 = rooWDataDiag[0]->function(name.str().c_str()); name.str("");
     name << "sig_" << iBin <<"_eig_" << iBin << "_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
     thisCdfMCU1 = rooWMCDiag[0]->function(name.str().c_str()); name.str("");
 
+     // std::cout << "diago fuck2" << std::endl;
     // ---------- Diagonalized PDFs
     name << "sig_" << iBin << "_eig_" << iBin;
     thisPdfDataU2 = rooWDataDiag[1]->pdf(name.str().c_str()); name.str("");
     name << "sig_" << iBin << "_eig_" << iBin;
     thisPdfMCU2 = rooWMCDiag[1]->pdf(name.str().c_str()); name.str("");
-
+   // std::cout << "get cdfs2" << std::endl;
     name << "sig_" << iBin <<"_eig_" << iBin << "_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
     thisCdfDataU2 = rooWDataDiag[1]->function(name.str().c_str()); name.str("");
     name << "sig_" << iBin <<"_eig_" << iBin << "_cdf_Int[u_"<< iBin<< "_prime|CDF]_Norm[u_"<< iBin<< "_prime]";
     thisCdfMCU2 = rooWMCDiag[1]->function(name.str().c_str()); name.str("");
   }
 
+// cout << "bllkasdfkj" << endl;
 
   if(!dokeys && !doDiago) { // central values
     name << "sig_" << iBin;
@@ -504,6 +510,7 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
 
   }
 
+// cout << "getVar " << endl;
   std::stringstream varName;
   varName.str("");varName << "u_"<<iBin;
   RooRealVar *myXdU1,  *myXmU1, *myXmcU1, *myXdU2, *myXmU2, *myXmcU2;
@@ -522,7 +529,22 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
      myXmU2 =  (RooRealVar*) rooWMCDiag[1]->var(varName.str().c_str());
      myXmcU2 =  (RooRealVar*) rooWMCtoCorrDiag[1]->var(varName.str().c_str());
   }
+// thisPdfMCU1toCorr->Print();
+// thisPdfDataU1->Print();
+// thisPdfMCU1->Print();
 
+// // myXmU1->setVal(1);
+// cout << "--- " << myXmU1->getVal() << endl;;
+// cout << myXmU1->getVal() << endl;;
+
+// // cout << "get val " << thisCdfMCU1->getVal() << endl;
+// // cout << "get val2 " << thisCdfMCU1toCorr->getVal() << endl;
+
+// thisCdfMCU1toCorr->Print();
+// thisCdfMCU1->Print();
+// thisCdfDataU1->Print();
+
+// cout <<" inversion " << endl;
   // for the closure on Z events: this step should give pU1ValMzlike=pU1
   double pU1ValMzlike = invertCDF(pU1,iGenPt,thisCdfMCU1toCorr,thisCdfMCU1,thisPdfMCU1toCorr,thisPdfMCU1,myXmU1,myXmcU1,iBin,0);
   double pU2ValMzlike = invertCDF(pU2,iGenPt,thisCdfMCU2toCorr,thisCdfMCU2,thisPdfMCU2toCorr,thisPdfMCU2,myXmU2,myXmcU2,iBin,0);
@@ -532,13 +554,13 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   double pU2ValDzlike = invertCDF(pU2ValMzlike,iGenPt,thisCdfMCU2,thisCdfDataU2,thisPdfMCU2,thisPdfDataU2,myXdU2,myXmU2,iBin,0);
   double pU1ValDzlike = invertCDF(pU1ValMzlike,iGenPt,thisCdfMCU1,thisCdfDataU1,thisPdfMCU1,thisPdfDataU1,myXdU1,myXmU1,iBin,0);
   
-
+// cout << "done both inversion" << endl;
   // have the newW recoil as WrecoilMC + Difference in Zdata/MC
   pU1   = pU1 + ( pU1ValDzlike - pU1ValMzlike); // should this be addition or multiplication....
   pU2   = pU2 + ( pU2ValDzlike - pU2ValMzlike);
   iMet  = calculate(0,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
   iMPhi = calculate(1,iLepPt,iLepPhi,iGenPhi,pU1,pU2);
-  
+  // cout << "done" << endl;
   iU1   = pU1; 
   iU2   = pU2;
 
@@ -692,7 +714,7 @@ void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, Roo
 	  myX1->setVal(i);
 	  double pdfval=varpdf->getVal();
 	  if(pdfval < 0 || pdfval > 1||!std::isfinite(pdfval) || std::isnan(pdfval) ||  !std::isfinite(varpdf->getLogVal()) || std::isnan(varpdf->getLogVal())) {
-		  std::cout << "PDF us unphysical. Replacing with original shape." << std::endl;
+		  // std::cout << "PDF us unphysical. Replacing with original shape." << std::endl;
 		  varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,iPar,0);
       break;
 	  }
@@ -703,7 +725,7 @@ void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, Roo
 	  myX1->setVal(i);
 	  double pdfval=pdfUiCdf->getVal();
 	  if(pdfval < 0 || pdfval > 1  || std::isnan(pdfval) || !std::isfinite(pdfval)) {
-		  std::cout << "CDF is unphysical. Using the original shape." << std::endl;
+		  // std::cout << "CDF is unphysical. Using the original shape." << std::endl;
 		  varpdf = diago->diagonalizeWithEigenVariations(*newpdf,*result,iPar,0);
       pdfUiCdf = varpdf->createCdf(*myX1);
 		  break;
