@@ -3,7 +3,7 @@
 # output ntuple directory
 #NTUPDIR=/data/blue/Bacon/Run2/wz_flat_diffxsec
 # NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_5TeV
-NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV
+NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/LowPU2017ID_13TeV_v2
 # NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/TEST_Zee_ScaleUp1
 # NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_5TeV_JSONv1
 # NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU_5TeV
