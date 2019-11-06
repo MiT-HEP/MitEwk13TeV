@@ -619,6 +619,9 @@ double isoTrkCut=9999;
   
   TH1D **hZxxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hZxxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+
+  TH1D **hQCDMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D **hQCDMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   
   TH1D **hMetpIsoValues = new TH1D*[nIsoBins];
@@ -633,18 +636,21 @@ double isoTrkCut=9999;
     
     hEWKMetp2d[i]      = new TH1D(("hEwkMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hEWKMetm2d[i]      = new TH1D(("hEwkMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-	
-	  hDibMetp2d[i]  = new TH1D(("hDibMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hDibMetp2d[i]  = new TH1D(("hDibMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hDibMetm2d[i]  = new TH1D(("hDibMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-	
-	  hTtbMetp2d[i]  = new TH1D(("hTtbMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hTtbMetp2d[i]  = new TH1D(("hTtbMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hTtbMetm2d[i]  = new TH1D(("hTtbMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
 	
-  	hWxMetp2d[i]      = new TH1D(("hWxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    hWxMetp2d[i]      = new TH1D(("hWxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hWxMetm2d[i]      = new TH1D(("hWxMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-	
-	  hZxxMetp2d[i]      = new TH1D(("hZxxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hZxxMetp2d[i]      = new TH1D(("hZxxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hZxxMetm2d[i]      = new TH1D(("hZxxMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hQCDMetp2d[i]      = new TH1D(("hQCDMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    hQCDMetm2d[i]      = new TH1D(("hQCDMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     
     // Create a loop over the # of uncertainty shapes to produce the uncertainty histograms for the "up" shapes
     // Do the recoil ones here
@@ -770,7 +776,7 @@ double isoTrkCut=9999;
     }
     
 
-	  hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
+    hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
     hMetmIsoValues[i] = new TH1D(("hMetmIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
   }
   
@@ -921,12 +927,14 @@ double isoTrkCut=9999;
           hDataMetpPhi->Fill((*metVarsPhi)[no]);
           hMuonEtaDatap->Fill(fabs(lep->Eta()));
           doMET ? hDataMetp2d[0]->Fill((*metVars)[no]) : hDataMetp2d[0]->Fill(mtCorr);
+	  doMET ? hQCDMetp2d[0]->Fill((*metVars)[no]) : hQCDMetp2d[0]->Fill(mtCorr);
           hMetpIsoValues[0]->Fill(relIso);
         } else {
           doMET ? hDataMetm->Fill((*metVars)[no]) : hDataMetm->Fill(mtCorr);
           hMuonEtaDatam->Fill(fabs(lep->Eta()));
           hDataMetmPhi->Fill((*metVarsPhi)[no]);
           doMET ? hDataMetm2d[0]->Fill((*metVars)[no]) : hDataMetm2d[0]->Fill(mtCorr);
+          doMET ? hQCDMetm2d[0]->Fill((*metVars)[no]) : hQCDMetm2d[0]->Fill(mtCorr); 
           hMetmIsoValues[0]->Fill(relIso);
         }
       } else if(typev[ifile]==eAntiData) {
@@ -937,11 +945,13 @@ double isoTrkCut=9999;
               doMET ? hAntiDataMetp->Fill((*metVars)[no]) : hAntiDataMetp->Fill(mtCorr);
               hMuonEtaAntiDatap->Fill(fabs(lep->Eta()));
               doMET ? hDataMetp2d[it]->Fill((*metVars)[no]) : hDataMetp2d[it]->Fill(mtCorr);
+              doMET ? hQCDMetp2d[it]->Fill((*metVars)[no]) : hQCDMetp2d[it]->Fill(mtCorr);
               hMetpIsoValues[it]->Fill(relIso);
             } else { 
               doMET ? hAntiDataMetm->Fill((*metVars)[no]) : hAntiDataMetm->Fill(mtCorr);
               hMuonEtaAntiDatap->Fill(fabs(lep->Eta()));
               doMET ? hDataMetm2d[it]->Fill((*metVars)[no]) : hDataMetm2d[it]->Fill(mtCorr);
+              doMET ? hQCDMetm2d[it]->Fill((*metVars)[no]) : hQCDMetm2d[it]->Fill(mtCorr);
               hMetmIsoValues[it]->Fill(relIso);
               break;
             }
@@ -1248,6 +1258,28 @@ double isoTrkCut=9999;
     hEWKMetm2d[it]->Add(hDibMetm2d[it],1);
     hEWKMetm2d[it]->Add(hZxxMetm2d[it],1);
     hEWKMetm2d[it]->Add(hWxMetm2d[it],1);
+
+    hQCDMetp2d[it]->Add(hEWKMetp2d[it],-1);
+    hQCDMetp2d[it]->Add(hWlnuMetp2d[it],-1);
+	
+    hQCDMetm2d[it]->Add(hEWKMetm2d[it],-1);
+    hQCDMetm2d[it]->Add(hWlnuMetm2d[it],-1);
+
+    for(Int_t ibin=1; ibin<=hQCDMetp2d[it]->GetNbinsX(); ibin++) {
+      {
+	if(hQCDMetp2d[it]->GetBinContent(ibin)<0)
+	  {
+	    hQCDMetp2d[it]->SetBinContent(ibin,0);
+	    hQCDMetp2d[it]->SetBinError(ibin,1.8);
+	  }
+	if(hQCDMetm2d[it]->GetBinContent(ibin)<0)
+	  {
+	    hQCDMetm2d[it]->SetBinContent(ibin,0);
+	    hQCDMetm2d[it]->SetBinError(ibin,1.8);
+	  }
+      }
+    }
+   
     
     for(int j=0; j< nWeight; j++){
       hEWKpWeightU[it][j]->Add(hTtbpWeightU[it][j],1);
@@ -2202,7 +2234,7 @@ double isoTrkCut=9999;
      }
   }
   std::cout << "mark 3 " << std::endl;
-  
+
 //   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",40000,0,100000);
 //   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",40000,0,100000);
   TString histfname = outputDir + TString("/Wlnu_Histograms.root");
@@ -2230,6 +2262,9 @@ double isoTrkCut=9999;
     
     hDibMetp2d[j]->Write();
     hDibMetm2d[j]->Write();
+
+    hQCDMetp2d[j]->Write();
+    hQCDMetm2d[j]->Write();
     
     hIsoBinQCDp->Write();
     hIsoBinQCDm->Write();
