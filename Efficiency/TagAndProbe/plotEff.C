@@ -40,10 +40,10 @@
 #include <cmath>
 #include <math.h>
 
-#include "CPlot.hh"	            // helper class for plots
-#include "MitStyleRemix.hh"         // style settings for drawing
-#include "CEffUser1D.hh"            // class for handling efficiency graphs
-#include "CEffUser2D.hh"            // class for handling efficiency tables
+#include "../../Utils/CPlot.hh"	            // helper class for plots
+#include "../../Utils/MitStyleRemix.hh"         // style settings for drawing
+#include "../../Utils/CEffUser1D.hh"            // class for handling efficiency graphs
+#include "../../Utils/CEffUser2D.hh"            // class for handling efficiency tables
 
 // structure for output ntuple
 #include "EffData.hh"
@@ -67,7 +67,7 @@
 
 // bin size constants
 #define BIN_SIZE_PASS 1
-#define BIN_SIZE_FAIL 2
+#define BIN_SIZE_FAIL 1
 
 //=== FUNCTION DECLARATIONS ======================================================================================
 
