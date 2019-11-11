@@ -2,8 +2,8 @@
 //  gROOT->Macro("RooVoigtianShape.cc+");
 //  gROOT->Macro("RooCMSShape.cc+");
   
-  gROOT->Macro("CPlot.cc+");
-  gROOT->Macro("MitStyleRemix.cc+");
+  gROOT->Macro("../../Utils/CPlot.cc+");
+  gROOT->Macro("../../Utils/MitStyleRemix.cc+");
 //  gROOT->Macro("CEffUser1D.cc+");
 //  gROOT->Macro("CEffUser2D.cc+");
               
