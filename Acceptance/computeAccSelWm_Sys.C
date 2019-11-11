@@ -35,24 +35,28 @@
 #include "../Utils/MyTools.hh"      // various helper functions
 
 // helper class to handle efficiency tables
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser2D.hh"
+#include "../Utils/AppEffSF.cc"
 #endif
 
 
 //=== MAIN MACRO ================================================================================================= 
 
 void computeAccSelWm_Sys(const TString conf,       // input file
-                     const TString outputDir,  // output directory
+          const TString inputDir,
+          const TString outputDir,  // output directory
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
-		     const TString sysFile3,
-		     const TString sysFile1
+			    const TString sysFileSIT, // condense these into 1 file per type of eff (pos & neg into 1 file)
+			    const TString sysFileSta,
+          const bool is13TeV=1
 ) {
   gBenchmark->Start("computeAccSelWm");
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
+  const Double_t mu_MASS  = 0.1057;
 
   const Double_t PT_CUT     = 25;
   const Double_t ETA_CUT    = 2.4;
@@ -65,45 +69,32 @@ void computeAccSelWm_Sys(const TString conf,       // input file
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
   
-  // efficiency files
-  TString dataHLTEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MG/eff.root");
-  TString zmmHLTEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CT/eff.root");
-  TString dataSelEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MG/eff.root");
-  TString zmmSelEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CT/eff.root");
-  TString dataTrkEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root");
-  TString zmmTrkEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root");
-  TString dataStaEffName("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MG/eff.root");
-  TString zmmStaEffName( "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CT/eff.root");
-  if(charge==1) {
-    dataHLTEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MGpositive/eff.root";
-    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CTpositive/eff.root";
-    dataSelEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MGpositive_FineBin/eff.root";
-    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CTpositive/eff.root";
-    dataTrkEffName ="/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGpositive/eff.root";
-    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTpositive/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGpositive/eff.root";
-    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTpositive/eff.root";
-  }
-  if(charge==-1) {
-    dataHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/MGnegative/eff.root";
-    zmmHLTEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuHLTEff/CTnegative/eff.root";
-    dataSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/MGnegative_FineBin/eff.root";
-    zmmSelEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuSITEff/CTnegative/eff.root";
-    dataTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGnegative/eff.root";
-    zmmTrkEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTnegative/eff.root";
-    dataStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/MGnegative/eff.root";
-    zmmStaEffName = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/MuStaEff/CTnegative/eff.root";
-  }
+  const int NBptSta  = 2;
+  const float ptrangeSta[NBptSta +1]   = {25., 40., 8000.};
+  const int NBeta = 12;
+  const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
+  const int NBptSIT = 8;
+  const float ptrangeSIT[NBptSIT+1] = {25,30,35,40,45,50,60,80,8000};
+  
+  AppEffSF effs(inputDir);
+  effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
+  effs.loadUncSel(sysFileSIT);
+  effs.loadUncSta(sysFileSta);
+  
+  TH2D *hSelErr_pos = new TH2D("hSelErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hSelErr_neg = new TH2D("hSelErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  
+  TH2D *hStaErr_pos = new TH2D("hStaErr_pos", "",NBeta,etarange,NBptSta,ptrangeSta);
+  TH2D *hStaErr_neg = new TH2D("hStaErr_neg", "",NBeta,etarange,NBptSta,ptrangeSta);
+
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-
-  TFile *f_sys3 = TFile::Open(sysFile3);
-  TH2D  *h_sys3 = (TH2D*) f_sys3->Get("h");
-  TFile *f_sys1 = TFile::Open(sysFile1);
-  TH2D  *h_sys1 = (TH2D*) f_sys1->Get("h");
-
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -123,7 +114,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
   string line;
   while(getline(ifs,line)) {
     if(line[0]=='#') continue;
-    
     string fname;
     Int_t color, linesty;
     stringstream ss(line);
@@ -138,110 +128,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-  
-  //
-  // Get efficiency
-  //
-  TFile *dataHLTEffFile = new TFile(dataHLTEffName);
-  CEffUser2D dataHLTEff;
-  TH2D *hHLTErr=0, *hHLTErrB=0, *hHLTErrE=0;
-  if(dataHLTEffFile) {    
-    dataHLTEff.loadEff((TH2D*)dataHLTEffFile->Get("hEffEtaPt"), 
-                       (TH2D*)dataHLTEffFile->Get("hErrlEtaPt"),
-		       (TH2D*)dataHLTEffFile->Get("hErrhEtaPt"));
-    
-    TH2D* h =(TH2D*)dataHLTEffFile->Get("hEffEtaPt");
-    hHLTErr  = new TH2D("hHLTErr", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hHLTErrB = new TH2D("hHLTErrB","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hHLTErrE = new TH2D("hHLTErrE","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  }
-  
-  TFile *zmmHLTEffFile = new TFile(zmmHLTEffName);
-  CEffUser2D zmmHLTEff;
-  if(zmmHLTEffFile) {
-    zmmHLTEff.loadEff((TH2D*)zmmHLTEffFile->Get("hEffEtaPt"),
-                      (TH2D*)zmmHLTEffFile->Get("hErrlEtaPt"),
-                      (TH2D*)zmmHLTEffFile->Get("hErrhEtaPt"));
-  }
-  
-  TFile *dataSelEffFile = new TFile(dataSelEffName);
-  CEffUser2D dataSelEff;
-  TH2D *hSelErr=0, *hSelErrB=0, *hSelErrE=0;
-  if(dataSelEffFile) {
-    dataSelEff.loadEff((TH2D*)dataSelEffFile->Get("hEffEtaPt"),
-                       (TH2D*)dataSelEffFile->Get("hErrlEtaPt"),
-                       (TH2D*)dataSelEffFile->Get("hErrhEtaPt"));
-    
-    TH2D* h =(TH2D*)dataSelEffFile->Get("hEffEtaPt");
-    hSelErr  = new TH2D("hSelErr", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hSelErrB = new TH2D("hSelErrB","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hSelErrE = new TH2D("hSelErrE","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  }
-  
-  TFile *zmmSelEffFile = new TFile(zmmSelEffName);
-  CEffUser2D zmmSelEff;
-  if(zmmSelEffFile) {
-    zmmSelEff.loadEff((TH2D*)zmmSelEffFile->Get("hEffEtaPt"),
-                      (TH2D*)zmmSelEffFile->Get("hErrlEtaPt"),
-                      (TH2D*)zmmSelEffFile->Get("hErrhEtaPt"));
-  }
-  
-  TFile *dataTrkEffFile = new TFile(dataTrkEffName);
-  CEffUser2D dataTrkEff;
-  TH2D *hTrkErr=0, *hTrkErrB=0, *hTrkErrE=0;
-  if(dataTrkEffFile) {
-    dataTrkEff.loadEff((TH2D*)dataTrkEffFile->Get("hEffEtaPt"),
-                       (TH2D*)dataTrkEffFile->Get("hErrlEtaPt"),
-                       (TH2D*)dataTrkEffFile->Get("hErrhEtaPt"));
-    
-    TH2D* h =(TH2D*)dataTrkEffFile->Get("hEffEtaPt");
-    hTrkErr  = new TH2D("hTrkErr", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hTrkErrB = new TH2D("hTrkErrB","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hTrkErrE = new TH2D("hTrkErrE","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  }
-  
-  TFile *zmmTrkEffFile = new TFile(zmmTrkEffName);
-  CEffUser2D zmmTrkEff;
-  if(zmmTrkEffFile) {
-    zmmTrkEff.loadEff((TH2D*)zmmTrkEffFile->Get("hEffEtaPt"),
-                      (TH2D*)zmmTrkEffFile->Get("hErrlEtaPt"),
-                      (TH2D*)zmmTrkEffFile->Get("hErrhEtaPt"));
-  }
-  
-  TFile *dataStaEffFile = new TFile(dataStaEffName);
-  CEffUser2D dataStaEff;
-  TH2D *hStaErr=0, *hStaErrB=0, *hStaErrE=0;
-  if(dataStaEffFile) {
-    dataStaEff.loadEff((TH2D*)dataStaEffFile->Get("hEffEtaPt"),
-                       (TH2D*)dataStaEffFile->Get("hErrlEtaPt"),
-                       (TH2D*)dataStaEffFile->Get("hErrhEtaPt"));
-    
-    TH2D* h =(TH2D*)dataStaEffFile->Get("hEffEtaPt");
-    hStaErr  = new TH2D("hStaErr", "",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hStaErrB = new TH2D("hStaErrB","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-    hStaErrE = new TH2D("hStaErrE","",h->GetNbinsX(),h->GetXaxis()->GetXmin(),h->GetXaxis()->GetXmax(),
-                                      h->GetNbinsY(),h->GetYaxis()->GetXmin(),h->GetYaxis()->GetXmax());
-  }
-  
-  TFile *zmmStaEffFile = new TFile(zmmStaEffName);
-  CEffUser2D zmmStaEff;
-  if(zmmStaEffFile) {
-    zmmStaEff.loadEff((TH2D*)zmmStaEffFile->Get("hEffEtaPt"),
-                      (TH2D*)zmmStaEffFile->Get("hErrlEtaPt"),
-                      (TH2D*)zmmStaEffFile->Get("hErrhEtaPt"));
-  }
-  
   // Data structures to store info from TTrees
   baconhep::TEventInfo   *info = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
@@ -260,6 +146,16 @@ void computeAccSelWm_Sys(const TString conf,       // input file
   vector<Double_t> nSelCorrVarv, nSelBCorrVarv, nSelECorrVarv;
   vector<Double_t> accCorrv, accBCorrv, accECorrv;
   vector<Double_t> accErrCorrv, accErrBCorrv, accErrECorrv;
+  
+  vector<Double_t> nSelCorrvFSR, nSelCorrvMC, nSelCorrvBkg, nSelCorrvTag;//, nSelCorrvStat;
+  vector<Double_t> nSelCorrvFSR_I, nSelCorrvMC_I, nSelCorrvBkg_I, nSelCorrvTag_I;//, nSelCorrvStat_I;
+  vector<Double_t> nSelCorrvFSR_S, nSelCorrvMC_S, nSelCorrvBkg_S, nSelCorrvTag_S;//, nSelCorrvStat_S;
+  vector<Double_t> nSelCorrVarvFSR, nSelCorrVarvMC, nSelCorrVarvBkg, nSelCorrVarvTag;//, nSelCorrVarvStat;
+  vector<Double_t> pctDiffvFSR, pctDiffvMC, pctDiffvBkg, pctDiffvTag;//, accCorrvStat;
+  vector<Double_t> accCorrvFSR, accCorrvMC, accCorrvBkg, accCorrvTag;//, accCorrvStat;
+  vector<Double_t> accCorrvFSR_I, accCorrvMC_I, accCorrvBkg_I, accCorrvTag_I;//, accCorrvStat_I;
+  vector<Double_t> accCorrvFSR_S, accCorrvMC_S, accCorrvBkg_S, accCorrvTag_S;//, accCorrvStat_S;
+  vector<Double_t> accErrCorrvFSR, accErrCorrvMC, accErrCorrvBkg, accErrCorrvTag;//, accErrCorrvStat;
 
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
   
@@ -290,40 +186,19 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     nSelCorrVarv.push_back(0);
     nSelBCorrVarv.push_back(0);
     nSelECorrVarv.push_back(0);
+    nSelCorrvFSR.push_back(0);  nSelCorrVarvFSR.push_back(0);
+    nSelCorrvMC.push_back(0);   nSelCorrVarvMC.push_back(0);
+    nSelCorrvBkg.push_back(0);  nSelCorrVarvBkg.push_back(0);
+    nSelCorrvTag.push_back(0);  nSelCorrVarvTag.push_back(0);
     
-    for(Int_t iy=0; iy<=hHLTErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hHLTErr->GetNbinsX(); ix++) {
-        hHLTErr ->SetBinContent(ix,iy,0);
-        hHLTErrB->SetBinContent(ix,iy,0);
-        hHLTErrE->SetBinContent(ix,iy,0);
-      }
-    }
-    for(Int_t iy=0; iy<=hSelErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hSelErr->GetNbinsX(); ix++) {
-        hSelErr ->SetBinContent(ix,iy,0);
-        hSelErrB->SetBinContent(ix,iy,0);
-        hSelErrE->SetBinContent(ix,iy,0);
-      }
-    }
-    for(Int_t iy=0; iy<=hTrkErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hTrkErr->GetNbinsX(); ix++) {
-        hTrkErr ->SetBinContent(ix,iy,0);
-        hTrkErrB->SetBinContent(ix,iy,0);
-        hTrkErrE->SetBinContent(ix,iy,0);
-      }
-    }
-    for(Int_t iy=0; iy<=hStaErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hStaErr->GetNbinsX(); ix++) {
-        hStaErr ->SetBinContent(ix,iy,0);
-        hStaErrB->SetBinContent(ix,iy,0);
-        hStaErrE->SetBinContent(ix,iy,0);
-      }
-    }    
+    nSelCorrvFSR_I.push_back(0);  nSelCorrvFSR_S.push_back(0);
+    nSelCorrvMC_I.push_back(0);   nSelCorrvMC_S.push_back(0);
+    nSelCorrvBkg_I.push_back(0);  nSelCorrvBkg_S.push_back(0);
+    nSelCorrvTag_I.push_back(0);  nSelCorrvTag_S.push_back(0);
     
-    //
-    // loop over events
-    //    
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(0.25)*((uint)eventTree->GetEntries()); ientry++) {
+      if(ientry%1000000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
     //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
@@ -345,8 +220,10 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 
       nEvtsv[ifile]+=weight;
       
+      TLorentzVector vMu(0,0,0,0);
       // trigger requirement               
-      if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+      // if (!isMuonTrigger(triggerMenu, info->triggerBits)) continue;
+      if (!isMuonTrigger(triggerMenu, info->triggerBits,kFALSE,is13TeV)) continue;
    
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
@@ -357,7 +234,7 @@ void computeAccSelWm_Sys(const TString conf,       // input file
       const baconhep::TMuon *goodMuon=0;
       Bool_t passSel=kFALSE;
       for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
-  	const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
+        const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
 
         if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
         if(mu->pt	 < VETO_PT)  continue; // loose lepton pT cut
@@ -370,141 +247,125 @@ void computeAccSelWm_Sys(const TString conf,       // input file
         if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
         if(mu->pt < PT_CUT)		    continue;  // lepton pT cut	
         if(!passMuonID(mu))		    continue;  // lepton selection
-	if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE)) continue;
+        if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE,is13TeV)) continue;
 	
-	if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
+        if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
 	
-	passSel=kTRUE;
-	goodMuon=mu;
+        passSel=kTRUE;
+        goodMuon=mu;
+        vMu.SetPtEtaPhiM(mu->pt, mu->eta, mu->phi, mu_MASS);
       }
       
       if(passSel) {
         
-	/******** We have a W candidate! HURRAY! ********/
+        /******** We have a W candidate! HURRAY! ********/
+              
+        Bool_t isBarrel = (fabs(goodMuon->eta)<ETA_BARREL) ? kTRUE : kFALSE;
+              
+        // data/MC scale factor corrections
+        Double_t effdata, effmc, emTag;
+        Double_t edFSR, edMC, edBkg, edTag;//, edStat;
+	      Double_t corr=1;
+	      Double_t corrFSR=1, corrMC=1, corrBkg=1, corrTag=1;//, corrStat=1;
+	      Double_t corrFSR_I=1, corrMC_I=1, corrBkg_I=1, corrTag_I=1;//, corrStat_I=1;
+	      Double_t corrFSR_S=1, corrMC_S=1, corrBkg_S=1, corrTag_S=1;//, corrStat_S=1;
         
-	Bool_t isBarrel = (fabs(goodMuon->eta)<ETA_BARREL) ? kTRUE : kFALSE;
+        effdata=1; effmc=1;   emTag=1; 
+	      edFSR=1; edMC=1; edBkg=1; edTag=1;//edStat=1;  
+	
+        int q = goodMuon->q;
         
-	// data/MC scale factor corrections
-	Double_t corr=1;
-	if(dataHLTEffFile && zmmHLTEffFile) {
-	  Double_t effdata = dataHLTEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmHLTEff.getEff(goodMuon->eta, goodMuon->pt);
-	  corr *= effdata/effmc;
-	}
-	if(dataSelEffFile && zmmSelEffFile) {
-	  Double_t effdata = dataSelEff.getEff(goodMuon->eta, goodMuon->pt) * h_sys3->GetBinContent(h_sys3->GetXaxis()->FindBin(goodMuon->eta), h_sys3->GetYaxis()->FindBin(goodMuon->pt));;
-	  Double_t effmc   = zmmSelEff.getEff(goodMuon->eta, goodMuon->pt);
-	  corr *= effdata/effmc;
-	}
-	if(dataTrkEffFile && zmmTrkEffFile) {
-	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  //corr *= effdata/effmc;
-	}
-	if(dataStaEffFile && zmmStaEffFile) {
-	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt) * h_sys1->GetBinContent(h_sys1->GetXaxis()->FindBin(goodMuon->eta), h_sys1->GetYaxis()->FindBin(goodMuon->pt));
-	  Double_t effmc   = zmmStaEff.getEff(goodMuon->eta, goodMuon->pt);
-	  corr *= effdata/effmc;
-	}
-	
-	// scale factor uncertainties
-	if(dataHLTEffFile && zmmHLTEffFile) {
-	  Double_t effdata = dataHLTEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmHLTEff.getEff(goodMuon->eta, goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataHLTEff.getErrLow(goodMuon->eta, goodMuon->pt),dataHLTEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmHLTEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmHLTEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hHLTErr->Fill(goodMuon->eta,goodMuon->pt,err);
-	  if(isBarrel) hHLTErrB->Fill(goodMuon->eta,goodMuon->pt,err);
-	  else         hHLTErrE->Fill(goodMuon->eta,goodMuon->pt,err);
-	}
-	if(dataSelEffFile && zmmSelEffFile) {
-	  Double_t effdata = dataSelEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmSelEff.getEff(goodMuon->eta, goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataSelEff.getErrLow(goodMuon->eta, goodMuon->pt),dataSelEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmSelEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmSelEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hSelErr->Fill(goodMuon->eta,goodMuon->pt,err);
-	  if(isBarrel) hSelErrB->Fill(goodMuon->eta,goodMuon->pt,err);
-	  else         hSelErrE->Fill(goodMuon->eta,goodMuon->pt,err);
-	}
-	if(dataTrkEffFile && zmmTrkEffFile) {
-	  Double_t effdata = dataTrkEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmTrkEff.getEff(goodMuon->eta, goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataTrkEff.getErrLow(goodMuon->eta, goodMuon->pt),dataTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmTrkEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmTrkEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  /* if(goodMuon->eta>1.2 && goodMuon->eta<2.1) 
-	    {
-	      err=0.0013;
-	      }*/
-	  hTrkErr->Fill(goodMuon->eta,goodMuon->pt,err);
-	  if(isBarrel) hTrkErrB->Fill(goodMuon->eta,goodMuon->pt,err);
-	  else         hTrkErrE->Fill(goodMuon->eta,goodMuon->pt,err);
-	}
-	if(dataStaEffFile && zmmStaEffFile) {
-	  Double_t effdata = dataStaEff.getEff(goodMuon->eta, goodMuon->pt);
-	  Double_t effmc   = zmmStaEff.getEff(goodMuon->eta, goodMuon->pt);	  
-	  Double_t errdata = TMath::Max(dataStaEff.getErrLow(goodMuon->eta, goodMuon->pt),dataStaEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t errmc   = TMath::Max(zmmStaEff.getErrLow(goodMuon->eta, goodMuon->pt), zmmStaEff.getErrHigh(goodMuon->eta, goodMuon->pt));
-	  Double_t err     = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata+errmc*errmc/effmc/effmc);
-	  hStaErr->Fill(goodMuon->eta,goodMuon->pt,err);
-	  if(isBarrel) hStaErrB->Fill(goodMuon->eta,goodMuon->pt,err);
-	  else         hStaErrE->Fill(goodMuon->eta,goodMuon->pt,err);
-	}
-	
-	nSelv[ifile]+=weight;
-	nSelCorrv[ifile]+=weight*corr;
-	nSelCorrVarv[ifile]+=weight*weight*corr*corr;
-  	if(isBarrel) { 
-	  nSelBv[ifile]+=weight;
-	  nSelBCorrv[ifile]+=weight*corr;
-	  nSelBCorrVarv[ifile]+=weight*weight*corr*corr;
-	  	
-	} else { 
-	  nSelEv[ifile]+=weight;
-	  nSelECorrv[ifile]+=weight*corr;
-	  nSelECorrVarv[ifile]+=weight*weight*corr*corr;
-	}
+        corr = effs.fullEfficiencies(&vMu,q);
+        vector<double> uncs_sta = effs.getUncSta(&vMu,q);
+        vector<double> uncs_sit = effs.getUncSel(&vMu,q);
+        
+        corrFSR *= uncs_sta[0]*uncs_sit[0]*effs.computeHLTSF(&vMu,q); // alternate fsr model
+        corrMC  *= uncs_sta[1]*uncs_sit[1]*effs.computeHLTSF(&vMu,q); // alternate mc gen model
+        corrBkg *= uncs_sta[2]*uncs_sit[2]*effs.computeHLTSF(&vMu,q); // alternate bkg model
+        corrTag *= uncs_sta[3]*uncs_sit[3]*effs.computeHLTSF(&vMu,q); // alternate bkg model
+        // corr *= effdata/effmc; // orig
+        
+        corrFSR_I *= uncs_sit[0]*effs.computeHLTSF(&vMu,q)*effs.computeStaSF(&vMu,q); // alternate fsr model
+        corrMC_I  *= uncs_sit[1]*effs.computeHLTSF(&vMu,q)*effs.computeStaSF(&vMu,q); // alternate mc gen model
+        corrBkg_I *= uncs_sit[2]*effs.computeHLTSF(&vMu,q)*effs.computeStaSF(&vMu,q); // alternate bkg model
+        corrTag_I *= uncs_sit[3]*effs.computeHLTSF(&vMu,q)*effs.computeStaSF(&vMu,q); // alternate bkg model
+         
+        corrFSR_S *= uncs_sta[0]*effs.computeHLTSF(&vMu,q)*effs.computeSelSF(&vMu,q); // alternate fsr model
+        corrMC_S  *= uncs_sta[1]*effs.computeHLTSF(&vMu,q)*effs.computeSelSF(&vMu,q); // alternate mc gen model
+        corrBkg_S *= uncs_sta[2]*effs.computeHLTSF(&vMu,q)*effs.computeSelSF(&vMu,q); // alternate bkg model
+        corrTag_S *= uncs_sta[3]*effs.computeHLTSF(&vMu,q)*effs.computeSelSF(&vMu,q); // alternate bkg model
+         
+        double var=0.;        
+        // var += effs.statUncSta(&l1, q) + effs.statUncSta(&l2, q2);
+        var += effs.statUncSta(&vMu, q, hStaErr_pos, hStaErr_neg, fabs(weight)*corr);
+        var += effs.statUncSel(&vMu, q, hSelErr_pos, hSelErr_neg, fabs(weight)*corr);
+        var += effs.statUncHLT(&vMu, q, hHLTErr_pos, hHLTErr_neg, fabs(weight)*corr);
+  
+  
+        nSelv[ifile]    +=weight;
+        nSelCorrvFSR[ifile] +=weight*corrFSR;  nSelCorrvFSR_I[ifile] +=weight*corrFSR_I;  nSelCorrvFSR_S[ifile] +=weight*corrFSR_S;
+        nSelCorrvMC[ifile]  +=weight*corrMC;   nSelCorrvMC_I[ifile]  +=weight*corrMC_I;   nSelCorrvMC_S[ifile]  +=weight*corrMC_S;
+        nSelCorrvBkg[ifile] +=weight*corrBkg;  nSelCorrvBkg_I[ifile] +=weight*corrBkg_I;  nSelCorrvBkg_S[ifile] +=weight*corrBkg_S;
+        nSelCorrvTag[ifile] +=weight*corrTag;  nSelCorrvTag_I[ifile] +=weight*corrTag_I;  nSelCorrvTag_S[ifile] +=weight*corrTag_S;
+        // /*nSelCorrvStat[ifile]+=weight*corrStat; */nSelCorrvStat_I[ifile]+=weight*corrStat_I; nSelCorrvStat_S[ifile]+=weight*corrStat_S;
+        
+        
+        nSelCorrv[ifile]+=weight*corr;
+        nSelCorrVarvFSR[ifile]+=weight*weight*corrFSR*corrFSR;
+        nSelCorrVarvMC[ifile]+=weight*weight*corrMC*corrMC;
+        nSelCorrVarvBkg[ifile]+=weight*weight*corrBkg*corrBkg;
+        nSelCorrVarvTag[ifile]+=weight*weight*corrTag*corrTag;
+        nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+        
+        if(isBarrel) { 
+        nSelBv[ifile]+=weight;
+        nSelBCorrv[ifile]+=weight*corr;
+        nSelBCorrVarv[ifile]+=weight*weight*corr*corr;
+          
+        } else { 
+          nSelEv[ifile]+=weight;
+          nSelECorrv[ifile]+=weight*corr;
+          nSelECorrVarv[ifile]+=weight*weight*corr*corr;
+        }
       }
     }
     
     Double_t var=0, varB=0, varE=0;
-    for(Int_t iy=0; iy<=hHLTErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hHLTErr->GetNbinsX(); ix++) {
-        Double_t err;
-	err=hHLTErr->GetBinContent(ix,iy);  var+=err*err;
-        err=hHLTErrB->GetBinContent(ix,iy); varB+=err*err;
-        err=hHLTErrE->GetBinContent(ix,iy); varE+=err*err;
+    for(Int_t iy=0; iy<=hHLTErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hHLTErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hHLTErr_pos->GetBinContent(ix,iy);
+        var+=err*err;
+        err=hHLTErr_neg->GetBinContent(ix,iy);
+        var+=err*err;
+        // std::cout << "hlt pos " << var << std::endl;
       }
     }
-    for(Int_t iy=0; iy<=hSelErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hSelErr->GetNbinsX(); ix++) {
-        Double_t err;
-	err=hSelErr->GetBinContent(ix,iy);  var+=err*err;
-	err=hSelErrB->GetBinContent(ix,iy); varB+=err*err;
-	err=hSelErrE->GetBinContent(ix,iy); varE+=err*err;
+
+    for(Int_t iy=0; iy<=hSelErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hSelErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hSelErr_pos->GetBinContent(ix,iy);
+        var+=err*err;
+        err=hSelErr_neg->GetBinContent(ix,iy);
+        var+=err*err;
+        // std::cout << "sel pos " << var << std::endl;
       }
     }
-    for(Int_t iy=0; iy<=hTrkErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hTrkErr->GetNbinsX(); ix++) {
-        Double_t err;
-	err=hTrkErr->GetBinContent(ix,iy);  var+=0;//err*err;
-        err=hTrkErrB->GetBinContent(ix,iy); varB+=0;//err*err;
-        err=hTrkErrE->GetBinContent(ix,iy); varE+=0;//err*err;
-      }
-    }
-    for(Int_t iy=0; iy<=hStaErr->GetNbinsY(); iy++) {
-      for(Int_t ix=0; ix<=hStaErr->GetNbinsX(); ix++) {
-        Double_t err;
-	err=hStaErr->GetBinContent(ix,iy);  var+=err*err;
-	err=hStaErrB->GetBinContent(ix,iy); varB+=err*err;
-	err=hStaErrE->GetBinContent(ix,iy); varE+=err*err;
+
+    for(Int_t iy=0; iy<=hStaErr_pos->GetNbinsY(); iy++) {
+      for(Int_t ix=0; ix<=hStaErr_pos->GetNbinsX(); ix++) {
+        Double_t err=hStaErr_pos->GetBinContent(ix,iy);
+	      var+=err*err;
+        err=hStaErr_neg->GetBinContent(ix,iy);
+	      var+=err*err;
       }
     }
     nSelCorrVarv[ifile]+=var;
     nSelBCorrVarv[ifile]+=varB;
     nSelECorrVarv[ifile]+=varE;
+    nSelCorrVarvFSR[ifile]+=var;
+    nSelCorrVarvMC[ifile]+=var;
+    nSelCorrVarvBkg[ifile]+=var;
+    nSelCorrVarvTag[ifile]+=var;
     
     // compute acceptances
     accv.push_back(nSelv[ifile]/nEvtsv[ifile]);   accErrv.push_back(sqrt(accv[ifile]*(1.+accv[ifile])/nEvtsv[ifile]));
@@ -514,6 +375,30 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]);   accErrCorrv.push_back(accCorrv[ifile]*sqrt(nSelCorrVarv[ifile]/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
     accBCorrv.push_back(nSelBCorrv[ifile]/nEvtsv[ifile]); accErrBCorrv.push_back(accBCorrv[ifile]*sqrt(nSelBCorrVarv[ifile]/nSelBCorrv[ifile]/nSelBCorrv[ifile] + 1./nEvtsv[ifile]));
     accECorrv.push_back(nSelECorrv[ifile]/nEvtsv[ifile]); accErrECorrv.push_back(accECorrv[ifile]*sqrt(nSelECorrVarv[ifile]/(nSelECorrv[ifile]*nSelECorrv[ifile]) + 1./nEvtsv[ifile]));
+    
+    accCorrvFSR.push_back(nSelCorrvFSR[ifile]/nEvtsv[ifile]);
+    accCorrvMC.push_back(nSelCorrvMC[ifile]/nEvtsv[ifile]);
+    accCorrvBkg.push_back(nSelCorrvBkg[ifile]/nEvtsv[ifile]);
+    accCorrvTag.push_back(nSelCorrvTag[ifile]/nEvtsv[ifile]);
+    
+    accCorrvFSR_I.push_back(nSelCorrvFSR_I[ifile]/nEvtsv[ifile]);
+    accCorrvMC_I.push_back(nSelCorrvMC_I[ifile]/nEvtsv[ifile]);
+    accCorrvBkg_I.push_back(nSelCorrvBkg_I[ifile]/nEvtsv[ifile]);
+    accCorrvTag_I.push_back(nSelCorrvTag_I[ifile]/nEvtsv[ifile]);
+    
+    accCorrvFSR_S.push_back(nSelCorrvFSR_S[ifile]/nEvtsv[ifile]);
+    accCorrvMC_S.push_back(nSelCorrvMC_S[ifile]/nEvtsv[ifile]);
+    accCorrvBkg_S.push_back(nSelCorrvBkg_S[ifile]/nEvtsv[ifile]);
+    accCorrvTag_S.push_back(nSelCorrvTag_S[ifile]/nEvtsv[ifile]);
+
+    accErrCorrvFSR.push_back(accCorrvFSR[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvFSR[ifile]*nSelCorrvFSR[ifile]) + 1./nEvtsv[ifile]));
+    accErrCorrvMC.push_back(accCorrvMC[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvMC[ifile]*nSelCorrvMC[ifile]) + 1./nEvtsv[ifile]));
+    accErrCorrvBkg.push_back(accCorrvBkg[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvBkg[ifile]*nSelCorrvBkg[ifile]) + 1./nEvtsv[ifile]));
+    accErrCorrvTag.push_back(accCorrvTag[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrvTag[ifile]*nSelCorrvTag[ifile]) + 1./nEvtsv[ifile]));
+    
+    accCorrv.push_back(nSelCorrv[ifile]/nEvtsv[ifile]); 
+    accErrCorrv.push_back(accCorrv[ifile]*sqrt((nSelCorrVarv[ifile])/(nSelCorrv[ifile]*nSelCorrv[ifile]) + 1./nEvtsv[ifile]));
+    
    
     delete infile;
     infile=0, eventTree=0;  
@@ -551,6 +436,12 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     cout << "  ==eff corr==> " << accECorrv[ifile] << " +/- " << accErrECorrv[ifile] << endl;
     cout << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     cout << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
+    cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "          FSR unc: " << accCorrvFSR[ifile]  << " / Sel: " << accCorrvFSR_I[ifile] << " / Sta: " << accCorrvFSR_S[ifile] << endl;
+    cout << "           MC unc: " << accCorrvMC[ifile]   << " / Sel: " << accCorrvMC_I[ifile]  << " / Sta: " << accCorrvMC_S[ifile]  << endl;
+    cout << "          Bkg unc: " << accCorrvBkg[ifile]  << " / Sel: " << accCorrvBkg_I[ifile] << " / Sta: " << accCorrvBkg_S[ifile] << endl;
+    cout << "          Tag unc: " << accCorrvTag[ifile]  << " / Sel: " << accCorrvTag_I[ifile] << " / Sta: " << accCorrvTag_S[ifile] << endl;
+    cout << "Acc (FSR/MC/Bkg/Tag): " << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
     cout << endl;
   }
   
@@ -582,9 +473,69 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     txtfile << "  ==eff corr==> " << accECorrv[ifile] << " +/- " << accErrECorrv[ifile] << endl;
     txtfile << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     txtfile << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
+    txtfile << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    txtfile << "          FSR unc: " << accCorrvFSR[ifile]  << " / Sel: " << accCorrvFSR_I[ifile] << " / Sta: " << accCorrvFSR_S[ifile] << endl;
+    txtfile << "           MC unc: " << accCorrvMC[ifile]   << " / Sel: " << accCorrvMC_I[ifile]  << " / Sta: " << accCorrvMC_S[ifile]  << endl;
+    txtfile << "          Bkg unc: " << accCorrvBkg[ifile]  << " / Sel: " << accCorrvBkg_I[ifile] << " / Sta: " << accCorrvBkg_S[ifile] << endl;
+    txtfile << "          Tag unc: " << accCorrvTag[ifile]  << " / Sel: " << accCorrvTag_I[ifile] << " / Sta: " << accCorrvTag_S[ifile] << endl;
+    txtfile << "Acc (FSR/MC/Bkg/Tag): " << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
     txtfile << endl;
   }
   txtfile.close();  
+  
+  
+  // char txtfname[100];
+  sprintf(txtfname,"%s/sel_nums_only.txt",outputDir.Data());
+  ofstream txtfile2;
+  txtfile2.open(txtfname);
+  
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+    txtfile2 << accCorrv[ifile]     << " " << accErrCorrv[ifile]    << endl;
+    txtfile2 << accCorrvFSR[ifile]  << " " << accCorrvFSR_I[ifile] << " " << accCorrvFSR_S[ifile] << endl;
+    txtfile2 << accCorrvMC[ifile]   << " " << accCorrvMC_I[ifile]  << " " << accCorrvMC_S[ifile]  << endl;
+    txtfile2 << accCorrvBkg[ifile]  << " " << accCorrvBkg_I[ifile] << " " << accCorrvBkg_S[ifile] << endl;
+    txtfile2 << accCorrvTag[ifile]  << " " << accCorrvTag_I[ifile] << " " << accCorrvTag_S[ifile] << endl;
+    // txtfile << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
+    txtfile2 << endl;
+  }
+  txtfile2.close();  
+  
+    // char txtfname[100];
+  sprintf(txtfname,"%s/sit_unc.txt",outputDir.Data());
+  ofstream txtfile3;
+  txtfile3.open(txtfname);
+  
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+    txtfile3 << accCorrv[ifile]      << endl;
+    txtfile3 << accCorrvFSR_I[ifile] << endl;
+    txtfile3 << accCorrvMC_I[ifile]  << endl;
+    txtfile3 << accCorrvBkg_I[ifile] << endl;
+    txtfile3 << accCorrvTag_I[ifile] << endl;
+    // txtfile << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
+    // txtfile3 << endl;
+  }
+  txtfile3.close();
+  
+      // char txtfname[100];
+  sprintf(txtfname,"%s/sta_unc.txt",outputDir.Data());
+  ofstream txtfile4;
+  txtfile4.open(txtfname);
+  
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+    txtfile4 << accCorrv[ifile]   << endl;
+    txtfile4 << accCorrvFSR_S[ifile] << endl;
+    txtfile4 << accCorrvMC_S[ifile]  << endl;
+    txtfile4 << accCorrvBkg_S[ifile] << endl;
+    txtfile4 << accCorrvTag_S[ifile] << endl;
+    // txtfile << accCorrvFSR[ifile]  << ", " << accCorrvMC[ifile] << ", " << accCorrvBkg[ifile] << ", " << accCorrvTag[ifile] << endl;
+
+    // txtfile4 << endl;
+  }
+  txtfile4.close();
+  
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    

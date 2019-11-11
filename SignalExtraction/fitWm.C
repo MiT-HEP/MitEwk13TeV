@@ -37,8 +37,9 @@
 // #include "ZBackgrounds.hh"
 
 //helper class to handle rochester corrections
-#include <rochcor2015r.h>
-#include <muresolution_run2r.h>
+// #include <rochcor2015r.h>
+// #include <muresolution_run2r.h>
+#include <../RochesterCorr/RoccoR.cc>
 
 
 // helper class to handle efficiency tables
@@ -94,11 +95,11 @@ void fitWm(const TString  outputDir,   // output directory
   
   // some flags to handle Recoil corrections
   bool doKeys = false;
-  bool doInclusive = false;
+  bool doInclusive = true;
   // some flags to handle the pileup Up/Down systematics
   bool pileupUp = false;
   bool pileupDown = false;
-  bool doPF = false;
+  bool doPF = true;
   
   std::string u1_name; std::string u2_name;
   std::string met_name; std::string metPhi_name;
@@ -119,6 +120,7 @@ void fitWm(const TString  outputDir,   // output directory
   
   
   // MET histogram binning and range
+  // use 0.5 GeV bin
   const Int_t    NBINS   = 75;
   const Double_t METMAX  = 150;
   
@@ -128,76 +130,47 @@ void fitWm(const TString  outputDir,   // output directory
   const Double_t mu_MASS = 0.1057;
   const int NTOYS = 100;
   
-    // efficiency files
- 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
-  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MGpositive/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MGnegative/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CTpositive/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CTnegative/eff.root";
+  
+  const TString baseDir = "/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
+  const TString dataHLTEffName_pos = baseDir + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = baseDir + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataSelEffName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
-  const TString dataSelEffName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
-  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
-  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
+  const TString dataSelEffName_pos = baseDir + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEffName_neg = baseDir + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEffName_pos  = baseDir + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEffName_neg  = baseDir + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
-  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
-  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
-  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
+  const TString dataStaEffName_pos = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEffName_neg = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_pos  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_neg  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
 
-  const TString dataStaEffName_pos = baseDir + "MuStaEff/MGpositive/eff.root";
-  const TString dataStaEffName_neg = baseDir + "MuStaEff/MGnegative/eff.root";
-  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CTpositive/eff.root";
-  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CTnegative/eff.root";
+  // // efficiency files 2Bins
+  
+  const TString dataHLTEff2BinName_pos = baseDir + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEff2BinName_neg = baseDir + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEff2BinName_pos  = baseDir + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEff2BinName_neg  = baseDir + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
 
-  // efficiency files 2Bins
+  const TString dataSelEff2BinName_pos = baseDir + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEff2BinName_neg = baseDir + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEff2BinName_pos  = baseDir + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEff2BinName_neg  = baseDir + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/MGpositive/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/MGnegative/eff.root";
-  const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/CTpositive/eff.root";
-  const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/CTnegative/eff.root";
 
-  const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
-  const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
-  const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
-  const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
-
-  const TString dataTrkEff2BinName_pos = baseDir + "MuSITEff/MGpositive/eff.root";
-  const TString dataTrkEff2BinName_neg = baseDir + "MuSITEff/MGnegative/eff.root";
-  const TString zmmTrkEff2BinName_pos  = baseDir + "MuSITEff/CTpositive/eff.root";
-  const TString zmmTrkEff2BinName_neg  = baseDir + "MuSITEff/CTnegative/eff.root";
-
-  const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/MGpositive/eff.root";
-  const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/MGnegative/eff.root";
-  const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/CTpositive/eff.root";
-  const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/CTnegative/eff.root";
-
-  TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
-  TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
-  TString SelEffSignalShapeSys     = baseDir + "Results/MuSITSigSys.root";
-  TString SelEffBackgroundShapeSys = baseDir + "Results/MuSITBkgSys.root";
-
+  const TString dataStaEff2BinName_pos = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEff2BinName_neg = baseDir + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEff2BinName_pos  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEff2BinName_neg  = baseDir + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  
   //
   // Set up output file
   //
   TString outfilename = outputDir + TString("/") + TString("Zmm_DataBkg.root");
   TFile *outFile = new TFile(outfilename,"RECREATE");
   TH1::AddDirectory(kFALSE);
-
-
-  // plot output file format
-//   const TString format("all");
-
-  // setup efficiency shape systematics
-  TFile *StaSigSysFile = new TFile(StaEffSignalShapeSys);
-  TH2D *hStaSigSys = (TH2D*)StaSigSysFile->Get("h");
-  TFile *StaBkgSysFile = new TFile(StaEffBackgroundShapeSys);
-  TH2D *hStaBkgSys = (TH2D*)StaBkgSysFile->Get("h");
-  TFile *SelSigSysFile = new TFile(SelEffSignalShapeSys);
-  TH2D *hSelSigSys = (TH2D*)SelSigSysFile->Get("h");
-  TFile *SelBkgSysFile = new TFile(SelEffBackgroundShapeSys);
-  TH2D *hSelBkgSys = (TH2D*)SelBkgSysFile->Get("h");
 
   
 
@@ -206,120 +179,135 @@ void fitWm(const TString  outputDir,   // output directory
 
 
   // ===================== Recoil correction files ============================
-  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/nov26");
-  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
-  // for Puppi, inclusive
+  cout << "reading Recoil Corrections " << endl;
+  const TString directory2("../Recoil");
+  //  const TString directory1("/afs/cern.ch/user/d/dalfonso/public/WZ/dec5");
+  const TString directory("/afs/cern.ch/user/d/dalfonso/public/WZ/JULY5");
+
+  // for PF, 13 TeV Low PU, inclusive
   RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
-  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi/",directory.Data()));
-  recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
-  recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_WmpMCPF/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory2.Data()));
+  recoilCorr->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()));
   
   RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
-  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg/",directory.Data()));
-  recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+  recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/LowPU2017ID_13TeV_WmmMCPF/",directory2.Data()));
+  recoilCorrm->loadRooWorkspacesData(Form("%s/LowPU2017ID_13TeV_ZmmDataPF/",directory2.Data()));
+  recoilCorrm->loadRooWorkspacesMC(Form("%s/LowPU2017ID_13TeV_ZmmMCPF/",directory2.Data()));
   
-  // placeholders until recoil files are fixed
-  RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
-  recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupUp/",directory.Data()));
-  recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory.Data()));
-  recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory.Data()));
   
-  RecoilCorrector *recoilCorrPuUpm = new  RecoilCorrector("","");
-  recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupUp/",directory.Data()));
-  recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory.Data()));
-  recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory.Data()));
+  // // for Puppi, inclusive
+  // RecoilCorrector *recoilCorr = new  RecoilCorrector("","");
+  // recoilCorr->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_genFix/",directory.Data()));
+  // recoilCorr->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
+  // recoilCorr->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
   
-  RecoilCorrector *recoilCorrPuDown = new  RecoilCorrector("","");
-  recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupDown/",directory.Data()));
-  recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory.Data()));
-  recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory.Data()));
+  // RecoilCorrector *recoilCorrm = new  RecoilCorrector("","");
+  // recoilCorrm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_genFix/",directory.Data()));
+  // recoilCorrm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK/",directory.Data()));
+  // recoilCorrm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi/",directory.Data()));
+
+  // // placeholders until recoil files are fixed
+  // RecoilCorrector *recoilCorrPuUp = new  RecoilCorrector("","");
+  // recoilCorrPuUp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupUp/",directory2.Data()));
+  // recoilCorrPuUp->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory2.Data()));
+  // recoilCorrPuUp->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory2.Data()));
   
-  RecoilCorrector *recoilCorrPuDownm = new  RecoilCorrector("","");
-  recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupDown/",directory.Data()));
-  recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory.Data()));
-  recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory.Data()));
-
-  // --------------------- Eta-binned recoil corrections -----------------------
-  RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
-  recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory.Data()));
-//   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
-   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  // RecoilCorrector *recoilCorrPuUpm = new  RecoilCorrector("","");
+  // recoilCorrPuUpm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupUp/",directory2.Data()));
+  // recoilCorrPuUpm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupUp/",directory2.Data()));
+  // recoilCorrPuUpm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupUp/",directory2.Data()));
   
-  RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
-  recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory.Data()));
-//   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
-  recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
-
-  RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
-  recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory.Data()));
-  recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-//   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
-  recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
-
-  RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
-  recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory.Data()));
-  recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-//   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
-  recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
-
-  RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
-  recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory.Data()));
-  recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-//   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
-  recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
-
-  RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
-  recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory.Data()));
-  recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-//   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
-  recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
+  // RecoilCorrector *recoilCorrPuDown = new  RecoilCorrector("","");
+  // recoilCorrPuDown->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_PileupDown/",directory2.Data()));
+  // recoilCorrPuDown->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory2.Data()));
+  // recoilCorrPuDown->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory2.Data()));
   
-  // ---------------------- KEYS -------------
-  RecoilCorrector *recoilCorrKeys05 = new  RecoilCorrector("","");
-  recoilCorrKeys05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05/",directory.Data()));
-  recoilCorrKeys05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorrKeys05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  // RecoilCorrector *recoilCorrPuDownm = new  RecoilCorrector("","");
+  // recoilCorrPuDownm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_PileupDown/",directory2.Data()));
+  // recoilCorrPuDownm->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_PileupDown/",directory2.Data()));
+  // recoilCorrPuDownm->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_PileupDown/",directory2.Data()));
+
+  // // --------------------- Eta-binned recoil corrections -----------------------
+  // RecoilCorrector *recoilCorr05 = new  RecoilCorrector("","");
+  // recoilCorr05->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05/",directory2.Data()));
+// //   recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
+   // recoilCorr05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory2.Data()));
+  // recoilCorr05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory2.Data()));
   
-  RecoilCorrector *recoilCorrKeysm05 = new  RecoilCorrector("","");
-  recoilCorrKeysm05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05/",directory.Data()));
-  recoilCorrKeysm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory.Data()));
-  recoilCorrKeysm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory.Data()));
+  // RecoilCorrector *recoilCorrm05 = new  RecoilCorrector("","");
+  // recoilCorrm05->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05/",directory2.Data()));
+// //   recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05/",directory1.Data()));
+  // recoilCorrm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory2.Data()));
+  // recoilCorrm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory2.Data()));
 
-  RecoilCorrector *recoilCorrKeys051 = new  RecoilCorrector("","");
-  recoilCorrKeys051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05-1/",directory.Data()));
-  recoilCorrKeys051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-  recoilCorrKeys051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  // RecoilCorrector *recoilCorr051 = new  RecoilCorrector("","");
+  // recoilCorr051->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap05-1/",directory2.Data()));
+  // recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory2.Data()));
+// //   recoilCorr051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
+  // recoilCorr051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory2.Data()));
 
-  RecoilCorrector *recoilCorrKeysm051 = new  RecoilCorrector("","");
-  recoilCorrKeysm051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05-1/",directory.Data()));
-  recoilCorrKeysm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory.Data()));
-  recoilCorrKeysm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory.Data()));
+  // RecoilCorrector *recoilCorrm051 = new  RecoilCorrector("","");
+  // recoilCorrm051->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap05-1/",directory2.Data()));
+  // recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory2.Data()));
+// //   recoilCorrm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap05-1/",directory1.Data()));
+  // recoilCorrm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory2.Data()));
 
-  RecoilCorrector *recoilCorrKeys1 = new  RecoilCorrector("","");
-  recoilCorrKeys1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap1/",directory.Data()));
-  recoilCorrKeys1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-  recoilCorrKeys1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data()));
+  // RecoilCorrector *recoilCorr1 = new  RecoilCorrector("","");
+  // recoilCorr1->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPuppi_rap1/",directory2.Data()));
+  // recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory2.Data()));
+// //   recoilCorr1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
+  // recoilCorr1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory2.Data()));
 
-  RecoilCorrector *recoilCorrKeysm1 = new  RecoilCorrector("","");
-  recoilCorrKeysm1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap1/",directory.Data()));
-  recoilCorrKeysm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory.Data()));
-  recoilCorrKeysm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory.Data())); 
+  // RecoilCorrector *recoilCorrm1 = new  RecoilCorrector("","");
+  // recoilCorrm1->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPuppi_rap1/",directory2.Data()));
+  // recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory2.Data()));
+// //   recoilCorrm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkgTopEWK_rap1/",directory1.Data()));
+  // recoilCorrm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory2.Data()));
   
-  // ==========================================================================
-  // ---------------- Recoil corrections for PF MET ---------------------
-  const TString directoryPF("/afs/cern.ch/user/d/dalfonso/public/WZ/jan23");
-  RecoilCorrector *recoilCorrPF = new  RecoilCorrector("","");
-  recoilCorrPF->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPF/",directoryPF.Data()));
-  recoilCorrPF->loadRooWorkspacesData(Form("%s/ZmmDataPF_bkg/",directoryPF.Data()));
-  recoilCorrPF->loadRooWorkspacesMC(Form("%s/ZmmMCPF/",directoryPF.Data()));
+  // // ---------------------- KEYS -------------
+  // RecoilCorrector *recoilCorrKeys05 = new  RecoilCorrector("","");
+  // recoilCorrKeys05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05/",directory2.Data()));
+  // recoilCorrKeys05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory2.Data()));
+  // recoilCorrKeys05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory2.Data()));
   
-  RecoilCorrector *recoilCorrPFm = new  RecoilCorrector("","");
-  recoilCorrPFm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPF/",directoryPF.Data()));
-  recoilCorrPFm->loadRooWorkspacesData(Form("%s/ZmmDataPF_bkg/",directoryPF.Data()));
-  recoilCorrPFm->loadRooWorkspacesMC(Form("%s/ZmmMCPF/",directoryPF.Data()));
+  // RecoilCorrector *recoilCorrKeysm05 = new  RecoilCorrector("","");
+  // recoilCorrKeysm05->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05/",directory2.Data()));
+  // recoilCorrKeysm05->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05/",directory2.Data()));
+  // recoilCorrKeysm05->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05/",directory2.Data()));
+
+  // RecoilCorrector *recoilCorrKeys051 = new  RecoilCorrector("","");
+  // recoilCorrKeys051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap05-1/",directory2.Data()));
+  // recoilCorrKeys051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory2.Data()));
+  // recoilCorrKeys051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory2.Data()));
+
+  // RecoilCorrector *recoilCorrKeysm051 = new  RecoilCorrector("","");
+  // recoilCorrKeysm051->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap05-1/",directory2.Data()));
+  // recoilCorrKeysm051->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap05-1/",directory2.Data()));
+  // recoilCorrKeysm051->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap05-1/",directory2.Data()));
+
+  // RecoilCorrector *recoilCorrKeys1 = new  RecoilCorrector("","");
+  // recoilCorrKeys1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMCPuppi_keys_rap1/",directory2.Data()));
+  // recoilCorrKeys1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory2.Data()));
+  // recoilCorrKeys1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory2.Data()));
+
+  // RecoilCorrector *recoilCorrKeysm1 = new  RecoilCorrector("","");
+  // recoilCorrKeysm1->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMCPuppi_keys_rap1/",directory2.Data()));
+  // recoilCorrKeysm1->loadRooWorkspacesData(Form("%s/ZmmDataPuppi_bkg_rap1/",directory2.Data()));
+  // recoilCorrKeysm1->loadRooWorkspacesMC(Form("%s/ZmmMCPuppi_rap1/",directory2.Data()));
+  
+  // // ==========================================================================
+  // // ---------------- Recoil corrections for PF MET ---------------------
+  // const TString directoryPF("/afs/cern.ch/user/d/dalfonso/public/WZ/jan23");
+  // RecoilCorrector *recoilCorrPF = new  RecoilCorrector("","");
+  // recoilCorrPF->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMCPF/",directoryPF.Data()));
+  // recoilCorrPF->loadRooWorkspacesData(Form("%s/ZmmDataPF_bkg/",directoryPF.Data()));
+  // recoilCorrPF->loadRooWorkspacesMC(Form("%s/ZmmMCPF/",directoryPF.Data()));
+  
+  // RecoilCorrector *recoilCorrPFm = new  RecoilCorrector("","");
+  // recoilCorrPFm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMCPF/",directoryPF.Data()));
+  // recoilCorrPFm->loadRooWorkspacesData(Form("%s/ZmmDataPF_bkg/",directoryPF.Data()));
+  // recoilCorrPFm->loadRooWorkspacesMC(Form("%s/ZmmMCPF/",directoryPF.Data()));
   // ==========================================================================
   
   // ----------------------------------------------------
@@ -353,21 +341,23 @@ void fitWm(const TString  outputDir,   // output directory
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
-  
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-// fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/LumiSplit_Part1/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/boson_select.raw.root");  typev.push_back(eBKG);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/Wmunu/ntuples/ewk_select1.root");  typev.push_back(eEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/SM/SelectQCD_01_31/Wmunu/ntuples/qcd_select.raw.root");  typev.push_back(eQCD);
+  ///the 10 times slices corresponding ntuples eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon/
+  // this is the equivalent for the time stability
+  //  fnamev.push_back("/eos/cms/store/user/sabrandt/StandardModel/FlatNtuples/Select10MedID_newBacon_fixGen_2018_01_12/Lumi10Parts_Part"+input_section+"/Wenu/ntuples/data_select.root"); typev.push_back(eData);
 
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-// fnamev.push_back("/afs/cern.ch/user/s/sabrandt/work/public/SM/LumiSplit_Part1/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWmunu/ntuples/ewk_select.root");  typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_ntuples/AntiWmunu/ntuples/top_select.root");  typev.push_back(eAntiEWK);
-  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/SM/SelectQCD_01_31/AntiWmunu/ntuples/qcd_select.root");  typev.push_back(eAntiQCD);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/data_select.root"); typev.push_back(eData);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/wm_select.raw.root");   typev.push_back(eWmunu);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/wx_select.raw.root");  typev.push_back(eBKG);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/zxx_select.raw.root");  typev.push_back(eBKG);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/zz_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/ww_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/wz_select.raw.root");  typev.push_back(eEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/Wmunu/ntuples/top_select.raw.root");  typev.push_back(eEWK);
 
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/AntiWmunu/ntuples/data_select.root"); typev.push_back(eAntiData);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/AntiWmunu/ntuples/wm_select.root");   typev.push_back(eAntiWmunu);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/AntiWmunu/ntuples/ewk_select.root");   typev.push_back(eAntiEWK);
+  fnamev.push_back("/afs/cern.ch/work/s/sabrandt/public/LowPU2017ID_13TeV/AntiWmunu/ntuples/top_select.root");   typev.push_back(eAntiEWK);
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -570,37 +560,37 @@ void fitWm(const TString  outputDir,   // output directory
   //
   cout << "Loading track efficiencies..." << endl;
   
-  TFile *dataTrkEffFile_pos = new TFile(dataTrkEffName_pos);
-  CEffUser2D dataTrkEff_pos;
-  dataTrkEff_pos.loadEff((TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataTrkEffFile_pos = new TFile(dataTrkEffName_pos);
+  // CEffUser2D dataTrkEff_pos;
+  // dataTrkEff_pos.loadEff((TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataTrkEffFile_neg = new TFile(dataTrkEffName_neg);
-  CEffUser2D dataTrkEff_neg;
-  dataTrkEff_neg.loadEff((TH2D*)dataTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataTrkEffFile_neg = new TFile(dataTrkEffName_neg);
+  // CEffUser2D dataTrkEff_neg;
+  // dataTrkEff_neg.loadEff((TH2D*)dataTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zmmTrkEffFile_pos = new TFile(zmmTrkEffName_pos);
-  CEffUser2D zmmTrkEff_pos;
-  zmmTrkEff_pos.loadEff((TH2D*)zmmTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zmmTrkEffFile_pos = new TFile(zmmTrkEffName_pos);
+  // CEffUser2D zmmTrkEff_pos;
+  // zmmTrkEff_pos.loadEff((TH2D*)zmmTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zmmTrkEffFile_neg = new TFile(zmmTrkEffName_neg);
-  CEffUser2D zmmTrkEff_neg;
-  zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *zmmTrkEffFile_neg = new TFile(zmmTrkEffName_neg);
+  // CEffUser2D zmmTrkEff_neg;
+  // zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
 
-  TFile *dataTrkEff2BinFile_pos = new TFile(dataTrkEff2BinName_pos);
-  CEffUser2D dataTrkEff2Bin_pos;
-  dataTrkEff2Bin_pos.loadEff((TH2D*)dataTrkEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEff2BinFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataTrkEff2BinFile_pos = new TFile(dataTrkEff2BinName_pos);
+  // CEffUser2D dataTrkEff2Bin_pos;
+  // dataTrkEff2Bin_pos.loadEff((TH2D*)dataTrkEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEff2BinFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataTrkEff2BinFile_neg = new TFile(dataTrkEff2BinName_neg);
-  CEffUser2D dataTrkEff2Bin_neg;
-  dataTrkEff2Bin_neg.loadEff((TH2D*)dataTrkEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEff2BinFile_neg->Get("hErrhEtaPt"));
+  // // TFile *dataTrkEff2BinFile_neg = new TFile(dataTrkEff2BinName_neg);
+  // CEffUser2D dataTrkEff2Bin_neg;
+  // dataTrkEff2Bin_neg.loadEff((TH2D*)dataTrkEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEff2BinFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zmmTrkEff2BinFile_pos = new TFile(zmmTrkEff2BinName_pos);
-  CEffUser2D zmmTrkEff2Bin_pos;
-  zmmTrkEff2Bin_pos.loadEff((TH2D*)zmmTrkEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEff2BinFile_pos->Get("hErrhEtaPt"));
+  // TFile *zmmTrkEff2BinFile_pos = new TFile(zmmTrkEff2BinName_pos);
+  // CEffUser2D zmmTrkEff2Bin_pos;
+  // zmmTrkEff2Bin_pos.loadEff((TH2D*)zmmTrkEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEff2BinFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zmmTrkEff2BinFile_neg = new TFile(zmmTrkEff2BinName_neg);
-  CEffUser2D zmmTrkEff2Bin_neg;
-  zmmTrkEff2Bin_neg.loadEff((TH2D*)zmmTrkEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEff2BinFile_neg->Get("hErrhEtaPt"));
+  // TFile *zmmTrkEff2BinFile_neg = new TFile(zmmTrkEff2BinName_neg);
+  // CEffUser2D zmmTrkEff2Bin_neg;
+  // zmmTrkEff2Bin_neg.loadEff((TH2D*)zmmTrkEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEff2BinFile_neg->Get("hErrhEtaPt"));
 // 
 //   
   //
@@ -611,12 +601,15 @@ void fitWm(const TString  outputDir,   // output directory
   Float_t genVPt, genVPhi, genVy;
   Float_t genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown;
+  Float_t prefireWeight;
   Float_t met, metPhi, sumEt, mt, u1, u2;
   Int_t   q;
-  TLorentzVector *lep=0, *genV=0;
-  Float_t pfChIso, pfGamIso, pfNeuIso;
+  TLorentzVector *lep=0, *genV=0, *genLep=0;
+  Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
     
-  rochcor2015 *rmcor = new rochcor2015();
+    //Setting up rochester corrections
+  // rochcor2015 *rmcor = new rochcor2015();
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
   
   TFile *infile=0;
   TTree *intree=0;
@@ -644,6 +637,7 @@ void fitWm(const TString  outputDir,   // output directory
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
+    intree->SetBranchAddress("prefireWeight",    &prefireWeight);  // event weight per 1/fb (MC)
 //     intree->SetBranchAddress("puppiMet",      &met);       // MET
 //     intree->SetBranchAddress("puppiMetPhi",   &metPhi);    // phi(MET)
     intree->SetBranchAddress(met_name.c_str(),      &met);       // MET
@@ -658,21 +652,27 @@ void fitWm(const TString  outputDir,   // output directory
     intree->SetBranchAddress(u2_name.c_str(),       &u2);        // perpendicular component of recoil
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector
+    intree->SetBranchAddress("genLep",      &genLep);       // lepton 4-vector
     intree->SetBranchAddress("genV",     &genV);       // lepton 4-vector
     intree->SetBranchAddress("pfChIso",  &pfChIso);
     intree->SetBranchAddress("pfGamIso", &pfGamIso);
     intree->SetBranchAddress("pfNeuIso", &pfNeuIso);
+    intree->SetBranchAddress("pfCombIso",&pfCombIso);
   
     Double_t mt=-999;
-
+    UInt_t iterator=15;
+    if(typev[ifile]==eData||typev[ifile]==eAntiData)iterator=1;
     //
     // loop over events
     //
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-//     for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.15; ientry++) {
+    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry < intree->GetEntries(); ientry+=iterator) {
       intree->GetEntry(ientry);
       if(ientry%100000==0) std::cout << "On Entry.... " << ientry << std::endl;
+
+      // THIS IS to do the anti-isolation bins
+      //      if((typev[ifile]==eAntiData||typev[ifile]==eAntiWmunu||typev[ifile]==eAntiEWK||typev[ifile]==eAntiQCD) && (pfCombIso < 0.45*(lep->Pt()) || pfCombIso > 0.55*(lep->Pt()) ) ) continue;
 
       // vector containing raw lepton info for correcting MET
       TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
@@ -707,8 +707,6 @@ void fitWm(const TString  outputDir,   // output directory
       effdata = 1.-effdata;
       effmc   = 1.-effmc;
       corr *= effdata/effmc;
-//       corrSigShape *= effdata/effmc;
-//       corrBkgShape *= effdata/effmc;
     
       effdata=1; effmc=1;
       effSigShapedata=1;
@@ -716,17 +714,11 @@ void fitWm(const TString  outputDir,   // output directory
       if(q>0) {
         effdata *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
         effmc   *= zmmSelEff_pos.getEff((lep->Eta()), lep->Pt()); 
-//         effSigShapedata *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt())*hSelSigSys->GetBinContent(hSelSigSys->GetXaxis()->FindBin(lep->Eta()), hSelSigSys->GetYaxis()->FindBin(lep->Pt())); 
-//         effBkgShapedata *= dataSelEff_pos.getEff((lep->Eta()), lep->Pt())*hSelBkgSys->GetBinContent(hSelBkgSys->GetXaxis()->FindBin(lep->Eta()), hSelBkgSys->GetYaxis()->FindBin(lep->Pt())); 
       } else {
         effdata *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
         effmc   *= zmmSelEff_neg.getEff((lep->Eta()), lep->Pt()); 
-//         effSigShapedata *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt())*hSelSigSys->GetBinContent(hSelSigSys->GetXaxis()->FindBin(lep->Eta()), hSelSigSys->GetYaxis()->FindBin(lep->Pt()));
-//         effBkgShapedata *= dataSelEff_neg.getEff((lep->Eta()), lep->Pt())*hSelBkgSys->GetBinContent(hSelBkgSys->GetXaxis()->FindBin(lep->Eta()), hSelBkgSys->GetYaxis()->FindBin(lep->Pt())); 
       }
       corr *= effdata/effmc;
-//       corrSigShape *= effSigShapedata/effmc;
-//       corrBkgShape *= effBkgShapedata/effmc;
       
       effdata=1; effmc=1;
       effSigShapedata=1;
@@ -734,45 +726,39 @@ void fitWm(const TString  outputDir,   // output directory
       if(q>0) { 
         effdata *= dataStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
         effmc   *= zmmStaEff_pos.getEff((lep->Eta()), lep->Pt()); 
-//         effSigShapedata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt())*hStaSigSys->GetBinContent(hStaSigSys->GetXaxis()->FindBin(lep->Eta()), hStaSigSys->GetYaxis()->FindBin(lep->Pt()));
-//         effBkgShapedata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt())*hStaBkgSys->GetBinContent(hStaBkgSys->GetXaxis()->FindBin(lep->Eta()), hStaBkgSys->GetYaxis()->FindBin(lep->Pt())); 
       } else {
         effdata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
         effmc   *= zmmStaEff_neg.getEff((lep->Eta()), lep->Pt()); 
-//         effSigShapedata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt())*hStaSigSys->GetBinContent(hStaSigSys->GetXaxis()->FindBin(lep->Eta()), hStaSigSys->GetYaxis()->FindBin(lep->Pt()));
-//         effBkgShapedata *= dataStaEff_neg.getEff((lep->Eta()), lep->Pt())*hStaBkgSys->GetBinContent(hStaBkgSys->GetXaxis()->FindBin(lep->Eta()), hStaBkgSys->GetYaxis()->FindBin(lep->Pt())); 
       }
       corr *= effdata/effmc; 
-//       corrSigShape *= effSigShapedata/effmc;
-//       corrBkgShape *= effBkgShapedata/effmc;
       
       effdata=1; effmc=1;
-      if(q>0) { 
-        effdata *= dataTrkEff_pos.getEff((lep->Eta()), lep->Pt()); 
-        effmc   *= zmmTrkEff_pos.getEff((lep->Eta()), lep->Pt()); 
-      } else {
-        effdata *= dataTrkEff_neg.getEff((lep->Eta()), lep->Pt()); 
-        effmc   *= zmmTrkEff_neg.getEff((lep->Eta()), lep->Pt()); 
-      }
+      // if(q>0) { 
+        // effdata *= dataTrkEff_pos.getEff((lep->Eta()), lep->Pt()); 
+        // effmc   *= zmmTrkEff_pos.getEff((lep->Eta()), lep->Pt()); 
+      // } else {
+        // effdata *= dataTrkEff_neg.getEff((lep->Eta()), lep->Pt()); 
+        // effmc   *= zmmTrkEff_neg.getEff((lep->Eta()), lep->Pt()); 
+      // }
 
       double var=0.;      
       
       // TRACKER
-      if(q>0) {
-        Double_t effdata = dataTrkEff_pos.getEff(lep->Eta(), lep->Pt());
-        Double_t errdata = TMath::Max(dataTrkEff_pos.getErrLow(lep->Eta(), lep->Pt()), dataTrkEff_pos.getErrHigh(lep->Eta(), lep->Pt()));
-        Double_t effmc   = zmmTrkEff_pos.getEff(lep->Eta(), lep->Pt());
-        Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(lep->Eta(), lep->Pt()), zmmTrkEff_pos.getErrHigh(lep->Eta(), lep->Pt()));
-        Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-        //var+=errTrk*errTrk;
-      } else {
-        Double_t effdata = dataTrkEff_neg.getEff(lep->Eta(), lep->Pt());
-        Double_t errdata = TMath::Max(dataTrkEff_neg.getErrLow(lep->Eta(), lep->Pt()), dataTrkEff_neg.getErrHigh(lep->Eta(), lep->Pt()));
-        Double_t effmc   = zmmTrkEff_neg.getEff(lep->Eta(), lep->Pt());
-        Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(lep->Eta(), lep->Pt()), zmmTrkEff_neg.getErrHigh(lep->Eta(), lep->Pt()));
-        Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-        //var+=errTrk*errTrk;
-      }
+      // if(q>0) {
+        // Double_t effdata = dataTrkEff_pos.getEff(lep->Eta(), lep->Pt());
+        // Double_t errdata = TMath::Max(dataTrkEff_pos.getErrLow(lep->Eta(), lep->Pt()), dataTrkEff_pos.getErrHigh(lep->Eta(), lep->Pt()));
+        // Double_t effmc   = zmmTrkEff_pos.getEff(lep->Eta(), lep->Pt());
+        // Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(lep->Eta(), lep->Pt()), zmmTrkEff_pos.getErrHigh(lep->Eta(), lep->Pt()));
+        // Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+        // //var+=errTrk*errTrk;
+      // } else {
+        // Double_t effdata = dataTrkEff_neg.getEff(lep->Eta(), lep->Pt());
+        // Double_t errdata = TMath::Max(dataTrkEff_neg.getErrLow(lep->Eta(), lep->Pt()), dataTrkEff_neg.getErrHigh(lep->Eta(), lep->Pt()));
+        // Double_t effmc   = zmmTrkEff_neg.getEff(lep->Eta(), lep->Pt());
+        // Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(lep->Eta(), lep->Pt()), zmmTrkEff_neg.getErrHigh(lep->Eta(), lep->Pt()));
+        // Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+        // //var+=errTrk*errTrk;
+      // }
 //       std::cout << "made it standalone!" << std::endl;
       // STANDALONE
       if(q>0) {
@@ -862,19 +848,24 @@ void fitWm(const TString  outputDir,   // output directory
       corr2Bin *= eff2Bindata/eff2Binmc; 
 //       std::cout << "made it 3!" << std::endl;
           eff2Bindata=1; eff2Binmc=1;
-          if(q>0) { 
-            eff2Bindata *= dataTrkEff2Bin_pos.getEff((lep->Eta()), lep->Pt()); 
-            eff2Binmc   *= zmmTrkEff2Bin_pos.getEff((lep->Eta()), lep->Pt()); 
-          } else {
-            eff2Bindata *= dataTrkEff2Bin_neg.getEff((lep->Eta()), lep->Pt()); 
-            eff2Binmc   *= zmmTrkEff2Bin_neg.getEff((lep->Eta()), lep->Pt()); 
-          }
+          // if(q>0) { 
+            // eff2Bindata *= dataTrkEff2Bin_pos.getEff((lep->Eta()), lep->Pt()); 
+            // eff2Binmc   *= zmmTrkEff2Bin_pos.getEff((lep->Eta()), lep->Pt()); 
+          // } else {
+            // eff2Bindata *= dataTrkEff2Bin_neg.getEff((lep->Eta()), lep->Pt()); 
+            // eff2Binmc   *= zmmTrkEff2Bin_neg.getEff((lep->Eta()), lep->Pt()); 
+          // }
+          
+          
+       // for now while we don't have efficiency corrections
+      // corr = 1.0;       
       if(typev[ifile]==eData || typev[ifile]==eAntiData){
         // Apply the Rochester Corrections to data (anti-isolation)
         TLorentzVector mu1;
         mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
-        float qter1=1.0;
-        rmcor->momcor_data(mu1,q,0,qter1);
+        // float qter1=1.0
+        double dtSF1 = rc.kScaleDT(q, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
+        mu1*=dtSF1;
         if(mu1.Pt()        < PT_CUT)  continue;
         // corrected (smear/scale) lepton for MET correction
         TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
@@ -888,7 +879,7 @@ void fitWm(const TString  outputDir,   // output directory
         } else if(typev[ifile]==eAntiData) {
           hAntiDataMet->Fill(corrMetWithLepton);
           if(q>0) { hAntiDataMetp->Fill(corrMetWithLepton); hMuonEtaAntiDatap->Fill(fabs(mu1.Eta()));} 
-          else    { hAntiDataMetm->Fill(corrMetWithLepton); hMuonEtaAntiDatap->Fill(fabs(mu1.Eta()));}   
+          else    { hAntiDataMetm->Fill(corrMetWithLepton); hMuonEtaAntiDatam->Fill(fabs(mu1.Eta()));}
         }
       } else {
         Double_t weight = 1;Double_t weightUp = 1;Double_t weightDown = 1;
@@ -902,8 +893,11 @@ void fitWm(const TString  outputDir,   // output directory
           weight *= scale1fbDown*lumi*corr;
           weight2 *= scale1fbDown*lumi2*corr;
         } else {
-          weight2*=scale1fb*lumi2*corr;
-          weight *= scale1fb*lumi*corr;
+          // weight2*=scale1fb*lumi*corr*prefireWeight;
+          // weight *= scale1fb*lumi*corr*prefireWeight; // 2017 needs prefiring corrections
+          weight2*=scale1fb*lumi*corr*prefireWeight*iterator;
+          weight *= scale1fb*lumi*corr*prefireWeight*iterator; // 2017 needs prefiring corrections
+          // weight *= scale1fb*lumi*corr;
         }
         
         
@@ -913,14 +907,15 @@ void fitWm(const TString  outputDir,   // output directory
         TLorentzVector mu1;
         mu1.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
         float qter1=1.0;
-        rmcor->momcor_mc(mu1,q,0,qter1);
+        double mcSF1 = rc.kSpreadMC(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genLep->Pt());
+        mu1*=mcSF1;
         // corrected (smear/scale) lepton for MET correction
         TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
         Double_t lepPt = mu1.Pt();
         // change to have rochester corrected muon and raw lepton with MET corrected same way as electron channel 
         if(typev[ifile]==eWmunu || typev[ifile]==eBKG) {
           Double_t corrMet=met, corrMetPhi=metPhi;
-          if(lep->Pt()        > PT_CUT) {
+          if(lepPt        > PT_CUT) {
             double bin = 0;
             for(int i = 1; i <= hh_diff->GetNbinsX();++i){
               if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
@@ -934,29 +929,30 @@ void fitWm(const TString  outputDir,   // output directory
             if(q>0) {
               hMuonEtaMCp->Fill(fabs(mu1.Eta()),weight);
               if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(doPF) recoilCorrPF->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(doKeys){
-                if(fabs(genVy)<0.5)
-                  recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                  recoilCorrKeys051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else
-                  recoilCorrKeys1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-              } else {
-                if(fabs(genVy)<0.5)
-                  recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                  recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else
-                  recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-              } 
+              // else if(doPF) recoilCorrPF->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              // else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              // else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              // else if(doKeys){
+                // if(fabs(genVy)<0.5)
+                  // recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  // recoilCorrKeys051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else
+                  // recoilCorrKeys1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              // } else {
+                // if(fabs(genVy)<0.5)
+                  // recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  // recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else
+                  // recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              // } 
               // Compute the corrected MET value
               TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
               Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
               if(typev[ifile]==eWmunu)
-              {
+              { 
+                // std::cout << "sig hello " << corrMetWithLepton << "  " << weight << std::endl;
                 hWmunuMetp->Fill(corrMetWithLepton,weight);
 //                 hWmunuMetp_PileupUp->Fill(corrMetWithLepton,weightUp);
 //                 hWmunuMetp_PileupDown->Fill(corrMetWithLepton,weightDown);
@@ -970,24 +966,24 @@ void fitWm(const TString  outputDir,   // output directory
             } else {
               hMuonEtaMCm->Fill(fabs(mu1.Eta()),weight);
               if(doInclusive) recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(doPF) recoilCorrPFm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-              else if(doKeys){
-                if(fabs(genVy)<0.5)
-                  recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                  recoilCorrKeysm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else
-                  recoilCorrKeysm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-              } else {
-                if(fabs(genVy)<0.5)
-                  recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                  recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-                else
-                  recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-              }
+              // else if(doPF) recoilCorrPFm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              // else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              // else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+              // else if(doKeys){
+                // if(fabs(genVy)<0.5)
+                  // recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  // recoilCorrKeysm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else
+                  // recoilCorrKeysm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              // } else {
+                // if(fabs(genVy)<0.5)
+                  // recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                  // recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+                // else
+                  // recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+              // }
               // Compute the corrected MET value
               TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
               Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
@@ -1038,24 +1034,24 @@ void fitWm(const TString  outputDir,   // output directory
           if(q>0) {              
             pU1 = 0; pU2 = 0; 
             if(doInclusive) recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(doPF) recoilCorrPF->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(doKeys){
-              if(fabs(genVy)<0.5)
-                recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                recoilCorrKeys051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else
-                recoilCorrKeys1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-            } else {
-              if(fabs(genVy)<0.5)
-                recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else
-                recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-            }
+            // else if(doPF) recoilCorrPF->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            // else if(pileupUp)    recoilCorrPuUp->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            // else if(pileupDown)  recoilCorrPuDown->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            // else if(doKeys){
+              // if(fabs(genVy)<0.5)
+                // recoilCorrKeys05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                // recoilCorrKeys051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else
+                // recoilCorrKeys1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            // } else {
+              // if(fabs(genVy)<0.5)
+                // recoilCorr05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                // recoilCorr051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else
+                // recoilCorr1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            // }
             //recoilCorr->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
             Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
@@ -1065,24 +1061,24 @@ void fitWm(const TString  outputDir,   // output directory
           else {
             pU1 = 0; pU2 = 0; 
             if(doInclusive) recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(doPF) recoilCorrPFm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
-            else if(doKeys){
-              if(fabs(genVy)<0.5)
-                recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                recoilCorrKeysm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else
-                recoilCorrKeysm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-            } else {
-              if(fabs(genVy)<0.5)
-                recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
-                recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
-              else
-                recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
-            }
+            // else if(doPF) recoilCorrPFm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            // else if(pileupUp)    recoilCorrPuUpm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            // else if(pileupDown)  recoilCorrPuDownm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0);
+            // else if(doKeys){
+              // if(fabs(genVy)<0.5)
+                // recoilCorrKeysm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                // recoilCorrKeysm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else
+                // recoilCorrKeysm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            // } else {
+              // if(fabs(genVy)<0.5)
+                // recoilCorrm05->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
+                // recoilCorrm051->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys);
+              // else
+                // recoilCorrm1->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,doKeys); 
+            // }
             //recoilCorrm->CorrectInvCdf(corrMet,corrMetPhi,genVPt,genVPhi,lepPt,lep->Phi(),pU1,pU2,0);
             TVector2 vMetCorr((corrMet)*cos(corrMetPhi),(corrMet)*sin(corrMetPhi));
             Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod();
@@ -1098,6 +1094,7 @@ void fitWm(const TString  outputDir,   // output directory
 //           hEWKMet_PileupUp->Fill(corrMetWithLepton,weightUp);
 //           hEWKMet_PileupDown->Fill(corrMetWithLepton,weightDown);
           if(q>0) {
+              // std::cout << "hello " << corrMetWithLepton << "  " << weight << std::endl;
             hEWKMetp->Fill(corrMetWithLepton,weight); 
             // RooFit doesn't see these histograms, only for combine, I will remove completely later
 //             hEWKMetp_PileupUp->Fill(corrMetWithLepton,weightUp); 
@@ -1164,48 +1161,55 @@ void fitWm(const TString  outputDir,   // output directory
   // Declare fit parameters for signal and background yields
   // Note: W signal and EWK+top PDFs are constrained to the ratio described in MC
   //
-  RooRealVar nSig("nSig","nSig",0.7*(hDataMet->Integral()),0,hDataMet->Integral());
+  RooRealVar nSig("nSig","nSig",hWmunuMet->Integral(),0,hDataMet->Integral());
   RooRealVar nQCD("nQCD","nQCD",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
   RooRealVar cewk("cewk","cewk",0.1,0,5) ;
   cewk.setVal(hEWKMet->Integral()/hWmunuMet->Integral());
-//   cewk.setConstant(kTRUE);
-  RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
+  cewk.setConstant(kTRUE);
+  // RooFormulaVar nEWK("nEWK","nEWK","cewk*nSig",RooArgList(nSig,cewk));
   RooRealVar nAntiSig("nAntiSig","nAntiSig",hAntiWmunuMet->Integral()*0.9,0,hAntiDataMet->Integral());
   RooRealVar nAntiQCD("nAntiQCD","nAntiQCD",0.9*(hDataMet->Integral()),0,hDataMet->Integral());
   RooRealVar dewk("dewk","dewk",0.1,0,5) ;
   dewk.setVal(hAntiEWKMet->Integral()/hAntiWmunuMet->Integral());
-  dewk.setConstant(kTRUE);
+  // dewk.setConstant(kTRUE);
   RooFormulaVar nAntiEWK("nAntiEWK","nAntiEWK","dewk*nAntiSig",RooArgList(nAntiSig,dewk));
+  RooRealVar nEWK("nEWK","nEWK",hEWKMet->Integral(),0,hDataMet->Integral());
   
-  RooRealVar nSigp("nSigp","nSigp",0.7*(hDataMetp->Integral()),0,hDataMetp->Integral());
+  RooRealVar nSigp("nSigp","nSigp",hWmunuMetp->Integral(),0,hDataMetp->Integral());
   RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWmunuMetp->Integral(),0,hAntiDataMetp->Integral());
 //   RooRealVar nSigp("nSigp","nSigp",90000,0,hDataMetp->Integral());
   //RooRealVar nQCDp("nQCDp","nQCDp",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar nQCDp("nQCDp","nQCDp",hDataMetp->Integral()*0.3,0,hDataMetp->Integral());
   RooRealVar cewkp("cewkp","cewkp",0.1,0,5) ;
   cewkp.setVal(hEWKMetp->Integral()/hWmunuMetp->Integral());
-//   cewkp.setConstant(kTRUE);
+  cewkp.setConstant(kTRUE);
   RooFormulaVar nEWKp("nEWKp","nEWKp","cewkp*nSigp",RooArgList(nSigp,cewkp));
+  // RooRealVar nEWKp("nEWKp","nEWKp",hEWKMetp->Integral(),0,hDataMetp->Integral());
+  // nEWKp.setConstant(kTRUE);
   //RooRealVar nAntiSigp("nAntiSigp","nAntiSigp",hAntiWmunuMetp->Integral()*1.0,0,hAntiDataMetp->Integral());
   RooRealVar nAntiQCDp("nAntiQCDp","nAntiQCDp",0.9*(hAntiDataMetp->Integral()),0,hAntiDataMetp->Integral());
   RooRealVar dewkp("dewkp","dewkp",0.1,0,5) ;
   dewkp.setVal(hAntiEWKMetp->Integral()/hAntiWmunuMetp->Integral());
-  dewkp.setConstant(kTRUE);
+  // dewkp.setVal(0);
+  // dewkp.setConstant(kTRUE);
   RooFormulaVar nAntiEWKp("nAntiEWKp","nAntiEWKp","dewkp*nAntiSigp",RooArgList(nAntiSigp,dewkp));
   
-  RooRealVar nSigm("nSigm","nSigm",0.7*(hDataMetm->Integral()),0,hDataMetm->Integral());
+  RooRealVar nSigm("nSigm","nSigm",hWmunuMetm->Integral(),0,hDataMetm->Integral());
 //   RooRealVar nSigm("nSigm","nSigm",75000,0,hDataMetm->Integral());
   //RooRealVar nQCDm("nQCDm","nQCDm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
   RooRealVar nQCDm("nQCDm","nQCDm",hDataMetm->Integral()*0.3,0,hDataMetm->Integral());
   RooRealVar cewkm("cewkm","cewkm",0.1,0,5) ;
   cewkm.setVal(hEWKMetm->Integral()/hWmunuMetm->Integral());
-//   cewkm.setConstant(kTRUE);
+  cewkm.setConstant(kTRUE);
   RooFormulaVar nEWKm("nEWKm","nEWKm","cewkm*nSigm",RooArgList(nSigm,cewkm));  
+  // RooRealVar nEWKm("nEWKm","nEWKm",hEWKMetm->Integral(),0,hDataMetm->Integral());
+  // nEWKm.setConstant(kTRUE);
   RooRealVar nAntiSigm("nAntiSigm","nAntiSigm",hAntiWmunuMetm->Integral()*1.0,0,hAntiDataMetm->Integral());
   RooRealVar nAntiQCDm("nAntiQCDm","nAntiQCDm",0.9*(hAntiDataMetm->Integral()),0,hAntiDataMetm->Integral());
   RooRealVar dewkm("dewkm","dewkm",0.1,0,5) ;
   dewkm.setVal(hAntiEWKMetm->Integral()/hAntiWmunuMetm->Integral());
-  dewkm.setConstant(kTRUE);
+  // dewkm.setVal(0);
+  // dewkm.setConstant(kTRUE);
   RooFormulaVar nAntiEWKm("nAntiEWKm","nAntiEWKm","dewkm*nAntiSigm",RooArgList(nAntiSigm,dewkm));
   
   //
@@ -1261,9 +1265,15 @@ void fitWm(const TString  outputDir,   // output directory
   //CExponential qcdp(pfmet,kTRUE);
   //CExponential qcdm(pfmet,kTRUE);
   // comment back in for qcd functional form
-  CPepeModel2 qcd("qcd",pfmet);
-  CPepeModel2 qcdp("qcdp",pfmet);
-  CPepeModel2 qcdm("qcdm",pfmet);
+  // CPepeModel2 qcd("qcd",pfmet);
+  // CPepeModel2 qcdp("qcdp",pfmet);
+  // CPepeModel2 qcdm("qcdm",pfmet);
+    // CPepeModel3 qcd("qcd",pfmet);
+  // CPepeModel3 qcdp("qcdp",pfmet);
+  // CPepeModel3 qcdm("qcdm",pfmet);
+    CPepeModel1 qcd("qcd",pfmet);
+  CPepeModel1 qcdp("qcdp",pfmet);
+  CPepeModel1 qcdm("qcdm",pfmet);
 //   
 // // RooRealVar f("f","f",0.5,0.,1.) ;
 //   RooGaussian fconsta1p("fconsta1p","fconsta1p",*(qcdp.a1),a1ConstMeanP,a1ConstSigmaP);
@@ -1311,13 +1321,17 @@ void fitWm(const TString  outputDir,   // output directory
   RooDataHist aewkMetm("aewkMETm","aewkMETm",RooArgSet(pfmet),hAntiEWKMetm); RooHistPdf apdfEWKm("aewkm","aewkm",pfmet,aewkMetm,1); 
   
 //   // Anti-QCD Pdfs
-  CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
-  CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
-  CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
+  // CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
+  // CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
+  // CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
 
-//   CPepeModel2 aqcd("aqcd",pfmet);
-//   CPepeModel2 aqcdp("aqcdp",pfmet);
-//   CPepeModel2 aqcdm("aqcdm",pfmet);
+  // CPepeModel3 aqcd("aqcd",pfmet);
+  // CPepeModel3 aqcdp("aqcdp",pfmet);
+  // CPepeModel3 aqcdm("aqcdm",pfmet);
+  
+  CPepeModel1 aqcd("aqcd",pfmet);
+  CPepeModel1 aqcdp("aqcdp",pfmet);
+  CPepeModel1 aqcdm("aqcdm",pfmet);
   
   // Anti-selection PDFs
   RooAddPdf apdfMet ("apdfMet", "apdfMet", RooArgList(apdfWm,apdfEWK,*(aqcd.model)),   RooArgList(nAntiSig,nAntiEWK,nAntiQCD));  
@@ -1480,18 +1494,18 @@ void fitWm(const TString  outputDir,   // output directory
              Import("Select", dataMetp),
              Import("Anti",   antiMetp));
              
-//   RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended(),Minos(kTRUE),Save(kTRUE));
-//   RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),ExternalConstraints(constantip),Minos(kTRUE),Save(kTRUE));
-  RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),ExternalConstraints(RooArgSet(constp,constantip)),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResp = pdfMetp.fitTo(dataMetp,Extended()/*,ExternalConstraints(constp)*/,Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResAntip = apdfMetp.fitTo(antiMetp,Extended(),Minos(kTRUE),Save(kTRUE));
+  // RooFitResult *fitResp = pdfTotalp.fitTo(dataTotalp,Extended(),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
   
 //   RooDataHist dataMetp2("dataMetp2", "dataMetp2", RooArgSet(pfmet), hDataMetp);
   RooDataHist dataTotalm("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat),
              Import("Select", dataMetm),
              Import("Anti", antiMetm));
-//   RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
-//   RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
-// RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended(),ExternalConstraints(constantim),Minos(kTRUE),Save(kTRUE));
-RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraints(RooArgSet(constm,constantim)),RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
+  // RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),ExternalConstraints(constm),Minos(kTRUE),Save(kTRUE));
+  RooFitResult *fitResm = pdfMetm.fitTo(dataMetm,Extended(),Minos(kTRUE),Save(kTRUE));
+RooFitResult *fitResAntim = apdfMetm.fitTo(antiMetm,Extended()/*,ExternalConstraints(constantim)*/,Minos(kTRUE),Save(kTRUE));
+// RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),/*ExternalConstraints(constm),*/RooFit::Strategy(2),Minos(kTRUE),Save(kTRUE));
   
   //
   // Use histogram version of fitted PDFs to make ratio plots
@@ -1524,13 +1538,15 @@ RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraint
   hAntiMetDiff->SetMarkerSize(0.9);
    
   TH1D *hPdfAntiMetp = (TH1D*)(apdfMetp.createHistogram("hPdfAntiMetp", pfmet));
-  hPdfAntiMetp->Scale((nAntiSigp.getVal()+nAntiEWKp.getVal()+nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
+  // hPdfAntiMetp->Scale((nAntiSigp.getVal()+nAntiEWKp.getVal()+nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
+  hPdfAntiMetp->Scale((nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
   TH1D *hAntiMetpDiff = makeDiffHist(hAntiDataMetp,hPdfAntiMetp,"hAntiMetpDiff");
   hAntiMetpDiff->SetMarkerStyle(kFullCircle);
   hAntiMetpDiff->SetMarkerSize(0.9);
     
   TH1D *hPdfAntiMetm = (TH1D*)(apdfMetm.createHistogram("hPdfAntiMetm", pfmet));
-  hPdfAntiMetm->Scale((nAntiSigm.getVal()+nAntiEWKm.getVal()+nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
+  // hPdfAntiMetm->Scale((nAntiSigm.getVal()+nAntiEWKm.getVal()+nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
+  hPdfAntiMetm->Scale((nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
   TH1D *hAntiMetmDiff = makeDiffHist(hAntiDataMetm,hPdfAntiMetm,"hAntiMetmDiff");
   hAntiMetmDiff->SetMarkerStyle(kFullCircle); 
   hAntiMetmDiff->SetMarkerSize(0.9);
@@ -1866,31 +1882,31 @@ RooFitResult *fitResm = pdfTotalm.fitTo(dataTotalm,Extended(),ExternalConstraint
   Double_t chi2prob, chi2ndf;
   Double_t ksprob, ksprobpe;
   
-  chi2prob = hDataMet->Chi2Test(hPdfMet,"PUW");
-  chi2ndf  = hDataMet->Chi2Test(hPdfMet,"CHI2/NDFUW");
-  ksprob   = hDataMet->KolmogorovTest(hPdfMet);
-  ksprobpe = hDataMet->KolmogorovTest(hPdfMet,"DX");
-  sprintf(txtfname,"%s/fitresWm.txt",CPlot::sOutDir.Data());
-  txtfile.open(txtfname);
-  assert(txtfile.is_open());
-  
-  flags = txtfile.flags();
-  txtfile << setprecision(10);
-  txtfile << " *** Yields *** " << endl;
-  txtfile << "Selected: " << hDataMet->Integral() << endl;
-  txtfile << "  Signal: " << nSig.getVal() << " +/- " << nSig.getPropagatedError(*fitRes) << endl;
-  txtfile << "     QCD: " << nQCD.getVal() << " +/- " << nQCD.getPropagatedError(*fitRes) << endl;
-  txtfile << "   Other: " << nEWK.getVal() << " +/- " << nEWK.getPropagatedError(*fitRes) << endl;
-  txtfile << endl;
-  txtfile.flags(flags);
-  
-  fitRes->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
-  txtfile << endl;
-  printCorrelations(txtfile, fitRes);
-  txtfile << endl;
-  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
-  txtfile.close();
-  
+  //  chi2prob = hDataMet->Chi2Test(hPdfMet,"PUW");
+  //  chi2ndf  = hDataMet->Chi2Test(hPdfMet,"CHI2/NDFUW");
+  //  ksprob   = hDataMet->KolmogorovTest(hPdfMet);
+  //  ksprobpe = hDataMet->KolmogorovTest(hPdfMet,"DX");
+  //  sprintf(txtfname,"%s/fitresWm.txt",CPlot::sOutDir.Data());
+  //  txtfile.open(txtfname);
+  //  assert(txtfile.is_open());
+
+  //  flags = txtfile.flags();
+  //  txtfile << setprecision(10);
+  //  txtfile << " *** Yields *** " << endl;
+  //  txtfile << "Selected: " << hDataMet->Integral() << endl;
+  //  txtfile << "  Signal: " << nSig.getVal() << " +/- " << nSig.getPropagatedError(*fitRes) << endl;
+  //  txtfile << "     QCD: " << nQCD.getVal() << " +/- " << nQCD.getPropagatedError(*fitRes) << endl;
+  //  txtfile << "   Other: " << nEWK.getVal() << " +/- " << nEWK.getPropagatedError(*fitRes) << endl;
+  //  txtfile << endl;
+  //  txtfile.flags(flags);
+
+  //  fitRes->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
+  //  txtfile << endl;
+  //  printCorrelations(txtfile, fitRes);
+  //  txtfile << endl;
+  //  printChi2AndKSResults(txtfile, chi2prob, chi2ndf, ksprob, ksprobpe);
+  //  txtfile.close();
+
   chi2prob = hDataMetp->Chi2Test(hPdfMetp,"PUW");
   chi2ndf  = hDataMetp->Chi2Test(hPdfMetp,"CHI2/NDFUW");
   ksprob   = hDataMetp->KolmogorovTest(hPdfMetp);
@@ -1970,13 +1986,15 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
 {
   TH1D *hDiff = new TH1D(name,"",hData->GetNbinsX(),hData->GetXaxis()->GetXmin(),hData->GetXaxis()->GetXmax());
   for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
-    
     Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
     Double_t diff = diff0/hData->GetBinContent(ibin);
     if(hData->GetBinContent(ibin) == 0) diff = 0;
-    std::cout << "bin " << ibin << std::endl;
-    std::cout << "data " << hData->GetBinContent(ibin) << std::endl;
-    std::cout << "fits " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "bin # " << ibin << std::endl;
+    std::cout << "fit bin content " << hFit->GetBinContent(ibin) << std::endl;
+    std::cout << "fit bin err " << hFit->GetBinError(ibin) << std::endl;
+    std::cout << "data bin content " << hData->GetBinContent(ibin) << std::endl;
+    std::cout << "data bin err " << hData->GetBinError(ibin) << std::endl;
+    std::cout << "diff =  " << diff << std::endl;
 //     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     Double_t err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))*(hFit->GetBinError(ibin)/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
     if(hData->GetBinContent(ibin) == 0) err = 0;
@@ -1986,7 +2004,7 @@ TH1D *makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
     //else      hDiff->SetBinContent(ibin,0);
     std::cout << "err = " << err << std::endl;
     hDiff->SetBinContent(ibin,diff);
-    hDiff->SetBinError(ibin,err);   
+    hDiff->SetBinError(ibin,err);  
   }
   std::cout << "bin " << hData->GetNbinsX() + 1 << std::endl;
   std::cout << "data " << hData->GetBinContent(hData->GetNbinsX() + 1) << std::endl;

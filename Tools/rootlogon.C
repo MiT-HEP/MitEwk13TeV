@@ -1,21 +1,49 @@
 {    
-  if(gSystem->Getenv("CMSSW_VERSION")) {    
-    TString rfitpath("/afs/cern.ch/cms/slc6_amd64_gcc481/lcg/roofit/5.34.18-cms9/include/");
-    TString path = gSystem->GetIncludePath();
-    path += "-I. -I$ROOTSYS/src -I";
-    path += rfitpath;
-    gSystem->SetIncludePath(path.Data());
-    
+
+ if(gSystem->Getenv("CMSSW_VERSION")) {
+    //TString rfitpath("/afs/cern.ch/cms/$SCRAM_ARCH/lcg/roofit/6.02.00-cms/include/");
+    //TString path = gSystem->GetIncludePath();
+    //path += "-I. -I$ROOTSYS/src -I";
+    //path += rfitpath;
+    //gSystem->SetIncludePath(path.Data());
+
     TString str = gSystem->GetMakeSharedLib();
     if (str.Contains("-m32")==0 && str.Contains("-m64")==0) {
       str.ReplaceAll("g++", "g++ -m32");
       gSystem->SetMakeSharedLib(str);
     }
-    
-    gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc491/libBaconAnaDataFormats.so");
-    
+
+    gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libBaconAnaDataFormats.so");
+
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
-  
+
+  //  gROOT->Macro("../Utils/RooVoigtianShape.cc+");
+  //  gROOT->Macro("../Utils/RooCMSShape.cc+");
+
+  gROOT->Macro("../Utils/CPlot.cc++");
+  gROOT->Macro("../Utils/MitStyleRemix.cc++");  
+  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
+
+//  gROOT->Macro("RooVoigtianShape.cc+");
+//  gROOT->Macro("RooCMSShape.cc+");
+
+//  gROOT->Macro("CEffUser1D.cc+");
+//  gROOT->Macro("CEffUser2D.cc+");
+
+//  gROOT->Macro("muresolution_run2r.cc+");
+//  gROOT->Macro("rochcor2015r.cc+");
+ 
+  //gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
+  {  
+    //TString path = gSystem->GetIncludePath();
+    //path += " -I../EleScale/ ";
+    //gSystem->SetIncludePath(path.Data());
+    gSystem->AddIncludePath("-I../EleScale");
+    gInterpreter->AddIncludePath("../EleScale");
+    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+    gROOT->Macro("EnergyScaleCorrection_class.cc+");
+  }
+
   }
                
   // Show which process needs debugging

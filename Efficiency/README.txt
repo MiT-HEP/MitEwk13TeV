@@ -1,4 +1,5 @@
 MitEwk/Efficiency/README.txt - Jay Lawhorn 8/7/13
+Updated 3/26/2019 by Stephanie Brandt (Added Systematics section, expanded probe sorting & efficiency calculation to reflect current use)
 
 ------| INTRODUCTION |------
 
@@ -11,6 +12,7 @@ particular set up.
 The first step of the efficiency calculation is performed by runSelectProbes.sh which is a shell wrapper for selectProbesEleEff.C
 and selectProbesMuEff.C. The relevant efficiency sorts should be done for both data and signal MC.
 The options for each are detailed below.
+
 
 * selectProbesEleEff.C+\(\"input_file\",\"output_dir\",eff_type, do_gen_match, do_weighted\)
 
@@ -39,6 +41,13 @@ The options for each are detailed below.
     do_gen_match takes 0 or 1. for data, use 0. for MC, use 1.
 
     do_weighted takes 0 or 1. it defaults to 0 and that's fine to use
+
+    
+***** 3/26/2019 ****
+For use in the systematic calculations, we are reweighting the nominal fully reconstructed MC sample at generator-level against different generator / parton shower model combinations. 
+These weights are added in the output ntuple from selectProbe*.C 
+First run the makeGenZll***.C codes on the gen-level Bacon of choice
+Load the output files from that into selectProbe**.C
 
 
 ------| EFFICIENCY BINNING AND CALCULATIONS |------
@@ -78,6 +87,13 @@ are wrappers for plotEff.C that make all of the needed calculations for this par
 
 * previous analysis used probe counting for all MC efficiencies and data trigger efficiencies
   all other data efficiencies use MC convolved with a gaussian for signal and gaussian for background
+  
+***** Addition 3/26/2019 ***
+**** Additional signal model options to go with our current use of alternative models for systematics
+pass_signal_model and fail_signal model now have options 5, 6
+5 = POWHEG x Pythia8 reweighting
+6 = POWHEG x Photos reweighting
+(Using option #2 as before will use whatever is in the primary ntuple, unweighted)
 
 ------| MODIFICATION |------
 
@@ -90,3 +106,11 @@ are wrappers for plotEff.C that make all of the needed calculations for this par
 * in TagAndProbe/plotEff.C:
     pileup reweighting files are give near line 155
 
+------| SYSTEMATIC UNCERTAINTIES |------
+***** Added 3/26/2019 *****
+Systematic uncertainties for the lepton efficiencies are taken as the difference between the efficiency yield of the nominal model and alternative model.
+The code for this is contained in the MitEwk/Efficiency/Systematics directory
+Evaluate the efficiency for the nominal model & the alternative models
+use the condorSubmit.sh and runStep2Step3.sh to specify file input and output locations for toyGenAndPull.C
+toyGenAndPull.C replaces the nightmare sequence of makePseudoData.C, step3.C, bash script hell, and SDrawSystematic.cc
+the output should be a single text file per pT-eta bin containing the mean & sigma of the pull distribution & a plot (same output as the aforementioned sequence of 4-5 steps)

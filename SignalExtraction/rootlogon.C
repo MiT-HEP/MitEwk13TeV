@@ -1,11 +1,11 @@
 {    
 
-  if(gSystem->Getenv("CMSSW_VERSION")) {
-    TString rfitpath("/afs/cern.ch/cms/$SCRAM_ARCH/lcg/roofit/6.02.00-cms/include/");
-    TString path = gSystem->GetIncludePath();
-    path += "-I. -I$ROOTSYS/src -I";
-    path += rfitpath;
-    gSystem->SetIncludePath(path.Data());
+ if(gSystem->Getenv("CMSSW_VERSION")) {
+    //TString rfitpath("/afs/cern.ch/cms/$SCRAM_ARCH/lcg/roofit/6.02.00-cms/include/");
+    //TString path = gSystem->GetIncludePath();
+    //path += "-I. -I$ROOTSYS/src -I";
+    //path += rfitpath;
+    //gSystem->SetIncludePath(path.Data());
 
     TString str = gSystem->GetMakeSharedLib();
     if (str.Contains("-m32")==0 && str.Contains("-m64")==0) {
@@ -17,30 +17,34 @@
 
     gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
 
-  gROOT->Macro("../Utils/RooVoigtianShape.cc+");
-  gROOT->Macro("../Utils/RooCMSShape.cc+");
-
+    //gROOT->Macro("../Utils/RooVoigtianShape.cc+");
+    gROOT->Macro("../Utils/RooCMSShape.cc+");
+   gROOT->Macro("../EleScale/EnergyScaleCorrection.cc++");
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");  
+  gROOT->Macro("../Utils/PdfDiagonalizer.cc++");  
 
-  gROOT->Macro("RooVoigtianShape.cc+");
-  gROOT->Macro("RooCMSShape.cc+");
+  //gROOT->Macro("RooVoigtianShape.cc+");
+  //gROOT->Macro("RooCMSShape.cc+");
 
-  gROOT->Macro("CEffUser1D.cc+");
-  gROOT->Macro("CEffUser2D.cc+");
-
-  gROOT->Macro("muresolution_run2r.cc+");
-  gROOT->Macro("rochcor2015r.cc+");
-  
-  {  
-    //TString path = gSystem->GetIncludePath();
-    //path += " -I../EleScale/ ";
-    //gSystem->SetIncludePath(path.Data());
-    gSystem->AddIncludePath("-I../EleScale");
-    gInterpreter->AddIncludePath("../EleScale");
-    gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
-    gROOT->Macro("EnergyScaleCorrection_class.cc+");
-  }
+  gROOT->Macro("../Utils/AppEffSF.cc+");
+  gROOT->Macro("../Utils/CEffUser1D.cc+");
+  gROOT->Macro("../Utils/CEffUser2D.cc+");
+//  gROOT->Macro("muresolution_run2r.cc+");
+  //gROOT->Macro("rochcor2015r.cc+");
+ // gROOT->Macro("../RochesterCorr/RoccoR.cc+");
+ 
+  // gROOT->Macro("../Utils/PdfDiagonalizer.h++"); 
+  // gROOT->Macro("../Utils/RecoilCorrector_asym2.hh++"); 
+  //{  
+   // //TString path = gSystem->GetIncludePath();
+   // //path += " -I../EleScale/ ";
+    ////gSystem->SetIncludePath(path.Data());
+   // gSystem->AddIncludePath("-I../EleScale");
+  //  gInterpreter->AddIncludePath("../EleScale");
+  //  gROOT->SetMacroPath(TString(gROOT->GetMacroPath()) + ":../EleScale");
+  //  gROOT->Macro("EnergyScaleCorrection_class.cc+");
+ // }
 
   }
                

@@ -30,10 +30,11 @@
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
-#include "../EleScale/EnergyScaleCorrection_class.hh"
+#include "../EleScale/EnergyScaleCorrection.h"
+#include <../Utils/AppEffSF.cc>
 
 #endif
 
@@ -46,6 +47,7 @@ TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
 void plotZee(const TString  inputDir,    // input directory
 	     const TString  outputDir,   // output directory
+       const TString sqrts,
              const Double_t lumi,        // integrated luminosity (/fb)
 	     const Bool_t   normToData=0 // draw MC normalized to data
 ) {
@@ -66,46 +68,68 @@ void plotZee(const TString  inputDir,    // input directory
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
   fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
-  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
-  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
   //
+  // const Int_t    NBINS     = 120;
   const Int_t    NBINS     = 60;
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
-  const Double_t ETA_CUT   = 2.5;
+  // const Double_t PT_CUT    = 32;
+  // const Double_t ETA_CUT   = 1.444;
+  const Double_t ETA_CUT   = 2.4;
+    
+  // const Double_t ECAL_GAP_LOW  = 1.4442;
+  // const Double_t ECAL_GAP_HIGH = 1.566;
+  const Double_t ECAL_GAP_LOW  = 10.;
+  const Double_t ECAL_GAP_HIGH = 10.;
   
   // efficiency files
 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
-  const TString dataHLTEffName_pos = baseDir + "EleHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "EleHLTEff/MG/eff.root";
-  const TString zeeHLTEffName_pos  = baseDir + "EleHLTEff/CT/eff.root";
-  const TString zeeHLTEffName_neg  = baseDir + "EleHLTEff/CT/eff.root";
+  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
+  // std::string baseDirs = baseDir.Data();
+  AppEffSF effs(baseDir);
+  effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
+  // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
+
+  // const TString baseDir1 = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
+// // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/";
+  // // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_Old/LowPU2017ID_13TeV/results/Zee/";
+  // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/TEST_Wenu_Corrected/Efficiency/results/Zee/";
+    // const TString dataHLTEffName_pos = baseDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
+  // const TString dataHLTEffName_neg = baseDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
+  // const TString zeeHLTEffName_pos  = baseDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
+  // const TString zeeHLTEffName_neg  = baseDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
+
+  // const TString dataGsfSelEffName_pos = baseDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  // const TString dataGsfSelEffName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+  // const TString zeeGsfSelEffName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  // const TString zeeGsfSelEffName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+
   
-  const TString dataGsfSelEffName_pos = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString dataGsfSelEffName_neg = baseDir + "EleGsfSelEff/MG/eff.root";
-  const TString zeeGsfSelEffName_pos  = baseDir + "EleGsfSelEff/CT/eff.root";
-  const TString zeeGsfSelEffName_neg  = baseDir + "EleGsfSelEff/CT/eff.root";
+   // const TString dataHLTEff2BinName_pos = baseDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
+  // const TString dataHLTEff2BinName_neg = baseDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
+  // const TString zeeHLTEff2BinName_pos  = baseDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
+  // const TString zeeHLTEff2BinName_neg  = baseDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
 
-  //efficiency files 2Bins
+  // const TString dataGsfSelEff2BinName_pos = baseDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  // const TString dataGsfSelEff2BinName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
+  // const TString zeeGsfSelEff2BinName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
+  // const TString zeeGsfSelEff2BinName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataHLTEff2BinName_pos = baseDir + "EleHLTEff/1MG/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir + "EleHLTEff/1MG/eff.root";
-  const TString zeeHLTEff2BinName_pos  = baseDir + "EleHLTEff/1CT/eff.root";
-  const TString zeeHLTEff2BinName_neg  = baseDir + "EleHLTEff/1CT/eff.root";
   
-  const TString dataGsfSelEff2BinName_pos = baseDir + "EleGsfSelEff/1MG/eff.root";
-  const TString dataGsfSelEff2BinName_neg = baseDir + "EleGsfSelEff/1MG/eff.root";
-  const TString zeeGsfSelEff2BinName_pos  = baseDir + "EleGsfSelEff/1CT/eff.root";
-  const TString zeeGsfSelEff2BinName_neg  = baseDir + "EleGsfSelEff/1CT/eff.root";
+  
 
-  TString GsfSelEffSignalShapeSys = baseDir + "Results/EleGsfSelSigSys.root";
-  TString GsfSelEffBackgroundShapeSys = baseDir + "Results/EleGsfSelBkgSys.root";
+  // TString GsfSelEffSignalShapeSys = baseDir1 + "Results/EleGsfSelSigSys.root";
+  // TString GsfSelEffBackgroundShapeSys = baseDir1 + "Results/EleGsfSelBkgSys.root";
 
+  const TString corrFiles = "../EleScale/Run2017_LowPU_v1";
+  EnergyScaleCorrection ec( corrFiles.Data());
 
   //
   // Set up output file
@@ -114,14 +138,152 @@ void plotZee(const TString  inputDir,    // input directory
   TFile *outFile = new TFile(outfilename,"RECREATE");
   TH1::AddDirectory(kFALSE);
 
+  TFile *rajdeepData = new TFile("root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalelf/ntuples/13TeV/MINIAODNTUPLE/94X_dataRun2_ReReco_EOY17_v6/HighEGJet-Run2017H-noSkim-17Nov2017-ReReco-miniAOD/306896-307082/306896-307082_13TeV_LowPU/Moriond18MC1042s/HighEGJet-Run2017H-noSkim-17Nov2017-ReReco-miniAOD-allRange.root","OPEN");
+  TFile *rajdeepMC = new TFile("/eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalelf/ntuples/13TeV/MINIAODNTUPLE/94X_mc2017_realistic_v10/DYJetsToLL_fixECALGT_LowPU/allRange/MCfixECAL/DYJetsToLL_fixECALGT_LowPU-allRange.root","OPEN");
+  
+  TTree *treeData = (TTree*)rajdeepData->Get("selected");// assert(intree);
+  TTree *treeMC = (TTree*)rajdeepMC->Get("selected");// assert(intree);
+
+  TH1D *hDataEG = new TH1D("hDataEG","",NBINS,MASS_LOW,MASS_HIGH); //hDataEG->Sumw2();
+  TH1D *hZeeEG  = new TH1D("hZeeEG", "",NBINS,MASS_LOW,MASS_HIGH); //hZeeEG->Sumw2();
+  // treeData->Draw("invMass_ECAL_ele>>hDataEGa");
+  Float_t invMass=0;
+  UInt_t runNumber=0;
+  UShort_t lumiBlock=0;
+  ULong64_t eventNumber=0;
+  Float_t invMass_ECAL_ele=0;
+  Float_t etaEle[3];
+  Float_t phiEle[3];
+  Float_t R9Ele[3];
+  Float_t etaSCEle[3];
+  Float_t energy_ECAL_ele[3];
+  Float_t ele1E;
+  Float_t ele2E;
+  TLorentzVector clep1, clep2;
+  TLorentzVector eclep1, eclep2;
+  TLorentzVector dl;
+  // for(int i =0; i < treeData->GetEntriesFast();i++){
+  for(int i =0; i < 1000;i++){
+    if(i%100000==0) cout << "Processing event " << i << ". " << (double)i/(double)treeData->GetEntries()*100 << " percent done with this file." << endl;
+    treeData -> SetBranchStatus("runNumber",1);
+    treeData -> SetBranchStatus("lumiBlock",1);
+    treeData -> SetBranchStatus("eventNumber",1);
+    treeData -> SetBranchStatus("invMass",1);
+    treeData -> SetBranchStatus("invMass_ECAL_ele",1);
+    treeData -> SetBranchStatus("etaEle",1);
+    treeData -> SetBranchStatus("phiEle",1);
+    treeData -> SetBranchStatus("R9Ele",1);
+    treeData -> SetBranchStatus("etaSCEle",1);
+    treeData -> SetBranchStatus("energy_ECAL_ele",1);
+    treeData -> SetBranchStatus("ele1E",1);
+    treeData -> SetBranchStatus("ele2E",1);
+    treeData->SetBranchAddress("invMass",       &invMass);        // sc2 4-vector
+    treeData->SetBranchAddress("runNumber",       &runNumber);        // sc2 4-vector
+    treeData->SetBranchAddress("lumiBlock",       &lumiBlock);        // sc2 4-vector
+    treeData->SetBranchAddress("eventNumber",       &eventNumber);        // sc2 4-vector
+    treeData->SetBranchAddress("invMass_ECAL_ele",       &invMass_ECAL_ele);        // sc2 4-vector
+    treeData->SetBranchAddress("etaEle",       &etaEle);        // sc2 4-vector
+    treeData->SetBranchAddress("phiEle",       &phiEle);        // sc2 4-vector
+    treeData->SetBranchAddress("R9Ele",        &R9Ele);        // sc2 4-vector
+    treeData->SetBranchAddress("etaSCEle",       &etaSCEle);        // sc2 4-vector
+    treeData->SetBranchAddress("energy_ECAL_ele",       &energy_ECAL_ele);        // sc2 4-vector
+    treeData->SetBranchAddress("ele1E",       &ele1E);// sc2 4-vector
+    treeData->SetBranchAddress("ele2E",       &ele2E);        // sc2 4-vector
+    treeData->GetEntry(i);
+    // let's look at run 30717
+    if(runNumber!=307017)continue;// || lumiBlock != 81) continue;
+    // if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
+    if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
+    if(fabs(etaEle[0])>=ECAL_GAP_LOW && fabs(etaEle[0])<=ECAL_GAP_HIGH) continue;
+    if(fabs(etaEle[1])>=ECAL_GAP_LOW && fabs(etaEle[1])<=ECAL_GAP_HIGH) continue;
+    // std::cout << "eta ele " << fabs(etaEle[0]) << " " << fabs(etaEle[1]) << std::endl;
+    // if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
+    if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
+    clep1.SetPtEtaPhiM(energy_ECAL_ele[0]/cosh(fabs(etaEle[0])), etaEle[0], phiEle[0],ELE_MASS);
+    clep2.SetPtEtaPhiM(energy_ECAL_ele[1]/cosh(fabs(etaEle[1])), etaEle[1], phiEle[1],ELE_MASS);
+    eclep1=clep1;
+    eclep2=clep2;
+    
+    double scale = ec.scaleCorr(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0]);
+    clep1*=scale;
+    scale = ec.scaleCorr(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1]);
+    clep2*=scale;
+    
+    if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
+    dl = clep1+clep2;
+    
+    // std::cout << eventNumber << " " << eclep1.Pt() << " " << eclep1.Eta() << " " << eclep1.Phi() << " " << eclep2.Pt() << " " << eclep2.Eta() << " " << eclep2.Phi() << " " << (eclep1+eclep2).M() << std::endl; 
+    // std::cout << eventNumber << " " << clep1.Pt() << " " << clep1.Eta() << " " << clep1.Phi() << " " << clep2.Pt() << " " << clep2.Eta() << " " << clep2.Phi() << " " << dl.M() << std::endl; 
+    // std::cout << R9Ele[0] << " " << R9Ele[1] << std::endl;
+    // std::cout << "-----" << std::endl;
+    
+    double mass = dl.M();
+    // hDataEG->Fill(invMass_ECAL_ele);
+    // hDataEG->Fill(mass);
+  }
+  
+  // for(int i =0; i < treeMC->GetEntriesFast();i++){
+  for(int i =0; i < 1000;i++){
+    if(i%100000==0) cout << "Processing event " << i << ". " << (double)i/(double)treeMC->GetEntries()*100 << " percent done with this file." << endl;
+    treeMC -> SetBranchStatus("invMass",1);
+    treeMC -> SetBranchStatus("runNumber",1);
+    treeMC -> SetBranchStatus("invMass_ECAL_ele",1);
+    treeMC -> SetBranchStatus("etaEle",1);
+    treeMC -> SetBranchStatus("phiEle",1);
+    treeMC -> SetBranchStatus("R9Ele",1);
+    treeMC -> SetBranchStatus("etaSCEle",1);
+    treeMC -> SetBranchStatus("ele1E",1);
+    treeMC -> SetBranchStatus("ele2E",1);
+    treeMC -> SetBranchStatus("energy_ECAL_ele",1);
+    treeMC->SetBranchAddress("invMass",       &invMass);        // sc2 4-vector
+    treeMC->SetBranchAddress("runNumber",       &runNumber);        // sc2 4-vector
+    treeMC->SetBranchAddress("invMass_ECAL_ele",       &invMass_ECAL_ele);        // sc2 4-vector
+    treeMC->SetBranchAddress("etaEle",       &etaEle);        // sc2 4-vector
+    treeMC->SetBranchAddress("phiEle",       &phiEle);        // sc2 4-vector
+    treeMC->SetBranchAddress("R9Ele",        &R9Ele);        // sc2 4-vector
+    treeMC->SetBranchAddress("etaSCEle",       &etaSCEle);        // sc2 4-vector
+    treeMC->SetBranchAddress("energy_ECAL_ele",       &energy_ECAL_ele);        // sc2 4-vector
+    treeMC->SetBranchAddress("ele1E",       &ele1E);        // sc2 4-vector
+    treeMC->SetBranchAddress("ele2E",       &ele2E);        // sc2 4-vector
+    treeMC->GetEntry(i);
+    // std::cout << "eta ele " << fabs(etaEle[0]) << " " << fabs(etaEle[1]) << std::endl;
+    // if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
+    if(fabs(etaEle[0])>ETA_CUT||fabs(etaEle[1])>ETA_CUT) continue;
+    if(fabs(etaEle[0])>=ECAL_GAP_LOW && fabs(etaEle[0])<=ECAL_GAP_HIGH) continue;
+    if(fabs(etaEle[1])>=ECAL_GAP_LOW && fabs(etaEle[1])<=ECAL_GAP_HIGH) continue;
+    // if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
+    if(energy_ECAL_ele[0]/cosh(fabs(etaEle[0]))<PT_CUT||energy_ECAL_ele[1]/cosh(fabs(etaEle[1]))<PT_CUT) continue;
+    
+    clep1.SetPtEtaPhiM(energy_ECAL_ele[0]/cosh(fabs(etaEle[0])), etaEle[0], phiEle[0],ELE_MASS);
+    clep2.SetPtEtaPhiM(energy_ECAL_ele[1]/cosh(fabs(etaEle[1])), etaEle[1], phiEle[1],ELE_MASS);
+    // double rand1 = gRandom->Gaus(0,1);
+    // double rand2 = gRandom->Gaus(0,1);
+    // double tagSmear = ec.smearingSigma(runNumber, clep1.Pt(), fabs(etaEle[0]), R9Ele[0], 12, 0., 0.);
+    // clep1*= 1+ rand1*tagSmear;
+    // tagSmear = ec.smearingSigma(runNumber, clep2.Pt(), fabs(etaEle[1]), R9Ele[1], 12, 0., 0.);
+    // clep2*= 1+rand2*tagSmear;
+    dl = clep1+clep2;
+    
+    if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
+    double mass = dl.M();
+    // hZeeEG->Fill(invMass_ECAL_ele);
+    // hZeeEG->Fill(mass);
+  }
+  
+  // // TH1D *hDataEG = (TH1D*)gDirectory->Get("hDataEGa");
+  // // treeMC->Draw("invMass_ECAL_ele>>hZeeEGa");
+  // // TH1D *hZeeEG = (TH1D*)gDirectory->Get("hZeeEGa");
+  
+  std::cout << "integrals " <<  hZeeEG->Integral() << " " << hDataEG->Integral() << std::endl;
+  
   // plot output file format
   const TString format("all");
 
   // setup efficiency shape systematics
-  TFile *GsfSelSigSysFile = new TFile(GsfSelEffSignalShapeSys);
-  TH2D *hGsfSelSigSys = (TH2D*)GsfSelSigSysFile->Get("h");
-  TFile *GsfSelBkgSysFile = new TFile(GsfSelEffBackgroundShapeSys);
-  TH2D *hGsfSelBkgSys = (TH2D*)GsfSelBkgSysFile->Get("h");
+  // TFile *GsfSelSigSysFile = new TFile(GsfSelEffSignalShapeSys);
+  // TH2D *hGsfSelSigSys = (TH2D*)GsfSelSigSysFile->Get("h");
+  // TFile *GsfSelBkgSysFile = new TFile(GsfSelEffBackgroundShapeSys);
+  // TH2D *hGsfSelBkgSys = (TH2D*)GsfSelBkgSysFile->Get("h");
 
   Int_t yield = 0;
   Double_t yield_zee = 0, yield_zee_unc=0;
@@ -148,6 +310,11 @@ void plotZee(const TString  inputDir,    // input directory
   double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
   double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
 
+
+  TH2D *hCompareElePtEcalE = new TH2D("hCompare","",200,0,100,200,0,100);
+
+  // TH1D *hData = new TH1D("hDataEG","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
+  // TH1D *hZee  = new TH1D("hZeeEG", "",NBINS,MASS_LOW,MASS_HIGH); hZee->Sumw2();
 
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
   TH1D *hZee  = new TH1D("hZee", "",NBINS,MASS_LOW,MASS_HIGH); hZee->Sumw2();
@@ -327,6 +494,9 @@ void plotZee(const TString  inputDir,    // input directory
   TH1D *hEWKLep2Eta_EffBkgShape  = new TH1D("hEWKLep2Eta_EffBkgShape", "",24,0,2.4); hEWKLep2Eta_EffBkgShape->Sumw2();
   TH1D *hTopLep2Eta_EffBkgShape  = new TH1D("hTopLep2Eta_EffBkgShape", "",24,0,2.4); hTopLep2Eta_EffBkgShape->Sumw2();
      
+     
+   TH1D *hGausRandNtuple = new TH1D("hGausRandNtuple","",100,-3,3); hGausRandNtuple->Sumw2();
+   TH1D *hGausRandHere = new TH1D("hGausRandHere","",100,-3,3); hGausRandHere->Sumw2();
   //
   // Declare variables to read in ntuple
   //
@@ -334,88 +504,94 @@ void plotZee(const TString  inputDir,    // input directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t scale1fb, scale1fbUp, scale1fbDown;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
+  Float_t prefireWeight, prefireUp, prefireDown;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
+  TLorentzVector *lep1_raw=0, *lep2_raw=0;
+  TLorentzVector *dilep=0, *dilepSC = 0;
   TLorentzVector *sc1=0, *sc2=0;
   
   //
-  // HLT efficiency
-  //
-  cout << "Loading trigger efficiencies..." << endl;
+  // // HLT efficiency
+  // //
+  // cout << "Loading trigger efficiencies..." << endl;
 
-  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
-  CEffUser2D dataHLTEff_pos;
-  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
+  // CEffUser2D dataHLTEff_pos;
+  // dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
-  CEffUser2D dataHLTEff_neg;
-  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
+  // CEffUser2D dataHLTEff_neg;
+  // dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zeeHLTEffFile_pos = new TFile(zeeHLTEffName_pos);
-  CEffUser2D zeeHLTEff_pos;
-  zeeHLTEff_pos.loadEff((TH2D*)zeeHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zeeHLTEffFile_pos = new TFile(zeeHLTEffName_pos);
+  // CEffUser2D zeeHLTEff_pos;
+  // zeeHLTEff_pos.loadEff((TH2D*)zeeHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zeeHLTEffFile_neg = new TFile(zeeHLTEffName_neg);
-  CEffUser2D zeeHLTEff_neg;
-  zeeHLTEff_neg.loadEff((TH2D*)zeeHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *zeeHLTEffFile_neg = new TFile(zeeHLTEffName_neg);
+  // CEffUser2D zeeHLTEff_neg;
+  // zeeHLTEff_neg.loadEff((TH2D*)zeeHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrhEtaPt"));
    
-  TFile *dataHLTEff2BinFile_pos = new TFile(dataHLTEff2BinName_pos);
-  CEffUser2D dataHLTEff2Bin_pos;
-  dataHLTEff2Bin_pos.loadEff((TH2D*)dataHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataHLTEff2BinFile_pos = new TFile(dataHLTEff2BinName_pos);
+  // CEffUser2D dataHLTEff2Bin_pos;
+  // dataHLTEff2Bin_pos.loadEff((TH2D*)dataHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataHLTEff2BinFile_neg = new TFile(dataHLTEff2BinName_neg);
-  CEffUser2D dataHLTEff2Bin_neg;
-  dataHLTEff2Bin_neg.loadEff((TH2D*)dataHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataHLTEff2BinFile_neg = new TFile(dataHLTEff2BinName_neg);
+  // CEffUser2D dataHLTEff2Bin_neg;
+  // dataHLTEff2Bin_neg.loadEff((TH2D*)dataHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrhEtaPt"));
     
-  TFile *zeeHLTEff2BinFile_pos = new TFile(zeeHLTEff2BinName_pos);
-  CEffUser2D zeeHLTEff2Bin_pos;
-  zeeHLTEff2Bin_pos.loadEff((TH2D*)zeeHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEff2BinFile_pos->Get("hErrhEtaPt"));
+  // TFile *zeeHLTEff2BinFile_pos = new TFile(zeeHLTEff2BinName_pos);
+  // CEffUser2D zeeHLTEff2Bin_pos;
+  // zeeHLTEff2Bin_pos.loadEff((TH2D*)zeeHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEff2BinFile_pos->Get("hErrhEtaPt"));
   
-  TFile *zeeHLTEff2BinFile_neg = new TFile(zeeHLTEff2BinName_neg);
-  CEffUser2D zeeHLTEff2Bin_neg;
-  zeeHLTEff2Bin_neg.loadEff((TH2D*)zeeHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEff2BinFile_neg->Get("hErrhEtaPt"));
+  // TFile *zeeHLTEff2BinFile_neg = new TFile(zeeHLTEff2BinName_neg);
+  // CEffUser2D zeeHLTEff2Bin_neg;
+  // zeeHLTEff2Bin_neg.loadEff((TH2D*)zeeHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEff2BinFile_neg->Get("hErrhEtaPt"));
 
-  //
-  // Selection efficiency
-  //
-  cout << "Loading GSF+selection efficiencies..." << endl;
+  // //
+  // // Selection efficiency
+  // //
+  // cout << "Loading GSF+selection efficiencies..." << endl;
   
-  TFile *dataGsfSelEffFile_pos = new TFile(dataGsfSelEffName_pos);
-  CEffUser2D dataGsfSelEff_pos;
-  dataGsfSelEff_pos.loadEff((TH2D*)dataGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataGsfSelEffFile_pos = new TFile(dataGsfSelEffName_pos);
+  // CEffUser2D dataGsfSelEff_pos;
+  // dataGsfSelEff_pos.loadEff((TH2D*)dataGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataGsfSelEffFile_neg = new TFile(dataGsfSelEffName_neg);
-  CEffUser2D dataGsfSelEff_neg;
-  dataGsfSelEff_neg.loadEff((TH2D*)dataGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataGsfSelEffFile_neg = new TFile(dataGsfSelEffName_neg);
+  // CEffUser2D dataGsfSelEff_neg;
+  // dataGsfSelEff_neg.loadEff((TH2D*)dataGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrhEtaPt"));
 
-  TFile *zeeGsfSelEffFile_pos = new TFile(zeeGsfSelEffName_pos);
-  CEffUser2D zeeGsfSelEff_pos;
-  zeeGsfSelEff_pos.loadEff((TH2D*)zeeGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrhEtaPt"));
+  // TFile *zeeGsfSelEffFile_pos = new TFile(zeeGsfSelEffName_pos);
+  // CEffUser2D zeeGsfSelEff_pos;
+  // zeeGsfSelEff_pos.loadEff((TH2D*)zeeGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrhEtaPt"));
 
-  TFile *zeeGsfSelEffFile_neg = new TFile(zeeGsfSelEffName_neg);
-  CEffUser2D zeeGsfSelEff_neg;
-  zeeGsfSelEff_neg.loadEff((TH2D*)zeeGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrhEtaPt"));
+  // TFile *zeeGsfSelEffFile_neg = new TFile(zeeGsfSelEffName_neg);
+  // CEffUser2D zeeGsfSelEff_neg;
+  // zeeGsfSelEff_neg.loadEff((TH2D*)zeeGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrhEtaPt"));
 
-  TFile *dataGsfSelEff2BinFile_pos = new TFile(dataGsfSelEff2BinName_pos);
-  CEffUser2D dataGsfSelEff2Bin_pos;
-  dataGsfSelEff2Bin_pos.loadEff((TH2D*)dataGsfSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEff2BinFile_pos->Get("hErrhEtaPt"));
+  // TFile *dataGsfSelEff2BinFile_pos = new TFile(dataGsfSelEff2BinName_pos);
+  // CEffUser2D dataGsfSelEff2Bin_pos;
+  // dataGsfSelEff2Bin_pos.loadEff((TH2D*)dataGsfSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEff2BinFile_pos->Get("hErrhEtaPt"));
   
-  TFile *dataGsfSelEff2BinFile_neg = new TFile(dataGsfSelEff2BinName_neg);
-  CEffUser2D dataGsfSelEff2Bin_neg;
-  dataGsfSelEff2Bin_neg.loadEff((TH2D*)dataGsfSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEff2BinFile_neg->Get("hErrhEtaPt"));
+  // TFile *dataGsfSelEff2BinFile_neg = new TFile(dataGsfSelEff2BinName_neg);
+  // CEffUser2D dataGsfSelEff2Bin_neg;
+  // dataGsfSelEff2Bin_neg.loadEff((TH2D*)dataGsfSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEff2BinFile_neg->Get("hErrhEtaPt"));
   
-  TFile *zeeGsfSelEff2BinFile_pos = new TFile(zeeGsfSelEff2BinName_pos);
-  CEffUser2D zeeGsfSelEff2Bin_pos;
-  zeeGsfSelEff2Bin_pos.loadEff((TH2D*)zeeGsfSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_pos->Get("hErrhEtaPt"));
+  // TFile *zeeGsfSelEff2BinFile_pos = new TFile(zeeGsfSelEff2BinName_pos);
+  // CEffUser2D zeeGsfSelEff2Bin_pos;
+  // zeeGsfSelEff2Bin_pos.loadEff((TH2D*)zeeGsfSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_pos->Get("hErrhEtaPt"));
 
-  TFile *zeeGsfSelEff2BinFile_neg = new TFile(zeeGsfSelEff2BinName_neg);
-  CEffUser2D zeeGsfSelEff2Bin_neg;
-  zeeGsfSelEff2Bin_neg.loadEff((TH2D*)zeeGsfSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_neg->Get("hErrhEtaPt"));
+  // TFile *zeeGsfSelEff2BinFile_neg = new TFile(zeeGsfSelEff2BinName_neg);
+  // CEffUser2D zeeGsfSelEff2Bin_neg;
+  // zeeGsfSelEff2Bin_neg.loadEff((TH2D*)zeeGsfSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_neg->Get("hErrhEtaPt"));
  
 
   TFile *infile=0;
   TTree *intree=0;
+  Float_t r91=0; 
+  Float_t r92=0;
+  Float_t random;
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
   
@@ -431,15 +607,26 @@ void plotZee(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("category",1);
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
+    intree -> SetBranchStatus("prefireWeight",1);
+    intree -> SetBranchStatus("prefireUp",1);
+    intree -> SetBranchStatus("prefireDown",1);
     intree -> SetBranchStatus("scale1fb",1);
     intree -> SetBranchStatus("scale1fbUp",1);
     intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("genVMass",1);
     intree -> SetBranchStatus("q1",1);
     intree -> SetBranchStatus("q2",1);
     intree -> SetBranchStatus("lep1",1);
     intree -> SetBranchStatus("lep2",1);
+    intree -> SetBranchStatus("lep1_raw",1);
+    intree -> SetBranchStatus("lep2_raw",1);
     intree -> SetBranchStatus("sc1",1);
     intree -> SetBranchStatus("sc2",1);
+    intree -> SetBranchStatus("dilep",1);
+    intree -> SetBranchStatus("dilepSC",1);
+    intree -> SetBranchStatus("r91",1);
+    intree -> SetBranchStatus("r92",1);
+    intree -> SetBranchStatus("random",1);
 
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
@@ -447,25 +634,100 @@ void plotZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
+    intree->SetBranchAddress("prefireWeight", &prefireWeight);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireUp",     &prefireUp);    // prefire weight for 2017 conditions (MC)
+    intree->SetBranchAddress("prefireDown",   &prefireDown);    // prefire weight for 2017 conditions (MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
+    intree->SetBranchAddress("lep1_raw",       &lep1_raw);        // tag lepton 4-vector
+    intree->SetBranchAddress("lep2_raw",       &lep2_raw);        // probe lepton 4-vector
     intree->SetBranchAddress("sc1",       &sc1);        // sc1 4-vector
     intree->SetBranchAddress("sc2",       &sc2);        // sc2 4-vector
+    intree->SetBranchAddress("dilep",     &dilep);        // sc2 4-vector
+    intree->SetBranchAddress("dilepSC",   &dilepSC);      // sc2 4-vector
+    intree->SetBranchAddress("r91",       &r91);        // sc2 4-vector
+    intree->SetBranchAddress("r92",       &r92);        // sc2 4-vector
+    intree->SetBranchAddress("random",       &random);        // sc2 4-vector
   
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<1000; ientry++) {
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " percent done with this file." << endl;
       intree->GetEntry(ientry);
-
+      // std::cout << "r92 " << r92 << std::endl;
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
+      if(lep1->Pt()        < PT_CUT)    continue;
+      if(lep2->Pt()       < PT_CUT)    continue;
+      
+      
+      hCompareElePtEcalE->Fill(lep1->Pt(),sc1->Pt());
+      // hCompareElePtEcalE->Fill(lep2->Pt(),sc2->Pt());
+      
+      // if(fabs(lep1->Eta()) < ETA_CUT || fabs(lep2->Eta()) < ETA_CUT) continue;
+      float ETA_LOW = 0; float ETA_HIGH = 1.0;
+      // float ETA_LOW = 1.0; float ETA_HIGH = 1.4;
+      // float ETA_LOW = 1.4; float ETA_HIGH = 2.0;
+      // float ETA_LOW = 2; float ETA_HIGH = 2.4;
+      //if((fabs(lep1->Eta()) < ETA_LOW && fabs(lep2->Eta()) < ETA_LOW) || (fabs(lep1->Eta()) > ETA_HIGH && fabs(lep2->Eta()) > ETA_HIGH)) continue;
+      // if((fabs(lep1->Eta()) < ETA_LOW || fabs(lep1->Eta()) > ETA_HIGH) || (fabs(lep2->Eta()) < ETA_LOW && fabs(lep2->Eta()) > ETA_HIGH)) continue;
+      
+      // // if(lep1->Pt()        > 120)  continue;
+      // // if(lep2->Pt()      > 120)  continue;
+      
+      // if(r91 > 0.94 || r92 > 0.94) continue; // high R9 only
+      // if(r91 < 0.94 || r92 < 0.94) continue; // high R9 only
+      
+      
+      // 
+      
+      // if(fabs(sc1->Eta()) > ETA_CUT)   continue;      
+      // if(fabs(sc2->Eta()) > ETA_CUT)   continue;
+      // if(q1*q2>0) continue;
+      // if(sc1->Pt()        < PT_CUT)    continue;
+      // if(sc2->Pt()       < PT_CUT)    continue;
+      // // if(sc1->Pt()        > 120)  continue;
+      // // if(sc2->Pt()      > 120)  continue;
+      
+    // if(fabs(lep1_raw->Eta()) > ETA_CUT)   continue;      
+    // if(fabs(lep2_raw->Eta()) > ETA_CUT)   continue;
+    // if(q1*q2>0) continue;
+    // if(lep1_raw->Pt()        < PT_CUT)    continue;
+    // if(lep2_raw->Pt()       < PT_CUT)    continue;
+    // if(lep1_raw->Pt()        > 120)  continue;
+    // if(lep2_raw->Pt()      > 120)  continue;
+      // if(r91>1.0 || r92 > 1.0) continue;
+      
+      // if(fabs(lep1_raw->Eta()) < 1.44 || fabs(lep2_raw->Eta()) < 1.44) continue; // EE
+      // if(fabs(sc1->Eta()) > 1.44 || fabs(sc2->Eta()) > 1.44 ) continue; // EB
+      // if((fabs(lep1->Eta()) > 1.44 && fabs(lep2->Eta()) > 1.44)||(fabs(lep1->Eta()) < 1.44 && fabs(lep2->Eta()) < 1.44) ) continue;
+      
+      // if(typev[ifile]!=eData) {
+        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
+      // }
+      
+      // double corr1 = lep1->Pt()/lep1_raw->Pt();
+      // double corr2 = lep2->Pt()/lep2_raw->Pt();
+      // (*sc1)*=corr1;
+      // (*sc2)*=corr2;
+      // if(runNum!=307017) continue;// || lumiSec != 81) continue;
+  
+    // std::cout << "====  before corrections " << std::endl;
+    // std::cout << evtNum << " " << lep1->Pt() << " " << lep1->Eta() << " " << lep1->Phi() << " " << lep2->Pt() << " " << lep2->Eta() << " " << lep2->Phi() << " " << dilep->M() << std::endl; 
+    
+    // // std::cout << evtNum << " " << lep1_raw->Pt() << " " << lep1_raw->Eta() << " " << lep1_raw->Phi() << " " << lep2_raw->Pt() << " " << lep2_raw->Eta() << " " << lep2_raw->Phi() << " " << (*lep1_raw+*lep2_raw).M() << std::endl; 
+    // // std::cout << r91 << " " << r92 << std::endl;
+    // std::cout << evtNum << " " << sc1->Pt() << " " << sc1->Eta() << " " << sc1->Phi() << " " << sc2->Pt() << " " << sc2->Eta() << " " << sc2->Phi() << " " << (*sc1+*sc2).M() << std::endl; 
+  
       
       float mass = 0;
       float pt = 0;
@@ -476,17 +738,30 @@ void plotZee(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	weight *= scale1fb*lumi;
+	    // weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*prefireUp*lumi;
+	    // weight *= scale1fb*prefireDown*lumi;
+	    weight *= scale1fb*lumi;
       }  
       
       // fill Z events passing selection (EleEle2HLT + EleEle1HLT)
-      if((category==eEleEle2HLT) || (category==eEleEle1HLT) || (category==eEleEle1HLT1L1)) {
-	if(typev[ifile]==eData) { 
+      // if((category==eEleEle2HLT) || (category==eEleEle1HLT) || (category==eEleEle1HLT1L1)) {
+      if((category==1) || (category==2) || (category==3)) {
+	if(typev[ifile]==eData) {
+    
+    // if(runNum!=307017) continue;// || lumiSec != 81) continue;
 	  TLorentzVector el1;
 	  TLorentzVector el2;
 	  el1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
 	  el2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
+    // el1.SetPtEtaPhiM(sc1->Pt(),sc1->Eta(),sc1->Phi(),ELE_MASS);
+	  // el2.SetPtEtaPhiM(sc2->Pt(),sc2->Eta(),sc2->Phi(),ELE_MASS);
+    // el1.SetPtEtaPhiM(lep1_raw->Pt(),lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
+	  // el2.SetPtEtaPhiM(lep2_raw->Pt(),lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
 	  
+          
+
+          
 	  Double_t lp1 = el1.Pt();
 	  Double_t lp2 = el2.Pt();
 	  Double_t lq1 = q1;
@@ -497,16 +772,32 @@ void plotZee(const TString  inputDir,    // input directory
 	    {
 	      l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
 	      l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+        // l1.SetPtEtaPhiM(lp1,sc1->Eta(),sc1->Phi(),ELE_MASS);
+	      // l2.SetPtEtaPhiM(lp2,sc2->Eta(),sc2->Phi(),ELE_MASS);
+        // double scale = ec.scaleCorr(runNum, l1.Pt(), fabs(l1.Eta()), r91);
+        // l1*=scale;
+        // scale = ec.scaleCorr(runNum, l2.Pt(), fabs(l2.Eta()), r92);
+        // l2*=scale;
+        
 	    }
 	  else
 	    {
 	      l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
 	      l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-	      lq1=q2;
-	      lq2=q1;
+        // l1.SetPtEtaPhiM(lp2,sc2->Eta(),sc2->Phi(),ELE_MASS);
+	      // l2.SetPtEtaPhiM(lp1,sc1->Eta(),sc1->Phi(),ELE_MASS);
+        // double scale = ec.scaleCorr(runNum, l1.Pt(), fabs(l1.Eta()), r92);
+        // l1*=scale;
+        // scale = ec.scaleCorr(runNum, l2.Pt(), fabs(l2.Eta()), r91);
+        // l2*=scale;
+	      // lq1=q2;
+	      // lq2=q1;
 	    }
 
+
+
 	  mass=(l1+l2).M();
+	  // mass=dilepSC->M();
 	  pt =(l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
 
@@ -519,6 +810,16 @@ void plotZee(const TString  inputDir,    // input directory
 	  if(mass        > MASS_HIGH) continue;
 	  if(l1.Pt()        < PT_CUT)    continue;
 	  if(l2.Pt()        < PT_CUT)    continue;
+    // if(l1.Pt()        > 120)  continue;
+    // if(l2.Pt()        > 120)  continue;
+    
+    // std::cout << "----- sscaled the data" << std::endl;
+    // std::cout << evtNum << " " << el1.Pt() << " " << el1.Eta() << " " << el1.Phi() << " " << el2.Pt() << " " << el2.Eta() << " " << el2.Phi() << " " << (el1+el2).M() << std::endl; 
+    
+    // std::cout << evtNum << " " << l1.Pt() << " " << l1.Eta() << " " << l1.Phi() << " " << l2.Pt() << " " << l2.Eta() << " " << l2.Phi() << " " << mass << std::endl; 
+    // std::cout << r91 << " " << r92 << std::endl;
+    // std::cout << evtNum << " " << lep1->Pt() << " " << lep1->Eta() << " " << lep1->Phi() << " " << lep2->Pt() << " " << lep2->Eta() << " " << lep2->Phi() << " " << dilep->M() << std::endl; 
+    hDataEG->Fill(dilepSC->M());
 
 	  hData->Fill(mass); 
 	  hDataNPV->Fill(npv);
@@ -544,25 +845,99 @@ void plotZee(const TString  inputDir,    // input directory
 	  
 	} else {
 
+  // cout << "!!!!!!!!!!!!!!!" << endl;
+    // std::cout << evtNum << " " << sc1->Pt() << " " << sc1->Eta() << " " << sc1->Phi() << " " << sc2->Pt() << " " << sc2->Eta() << " " << sc2->Phi() << " " << (*sc1+*sc2).M() << std::endl; 
 	  
 	  Double_t lp1 = lep1->Pt();
 	  Double_t lp2 = lep2->Pt();
+    // Double_t lp1 = sc1->Pt();
+	  // Double_t lp2 = sc2->Pt();
+    // Double_t lp1 = lep1_raw->Pt();
+	  // Double_t lp2 = lep2_raw->Pt();
 	  Double_t lq1 = q1;
 	  Double_t lq2 = q2;
+    double rand1;
 	  
+    // set the smearings here
+   for(int i = 0; i < 5; ++i){
+      double rand = gRandom->Gaus(0,1);
+      
+     if(i==2) rand1=rand;
+     // if(lp1*(1+rand) < 25) 
+    }
+    hGausRandHere->Fill(rand1);
+    // double rand1 = gRandom->Gaus(0,1);
+    // double rand2 = gRandom->Gaus(0,1);
+    // double rand1 = 1;
+    // doublerand2 = 1;
 	  TLorentzVector l1, l2;
-	  if(lp1>lp2)
-	    {
-	      l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-	      l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
-	    }
-	  else
-	    {
-	      l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
-	      l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-	      lq1=q2;
-	      lq2=q1;
-	    }
+	  // if(lp1>lp2)
+	    // {
+        // std::cout << "no swappy" << std::endl;
+	      l1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
+	      l2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
+        // l1.SetPtEtaPhiM(sc1->Pt(),sc1->Eta(),sc1->Phi(),ELE_MASS);
+	     // l2.SetPtEtaPhiM(sc2->Pt(),sc2->Eta(),sc2->Phi(),ELE_MASS);
+        // l1.SetPtEtaPhiM(lp1,lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
+	      // l2.SetPtEtaPhiM(lp2,lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
+        
+        // double tagSmear = ec.smearingSigma(runNumber, l1.Pt(), fabs(l1.Eta()), r91, 12, 0., 0.);
+        double tagSmear1 = ec.smearingSigma(runNumber, sc1->Pt(), fabs(sc1->Eta()), r91, 12, 0., 0.);
+        double tagSmear2 = ec.smearingSigma(runNumber, sc2->Pt(), fabs(sc2->Eta()), r92, 12, 0., 0.);
+        // // std::cout << l1.Pt() << std::endl;
+        // l1*= 1+ rand1*tagSmear;
+        // // std::cout << tagSmear << " " << l1.Pt() << std::endl;
+        // tagSmear = ec.smearingSigma(runNumber, l2.Pt(), fabs(l2.Eta()), r92, 12, 0., 0.);
+        // // std::cout << l2.Pt() << std::endl;
+        // l2*= 1+rand2*tagSmear;
+        // // std::cout << tagSmear << " " << l2.Pt() << std::endl;
+	    // }
+	  // else
+	    // // {
+        // // std::cout << "swappy" << std::endl;
+	      // // l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+	      // // l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+        // l1.SetPtEtaPhiM(lp2,sc2->Eta(),sc2->Phi(),ELE_MASS);
+	      // l2.SetPtEtaPhiM(lp1,sc1->Eta(),sc1->Phi(),ELE_MASS);
+        // // l1.SetPtEtaPhiM(lp2,lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
+	      // // l2.SetPtEtaPhiM(lp1,lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
+        
+        
+        // double tagSmear = ec.smearingSigma(runNumber, l2.Pt(), fabs(l2.Eta()), r91, 12, 0., 0.);
+        // // std::cout << l2.Pt() << std::endl;
+        // l2*= 1+ rand1*tagSmear;
+        // // std::cout << tagSmear << " " << l1.Pt() << std::endl;
+        // tagSmear = ec.smearingSigma(runNumber, l1.Pt(), fabs(l1.Eta()), r92, 12, 0., 0.);
+        // // std::cout << l1.Pt() << std::endl;
+        // l1*= 1+rand2*tagSmear;
+        // // std::cout << tagSmear << " " << l1.Pt() << std::endl;
+	      // lq1=q2;
+	      // lq2=q1;
+	    // // }
+      // std::cout << "lep1 pt " << lep1->Pt() << " sc1 pt " << sc1->Pt() << "  ratio " << lep1->Pt()/sc1->Pt() <<std::endl;
+      // std::cout << " minus 1 " << lep1->Pt()/sc1->Pt()-1 << " tag smear " <<tagSmear << "  ratio " << (lep1->Pt()/sc1->Pt()-1)/tagSmear << std::endl;
+      // hGausRandNtuple->Fill((lep1->Pt()/sc1->Pt()-1)/tagSmear1);
+      hGausRandNtuple->Fill(random);
+      // double newRandome1 =  (lep1->Pt()/sc1->Pt()-1)/tagSmear1 -0.083;
+      // l1.SetPtEtaPhiM(sc1->Pt(),sc1->Eta(),sc1->Phi(),ELE_MASS);
+      // l1*=(1+newRandome1*tagSmear1);
+      // double newRandome2 =  (lep2->Pt()/sc2->Pt()-1)/tagSmear2 -0.083;
+      // l2.SetPtEtaPhiM(sc2->Pt(),sc2->Eta(),sc2->Phi(),ELE_MASS);
+      // l2*=(1+newRandome2*tagSmear2);
+      
+      // // if(fabs(lep1->Pt()-l1.Pt())>0.001||fabs(lep2->Pt()-l2.Pt())>0.001){
+          // std::cout << "----- sscaled the data" << std::endl;
+      // // // // std::cout << evtNum << " " << el1.Pt() << " " << el1.Eta() << " " << el1.Phi() << " " << el2.Pt() << " " << el2.Eta() << " " << el2.Phi() << " " << (el1+el2).M() << std::endl; 
+      // std::cout << evtNum << " " << sc1->Pt() << " " << sc1->Eta() << " " << sc1->Phi() << " " << sc2->Pt() << " " << sc2->Eta() << " " << sc2->Phi() << " " << dilepSC->M() << std::endl; 
+      // std::cout << evtNum << " " << l1.Pt() << " " << l1.Eta() << " " << l1.Phi() << " " << l2.Pt() << " " << l2.Eta() << " " << l2.Phi() << " " << (l1+l2).M() << std::endl; 
+      // std::cout << r91 << " " << r92 << std::endl;
+      // std::cout << evtNum << " " << lep1->Pt() << " " << lep1->Eta() << " " << lep1->Phi() << " " << lep2->Pt() << " " << lep2->Eta() << " " << lep2->Phi() << " " << dilep->M() << std::endl; 
+    
+    // std::cout << "ratios from select " << lep1->Pt()/sc1->Pt()-1 << " " << lep2->Pt()/sc2->Pt()-1 << std::endl;
+    // std::cout << "ratios from this  " << l1.Pt()/sc1->Pt()-1 << " " << l2.Pt()/sc2->Pt()-1 << std::endl;
+    // // }
+// //
+    // std::cout << "------------------------------------" << std::endl;
 	  
 	  double mll=(l1+l2).M();
 	  Double_t effdata, effmc;
@@ -581,169 +956,173 @@ void plotZee(const TString  inputDir,    // input directory
 	  if(lp1        < PT_CUT)    continue;
 	  if(lp2        < PT_CUT)    continue;
 	  
-	  effdata=1; effmc=1;
-          if(q1>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
-          }
-          if(q2>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt())); 
-            effmc   *= (1.-zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt()));
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt())); 
-            effmc   *= (1.-zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt()));
-          }
-          effdata = 1.-effdata;
-          effmc   = 1.-effmc;
-          corr *= effdata/effmc;
-	  corrSigShape *= effdata/effmc;
-	  corrBkgShape *= effdata/effmc;
+	  // effdata=1; effmc=1;
+          // if(q1>0) { 
+            // effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
+            // effmc   *= (1.-zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
+          // } else {
+            // effdata *= (1.-dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
+            // effmc   *= (1.-zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
+          // }
+          // if(q2>0) {
+            // effdata *= (1.-dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt())); 
+            // effmc   *= (1.-zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt()));
+          // } else {
+            // effdata *= (1.-dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt())); 
+            // effmc   *= (1.-zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt()));
+          // }
+          // effdata = 1.-effdata;
+          // effmc   = 1.-effmc;
+          // corr *= effdata/effmc;
+	  // corrSigShape *= effdata/effmc;
+	  // corrBkgShape *= effdata/effmc;
 	  
-          effdata=1; effmc=1;
-	  effSigShapedata=1;
-	  effBkgShapedata=1;
-          if(q1>0) { 
-            effdata *= dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
-            effmc   *= zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    effSigShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
-          } else {
-            effdata *= dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-            effmc   *= zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-	    effSigShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
-          }
-          if(q2>0) {
-            effdata *= dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
-            effmc   *= zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    effSigShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
-          } else {
-            effdata *= dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
-            effmc   *= zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    effSigShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
-	    effBkgShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
-          }
-          corr *= effdata/effmc;
-	  corrSigShape *= effSigShapedata/effmc;
-	  corrBkgShape *= effBkgShapedata/effmc;
-	  //corr=1;
+          // effdata=1; effmc=1;
+	  // effSigShapedata=1;
+	  // effBkgShapedata=1;
+          // if(q1>0) { 
+            // effdata *= dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
+            // effmc   *= zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
+            // effSigShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
+            // effBkgShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
+          // } else {
+            // effdata *= dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+            // effmc   *= zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
+            // effSigShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
+            // effBkgShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
+          // }
+          // if(q2>0) {
+            // effdata *= dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
+            // effmc   *= zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+            // effSigShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
+            // effBkgShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
+          // } else {
+            // effdata *= dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
+            // effmc   *= zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+            // effSigShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
+            // effBkgShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
+          // }
+          // corr *= effdata/effmc;
+          // corrSigShape *= effSigShapedata/effmc;
+          // corrBkgShape *= effBkgShapedata/effmc;
+          // //corr=1;
 	  
-	  // scale factor uncertainties   
+          // // scale factor uncertainties   
 	  
-	  double var=0.; 
+	  // double var=0.; 
 
-	  // GSF+SELECTION
-	  if(lq1>0) {
-	    Double_t effdata = dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errGsfSel*errGsfSel;
-	  } else {
-	    Double_t effdata = dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errGsfSel*errGsfSel;
-	  }
+	  // // GSF+SELECTION
+	  // if(lq1>0) {
+	    // Double_t effdata = dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t effmc   = zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errGsfSel*errGsfSel;
+	  // } else {
+	    // Double_t effdata = dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t effmc   = zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errGsfSel*errGsfSel;
+	  // }
 	  
-	  if(lq2>0) {
-	    Double_t effdata = dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errGsfSel*errGsfSel;
-	  } else {
-	    Double_t effdata = dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t effmc   = zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errGsfSel*errGsfSel;
-	  }
+	  // if(lq2>0) {
+	    // Double_t effdata = dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t effmc   = zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errGsfSel*errGsfSel;
+	  // } else {
+	    // Double_t effdata = dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t effmc   = zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errGsfSel*errGsfSel;
+	  // }
 
 	  
-	  //HLT
-	  if(lq1>0) {
-	    Double_t effdata = dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t effmc   = zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t effmc   = zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  }
+	  // //HLT
+	  // if(lq1>0) {
+	    // Double_t effdata = dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t effmc   = zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errHLT*errHLT;
+	  // } else {
+	    // Double_t effdata = dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t effmc   = zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
+	    // Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
+	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errHLT*errHLT;
+	  // }
 	  
-	  if(lq2>0) {
-	    Double_t effdata = dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t effmc   = zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t effmc   = zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  }
+	  // if(lq2>0) {
+	    // Double_t effdata = dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t effmc   = zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errHLT*errHLT;
+	  // } else {
+	    // Double_t effdata = dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t effmc   = zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
+	    // Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
+	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
+	    // var+=errHLT*errHLT;
+	  // }
 	  
-	  corrUp=corr+sqrt(var);
-	  corrDown=corr-sqrt(var);  
+	  // corrUp=corr+sqrt(var);
+	  // corrDown=corr-sqrt(var);  
 
-	  eff2Bindata=1; eff2Binmc=1;    
-          if(lq1>0) { 
-            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
-          } else {
-            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
-          }
-          if(lq2>0) {
-            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()));
-          } else {
-            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt())); 
-            eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()));
-          }
-          eff2Bindata = 1.-eff2Bindata;
-          eff2Binmc   = 1.-eff2Binmc;
-          corr2Bin *= eff2Bindata/eff2Binmc;
+	  // eff2Bindata=1; eff2Binmc=1;    
+          // if(lq1>0) { 
+            // eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
+            // eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
+          // } else {
+            // eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
+            // eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
+          // }
+          // if(lq2>0) {
+            // eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt())); 
+            // eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()));
+          // } else {
+            // eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt())); 
+            // eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()));
+          // }
+          // eff2Bindata = 1.-eff2Bindata;
+          // eff2Binmc   = 1.-eff2Binmc;
+          // corr2Bin *= eff2Bindata/eff2Binmc;
     
-          eff2Bindata=1; eff2Binmc=1;
-          if(lq1>0) { 
-            eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
-          } else {
-            eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
-          }
-          if(lq2>0) {
-            eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt());
-          } else {
-            eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()); 
-            eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt());
-          }
-          corr2Bin *= eff2Bindata/eff2Binmc;
-
+          // eff2Bindata=1; eff2Binmc=1;
+          // if(lq1>0) { 
+            // eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
+            // eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
+          // } else {
+            // eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
+            // eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
+          // }
+          // if(lq2>0) {
+            // eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()); 
+            // eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt());
+          // } else {
+            // eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()); 
+            // eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt());
+          // }
+          // corr2Bin *= eff2Bindata/eff2Binmc;
+    // corr=1;
+    double var = 0;
+    
+        corr = effs.fullEfficiencies(&l1,q1,&l2,q2);
 	  mass = (l1+l2).M();
-	  pt = (l1+l2).Pt();
+	  // mass = dilepSC->M();
+	  // pt = (l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
 
 	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
@@ -756,6 +1135,7 @@ void plotZee(const TString  inputDir,    // input directory
 	      yield_zee += weight*corr;
 	      yield_zee_unc += weight*weight*corr*corr;
 	      hZee->Fill(mass,weight*corr); 
+	      hZeeEG->Fill(dilepSC->M(),weight*corr); 
 	      hMC->Fill(mass,weight*corr);
 	      hZeeNPV->Fill(npv,weight*corr); 
 	      hMCNPV->Fill(npv,weight*corr);
@@ -1134,7 +1514,19 @@ void plotZee(const TString  inputDir,    // input directory
   outFile->Close();
   
 
+ std::cout << "egamma ntuples size, MC: " << hZeeEG->Integral() << "  data: " << hDataEG->Integral() << std::endl;
+ std::cout << "ours   ntuples size, MC: " << hZee->Integral()   << "  data: " << hData->Integral()   << std::endl;
+
   double MCscale=hData->Integral()/hMC->Integral();
+  double scaleDat=hData->Integral()/hDataEG->Integral();
+  // double scaleMC=hZee->Integral()/hZeeEG->Integral();
+  // double scaleme=hData->Integral()/hZee->Integral();
+  double scaleyou=hDataEG->Integral()/hZeeEG->Integral();
+
+  hDataEG->Scale(scaleDat);
+  hZeeEG->Scale(MCscale);
+  double GausScale = hGausRandHere->Integral()/hGausRandNtuple->Integral();
+  hGausRandNtuple->Scale(GausScale);
 
   if(normToData)
     {
@@ -1276,10 +1668,28 @@ void plotZee(const TString  inputDir,    // input directory
       hTopLepPosPt->SetBinContent(j+1,hTopLepPosPt->GetBinContent(j+1)/hTopLepPosPt->GetBinWidth(j+1));
       hTopLepPosPt->SetBinError(j+1,hTopLepPosPt->GetBinError(j+1)/hTopLepPosPt->GetBinWidth(j+1));
     }
+    
+    
+    TF1* g1 = new TF1("g1","gaus",0,1);
+    TF1* g2 = new TF1("g2","gaus",0,1);
+    hGausRandHere->Fit("gaus");
+    hGausRandNtuple->Fit("gaus");
+    std::cout << "here, mean,rms: " << hGausRandHere->GetMean() << " " << hGausRandHere->GetRMS() << std::endl;
+    std::cout << "ntup, mean,rms: " << hGausRandNtuple->GetMean() << " " << hGausRandNtuple->GetRMS() << std::endl;
+    std::cout << " params here:  mean " << g1->GetParameter(0) << " sigma " << g1->GetParameter(1) << std::endl;
+    std::cout << " params ntup:  mean " << g2->GetParameter(0) << " sigma " << g2->GetParameter(1) << std::endl;
 
+  TH1D *hGausDiff = makeDiffHist(hGausRandHere,hGausRandNtuple,"hGausDiff");
+  hGausDiff->SetMarkerStyle(kFullCircle); 
+  hGausDiff->SetMarkerSize(0.9);
+  
   TH1D *hZeeDiff = makeDiffHist(hData,hMC,"hZeeDiff");
   hZeeDiff->SetMarkerStyle(kFullCircle); 
   hZeeDiff->SetMarkerSize(0.9);
+
+  TH1D *hZeeDiff_EGcomp = makeDiffHist(hDataEG,hZeeEG,"hZeeDiff_EGcomp");
+  hZeeDiff_EGcomp->SetMarkerStyle(kFullCircle); 
+  hZeeDiff_EGcomp->SetMarkerSize(0.9);
 
   TH1D *hZeeNPVDiff = makeDiffHist(hDataNPV,hMCNPV,"hZeeNPVDiff");
   hZeeNPVDiff->SetMarkerStyle(kFullCircle); 
@@ -1364,6 +1774,251 @@ void plotZee(const TString  inputDir,    // input directory
   c->cd(2)->SetTickx(1);
   c->cd(2)->SetTicky(1); 
   TGaxis::SetMaxDigits(3);
+  
+  
+  c->cd(1);
+  hCompareElePtEcalE->Draw("colz");
+  c->SaveAs("lepPt.png");
+  
+  hGausRandHere->Draw();
+  hGausRandNtuple->Draw("same");
+  c->SaveAs("test.png");
+  
+  
+  
+  std::cout << "peak dat " << hData->GetBinCenter(hData->GetMaximumBin()) << std::endl;
+  std::cout << "peak zee " << hZee->GetBinCenter(hZee->GetMaximumBin()) << std::endl;
+  
+    sprintf(ylabel,"Events / %.1f GeV",hGausRandHere->GetBinWidth(1));
+  CPlot plotGaus("gaus_rand"+norm,"","",ylabel);
+  plotGaus.AddHist1D(hGausRandHere,"this code","E");
+  // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  plotGaus.AddToStack(hGausRandNtuple,"ntple",fillcolorZ,linecolorZ);
+  plotGaus.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotGaus.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotGaus.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotGaus.SetYRange(0.01,1.2*(hGausRandHere->GetMaximum() + sqrt(hGausRandHere->GetMaximum())));
+  plotGaus.TransLegend(0.1,-0.05);
+  plotGaus.Draw(c,kFALSE,format,1);
+
+  CPlot plotGausDiff("gaus_rand"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  plotGausDiff.AddHist1D(hGausDiff,"EX0",ratioColor);
+  plotGausDiff.SetYRange(-0.2,0.2);
+  plotGausDiff.AddLine(-5, 0,5, 0,kBlack,1);
+  plotGausDiff.AddLine(-5, 0.1,5, 0.1,kBlack,3);
+  plotGausDiff.AddLine(-5,-0.1,5,-0.1,kBlack,3);
+  plotGausDiff.Draw(c,kTRUE,format,2);
+  
+  CPlot plotGaus2("gaus_rand_log"+norm,"","",ylabel);
+  plotGaus2.AddHist1D(hGausRandHere,"mine","E");
+  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // plotZee2.AddToStack(hTop,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotGaus2.AddToStack(hGausRandNtuple,"yours",fillcolorZ,linecolorZ);
+  plotGaus2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotGaus2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotGaus2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotGaus2.SetLogy();
+  plotGaus2.SetYRange(1e-4*(hGausRandHere->GetMaximum()),10*(hGausRandHere->GetMaximum()));
+  plotGaus2.TransLegend(0.1,-0.05);
+  plotGaus2.Draw(c,kTRUE,format,1);
+  
+  
+  
+  TH1D *hDatDiff = makeDiffHist(hData,hDataEG,"hDatDiff");
+  hDatDiff->SetMarkerStyle(kFullCircle); 
+  hDatDiff->SetMarkerSize(0.9);
+  
+  // Shitty plots: Compare data
+  sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
+  CPlot plotZeea("DATA_zee"+norm,"","",ylabel);
+  plotZeea.AddHist1D(hData,"mine","E");
+  // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  plotZeea.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
+  plotZeea.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZeea.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZeea.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotZeea.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
+  plotZeea.TransLegend(0.1,-0.05);
+  plotZeea.Draw(c,kFALSE,format,1);
+
+  CPlot plotZeeDiffa("DATA_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  plotZeeDiffa.AddHist1D(hDatDiff,"EX0",ratioColor);
+  plotZeeDiffa.SetYRange(-0.2,0.2);
+  plotZeeDiffa.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  plotZeeDiffa.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZeeDiffa.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  plotZeeDiffa.Draw(c,kTRUE,format,2);
+  
+  CPlot plotZee2a("DATA_zeelog"+norm,"","",ylabel);
+  plotZee2a.AddHist1D(hData,"mine","E");
+  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // plotZee2.AddToStack(hTop,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotZee2a.AddToStack(hDataEG,"yours",fillcolorZ,linecolorZ);
+  plotZee2a.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZee2a.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZee2a.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotZee2a.SetLogy();
+  plotZee2a.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
+  plotZee2a.TransLegend(0.1,-0.05);
+  plotZee2a.Draw(c,kTRUE,format,1);
+  
+  
+  //-------------------------------
+  
+  TH1D *hEGMCDiff = makeDiffHist(hZee,hZeeEG,"hEGMCDiff");
+  hEGMCDiff->SetMarkerStyle(kFullCircle); 
+  hEGMCDiff->SetMarkerSize(0.9);
+  
+    // Shitty plots: Compare MC
+  sprintf(ylabel,"Events / %.1f GeV",hZee->GetBinWidth(1));
+  CPlot plotZeeb("MC_zee"+norm,"","",ylabel);
+  plotZeeb.AddHist1D(hZee,"mine","E");
+  // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  plotZeeb.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
+  plotZeeb.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZeeb.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZeeb.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotZeeb.SetYRange(0.01,1.2*(hZeeEG->GetMaximum() + sqrt(hZeeEG->GetMaximum())));
+  plotZeeb.TransLegend(0.1,-0.05);
+  plotZeeb.Draw(c,kFALSE,format,1);
+
+  CPlot plotZeeDiffb("MC_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  plotZeeDiffb.AddHist1D(hEGMCDiff,"EX0",ratioColor);
+  plotZeeDiffb.SetYRange(-0.2,0.2);
+  plotZeeDiffb.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  plotZeeDiffb.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZeeDiffb.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  plotZeeDiffb.Draw(c,kTRUE,format,2);
+  
+  CPlot plotZee2b("MC_zeelog"+norm,"","",ylabel);
+  plotZee2b.AddHist1D(hZee,"mine","E");
+  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // plotZee2.AddToStack(hTop,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotZee2b.AddToStack(hZeeEG,"yours",fillcolorZ,linecolorZ);
+  plotZee2b.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZee2b.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZee2b.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotZee2b.SetLogy();
+  plotZee2b.SetYRange(1e-4*(hZeeEG->GetMaximum()),10*(hZeeEG->GetMaximum()));
+  plotZee2b.TransLegend(0.1,-0.05);
+  plotZee2b.Draw(c,kTRUE,format,1);
+  
+  
+  // TH1D *hRawEGDiff = makeDiffHist(hDataEG,hZeeEG,"hRawEGDiff");
+  // hRawEGDiff->SetMarkerStyle(kFullCircle); 
+  // hRawEGDiff->SetMarkerSize(0.9);
+  
+  // // Shitty plots: Compare data
+  // sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
+  // CPlot plotZeea("EG_zee"+norm,"","",ylabel);
+  // plotZeea.AddHist1D(hDataEG,"dat","E");
+  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  // plotZeea.AddToStack(hZeeEG,"mc",fillcolorZ,linecolorZ);
+  // plotZeea.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZeea.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZeea.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  // plotZeea.SetYRange(0.01,1.2*(hData->GetMaximum() + sqrt(hData->GetMaximum())));
+  // plotZeea.TransLegend(0.1,-0.05);
+  // plotZeea.Draw(c,kFALSE,format,1);
+
+  // CPlot plotZeeDiffa("EG_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  // plotZeeDiffa.AddHist1D(hRawEGDiff,"EX0",ratioColor);
+  // plotZeeDiffa.SetYRange(-0.2,0.2);
+  // plotZeeDiffa.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  // plotZeeDiffa.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  // plotZeeDiffa.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  // plotZeeDiffa.Draw(c,kTRUE,format,2);
+  
+  // CPlot plotZee2a("EG_zeelog"+norm,"","",ylabel);
+  // plotZee2a.AddHist1D(hDataEG,"dat","E");
+  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // // plotZee2.AddToStack(hTop,"t#bar{t}",fillcolorTop,linecolorTop);
+  // plotZee2a.AddToStack(hZeeEG,"mc",fillcolorZ,linecolorZ);
+  // plotZee2a.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZee2a.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZee2a.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  // plotZee2a.SetLogy();
+  // plotZee2a.SetYRange(1e-4*(hDataEG->GetMaximum()),10*(hDataEG->GetMaximum()));
+  // plotZee2a.TransLegend(0.1,-0.05);
+  // plotZee2a.Draw(c,kTRUE,format,1);
+  
+  
+  // //-------------------------------
+  
+  // TH1D *hRawDiff = makeDiffHist(hData,hZee,"hRawDiff");
+  // hRawDiff->SetMarkerStyle(kFullCircle); 
+  // hRawDiff->SetMarkerSize(0.9);
+  
+    // // Shitty plots: Compare MC
+  // sprintf(ylabel,"Events / %.1f GeV",hZee->GetBinWidth(1));
+  // CPlot plotZeeb("me_zee"+norm,"","",ylabel);
+  // plotZeeb.AddHist1D(hData,"dat","E");
+  // // plotZee.AddToStack(hZee,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  // plotZeeb.AddToStack(hZee,"mc",fillcolorZ,linecolorZ);
+  // plotZeeb.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZeeb.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZeeb.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  // plotZeeb.SetYRange(0.01,1.2*(hZeeEG->GetMaximum() + sqrt(hZeeEG->GetMaximum())));
+  // plotZeeb.TransLegend(0.1,-0.05);
+  // plotZeeb.Draw(c,kFALSE,format,1);
+
+  // CPlot plotZeeDiffb("me_zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  // plotZeeDiffb.AddHist1D(hRawDiff,"EX0",ratioColor);
+  // plotZeeDiffb.SetYRange(-0.2,0.2);
+  // plotZeeDiffb.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  // plotZeeDiffb.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  // plotZeeDiffb.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  // plotZeeDiffb.Draw(c,kTRUE,format,2);
+  
+  // CPlot plotZee2b("me_zeelog"+norm,"","",ylabel);
+  // plotZee2b.AddHist1D(hData,"dat","E");
+  // // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // // plotZee2.AddToStack(hTop,"t#bar{t}",fillcolorTop,linecolorTop);
+  // plotZee2b.AddToStack(hZee,"mc",fillcolorZ,linecolorZ);
+  // plotZee2b.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  // plotZee2b.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  // if(normToData)plotZee2b.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  // plotZee2b.SetLogy();
+  // plotZee2b.SetYRange(1e-4*(hData->GetMaximum()),10*(hData->GetMaximum()));
+  // plotZee2b.TransLegend(0.1,-0.05);
+  // plotZee2b.Draw(c,kTRUE,format,1);
+  
+  
+  /////////////////////////////////////////////////////////////
+  
+  // EG
+  sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
+  CPlot plotZee_EGcomp("zee_EGcomp"+norm,"","",ylabel);
+  plotZee_EGcomp.AddHist1D(hDataEG,"data","E");
+  plotZee_EGcomp.AddToStack(hZeeEG,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  plotZee_EGcomp.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZee_EGcomp.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZee_EGcomp.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
+  plotZee_EGcomp.SetYRange(0.01,1.2*(hDataEG->GetMaximum() + sqrt(hDataEG->GetMaximum())));
+  plotZee_EGcomp.TransLegend(0.1,-0.05);
+  plotZee_EGcomp.Draw(c,kFALSE,format,1);
+
+  CPlot plotZeeDiff_EGcomp("zee_EGcomp"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
+  plotZeeDiff_EGcomp.AddHist1D(hZeeDiff_EGcomp,"EX0",ratioColor);
+  plotZeeDiff_EGcomp.SetYRange(-0.2,0.2);
+  plotZeeDiff_EGcomp.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
+  plotZeeDiff_EGcomp.AddLine(MASS_LOW, 0.1,MASS_HIGH, 0.1,kBlack,3);
+  plotZeeDiff_EGcomp.AddLine(MASS_LOW,-0.1,MASS_HIGH,-0.1,kBlack,3);
+  plotZeeDiff_EGcomp.Draw(c,kTRUE,format,2);
+  
+  CPlot plotZee2_EGcomp("zeelog_EGcomp"+norm,"","",ylabel);
+  plotZee2_EGcomp.AddHist1D(hDataEG,"data","E");
+  // plotZee2.AddToStack(hEWK,"EWK",fillcolorEWK,linecolorEWK);
+  // plotZee2.AddToStack(hTop,"t#bar{t}",fillcolorTop,linecolorTop);
+  plotZee2_EGcomp.AddToStack(hZeeEG,"Z#rightarrowee",fillcolorZ,linecolorZ);
+  plotZee2_EGcomp.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
+  plotZee2_EGcomp.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
+  if(normToData)plotZee2_EGcomp.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
+  plotZee2_EGcomp.SetLogy();
+  plotZee2_EGcomp.SetYRange(1e-4*(hDataEG->GetMaximum()),10*(hDataEG->GetMaximum()));
+  plotZee2_EGcomp.TransLegend(0.1,-0.05);
+  plotZee2_EGcomp.Draw(c,kTRUE,format,1);
+  // //
   
   sprintf(ylabel,"Events / %.1f GeV",hData->GetBinWidth(1));
   CPlot plotZee("zee"+norm,"","",ylabel);
@@ -1795,7 +2450,29 @@ void plotZee(const TString  inputDir,    // input directory
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;     
+  
+  
+  ofstream txtfile;
+  char txtfname[100];  
+  sprintf(txtfname,"%s/zee_yields.txt",CPlot::sOutDir.Data());
+  txtfile.open(txtfname);
+  assert(txtfile.is_open());
+  
 
+  txtfile << "*" << endl;
+  txtfile << "* SUMMARY" << endl;
+  txtfile << "*--------------------------------------------------" << endl;  
+  txtfile << endl;
+
+  txtfile << " The Zee event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  txtfile << " The Zee expected event yield is " << yield_zee << " +/-" << sqrt(yield_zee_unc) << "." << endl;
+  txtfile << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
+  txtfile << std::endl;
+  txtfile.close();
+  
+  
+  
   gBenchmark->Show("plotZee");
 }
 

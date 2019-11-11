@@ -17,6 +17,10 @@ the various efficiencies calculated in EWKAna/Efficiency and the corresponding s
 
 * The other scripts in this folder compute intermediate acceptances instead of the full selection acceptance.
 
+* Functionality to also compute the systematic uncertainties due to the efficiency uncertainties is added to the computeAccSel* files
+
+* Functionality to compute the theoretical uncertainties from the PDF and CDF uncertainties is added to the computeGen*
+
 ------| RUN |------
 
 * After setting up cmsenv, run:

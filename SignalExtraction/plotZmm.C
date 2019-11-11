@@ -26,12 +26,13 @@
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
-#include "CEffUser1D.hh"
-#include "CEffUser2D.hh"
+#include "../Utils/CEffUser1D.hh"
+#include "../Utils/CEffUser2D.hh"
 
 //helper class to handle rochester corrections
-#include <rochcor2015r.h>
-#include <muresolution_run2r.h>
+// // #include <rochcor2015r.h>
+// #include <muresolution_run2r.h>
+#include <../RochesterCorr/RoccoR.cc>
 
 #endif
 
@@ -44,6 +45,7 @@ TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
 void plotZmm(const TString  inputDir,    // input directory
 	     const TString  outputDir,   // output directory
+       const TString  sqrts, 
              const Double_t lumi,        // integrated luminosity (/fb)
 	     const Bool_t   normToData=0 //draw MC normalized to data
 ) {
@@ -57,14 +59,20 @@ void plotZmm(const TString  inputDir,    // input directory
   //
   // input ntuple file names
   //
-  enum { eData, eZmm, eEWK, eTop };  // data type enum
+  enum { eData, eZmm, eEWK, eTop ,eDib,eZxx,eWx};  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  fnamev.push_back(TString("/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV/Zmumu_testGen/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
   fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
+  
+  fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eZxx);
+  fnamev.push_back(inputDir + TString("/") + TString("dib_select.raw.root"));  typev.push_back(eDib);
 
   //
   // Fit options
@@ -75,56 +83,37 @@ void plotZmm(const TString  inputDir,    // input directory
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
 
+  const bool doRoch = true;
   // efficiency files
  
   const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
-  const TString dataHLTEffName_pos = baseDir + "MuHLTEff/MG/eff.root";
-  const TString dataHLTEffName_neg = baseDir + "MuHLTEff/MG/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir + "MuHLTEff/CT/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir + "MuHLTEff/CT/eff.root";
+  
 
-  const TString dataSelEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataSelEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmSelEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmSelEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  
+    // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_Efficiency-results/";
+  const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
+  // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/Zmm/";
+  const TString dataHLTEffName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString dataHLTEffName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
+  const TString zmmHLTEffName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
+  const TString zmmHLTEffName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataTrkEffName_pos = baseDir + "MuSITEff/MG/eff.root";
-  const TString dataTrkEffName_neg = baseDir + "MuSITEff/MG/eff.root";
-  const TString zmmTrkEffName_pos  = baseDir + "MuSITEff/CT/eff.root";
-  const TString zmmTrkEffName_neg  = baseDir + "MuSITEff/CT/eff.root";
+  const TString dataSelEffName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString dataSelEffName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
+  const TString zmmSelEffName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
+  const TString zmmSelEffName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
 
-  const TString dataStaEffName_pos = baseDir + "MuStaEff/MG/eff.root";
-  const TString dataStaEffName_neg = baseDir + "MuStaEff/MG/eff.root";
-  const TString zmmStaEffName_pos  = baseDir + "MuStaEff/CT/eff.root";
-  const TString zmmStaEffName_neg  = baseDir + "MuStaEff/CT/eff.root";
-
-  // efficiency files 2Bins
-
-  const TString dataHLTEff2BinName_pos = baseDir + "MuHLTEff/1MG/eff.root";
-  const TString dataHLTEff2BinName_neg = baseDir + "MuHLTEff/1MG/eff.root";
-  const TString zmmHLTEff2BinName_pos  = baseDir + "MuHLTEff/1CT/eff.root";
-  const TString zmmHLTEff2BinName_neg  = baseDir + "MuHLTEff/1CT/eff.root";
-
-  const TString dataSelEff2BinName_pos = baseDir + "MuSITEff/1MG/eff.root";
-  const TString dataSelEff2BinName_neg = baseDir + "MuSITEff/1MG/eff.root";
-  const TString zmmSelEff2BinName_pos  = baseDir + "MuSITEff/1CT/eff.root";
-  const TString zmmSelEff2BinName_neg  = baseDir + "MuSITEff/1CT/eff.root";
-
-  const TString dataTrkEff2BinName_pos = baseDir + "MuSITEff/1MG/eff.root";
-  const TString dataTrkEff2BinName_neg = baseDir + "MuSITEff/1MG/eff.root";
-  const TString zmmTrkEff2BinName_pos  = baseDir + "MuSITEff/1CT/eff.root";
-  const TString zmmTrkEff2BinName_neg  = baseDir + "MuSITEff/1CT/eff.root";
-
-  const TString dataStaEff2BinName_pos = baseDir + "MuStaEff/1MG/eff.root";
-  const TString dataStaEff2BinName_neg = baseDir + "MuStaEff/1MG/eff.root";
-  const TString zmmStaEff2BinName_pos  = baseDir + "MuStaEff/1CT/eff.root";
-  const TString zmmStaEff2BinName_neg  = baseDir + "MuStaEff/1CT/eff.root";
-
+  const TString dataStaEffName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString dataStaEffName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+  const TString zmmStaEffName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
+ 
+ 
   TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
   TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
   TString SelEffSignalShapeSys     = baseDir + "Results/MuSITSigSys.root";
   TString SelEffBackgroundShapeSys = baseDir + "Results/MuSITBkgSys.root";
-
+  
   //
   // Set up output file
   //
@@ -358,9 +347,15 @@ void plotZmm(const TString  inputDir,    // input directory
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  Float_t scale1fb, scale1fbUp, scale1fbDown;
+  Float_t scale1fb, scale1fbUp, scale1fbDown, genVMass;
+  Float_t prefireWeight;
   Int_t   q1, q2;
   TLorentzVector *lep1=0, *lep2=0;
+  TLorentzVector *genlep1=0, *genlep2=0;
+  Float_t genMuonPt1, genMuonPt2;
+
+  Double_t nDib=0, nWx=0, nZxx=0;
+  Double_t nDibUnc=0, nWxUnc=0, nZxxUnc=0;
 
   //
   // HLT efficiency
@@ -476,45 +471,10 @@ void plotZmm(const TString  inputDir,    // input directory
   CEffUser2D zmmStaEff2Bin_neg;
   zmmStaEff2Bin_neg.loadEff((TH2D*)zmmStaEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEff2BinFile_neg->Get("hErrhEtaPt"));
  
-  //
-  // Tracker efficiency
-  //
-  cout << "Loading track efficiencies..." << endl;
   
-  TFile *dataTrkEffFile_pos = new TFile(dataTrkEffName_pos);
-  CEffUser2D dataTrkEff_pos;
-  dataTrkEff_pos.loadEff((TH2D*)dataTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataTrkEffFile_neg = new TFile(dataTrkEffName_neg);
-  CEffUser2D dataTrkEff_neg;
-  dataTrkEff_neg.loadEff((TH2D*)dataTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmTrkEffFile_pos = new TFile(zmmTrkEffName_pos);
-  CEffUser2D zmmTrkEff_pos;
-  zmmTrkEff_pos.loadEff((TH2D*)zmmTrkEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmTrkEffFile_neg = new TFile(zmmTrkEffName_neg);
-  CEffUser2D zmmTrkEff_neg;
-  zmmTrkEff_neg.loadEff((TH2D*)zmmTrkEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEffFile_neg->Get("hErrhEtaPt"));
-
-  TFile *dataTrkEff2BinFile_pos = new TFile(dataTrkEff2BinName_pos);
-  CEffUser2D dataTrkEff2Bin_pos;
-  dataTrkEff2Bin_pos.loadEff((TH2D*)dataTrkEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataTrkEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataTrkEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataTrkEff2BinFile_neg = new TFile(dataTrkEff2BinName_neg);
-  CEffUser2D dataTrkEff2Bin_neg;
-  dataTrkEff2Bin_neg.loadEff((TH2D*)dataTrkEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataTrkEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataTrkEff2BinFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmTrkEff2BinFile_pos = new TFile(zmmTrkEff2BinName_pos);
-  CEffUser2D zmmTrkEff2Bin_pos;
-  zmmTrkEff2Bin_pos.loadEff((TH2D*)zmmTrkEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zmmTrkEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmTrkEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmTrkEff2BinFile_neg = new TFile(zmmTrkEff2BinName_neg);
-  CEffUser2D zmmTrkEff2Bin_neg;
-  zmmTrkEff2Bin_neg.loadEff((TH2D*)zmmTrkEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmTrkEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmTrkEff2BinFile_neg->Get("hErrhEtaPt"));
-
   //Setting up rochester corrections
-  rochcor2015 *rmcor = new rochcor2015();
+  // rochcor2015 *rmcor = new rochcor2015();
+  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
 
   TFile *infile=0;
   TTree *intree=0;
@@ -533,13 +493,19 @@ void plotZmm(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("category",1);
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
+    intree -> SetBranchStatus("prefireWeight",1);
     intree -> SetBranchStatus("scale1fb",1);
     intree -> SetBranchStatus("scale1fbUp",1);
     intree -> SetBranchStatus("scale1fbDown",1);
+    intree -> SetBranchStatus("genVMass",1);
     intree -> SetBranchStatus("q1",1);
     intree -> SetBranchStatus("q2",1);
     intree -> SetBranchStatus("lep1",1);
     intree -> SetBranchStatus("lep2",1);
+    intree -> SetBranchStatus("genlep1",1);
+    intree -> SetBranchStatus("genlep2",1);
+    intree -> SetBranchStatus("genMuonPt1",1);
+    intree -> SetBranchStatus("genMuonPt2",1);
 
     intree->SetBranchAddress("runNum",     &runNum);      // event run number
     intree->SetBranchAddress("lumiSec",    &lumiSec);     // event lumi section
@@ -547,23 +513,39 @@ void plotZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("category",   &category);    // dilepton category
     intree->SetBranchAddress("npv",        &npv);	  // number of primary vertices
     intree->SetBranchAddress("npu",        &npu);	  // number of in-time PU events (MC)
+    intree->SetBranchAddress("prefireWeight",   &prefireWeight);    // prefire weights for 2017 (MC)
     intree->SetBranchAddress("scale1fb",   &scale1fb);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbUp",   &scale1fbUp);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("scale1fbDown",   &scale1fbDown);    // event weight per 1/fb (MC)
+    intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
     intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
     intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
+    intree->SetBranchAddress("genlep1",       &genlep1);        // tag lepton 4-vector
+    intree->SetBranchAddress("genlep2",       &genlep2);        // probe lepton 4-vector
+    intree->SetBranchAddress("genMuonPt1",       &genMuonPt1);        // probe lepton 4-vector
+    intree->SetBranchAddress("genMuonPt2",       &genMuonPt2);        // probe lepton 4-vector
     
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+      if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " percent done with this file." << endl;
       intree->GetEntry(ientry);
    
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
+      // if(typev[ifile]!=eData) {
+        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
+      // }
+      
+      // if(abs(genlep1->Pt() - lep1->Pt())/lep1->Pt() > 0.1 || abs(genlep2->Pt() - lep2->Pt())/lep2->Pt() > 0.1){
+        // std::cout << "-------" << ientry << "-----------" << std::endl;
+        // std::cout << "lep 1 " << genlep1->Pt() << " " << lep1->Pt() << std::endl;
+        // std::cout << "lep 2 " << genlep2->Pt() << " " << lep2->Pt() << std::endl;
+      // }
       
       float mass = 0;
       float pt = 0;
@@ -574,11 +556,13 @@ void plotZmm(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	weight *= scale1fb*lumi;
+	    weight *= scale1fb*prefireWeight*lumi;
+	    // weight *= scale1fb*lumi;
       }
       
       // fill Z events passing selection
       if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
+        
         if(typev[ifile]==eData) { 
 
 	  TLorentzVector mu1;
@@ -588,8 +572,17 @@ void plotZmm(const TString  inputDir,    // input directory
 	  float qter1=1.0;
 	  float qter2=1.0;
 
-	  rmcor->momcor_data(mu1,q1,0,qter1);
-	  rmcor->momcor_data(mu2,q2,0,qter2);
+      double dtSF1 = rc.kScaleDT(q1, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
+      double dtSF2 = rc.kScaleDT(q2, mu2.Pt(), mu2.Eta(), mu2.Phi());//s=0, m=0);
+	  // rmcor->momcor_data(mu1,q1,0,qter1);
+	  // rmcor->momcor_data(mu2,q2,0,qter2);
+      // std::cout << "data pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
+      if(doRoch){
+      mu1*=dtSF1;
+      mu2*=dtSF2;
+      }
+      
+      // std::cout << "post pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
 
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
@@ -623,7 +616,7 @@ void plotZmm(const TString  inputDir,    // input directory
 	  if(mass        > MASS_HIGH) continue;
 	  if(l1.Pt()        < PT_CUT)    continue;
 	  if(l2.Pt()        < PT_CUT)    continue;
-
+      
 	  hData->Fill(mass); 
 	  hDataNPV->Fill(npv);
 	  hDataZPt->Fill(pt); 
@@ -652,12 +645,22 @@ void plotZmm(const TString  inputDir,    // input directory
 	  TLorentzVector mu2;
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
 	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+      // std::cout << "MC pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
+      
+      
 	  float qter1=1.0;
 	  float qter2=1.0;
-
-	  rmcor->momcor_mc(mu1,q1,0,qter1);
-	  rmcor->momcor_mc(mu2,q2,0,qter2);
-
+      double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt1);//, s=0, m=0);
+      double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genMuonPt2);//, s=0, m=0);
+      if(genlep1->Pt()==0 && genlep2->Pt()==0) {mcSF1=1; mcSF2=1;}// stupid gen shit for ttbar is messed up
+	  // rmcor->momcor_mc(mu1,q1,0,qter1);
+	  // rmcor->momcor_mc(mu2,q2,0,qter2);
+      if(doRoch){
+      mu1*=mcSF1;
+      mu2*=mcSF2;
+      }
+      // std::cout << "sf " << mcSF1 << "  " << mcSF2 << std::endl;
+      // std::cout << "post pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
 	  Double_t lq1 = q1;
@@ -688,7 +691,6 @@ void plotZmm(const TString  inputDir,    // input directory
 	  Double_t corrSigShape=1;
 	  Double_t effBkgShapedata;
 	  Double_t corrBkgShape=1;
-
 
 	  if(mll       < MASS_LOW)  continue;
 	  if(mll       > MASS_HIGH) continue;
@@ -772,62 +774,12 @@ void plotZmm(const TString  inputDir,    // input directory
 	  corr *= effdata/effmc; 
 	  corrSigShape *= effSigShapedata/effmc;
 	  corrBkgShape *= effBkgShapedata/effmc;
-	  
-          effdata=1; effmc=1;
-          if(lq1>0) { 
-            effdata *= dataTrkEff_pos.getEff((l1.Eta()), l1.Pt()); 
-            effmc   *= zmmTrkEff_pos.getEff((l1.Eta()), l1.Pt()); 
-          } else {
-            effdata *= dataTrkEff_neg.getEff((l1.Eta()), l1.Pt()); 
-            effmc   *= zmmTrkEff_neg.getEff((l1.Eta()), l1.Pt()); 
-          }
-          if(lq2>0) {
-            effdata *= dataTrkEff_pos.getEff((l2.Eta()), l2.Pt()); 
-            effmc   *= zmmTrkEff_pos.getEff((l2.Eta()), l2.Pt());
-          } else {
-            effdata *= dataTrkEff_neg.getEff((l2.Eta()), l2.Pt()); 
-            effmc   *= zmmTrkEff_neg.getEff((l2.Eta()), l2.Pt());
-          }
-          //corr *= effdata/effmc;
-	  //corr=1;
 
 
 	  // scale factor uncertainties   
 	  
 	  double var=0.;      
 	  
-	  // TRACKER
-	  if(lq1>0) {
-	    Double_t effdata = dataTrkEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataTrkEff_pos.getErrLow(l1.Eta(), l1.Pt()), dataTrkEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmTrkEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(l1.Eta(), l1.Pt()), zmmTrkEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    //var+=errTrk*errTrk;
-	  } else {
-	    Double_t effdata = dataTrkEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataTrkEff_neg.getErrLow(l1.Eta(), l1.Pt()), dataTrkEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmTrkEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(l1.Eta(), l1.Pt()), zmmTrkEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    //var+=errTrk*errTrk;
-	  }
-	  
-	  if(lq2>0) {
-	    Double_t effdata = dataTrkEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataTrkEff_pos.getErrLow(l2.Eta(), l2.Pt()), dataTrkEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmTrkEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmTrkEff_pos.getErrLow(l2.Eta(), l2.Pt()), zmmTrkEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    //var+=errTrk*errTrk;
-	  } else {
-	    Double_t effdata = dataTrkEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataTrkEff_neg.getErrLow(l2.Eta(), l2.Pt()), dataTrkEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmTrkEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmTrkEff_neg.getErrLow(l2.Eta(), l2.Pt()), zmmTrkEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errTrk = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    //var+=errTrk*errTrk;
-	  }
 	  
 	  // STANDALONE
 	  if(lq1>0) {
@@ -985,24 +937,8 @@ void plotZmm(const TString  inputDir,    // input directory
           }
 	  corr2Bin *= eff2Bindata/eff2Binmc; 
 	  
-          eff2Bindata=1; eff2Binmc=1;
-          if(lq1>0) { 
-            eff2Bindata *= dataTrkEff2Bin_pos.getEff((l1.Eta()), l1.Pt()); 
-            eff2Binmc   *= zmmTrkEff2Bin_pos.getEff((l1.Eta()), l1.Pt()); 
-          } else {
-            eff2Bindata *= dataTrkEff2Bin_neg.getEff((l1.Eta()), l1.Pt()); 
-            eff2Binmc   *= zmmTrkEff2Bin_neg.getEff((l1.Eta()), l1.Pt()); 
-          }
-          if(lq2>0) {
-            eff2Bindata *= dataTrkEff2Bin_pos.getEff((l2.Eta()), l2.Pt()); 
-            eff2Binmc   *= zmmTrkEff2Bin_pos.getEff((l2.Eta()), l2.Pt());
-          } else {
-            eff2Bindata *= dataTrkEff2Bin_neg.getEff((l2.Eta()), l2.Pt()); 
-            eff2Binmc   *= zmmTrkEff2Bin_neg.getEff((l2.Eta()), l2.Pt());
-          }
-          //corr2Bin *= eff2Bindata/eff2Binmc;
-	  //corr2Bin=1;
-	
+    // corr=1;
+	// std::cout << evtNum << " " << corr << " " << std::endl;
 	  mass = (l1+l2).M();
 	  pt = (l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
@@ -1011,7 +947,18 @@ void plotZmm(const TString  inputDir,    // input directory
 	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
 	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
 	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
-
+    if(mass>60&&mass<120){
+      if(typev[ifile]==eDib){
+        nDib+=weight*corr;
+        nDibUnc+=weight*weight*corr*corr;
+      } else if(typev[ifile]==eZxx){
+        nZxx+=weight*corr;
+        nZxxUnc+=weight*weight*corr*corr;
+      } else if (typev[ifile]==eWx){
+        nWx+=weight*corr;
+        nWxUnc+=weight*weight*corr*corr;
+      }
+    }
 	  if(typev[ifile]==eZmm) 
 	    {
 	      yield_zmm += weight*corr;
@@ -2050,11 +1997,39 @@ void plotZmm(const TString  inputDir,    // input directory
   cout << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
   cout << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
   cout << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  cout << "  -> Dib event yield is " << nDib      << " +/-" << sqrt(nDibUnc)       << "." << endl;
+  cout << "  -> Zxx event yield is " << nZxx      << " +/-" << sqrt(nZxxUnc)       << "." << endl;
+  cout << "  -> Wx  event yield is " << nWx       << " +/-" << sqrt(nWxUnc)        << "." << endl;
   cout << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
   
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;     
+  
+  
+  ofstream txtfile;
+  char txtfname[100];  
+  sprintf(txtfname,"%s/zmm_yields.txt",CPlot::sOutDir.Data());
+  txtfile.open(txtfname);
+  assert(txtfile.is_open());
+  
+  
+  txtfile << "*" << endl;
+  txtfile << "* SUMMARY" << endl;
+  txtfile << "*--------------------------------------------------" << endl;  
+  txtfile << endl;
+
+  txtfile << " The Zmm event yield is " << yield << " +/-" << sqrt(yield) << "." << endl;
+  txtfile << " The Zmm expected event yield is " << yield_zmm << " +/-" << sqrt(yield_zmm_unc) << "." << endl;
+  txtfile << " The EWK event yield is " << yield_ewk << " +/-" << sqrt(yield_ewk_unc) << "." << endl;
+  txtfile << "  -> Dib event yield is " << nDib      << " +/-" << sqrt(nDibUnc)       << "." << endl;
+  txtfile << "  -> Zxx event yield is " << nZxx      << " +/-" << sqrt(nZxxUnc)       << "." << endl;
+  txtfile << "  -> Wx  event yield is " << nWx       << " +/-" << sqrt(nWxUnc)        << "." << endl;
+  txtfile << " The Top event yield is " << yield_top << " +/-" << sqrt(yield_top_unc) << "." << endl;
+  txtfile << std::endl;
+  txtfile.close();
+  
+  
 
   gBenchmark->Show("plotZmm");
 }

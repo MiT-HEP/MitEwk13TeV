@@ -22,10 +22,10 @@
 
 // Main macro function
 //--------------------------------------------------------------------------------------------------
-void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/SingleMuon.root",
-			   TString mcfile   = "/data/blue/Bacon/Run2/wz_bacon/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root",
-			   TString certfile = "../Selection/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt",
-			   TString outfile  = "pileup_weights_2015B.root") {
+void MakePileupReweighting(TString datafile = "/data/t3home000/sabrandt/13TeVLowPU/SingleMuon.root",
+			   TString mcfile   = "/data/t3home000/sabrandt/LowPUBacons/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8.root",
+			   TString certfile = "../Selection/2017H_lowPU.json",
+			   TString outfile  = "pileup_weights_2017H_v2.root") {
 
   TFile *f_data = TFile::Open(datafile, "read");
   TTree *t_data = (TTree*) f_data->Get("Events");
@@ -43,7 +43,9 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
 
   Int_t nZero=0, nGood=0;
 
+  std::cout << "Data File " << std::endl;
   for (Int_t i=0; i<t_data->GetEntries(); i++) {
+    if(i%100000==0) std::cout << "On Entry " << i << " out of " << t_data->GetEntries() << "..." << 100*i/t_data->GetEntries() << std::endl;
     vertexArr->Clear();
     vertexBr->GetEntry(i);
     infoBr->GetEntry(i);
@@ -75,8 +77,9 @@ void MakePileupReweighting(TString datafile = "/data/blue/Bacon/Run2/wz_bacon/Si
   t_mc->SetBranchAddress("PV", &vertexArr); vertexBr = t_mc->GetBranch("PV");
 
   Double_t nZeroMC=0, nGoodMC=0;
-
-  for (Int_t i=0; i<t_data->GetEntries(); i++) {
+  std::cout << "MC File " << std::endl;
+  for (Int_t i=0; i<t_mc->GetEntries(); i++) {
+     if(i%100000==0) std::cout << "On Entry " << i << " out of " << t_mc->GetEntries() << "..." << 100*i/t_mc->GetEntries() << std::endl;
     infoBr->GetEntry(i);
     genBr->GetEntry(i);
     vertexArr->Clear();

@@ -52,8 +52,8 @@ void EleScale() {
   TString outputDir = "EleScaleResults";
   
   vector<TString> infilenamev;
-  infilenamev.push_back("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Ele/ntuples/data_select.root");//data
-  infilenamev.push_back("/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/Ele/ntuples/zee_select.raw.root");//MC
+  infilenamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_fixed/Zee/ntuples/data_select.root");//data
+  infilenamev.push_back("/afs/cern.ch/work/a/arapyan/public/flat_fixed/Zee/ntuples/zee_select.raw.root");//MC
   
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;
@@ -130,8 +130,8 @@ void EleScale() {
     intree->SetBranchAddress("dilep",    &dilep);     // dilepton 4-vector
     intree->SetBranchAddress("lep1",     &lep1);      // lead lepton 4-vector
     intree->SetBranchAddress("lep2",     &lep2);      // trail lepton 4-vector
-    intree->SetBranchAddress("sc1",      &sc1);	      // lead Supercluster 4-vector
-    intree->SetBranchAddress("sc2",      &sc2);	      // trail Supercluster 4-vector 
+    intree->SetBranchAddress("lep1",      &sc1);	      // lead Supercluster 4-vector
+    intree->SetBranchAddress("lep2",      &sc2);	      // trail Supercluster 4-vector 
   
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
       intree->GetEntry(ientry);

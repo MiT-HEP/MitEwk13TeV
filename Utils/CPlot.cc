@@ -72,8 +72,11 @@ void CPlot::AddHist1D(TH1D *h, TString drawopt, int color, int linesty, int fill
   h->SetFillColor(color);
   h->SetFillStyle(fillsty);
   
-  if(drawopt.CompareTo("E",TString::kIgnoreCase)==0)
-    h->SetMarkerSize(0.9);
+  if(drawopt.CompareTo("E3",TString::kIgnoreCase)==0){
+    h->SetMarkerSize(0.0);
+  }else if(drawopt.CompareTo("E",TString::kIgnoreCase)==0){
+      h->SetMarkerSize(0.9);
+  }
   
   CPlotItem item;
   item.hist1D = h;
