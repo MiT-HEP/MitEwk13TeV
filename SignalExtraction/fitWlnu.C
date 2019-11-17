@@ -2235,11 +2235,45 @@ double isoTrkCut=9999;
   }
   std::cout << "mark 3 " << std::endl;
 
+  TH1 *qcdp2 = (TH1*) hQCDMetp2d[2]->Clone();   TH1 *qcdp3=(TH1*) hQCDMetp2d[3]->Clone();
+  TH1 *qcdm2 = (TH1*) hQCDMetm2d[2]->Clone();   TH1 *qcdm3=(TH1*) hQCDMetm2d[3]->Clone();
+  qcdp3->Scale(qcdp2->Integral()/qcdp3->Integral());
+  qcdm3->Scale(qcdm2->Integral()/qcdm3->Integral());
+  TH1D *hQCDMetpBin2_shapeUp   = (TH1D*) hQCDMetp2d[2]->Clone();  
+  hQCDMetpBin2_shapeUp->SetTitle("hQCDMetpBin2_shapeUp");
+  hQCDMetpBin2_shapeUp->SetName("hQCDMetpBin2_shapeUp");
+  TH1D *hQCDMetpBin2_shapeDown = (TH1D*) hQCDMetp2d[2]->Clone();
+  hQCDMetpBin2_shapeDown->SetTitle("hQCDMetpBin2_shapeDown");
+  hQCDMetpBin2_shapeDown->SetName("hQCDMetpBin2_shapeDown");
+  TH1D *hQCDMetmBin2_shapeUp   = (TH1D*) hQCDMetm2d[2]->Clone();
+  hQCDMetmBin2_shapeUp->SetTitle("hQCDMetmBin2_shapeUp");
+  hQCDMetmBin2_shapeUp->SetName("hQCDMetmBin2_shapeUp");
+  TH1D *hQCDMetmBin2_shapeDown  = (TH1D*) hQCDMetm2d[2]->Clone();
+  hQCDMetmBin2_shapeDown->SetTitle("hQCDMetmBin2_shapeDown");
+  hQCDMetmBin2_shapeDown->SetName("hQCDMetmBin2_shapeDown");
+
+  for(Int_t ibin=1; ibin<=qcdp2->GetNbinsX(); ibin++) 
+    {
+      double targetp = qcdp3->GetBinContent(ibin);
+      double medianp = qcdp2->GetBinContent(ibin);
+      double targetm = qcdm3->GetBinContent(ibin);
+      double medianm = qcdm2->GetBinContent(ibin);
+      hQCDMetpBin2_shapeUp->SetBinContent(ibin,targetp);
+      hQCDMetmBin2_shapeUp->SetBinContent(ibin,targetm);
+      hQCDMetpBin2_shapeDown->SetBinContent(ibin,2*medianp-targetp);
+      hQCDMetmBin2_shapeDown->SetBinContent(ibin,2*medianm-targetm);
+    }
+  //create qcd up/down shapes
+
 //   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",40000,0,100000);
 //   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",40000,0,100000);
   TString histfname = outputDir + TString("/Wlnu_Histograms.root");
   TFile *histFile = new TFile(histfname,"RECREATE");
   histFile->cd();
+  hQCDMetpBin2_shapeUp->Write();
+  hQCDMetmBin2_shapeUp->Write();
+  hQCDMetpBin2_shapeDown->Write();
+  hQCDMetmBin2_shapeDown->Write();
   for(int j = 0; j < nIsoBins; ++j){
     std::cout << "writing" << std::endl;
     hDataMetp2d[j]->Write();

@@ -155,7 +155,7 @@ void fitZee(const TString  inputDir,    // input directory
   TH2D *hCompareElePtEcalE = new TH2D("hCompare","",200,0,100,200,0,100);
    
   enum{mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown};
-  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effstatUp","effstatDown","lepsfUp","lepsfDown","pfireUp","pfireDown"};
+  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effstatUp","effstatDown","lepsfUp","lepsfDown","prefireUp","prefireDown"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
@@ -484,8 +484,8 @@ void fitZee(const TString  inputDir,    // input directory
         hZeeUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hZeeUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hZeeUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZeeUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZeeUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hZeeUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
         
         hZee->Fill(mass,weight*corr); 
         hZeeUp->Fill(massU,weight*corr); 
@@ -514,8 +514,8 @@ void fitZee(const TString  inputDir,    // input directory
         hZxxUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hZxxUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
     } if(typev[ifile]==eWx){
       
         nWx+=weight*corr;
@@ -537,8 +537,8 @@ void fitZee(const TString  inputDir,    // input directory
         hWxUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hWxUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
       
     } if(typev[ifile]==eDib){
         // cout << "blah " << endl;
@@ -563,8 +563,8 @@ void fitZee(const TString  inputDir,    // input directory
         hDibUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hDibUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
         // cout << "blah " << endl;
     }
       if(typev[ifile]==eEWK || typev[ifile]==eWx || typev[ifile]==eZxx || typev[ifile]==eDib)  {
@@ -592,8 +592,8 @@ void fitZee(const TString  inputDir,    // input directory
         hTtbUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hTtbUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
       
         
         
