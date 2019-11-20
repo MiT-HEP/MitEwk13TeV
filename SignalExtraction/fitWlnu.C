@@ -249,21 +249,31 @@ double isoTrkCut=9999;
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eW0j);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eW1j);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eW2j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx0_select.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx1_select.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx2_select.root"));  typev.push_back(eWx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top1_select.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top2_select.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top3_select.root")); typev.push_back(eTtb);
 
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx0_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx1_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx2_select.root")); typev.push_back(eAntiWx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we_select.root")); typev.push_back(eAntiWlnu);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we0_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we1_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we2_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top1_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top2_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top3_select.root"));  typev.push_back(eAntiTtb);
   }
   // // // // 13 TEV Muon Channel
   if(flav.CompareTo("Wmunu") == 0 && lumi < 250){
@@ -271,21 +281,31 @@ double isoTrkCut=9999;
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eW0j);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eW1j);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eW2j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx0_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx1_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx2_select.raw.root"));  typev.push_back(eWx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top1_select.raw.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top2_select.raw.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top3_select.raw.root")); typev.push_back(eTtb);
 
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx0_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx1_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx2_select.root")); typev.push_back(eAntiWx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm0_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm1_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm2_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top1_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top2_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top3_select.root"));  typev.push_back(eAntiTtb);
   }
  
   // // // For the 5 TeV
@@ -338,6 +358,8 @@ double isoTrkCut=9999;
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
   
+
+  // TH1D *hGenWeights;
   //
   // Declare MET histograms
   //
@@ -868,50 +890,43 @@ double isoTrkCut=9999;
     intree->SetBranchAddress("metVarsPhi",    &metVarsPhi);         // met phi for variations
     intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
   
+    TH1D* hGenWeights;
+    double totalNorm = 1.0;
+    cout << "Hello " << endl;
+    if(typev[ifile] != eData && typev[ifile] != eAntiData){
+      cout << "get gen weights" << endl;
+      hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      totalNorm = hGenWeights->Integral();
+      cout << totalNorm << endl;
+    }
+  
     UInt_t iterator=100;
-    // UInt_t iterator=10;
-    // if(typev[ifile]==eTtb)iterator=1;
-    // // if(typev[ifile]==eData||typev[ifile]==eAntiData)iterator=1;
     //
     // loop over events
     //
-    double frac=0.1;
+    double frac=0.5;
     // if(typev[ifile]==eTtb) frac=1;
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
+    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
     // for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
       if(ientry%1000000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
 
-// figure out later what to do
-        // if(typev[ifile]==eWlnu || typev[ifile]==eWx || typev[ifile]==eZxx) {
-          // // what was this
-            // double bin = 0;
-            // for(int i = 1; i <= hh_diff->GetNbinsX();++i){
-              // if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
-            // }
-            // double w2 = 1.0;//hh_diff->GetBinContent(bin);
-      // std::cout << " pass PT " << std::endl;
-      // if(lep_raw->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(lep->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
       if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
       vector<double> wgtLum;
       // for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/prefireWeight);
       for(int jt=0; jt < nWeight; jt++) {
-        // prefire shit is slightly messed up
-        // also divide by 2 if > 2...
-        wgtLum.push_back(lumi*((*evtWeight)[jt]));
+        // divide by totalNorm now
+        wgtLum.push_back(lumi*((*evtWeight)[jt])/totalNorm);
         
-        // if(typev[ifile]==eW0j||typev[ifile]==eW1j||typev[ifile]==eW2j||typev[ifile]==eWx||typev[ifile]==eAntiWlnu||typev[ifile]==eAntiWx){
-          // wgtLum.back()*=0.96084;
-        // }
+        // can also add different efficiency weights here
+        
+        
       }
-      // if(typev[ifile]==eTtb){
-        // for(int jt=0; jt < nWeight; jt++) wgtLum[jt]=1;
-      // }
       if(typev[ifile]==eData) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
