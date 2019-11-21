@@ -325,6 +325,20 @@ class AppEffSF {
       double effdata = 1.0; 
       double effmc = 1.0;
       double corr = 1.0;
+      if(!l2){
+        if(q1>0) { 
+          effdata *= (1.-hlt.dataPos.getEff((l1->Eta()), l1->Pt())); 
+          // effmc   *= (1.-hlt.mcPos.getEff((l1->Eta()), l1->Pt())); 
+        } else {
+          effdata *= (1.-hlt.dataNeg.getEff((l1->Eta()), l1->Pt())); 
+          // effmc   *= (1.-hlt.mcNeg.getEff((l1->Eta()), l1->Pt())); 
+        }
+        effdata = 1.-effdata;
+        // effmc   = 1.-effmc;
+        corr *= effdata/effmc;
+        return corr;
+      }
+      
       if(q1>0) { 
         effdata *= (1.-hlt.dataPos.getEff((l1->Eta()), l1->Pt())); 
         effmc   *= (1.-hlt.mcPos.getEff((l1->Eta()), l1->Pt())); 
@@ -332,12 +346,12 @@ class AppEffSF {
         effdata *= (1.-hlt.dataNeg.getEff((l1->Eta()), l1->Pt())); 
         effmc   *= (1.-hlt.mcNeg.getEff((l1->Eta()), l1->Pt())); 
       }
-      if(!l2) {
+/*      if(!l2) {
         effdata = 1.-effdata;
-        effmc   = 1.-effmc;
+        // effmc   = 1.-effmc;
         corr *= effdata/effmc;
         return corr;
-      }
+      }*/
       if(q2>0) {
         effdata *= (1.-hlt.dataPos.getEff((l2->Eta()), l2->Pt())); 
         effmc   *= (1.-hlt.mcPos.getEff((l2->Eta()), l2->Pt()));
