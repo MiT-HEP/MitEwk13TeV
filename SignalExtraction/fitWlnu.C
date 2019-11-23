@@ -250,6 +250,9 @@ double isoTrkCut=9999;
   
   hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
   hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
+  
+  RooMsgService::instance().setSilentMode(true);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   // -----------------------------------------------------
   
   // // Load the Z data and Z MC Pt spectra
@@ -980,14 +983,14 @@ double isoTrkCut=9999;
       var += effs.statUncSel(lep, q, hErr, hErr, 1.0);
       var += effs.statUncHLT(lep, q, hErr, hErr, 1.0);
     
-      (*evtWeight)[main]=corr*scale1fb*prefireWeight;
-      (*evtWeight)[fsr]=corrFSR*scale1fb*prefireWeight;
-      (*evtWeight)[mc] =corrMC*scale1fb*prefireWeight;
-      (*evtWeight)[bkg]=corrBkg*scale1fb*prefireWeight;
-      (*evtWeight)[tagpt]=corrTag*scale1fb*prefireWeight;
-      (*evtWeight)[effstat]=var*scale1fb*prefireWeight*scale1fb*prefireWeight;
-      (*evtWeight)[pfireu]=corr*scale1fb*prefireUp;
-      (*evtWeight)[pfired]=corr*scale1fb*prefireDown;
+      // (*evtWeight)[main]=corr*scale1fb*prefireWeight;
+      // (*evtWeight)[fsr]=corrFSR*scale1fb*prefireWeight;
+      // (*evtWeight)[mc] =corrMC*scale1fb*prefireWeight;
+      // (*evtWeight)[bkg]=corrBkg*scale1fb*prefireWeight;
+      // (*evtWeight)[tagpt]=corrTag*scale1fb*prefireWeight;
+      // (*evtWeight)[effstat]=var*scale1fb*prefireWeight*scale1fb*prefireWeight;
+      // (*evtWeight)[pfireu]=corr*scale1fb*prefireUp;
+      // (*evtWeight)[pfired]=corr*scale1fb*prefireDown;
 
       
       for(int jt=0; jt < nWeight; jt++) {
