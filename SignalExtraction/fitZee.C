@@ -71,21 +71,21 @@ void fitZee(const TString  inputDir,    // input directory
   fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   
   
-    fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
-  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
-  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
-  
-  // fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+    // fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
   // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
-  // fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
-  // // fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  
+  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
+  fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
@@ -315,12 +315,12 @@ void fitZee(const TString  inputDir,    // input directory
     TH1D* hGenWeights;
     double totalNorm = 1.0;
     cout << "Hello " << endl;
-    // if(typev[ifile] != eData ){
-      // cout << "get gen weights" << endl;
-      // hGenWeights = (TH1D*)infile->Get("hGenWeights");
-      // totalNorm = hGenWeights->Integral();
-      // cout << totalNorm << endl;
-    // }
+    if(typev[ifile] != eData ){
+      cout << "get gen weights" << endl;
+      hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      totalNorm = hGenWeights->Integral();
+      cout << totalNorm << endl;
+    }
   
     //
     // loop over events
