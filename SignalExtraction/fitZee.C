@@ -71,10 +71,21 @@ void fitZee(const TString  inputDir,    // input directory
   fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   
   
-  fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
+    fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
   fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
   fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
   fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  
+  // fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
+  // // fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
@@ -96,13 +107,14 @@ void fitZee(const TString  inputDir,    // input directory
   // efficiency files
 
   TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
+  // TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zee/";
   AppEffSF effs(baseDir);
   // effs.loadHLT("EleHLTEff_aMCxPythia","Combined","Combined");
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
   effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
   // effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
   // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
-  string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/RebinForStat/Systematics/";
+  string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/";
   string SysFileGSFSel = sysDir + "SysUnc_EleGSFSelEff.root";
   effs.loadUncSel(SysFileGSFSel);
   
@@ -300,6 +312,16 @@ void fitZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("lep1error",     &lep1error);        // sc2 4-vector
     intree->SetBranchAddress("lep2error",    &lep2error);        // sc2 4-vector
   
+    TH1D* hGenWeights;
+    double totalNorm = 1.0;
+    cout << "Hello " << endl;
+    // if(typev[ifile] != eData ){
+      // cout << "get gen weights" << endl;
+      // hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      // totalNorm = hGenWeights->Integral();
+      // cout << totalNorm << endl;
+    // }
+  
     //
     // loop over events
     //
@@ -329,7 +351,7 @@ void fitZee(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-        weight *= scale1fb*prefireWeight*lumi;
+        weight *= scale1fb*prefireWeight*lumi/totalNorm;
       }  
       
       if(!(category==1) && !(category==2) && !(category==3)) continue;
@@ -464,9 +486,9 @@ void fitZee(const TString  inputDir,    // input directory
         yield_zee += weight*corr;
         yield_zee_up += weight*corrUp;
         yield_zee_dn += weight*corrDown;
-        yield_zee_noPrefire += scale1fb*lumi*corr;
-        yield_zee_pfPhoton += scale1fb*lumi*corr*prefirePhoton;
-        yield_zee_pfJet += scale1fb*lumi*corr*prefireJet;
+        yield_zee_noPrefire += scale1fb*lumi*corr/totalNorm;
+        yield_zee_pfPhoton += scale1fb*lumi*corr*prefirePhoton/totalNorm;
+        yield_zee_pfJet += scale1fb*lumi*corr*prefireJet/totalNorm;
         yield_zee_unc += weight*weight*corr*corr;
         if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
         
@@ -484,8 +506,8 @@ void fitZee(const TString  inputDir,    // input directory
         hZeeUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hZeeUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hZeeUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZeeUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZeeUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
+        hZeeUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
         
         hZee->Fill(mass,weight*corr); 
         hZeeUp->Fill(massU,weight*corr); 
@@ -514,8 +536,8 @@ void fitZee(const TString  inputDir,    // input directory
         hZxxUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hZxxUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZxxUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
+        hZxxUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
     } if(typev[ifile]==eWx){
       
         nWx+=weight*corr;
@@ -537,8 +559,8 @@ void fitZee(const TString  inputDir,    // input directory
         hWxUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hWxUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hWxUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
+        hWxUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
       
     } if(typev[ifile]==eDib){
         // cout << "blah " << endl;
@@ -563,8 +585,8 @@ void fitZee(const TString  inputDir,    // input directory
         hDibUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hDibUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hDibUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
+        hDibUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
         // cout << "blah " << endl;
     }
       if(typev[ifile]==eEWK || typev[ifile]==eWx || typev[ifile]==eZxx || typev[ifile]==eDib)  {
@@ -592,8 +614,8 @@ void fitZee(const TString  inputDir,    // input directory
         hTtbUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hTtbUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
-        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hTtbUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
+        hTtbUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
       
         
         
