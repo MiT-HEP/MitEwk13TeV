@@ -60,7 +60,9 @@ void selectWe(const TString conf="we.conf", // input file
                 const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
                 const Int_t   sigma=0,
                 const Bool_t  doPU=0,
-                const Bool_t is13TeV=1
+                const Bool_t is13TeV=1,
+                const Int_t NSEC = 1,
+                const Int_t ITH = 0
 ) {
   gBenchmark->Start("selectWe");
 
@@ -96,9 +98,9 @@ void selectWe(const TString conf="we.conf", // input file
   const Int_t NPDF = 100;
   const Int_t NQCD = 6;
   // load trigger menu
-  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
+  const baconhep::TTrigger triggerMenu("/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/BaconAna/DataFormats/data/HLT_50nsGRun");
 
-  const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
+  const TString prefireFileName = "/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Utils/All2017Gand2017HPrefiringMaps.root";
   TFile *prefireFile = new TFile(prefireFileName);
   CCorrUser2D prefirePhotonCorr, prefireJetCorr;
   if(!is13TeV){
@@ -110,22 +112,21 @@ void selectWe(const TString conf="we.conf", // input file
   }
   
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
+  TFile *f_rw = TFile::Open("/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
   TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
   // const TString corrFiles = "../EleScale/76X_16DecRereco_2015_Etunc";
   // const TString corrFiles = "../EleScale/Run2017_17Nov2017_v1_ele_unc";
-  const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
+  const TString corrFiles = "/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/EleScale/Run2017_LowPU_v2";
 
-  // EnergyScaleCorrection_class eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
-  EnergyScaleCorrection eleCorr( corrFiles.Data()); //eleCorr.doScale= true; eleCorr.doSmearings =true;
+  EnergyScaleCorrection eleCorr( corrFiles.Data(), EnergyScaleCorrection::ECALELF); 
 
-  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
+  // TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
 
-  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
-  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
+  // TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
+  // TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -143,7 +144,7 @@ void selectWe(const TString conf="we.conf", // input file
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-  const TString ntupDir = outputDir + TString("/ntuples");
+  const TString ntupDir = outputDir + TString("/ntuples_") + Form("%d",ITH) + TString("_") + Form("%d",NSEC);
   gSystem->mkdir(ntupDir,kTRUE);
   
   //
@@ -182,6 +183,9 @@ void selectWe(const TString conf="we.conf", // input file
   Float_t d0, dz;
   UInt_t  isConv, nexphits, typeBits;
   TLorentzVector *sc=0;
+  // Bool_t passHLT;
+
+  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
 
   vector<Double_t> lheweight(NPDF+NQCD,0);
   // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
@@ -323,6 +327,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");    // electron type of electron
     outTree->Branch("sc",        "TLorentzVector", &sc);         // supercluster 4-vector
     outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
+    // outTree->Branch("passHLT", &passHLT, "passHLT/b");
     
 
     
@@ -330,7 +335,7 @@ void selectWe(const TString conf="we.conf", // input file
     // loop through files
     //
     const UInt_t nfiles = samp->fnamev.size();
-    for(UInt_t ifile=0; ifile<nfiles; ifile++) {  
+    for(UInt_t ifile=0; ifile<nfiles; ifile++) {
       // Read input file and get the TTrees
       cout << "Processing " << samp->fnamev[ifile] << " [xsec = " << samp->xsecv[ifile] << " pb] ... "; cout.flush();      
       infile = TFile::Open(samp->fnamev[ifile]); 
@@ -345,13 +350,14 @@ void selectWe(const TString conf="we.conf", // input file
       
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);
+      Bool_t hasJet = eventTree->GetBranchStatus("AK4");
       eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
       eventTree->SetBranchAddress("PV",   &vertexArr);       TBranch *vertexBr = eventTree->GetBranch("PV");
       eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
-      eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
+      if(hasJet)eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
       
-          // UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.01);
+          
       
       Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
@@ -367,46 +373,62 @@ void selectWe(const TString conf="we.conf", // input file
       Double_t puWeight=0;
       Double_t puWeightUp=0;
       Double_t puWeightDown=0;
-      if (hasGen) {
-        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
-            infoBr->GetEntry(ientry);
-            genBr->GetEntry(ientry);
-            puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-            puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-            puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-            totalWeight+=gen->weight*puWeight; // mine has pu and gen separated
-            totalWeightUp+=gen->weight*puWeightUp;
-            totalWeightDown+=gen->weight*puWeightDown;
-        }
-      }
-      else if (not isData){
-        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
-            puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-            puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-            puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-            totalWeight+= 1.0*puWeight;
-            totalWeightUp+= 1.0*puWeightUp;
-            totalWeightDown+= 1.0*puWeightDown;
-        }
-      }
+      // Replace these loops with a histogram
+
+      // if (hasGen) {
+      //   for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //     if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+      //   // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
+      //       infoBr->GetEntry(ientry);
+      //       genBr->GetEntry(ientry);
+      //       puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+      //       puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+      //       puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+      //       totalWeight+=gen->weight*puWeight;
+      //       cout << gen->weight << endl;
+      //       totalWeightUp+=gen->weight*puWeightUp;
+      //       totalWeightDown+=gen->weight*puWeightDown;
+      //   }
+      // }
+      // else if (not isData){
+      //   for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //     if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+      //   // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
+      //       puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+      //       puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+      //       puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+      //       totalWeight+= 1.0*puWeight;
+      //       totalWeightUp+= 1.0*puWeightUp;
+      //       totalWeightDown+= 1.0*puWeightDown;
+      //   }
+      // }
+
+      //////////////////////////////////////////////////////////
+      // Real selection loop
       //
       // loop over events
       //
+      cout << "n sections " << NSEC << endl;
+      double frac = 1.0/NSEC;
+      cout << "n sections " << NSEC << "  frac " << frac << endl;
+      UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
+      UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
+      cout << "start, end " << IBEGIN << " " << IEND << endl;
+      UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.001);
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
       // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
         infoBr->GetEntry(ientry);
-        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        Double_t weight=1;
-	    Double_t weightUp=1;
-	    Double_t weightDown=1;      
-        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-	    if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
-	    if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+        Double_t weight=xsec;
+	    Double_t weightUp=xsec;
+	    Double_t weightDown=xsec;      
+      // passHLT = true;
+        //if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+	    //if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
+	    //if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
+      weight = xsec;
         if(hasGen) {
           genPartArr->Clear();
           genBr->GetEntry(ientry);
@@ -414,9 +436,12 @@ void selectWe(const TString conf="we.conf", // input file
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          hGenWeights->Fill(0.0,gen->weight);
           weight*=gen->weight*puWeight;
           weightUp*=gen->weight*puWeightUp;
           weightDown*=gen->weight*puWeightDown;
+        } else {
+          hGenWeights->Fill(0.0,1.0);
         }
         // veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
@@ -437,10 +462,10 @@ void selectWe(const TString conf="we.conf", // input file
     electronArr->Clear();
     electronBr->GetEntry(ientry);
     scArr->Clear();
-	scBr->GetEntry(ientry);
+	 scBr->GetEntry(ientry);
   
         jetArr->Clear();
-        jetBr->GetEntry(ientry);
+        if(hasJet)jetBr->GetEntry(ientry);
 
 	Int_t nLooseLep=0;
     const baconhep::TElectron *goodEle=0;
@@ -474,7 +499,8 @@ void selectWe(const TString conf="we.conf", // input file
 
               eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
               eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
-              
+              // eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
+              // eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
               
               if(sigma==0){
                 (vEle) *= eleScale;
@@ -528,33 +554,25 @@ void selectWe(const TString conf="we.conf", // input file
 	  nsel+=weight;
     nselvar+=weight*weight;
     
-    // Loop through the photons to determine the Prefiring scale factor
-    // prefireWeight=1;prefireUp=1; prefireDown=1;
-    // for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-      // const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-      // prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-      // prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-      // prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-      // // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-    // }
-      
         // Loop through Jets
       // set up the met variable, default is PF met
       metDJee      = info->pfMETC;
       metPhiDJee   = info->pfMETCphi;
       sumEtDJee = 0;
       // if(category==1||category==2||category==3) cout << "Selected! " << endl;
-      TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
-      for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-        const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-        if(fabs(jet->eta) < 2.65 || fabs(jet->eta) > 3.139) continue;
-        if(jet->pt > 50) continue;
-        TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
-        vMetEE += vJet;
-        // if(category==1||category==2||category==3)cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
-      } 
-      metDJee      = vMetEE.Mod();
-      metPhiDJee   = vMetEE.Phi();
+      if(hasJet){
+        TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
+        for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+          const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+          if(fabs(jet->eta) < 2.65 || fabs(jet->eta) > 3.139) continue;
+          if(jet->pt > 50) continue;
+          TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
+          vMetEE += vJet;
+          // if(category==1||category==2||category==3)cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
+        } 
+        metDJee      = vMetEE.Mod();
+        metPhiDJee   = vMetEE.Phi();
+      }
       // sumEtDJee = 0;
         
       if(!isData){
@@ -570,11 +588,13 @@ void selectWe(const TString conf="we.conf", // input file
           
         
           prefireJet=1; prefireJetUp=1; prefireJetDown=1;
-          for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-            const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
-            if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-            prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
-          } 
+          if(hasJet){
+            for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+              const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
+              if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
+              prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
+            } 
+          }
           prefireJetUp = max(prefireJet+(1-prefireJet)*0.20,1.0);
           prefireJetDown = max(prefireJet-(1-prefireJet)*0.20,1.0);
           // loop through photons and jets
@@ -585,24 +605,25 @@ void selectWe(const TString conf="we.conf", // input file
           prefireWeight=prefireJet*prefirePhoton;
           prefireUp=prefireJetUp*prefirePhotUp;
           prefireDown=prefireJetDown*prefirePhotDown;
-          for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-            const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-            if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-            // now loop through jets:
-            double rmP = 1;
+          if(hasJet){
+            for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
+              const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
+              if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
+              // now loop through jets:
+              double rmP = 1;
 
-            for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-              const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-              if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-              // check if the jet and photon overlap: 
-              if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
-              // photon & jet overlap, now get min to divide out 
-                rmP = min(TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 ), TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.));
+              for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
+                const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
+                if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
+                // check if the jet and photon overlap: 
+                if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
+                // photon & jet overlap, now get min to divide out 
+                  rmP = min(TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 ), TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.));
+              }
+              // divide out the lesser of the two probabilities
+              if(rmP<1.0)prefireWeight = prefireWeight / (1 - rmP);
             }
-            // divide out the lesser of the two probabilities
-            if(rmP<1.0)prefireWeight = prefireWeight / (1 - rmP);
           }
-          
           prefireUp = min(prefireWeight+(1-prefireWeight)*0.20,1.0);
           prefireDown = min(prefireWeight-(1-prefireWeight)*0.20,1.0);
         }
@@ -794,7 +815,7 @@ void selectWe(const TString conf="we.conf", // input file
 	  nexphits  = goodEle->nMissingHits;
 	  typeBits  = goodEle->typeBits;
 
-      outTree->Fill();
+    outTree->Fill();
 	  delete genV; 
 	  delete genLep;
 	  genV=0, genLep=0, lep=0, sc=0;
@@ -807,6 +828,8 @@ void selectWe(const TString conf="we.conf", // input file
       if(isam!=0) cout << " per 1/pb";
       cout << endl;
     }
+    outFile->cd();
+    hGenWeights->Write();
     outFile->Write();
     outFile->Close();
   }

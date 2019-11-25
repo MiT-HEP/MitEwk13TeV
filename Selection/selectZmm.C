@@ -675,19 +675,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         /******** We have a Z candidate! HURRAY! ********/
         nsel+=weight;
         nselvar+=weight*weight;
-        
-        // // Loop through the photons to determine the Prefiring scale factor
-        // prefireWeight=1;prefireUp=1; prefireDown=1;
-        // for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-          // const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-          // prefireWeight *= (1.-prefirePhotonCorr.getCorr(photon->eta, photon->pt));
-          // prefireUp     *= TMath::Max((1.-(1.2*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-          // prefireDown   *= TMath::Max((1.-(0.8*prefirePhotonCorr.getCorr(photon->eta, photon->pt))),0.0);
-          // // std::cout << "photon eta " << photon->eta << "  photon pT " << photon->pt << "  prefire weight " << prefireWeight << std::endl;
-        // } 
-          
-        // Perform matching of dileptons to GEN leptons from Z decay
-
         // Int_t glepq1=-99;
         // Int_t glepq2=-99;
         TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
@@ -821,6 +808,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         dilep    = &vDilep;
         sta1        = &vTagSta;
         sta2        = &vProbeSta;
+        
+        // maybe someone should try using something called a function
         
         TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
         TVector2 vU = -1.0*(vMet+vZPt);
