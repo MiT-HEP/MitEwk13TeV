@@ -167,7 +167,7 @@ void fitZee(const TString  inputDir,    // input directory
   TH2D *hCompareElePtEcalE = new TH2D("hCompare","",200,0,100,200,0,100);
    
   enum{mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown};
-  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effstatUp","effstatDown","lepsfUp","lepsfDown","pfireUp","pfireDown"};
+  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effstatUp","effstatDown","lepsfUp","lepsfDown","prefireUp","prefireDown"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
@@ -508,6 +508,7 @@ void fitZee(const TString  inputDir,    // input directory
         
         hZeeUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
         hZeeUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
+
         
         hZee->Fill(mass,weight*corr); 
         hZeeUp->Fill(massU,weight*corr); 
@@ -559,6 +560,7 @@ void fitZee(const TString  inputDir,    // input directory
         hWxUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hWxUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
+
         hWxUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
         hWxUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
       
@@ -587,6 +589,7 @@ void fitZee(const TString  inputDir,    // input directory
         
         hDibUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
         hDibUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
+
         // cout << "blah " << endl;
     }
       if(typev[ifile]==eEWK || typev[ifile]==eWx || typev[ifile]==eZxx || typev[ifile]==eDib)  {
@@ -614,10 +617,11 @@ void fitZee(const TString  inputDir,    // input directory
         hTtbUnc[lepsfUp]->Fill((l1U+l2U).M(),weight*corr);
         hTtbUnc[lepsfDown]->Fill((l1D+l2D).M(),weight*corr);
         
+
         hTtbUnc[pfireUp]->Fill(mass,scale1fb*lumi*corr*prefireUp/totalNorm);
         hTtbUnc[pfireDown]->Fill(mass,scale1fb*lumi*corr*prefireDown/totalNorm);
-      
-        
+
+
         
 	      hTtb->Fill(mass,weight*corr); 
 	      hMC->Fill(mass,weight*corr);
