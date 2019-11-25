@@ -137,7 +137,7 @@ void fitZmm(const TString  inputDir,    // input directory
   CPlot::sOutDir = outputDir;  
   
   enum{mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown};
-  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effsUp","effsDown","lepsfUp","lepsfDown","pfireUp","pfireDown"};
+  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effsUp","effsDown","lepsfUp","lepsfDown","prefireUp","prefireDown"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
@@ -493,8 +493,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hZmmUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hZmmUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hZmmUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZmmUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZmmUnc[pfireUp]->Fill(mass,prefireUp*scale1fb*lumi*corr);
+        hZmmUnc[pfireDown]->Fill(mass,prefireDown*scale1fb*lumi*corr);
         
 	      hZmm->Fill(mass,weight*corr); 
 	      hMC->Fill(mass,weight*corr);
@@ -524,8 +524,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hZxxUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hZxxUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
     } if(typev[ifile]==eWx){
         // cout << "wx? " << nWx << endl;
         nWx+=weight*corr;
@@ -547,8 +547,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hWxUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hWxUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
       
     } if(typev[ifile]==eDib){
         // cout << "blah " << endl;
@@ -573,8 +573,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hDibUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hDibUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
         // cout << "blah " << endl;
     } if(typev[ifile]==eEWK || typev[ifile]==eDib || typev[ifile]==eWx|| typev[ifile]==eZxx) {
 	      yield_ewk += weight*corr;
@@ -622,8 +622,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hTtbUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hTtbUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb);
+        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb);
       
         
 
