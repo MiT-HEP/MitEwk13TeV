@@ -193,7 +193,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TLorentzVector *sc1=0, *sc2=0;
   Float_t lep1error, lep2error, sc1error, sc2error; 
   Float_t random;
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
   
   vector<Double_t> lheweight(NPDF+NQCD,0);
   // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
@@ -362,6 +361,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("random",   &random,   "random/F");    // scale and smear correction uncertainty for probe supercluster
     outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
 
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -602,8 +602,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           // std::cout << "Tag PT 1" << std::endl;
           if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
           // std::cout << "Tag eta 1" << std::endl;
-          // if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
-          if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          // if(!passEleMediumID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          if(!passEleMediumID(tag, vTag, info->rhoIso))     continue;  // lepton selection
           
 
           double El_Pt=0;
@@ -811,12 +811,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           probeSCErrorfinal = probeError;
         }
         if(El_Pt < PT_CUT) continue;
-        if(passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-        if(passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)) continue;
+        if(passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+        if(passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) continue;
         if(passID&&!eleProbe) continue;
-        if(!passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+        if(!passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
         if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-        if(!passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+        if(!passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
         probePt=El_Pt;
         vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
@@ -853,7 +853,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
         // determine event category
         if(eleProbe) {
-          if(passEleTightID(eleProbe,vEleProbe,info->rhoIso)) {
+          if(passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) {
             if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
               icat=eEleEle2HLT;
             } else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {

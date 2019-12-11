@@ -185,7 +185,6 @@ void selectWe(const TString conf="we.conf", // input file
   TLorentzVector *sc=0;
   // Bool_t passHLT;
 
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
 
   vector<Double_t> lheweight(NPDF+NQCD,0);
   // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
@@ -330,6 +329,7 @@ void selectWe(const TString conf="we.conf", // input file
     // outTree->Branch("passHLT", &passHLT, "passHLT/b");
     
 
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     
     //
     // loop through files
@@ -473,7 +473,7 @@ void selectWe(const TString conf="we.conf", // input file
     TLorentzVector vGoodEle(0,0,0,0);
     Bool_t passSel=kFALSE;
 
-              double eleRamdom = gRandom->Gaus(0,1);
+        double eleRamdom = gRandom->Gaus(0,1);
 
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
@@ -540,7 +540,7 @@ void selectWe(const TString conf="we.conf", // input file
           }
           if(vEle.Pt()           < PT_CUT)     continue;  // lepton pT cut
           if(fabs(vEle.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          if(!passEleTightID(ele, vEle, info->rhoIso))     continue;  // lepton selection
+          if(!passEleMediumID(ele, vEle, info->rhoIso))     continue;  // lepton selection
           if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, isData, is13TeV)) continue;
           passSel=kTRUE;
           goodEle = ele;  
