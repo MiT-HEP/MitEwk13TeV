@@ -76,15 +76,15 @@ void fitZee(const TString  inputDir,    // input directory
   // fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
   // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
   
-  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
-  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
-  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
-  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
-  fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
-  fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
-  fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
-  fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
   // fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
  
   //
@@ -106,8 +106,8 @@ void fitZee(const TString  inputDir,    // input directory
   
   // efficiency files
 
-  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
-  // TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zee/";
+  // TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
+  TString baseDir = "/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV_v5_EleMedID2017/results/Zee/";
   AppEffSF effs(baseDir);
   // effs.loadHLT("EleHLTEff_aMCxPythia","Combined","Combined");
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
@@ -734,8 +734,9 @@ void fitZee(const TString  inputDir,    // input directory
     double dataup = (hData->GetBinContent(i)-hDataUp->GetBinContent(i))/hData->GetBinContent(i);
     double datadown = (hData->GetBinContent(i)-hDataDown->GetBinContent(i))/hData->GetBinContent(i);
     double zeeup = (hZee->GetBinContent(i)-hZeeUp->GetBinContent(i))/hData->GetBinContent(i);
-    double zeedown = (hZee->GetBinContent(i)-hZeeDown->GetBinContent(i))/hData->GetBinContent(i);
-		massUnc->SetBinError(i,sqrt(dataup*dataup+datadown*datadown+zeeup*zeeup+zeedown*zeedown));
+    // double zeedown = (hZee->GetBinContent(i)-hZeeDown->GetBinContent(i))/hData->GetBinContent(i);
+		// massUnc->SetBinError(i,sqrt(dataup*dataup+datadown*datadown+zeeup*zeeup+zeedown*zeedown));
+		massUnc->SetBinError(i,sqrt(dataup*dataup+zeeup*zeeup));
     cout << "Bin Error is " << massUnc->GetBinError(i) << endl;
 	}
   
@@ -812,8 +813,8 @@ void fitZee(const TString  inputDir,    // input directory
   plotZee.Draw(c,kFALSE,format,1);
 
   CPlot plotZeeDiff("zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  // plotZeeDiff.AddHist1D(massUnc,"E3",kGray,1,1);
-  // plotZeeDiff.AddHist1D(massUnc2,"E3",kBlack,1,1);
+  plotZeeDiff.AddHist1D(massUnc,"E3",kGray,1,1);
+  plotZeeDiff.AddHist1D(massUnc2,"E3",kBlack,1,1);
   plotZeeDiff.AddHist1D(hZeeDiff,"EX0",ratioColor);
   plotZeeDiff.SetYRange(-0.2,0.2);
   plotZeeDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);
