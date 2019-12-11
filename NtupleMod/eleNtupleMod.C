@@ -58,7 +58,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   bool doInclusive = true; // This should be the standard recoil correction: 3-gaussian inclusive eta
   bool doKeys = true; // RooKeysPDF instead of 3-Gaus
   bool doEta = true; // eta-binned 3-Gaus fit
-  bool doStat = false; //  Statistical Uncertainty
+  bool doStat = true; //  Statistical Uncertainty
   int nNV = 10;
   // int nNV = 2; //TEST
   // which MET type we use
