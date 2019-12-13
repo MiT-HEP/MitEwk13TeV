@@ -76,16 +76,16 @@ void fitZee(const TString  inputDir,    // input directory
   // fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
   // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
   
-  // fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
-  // fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
-  // fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
+  fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
@@ -106,14 +106,13 @@ void fitZee(const TString  inputDir,    // input directory
   
   // efficiency files
 
-  // TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
-  TString baseDir = "/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV_v5_EleMedID2017/results/Zee/";
+  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
+  // TString baseDir = "/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV_v5_EleMedID2017/results/Zee/";
   AppEffSF effs(baseDir);
   // effs.loadHLT("EleHLTEff_aMCxPythia","Combined","Combined");
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
   effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
   // effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
-  // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/";
   string SysFileGSFSel = sysDir + "SysUnc_EleGSFSelEff.root";
   effs.loadUncSel(SysFileGSFSel);

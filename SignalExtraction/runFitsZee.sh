@@ -22,7 +22,7 @@ S5="5TeV"
 # # root -b -l -q fitZe.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_MET_MedID_newEff_${S13}\",\"${S13}\",${LUMI13},0\) 
 # root -b -l-q  plotZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_MET_MedID_newEff_${S13}\",${LUMI}\,1\)
 # root -b -l-q  plotZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_NewTrigger\",\"${S13}\",${LUMI}\,1\)
-root -b -l-q  fitZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_MET_MedID_newEff_${S13}\",\"${S13}\",${LUMI13}\,1\)
+root -b -l-q  fitZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_newEff_${S13}_again_v3\",\"${S13}\",${LUMI13}\,1\)
 # root -b -l-q  testZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/PRELIM_Zee_5TeV_newHLT\",\"${S5}\",${LUMI5}\,1\)
 # root -b -l-q  fitZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_5TeV_wEffs13_tryAgain\",\"${S5}\",${LUMI5}\,1\)
 
