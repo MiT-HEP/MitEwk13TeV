@@ -193,7 +193,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TLorentzVector *sc1=0, *sc2=0;
   Float_t lep1error, lep2error, sc1error, sc2error; 
   Float_t random;
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
   
   vector<Double_t> lheweight(NPDF+NQCD,0);
   // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
@@ -362,6 +361,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("random",   &random,   "random/F");    // scale and smear correction uncertainty for probe supercluster
     outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
 
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -555,11 +555,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
               tagError = ec.scaleCorrUncert(info->runNum, eTregress, tagAbsEta, tag->r9,gainSeed,1);
               tagSCScale = ec.scaleCorr(info->runNum, tagSCEt, tagSCAbsEta, tag->r9);
               tagSCError = ec.scaleCorrUncert(info->runNum, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
-              
-              // tagScale = ec.scaleCorr(306936, eTregress, tagAbsEta, tag->r9);
-              // tagError = ec.scaleCorrUncert(306936, eTregress, tagAbsEta, tag->r9,gainSeed,1);
-              // tagSCScale = ec.scaleCorr(306936, tagSCEt, tagSCAbsEta, tag->r9);
-              // tagSCError = ec.scaleCorrUncert(306936, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
+              if(!is13TeV){
+                tagScale = ec.scaleCorr(306936, eTregress, tagAbsEta, tag->r9);
+                tagError = ec.scaleCorrUncert(306936, eTregress, tagAbsEta, tag->r9,gainSeed,1);
+                tagSCScale = ec.scaleCorr(306936, tagSCEt, tagSCAbsEta, tag->r9);
+                tagSCError = ec.scaleCorrUncert(306936, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
+              }
               
               (vTag)*=tagScale*(1+sigma*tagError);
               (vTagSC)*=tagSCScale*(1+sigma*tagSCError);
@@ -602,8 +603,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           // std::cout << "Tag PT 1" << std::endl;
           if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
           // std::cout << "Tag eta 1" << std::endl;
-          // if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
-          if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          // if(!passEleMediumID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          if(!passEleMediumID(tag, vTag, info->rhoIso))     continue;  // lepton selection
           
 
           double El_Pt=0;
@@ -691,9 +692,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
               probeScale = ec.scaleCorr(info->runNum, probeEt, probeAbsEta, scProbe->r9);
               probeError = ec.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
               
-              // probeScale = ec.scaleCorr(306936, probeEt, probeAbsEta, scProbe->r9);
-              // probeError = ec.scaleCorrUncert(306936, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
-
+              if(!is13TeV){
+                probeScale = ec.scaleCorr(306936, probeEt, probeAbsEta, scProbe->r9);
+                probeError = ec.scaleCorrUncert(306936, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
+              }
               (vProbe) *= probeScale * (1 + sigma*probeError);
 
             } else {//MC
@@ -766,11 +768,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
                 eleProbeSCScale = ec.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
                 eleProbeSCError = ec.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
                 
-                // eleProbeScale = ec.scaleCorr(306936, eTregress, eleProbeAbsEta, eleProbe->r9);
-                // eleProbeError = ec.scaleCorrUncert(306936, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
-                // eleProbeSCScale = ec.scaleCorr(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
-                // eleProbeSCError = ec.scaleCorrUncert(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
-
+                if(!is13TeV){
+                  eleProbeScale = ec.scaleCorr(306936, eTregress, eleProbeAbsEta, eleProbe->r9);
+                  eleProbeError = ec.scaleCorrUncert(306936, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
+                  eleProbeSCScale = ec.scaleCorr(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
+                  eleProbeSCError = ec.scaleCorrUncert(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
+                }
+                
                 (vEleProbe) *= eleProbeScale * (1 + sigma*eleProbeError);
                 (vEleProbeSC) *= eleProbeSCScale * (1 + sigma*eleProbeSCError);
   
@@ -811,12 +815,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           probeSCErrorfinal = probeError;
         }
         if(El_Pt < PT_CUT) continue;
-        if(passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-        if(passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)) continue;
+        if(passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+        if(passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) continue;
         if(passID&&!eleProbe) continue;
-        if(!passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+        if(!passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
         if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-        if(!passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+        if(!passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
         probePt=El_Pt;
         vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
@@ -853,7 +857,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
         // determine event category
         if(eleProbe) {
-          if(passEleTightID(eleProbe,vEleProbe,info->rhoIso)) {
+          if(passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) {
             if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
               icat=eEleEle2HLT;
             } else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {

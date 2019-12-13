@@ -53,7 +53,9 @@ void selectZmm(const TString conf="zmm.conf", // input file
                const TString outputDir=".",   // output directory
 	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections
 	       const Bool_t  doPU=0,
-           const Bool_t is13TeV=1
+         const Bool_t is13TeV=1,
+         const Int_t NSEC = 1,
+         const Int_t ITH = 0
 ) {
   gBenchmark->Start("selectZmm");
 
@@ -117,7 +119,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-  const TString ntupDir = outputDir + TString("/ntuples");
+  // const TString ntupDir = outputDir + TString("/ntuples");
+  const TString ntupDir = outputDir + TString("/ntuples_") + Form("%d",ITH) + TString("_") + Form("%d",NSEC);
   gSystem->mkdir(ntupDir,kTRUE);
   
   //
@@ -310,6 +313,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("sta2",        "TLorentzVector", &sta2);         // probe standalone muon 4-vector
     outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -359,62 +363,75 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       Double_t puWeightUp=0;
       Double_t puWeightDown=0;
 
-      if (hasGen) {
+      // if (hasGen) {
         
-        // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
-        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-          infoBr->GetEntry(ientry);
-          genBr->GetEntry(ientry);
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-          totalWeight+=gen->weight*puWeight;
-          totalWeightUp+=gen->weight*puWeightUp;
-          totalWeightDown+=gen->weight*puWeightDown;
+        // // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
+        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          // if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+          // infoBr->GetEntry(ientry);
+          // genBr->GetEntry(ientry);
+          // puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          // puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          // puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          // totalWeight+=gen->weight*puWeight;
+          // totalWeightUp+=gen->weight*puWeightUp;
+          // totalWeightDown+=gen->weight*puWeightDown;
 
-        }
-      }
-      else if (not isData){
+        // }
+      // }
+      // else if (not isData){
         
-        // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
-        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-          totalWeight+= 1.0*puWeight;
-          totalWeightUp+= 1.0*puWeightUp;
-          totalWeightDown+= 1.0*puWeightDown;
-        }
-      }
+        // // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
+        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+          // if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+          // puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+          // puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+          // puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          // totalWeight+= 1.0*puWeight;
+          // totalWeightUp+= 1.0*puWeightUp;
+          // totalWeightDown+= 1.0*puWeightDown;
+        // }
+      // }
    
       //
       // loop over events
       //
+      cout << "n sections " << NSEC << endl;
+      double frac = 1.0/NSEC;
+      cout << "n sections " << NSEC << "  frac " << frac << endl;
+      UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
+      UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
+      cout << "start, end " << IBEGIN << " " << IEND << endl;
+      UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.001);
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-	// for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
+      // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
         infoBr->GetEntry(ientry);
 
-        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
 
-        Double_t weight=1;
-        Double_t weightUp=1;
-        Double_t weightDown=1;
-          if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-        if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
-        if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
+        // Double_t weight=1;
+        // Double_t weightUp=1;
+        // Double_t weightDown=1;
+        // if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+        // if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
+        // if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
+        Double_t weight = xsec;
+        Double_t weightUp = xsec;
+        Double_t weightDown = xsec;
         if(hasGen) {
           genPartArr->Clear();
           genBr->GetEntry(ientry);
-                genPartBr->GetEntry(ientry);
+          genPartBr->GetEntry(ientry);
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          hGenWeights->Fill(0.0,gen->weight);
           weight*=gen->weight*puWeight;
           weightUp*=gen->weight*puWeightUp;
           weightDown*=gen->weight*puWeightDown;
+        } else { // i guess should fix this if it needs PU weighting
+          hGenWeights->Fill(0.0,1.0);
         }
           
 
@@ -850,6 +867,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       if(!isData) cout << " per 1/fb";
       cout << endl;
     }
+    outFile->cd();
+    hGenWeights->Write();
     outFile->Write();
     outFile->Close(); 
   }

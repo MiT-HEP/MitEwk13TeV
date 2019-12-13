@@ -182,7 +182,6 @@ void selectAntiWe(const TString conf="we.conf", // input file
   for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
     // Bool_t passHLT;
 
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
 
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -318,6 +317,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
     outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     // outTree->Branch("passHLT", &passHLT, "passHLT/b");
     
+  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -470,10 +470,10 @@ void selectAntiWe(const TString conf="we.conf", // input file
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              // eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
-              // eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
-              eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
+              eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
+              eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
+              // eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
+              // eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
               
               if(sigma==0){
                 (vEle) *= eleScale;
@@ -522,7 +522,7 @@ void selectAntiWe(const TString conf="we.conf", // input file
           
           if(vEle.Pt()           < PT_CUT)     continue;  // lepton pT cut
           if(fabs(vEle.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          if(!passAntiEleTightID(ele, vEle, info->rhoIso))     continue;  // lepton selection
+          if(!passAntiEleMediumID(ele, vEle, info->rhoIso))     continue;  // lepton selection
           if(!isEleTriggerObj(triggerMenu, ele->hltMatchBits, kFALSE, isData, is13TeV)) continue;
           passSel=kTRUE;
           goodEle = ele;  

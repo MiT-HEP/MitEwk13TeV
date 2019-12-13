@@ -111,11 +111,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
  // -----------------------------------------------------------
  //   Point to the Efficiency SF
  // -----------------------------------------------------------
- 
-  string effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
+  TString effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
+  // string effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
   AppEffSF effs(effDir);
   effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
   effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   
   effs.loadUncSel(sysFileSIT);
@@ -125,7 +125,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
 
   Bool_t isData = (fileName.CompareTo("data_select.root")==0);
   std::cout << fileName.CompareTo("data_select.root",TString::kIgnoreCase) << std::endl;
-  Bool_t isRecoil = (fileName.CompareTo("wm_select.raw.root")==0||fileName.CompareTo("wm0_select.raw.root")==0||fileName.CompareTo("wm1_select.raw.root")==0||fileName.CompareTo("wm2_select.raw.root")==0||fileName.CompareTo("wx_select.raw.root")==0||fileName.CompareTo("zxx_select.raw.root")==0||fileName.CompareTo("wm_select.root")==0||fileName.CompareTo("wm0_select.root")==0||fileName.CompareTo("wm1_select.root")==0||fileName.CompareTo("wm2_select.root")==0||fileName.CompareTo("wx_select.root")==0||fileName.CompareTo("zxx_select.root")==0);
+  Bool_t isRecoil = (fileName.CompareTo("wm_select.raw.root")==0||fileName.CompareTo("wm0_select.raw.root")==0||fileName.CompareTo("wm1_select.raw.root")==0||fileName.CompareTo("wm2_select.raw.root")==0||fileName.CompareTo("wx_select.raw.root")==0||fileName.CompareTo("wx0_select.raw.root")==0||fileName.CompareTo("wx1_select.raw.root")==0||fileName.CompareTo("wx2_select.raw.root")==0||fileName.CompareTo("zxx_select.raw.root")==0||fileName.CompareTo("wm_select.root")==0||fileName.CompareTo("wm0_select.root")==0||fileName.CompareTo("wm1_select.root")==0||fileName.CompareTo("wm2_select.root")==0||fileName.CompareTo("wx_select.root")==0||fileName.CompareTo("wx0_select.root")==0||fileName.CompareTo("wx1_select.root")==0||fileName.CompareTo("wx2_select.root")==0||fileName.CompareTo("zxx_select.root")==0);
+  if(inputDir.Contains("Anti") && isRecoil) {doInclusive = true; doKeys = false; doEta = false; doStat = false;}
   std::cout << "isData " << isData << std::endl;
   std::cout << "isRecoil " << isRecoil << std::endl;
 
@@ -135,7 +136,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
  //   Load the Recoil Correction Files
  // ------------------------------------------------------------------------------------------------------------------------------------------
   // ===================== Recoil correction files ============================
-  const TString directory("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil_Orig");
+  const TString directory("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil");
  
   // New Recoil Correctors for everything
   RecoilCorrector *rcMainWp    = new  RecoilCorrector("",""); RecoilCorrector *rcMainWm    = new  RecoilCorrector("","");
@@ -155,11 +156,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     // rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
+    // rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     
     // rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
+    // rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
   } 
   if (doStat){
@@ -225,7 +228,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   CPlot::sOutDir = outputDir;  
   
 
-  RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
+  RoccoR  rc("/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/RochesterCorr/RoccoR2017.txt");
   
   TFile *infile=0;
   TTree *intree=0;
@@ -235,6 +238,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   infile = new TFile((inputDir+TString("/")+fileName).Data());    assert(infile);
   intree = (TTree*)infile->Get("Events"); assert(intree);
     
+  TH1D* hGenWeights = (TH1D*)infile->Get("hGenWeights");
   // Variables to get some of the branches out of the tree
   Float_t genVPt, genVPhi, genVy;
   Float_t genLepPt, genLepPhi;
@@ -309,13 +313,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+   for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) { 
    // for(UInt_t ientry=0; ientry<0.33*((uint)intree->GetEntries()); ientry++) {
-   // for(UInt_t ientry=0.33*((uint)intree->GetEntries()); ientry<0.67*((uint)intree->GetEntries()); ientry++) {
+    //for(UInt_t ientry=0.33*((uint)intree->GetEntries()); ientry<0.67*((uint)intree->GetEntries()); ientry++) {
    // for(UInt_t ientry=0.67*((uint)intree->GetEntries()); ientry<intree->GetEntries(); ientry++) {
   // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.05; ientry+=iterator) {
     intree->GetEntry(ientry);
-    if(ientry%100000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
+    if(ientry%10000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
   // genMuonPt = 0;
 
@@ -330,12 +334,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     Double_t effdata, effmc;
     Double_t effdatah, effmch, effdatal, effmcl;
     Double_t effdataFSR, effdataMC, effdataBkg;
-    Double_t edTag, emTag;
+    Double_t edTag, emTag;    
     Double_t corr=1, corrdu=1, corrdd=1, corrmu=1, corrmd=1;
     Double_t corrFSR=1;
     Double_t corrMC=1;
     Double_t corrBkg=1;
     Double_t corrTag=1;
+
 
     if(fabs(lep->Eta()) > ETA_CUT) continue;
       
@@ -414,10 +419,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       evtWeight[mc] =corrMC*scale1fb*prefireWeight;
       evtWeight[bkg]=corrBkg*scale1fb*prefireWeight;
       evtWeight[tagpt]=corrTag*scale1fb*prefireWeight;
-      evtWeight[effstat]=(corr+sqrt(var))*scale1fb*prefireWeight;
+      evtWeight[effstat]=var*scale1fb*prefireWeight*scale1fb*prefireWeight;
       evtWeight[pfireu]=corr*scale1fb*prefireUp;
       evtWeight[pfired]=corr*scale1fb*prefireDown;
 
+      // if(lep->Pt()>25)cout << var << " " << sqrt(var) << " " <<  mu1.Pt() << " " << fabs(mu1.Eta()) << endl;
       // cout << "test " << evtWeight[main] << " " << evtWeight[fsr] << " " << evtWeight[mc] << " " << evtWeight[bkg] << " " << evtWeight[tagpt] << " " << evtWeight[effstat] <<" " << evtWeight[pfireu] <<" " << evtWeight[pfired] << endl;
 
       double rand = gRandom->Uniform(1);
@@ -462,20 +468,28 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       // Double_t corrMet
       metVars[no]=corrMet; metVarsPhi[no]=corrMetPhi;
       // std::cout << "blah " << std::endl;
-        
+
+      metVars[keys]=corrMet; metVarsPhi[keys]=corrMetPhi;
+      metVars[eta]=corrMet; metVarsPhi[eta]=corrMetPhi;
+      metVars[cent]=corrMet; metVarsPhi[cent]=corrMetPhi;
+      metVars[ru]=corrMetU; metVarsPhi[ru]=corrMetPhiU;
+      metVars[rd]=corrMetD; metVarsPhi[rd]=corrMetPhiD;
+      for(int i = 0; i < nNV; i++){
+        int ofs=i+ns;
+        metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
+      }
+  
       if(isRecoil) {
         
         if(q>0) {
           if(doKeys) {
             // std::cout << "keys" << std::endl;
-            metVars[keys]=corrMet; metVarsPhi[keys]=corrMetPhi;
             rcKeysWp->CorrectInvCdf(metVars[keys],metVarsPhi[keys],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kTRUE,kFALSE);
           
             // std::cout << "keys done" << std::endl;
           }
           if(doEta) {
             // std::cout << "eta" << std::endl;
-            metVars[eta]=corrMet; metVarsPhi[eta]=corrMetPhi;
             if(fabs(genVy)<0.5)
               rcEta05Wp->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -486,11 +500,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
           }
           if(doInclusive){
             // std::cout << "inclusive" << std::endl;
-            metVars[cent]=corrMet; metVarsPhi[cent]=corrMetPhi;
             rcMainWp->CorrectInvCdf(metVars[cent],metVarsPhi[cent],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            metVars[ru]=corrMetU; metVarsPhi[ru]=corrMetPhiU;
             rcMainWp->CorrectInvCdf(metVars[ru],metVarsPhi[ru],genVPt,genVPhi,mu1u.Pt(),mu1u.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            metVars[rd]=corrMetD; metVarsPhi[rd]=corrMetPhiD;
             rcMainWp->CorrectInvCdf(metVars[rd],metVarsPhi[rd],genVPt,genVPhi,mu1d.Pt(),mu1d.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
           
             // std::cout << "inclusive done" << std::endl;
@@ -499,7 +510,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
             for(int i = 0; i < nNV; i++){
               int ofs=i+ns;
               // std::cout << "filling stat " << i << std::endl;
-              metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
               rcStatW[i]->CorrectInvCdf(metVars[ofs],metVarsPhi[ofs],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
             }
             // std::cout << "stat done " << std::endl; 
@@ -507,11 +517,11 @@ void muonNtupleMod(const TString  outputDir,   // output directory
 
         } else {
           if(doKeys) {
-            metVars[keys]=corrMet; metVarsPhi[keys]=corrMetPhi;
+            // metVars[keys]=corrMet; metVarsPhi[keys]=corrMetPhi;
             rcKeysWm->CorrectInvCdf(metVars[keys],metVarsPhi[keys],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kTRUE,kFALSE);
           }
           if(doEta) {
-            metVars[eta]=corrMet; metVarsPhi[eta]=corrMetPhi;
+            // metVars[eta]=corrMet; metVarsPhi[eta]=corrMetPhi;
             if(fabs(genVy)<0.5)
               rcEta05Wm->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -520,23 +530,23 @@ void muonNtupleMod(const TString  outputDir,   // output directory
               rcEta1Wm->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE); 
           }
           if(doInclusive){
-            metVars[cent]=corrMet; metVarsPhi[cent]=corrMetPhi;
+            // metVars[cent]=corrMet; metVarsPhi[cent]=corrMetPhi;
             rcMainWm->CorrectInvCdf(metVars[cent],metVarsPhi[cent],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            metVars[ru]=corrMetU; metVarsPhi[ru]=corrMetPhiU;
+            // metVars[ru]=corrMetU; metVarsPhi[ru]=corrMetPhiU;
             rcMainWm->CorrectInvCdf(metVars[ru],metVarsPhi[ru],genVPt,genVPhi,mu1u.Pt(),mu1u.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            metVars[rd]=corrMetD; metVarsPhi[rd]=corrMetPhiD;
+            // metVars[rd]=corrMetD; metVarsPhi[rd]=corrMetPhiD;
             rcMainWm->CorrectInvCdf(metVars[rd],metVarsPhi[rd],genVPt,genVPhi,mu1d.Pt(),mu1d.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);            
           }
           if(doStat){
             for(int i =0; i < nNV; i++){
               int ofs=i+ns;
-              metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
+              // metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
               rcStatW[i]->CorrectInvCdf(metVars[ofs],metVarsPhi[ofs],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
             }
           }
         }
-        mtCorr  = sqrt( 2.0 * (lep->Pt()) * (metVars[cent]) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metVarsPhi[cent]))) );
       }
+      mtCorr  = sqrt( 2.0 * (lep->Pt()) * (metVars[cent]) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metVarsPhi[cent]))) );
     }
     relIso = pfCombIso/lep_raw->Pt(); 
     effSFweight=corr;
@@ -557,6 +567,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   // std::cout << "clean up memory" << std::endl;
     
   outFile->cd();
+  // outFile->cd();
+  hGenWeights->Write();
   outFile->Write();
   std::cout << "wrote outfile" << std::endl;
   

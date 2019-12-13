@@ -149,7 +149,6 @@ void selectWm(const TString conf="wm.conf", // input file
   UInt_t nPixHits, nTkLayers, nValidHits, nMatch, typeBits;
   // Bool_t passHLT;
 
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info  = new baconhep::TEventInfo();
@@ -289,6 +288,8 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("nValidHits", &nValidHits, "nValidHits/i");   // number of valid muon hits of muon 
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");     // number of valid muon hits of muon 
     // outTree->Branch("passHLT", &passHLT, "passHLT/b");
+    
+  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //

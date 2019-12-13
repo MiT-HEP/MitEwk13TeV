@@ -65,6 +65,7 @@ RooAbsPdf *PdfDiagonalizer::diagonalize(RooAbsPdf &pdf)
 
 RooAbsPdf *PdfDiagonalizer::diagonalizeWithEigenVariations(RooAbsPdf &pdf, RooFitResult &result, int index_eig, int nSigma)
 {
+    // 
     RooMsgService::instance().setSilentMode(true);
     RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
     // Check that the fit status is reasonable and that the covariance matrix is OK
