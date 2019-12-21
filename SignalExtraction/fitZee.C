@@ -91,11 +91,11 @@ void fitZee(const TString  inputDir,    // input directory
   // Fit options
   //
   // const Int_t    NBINS     = 120;
-  const Int_t    NBINS     = 60;
+  const Int_t    NBINS    = 60;
   const Double_t MASS_LOW  = 60;
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
-  // const Double_t PT_CUT    = 40;
+  // const Double_t PT_CUT    = 30;
   // const Double_t ETA_CUT   = 1.444;
   const Double_t ETA_CUT   = 2.4;//4;
     
@@ -337,6 +337,9 @@ void fitZee(const TString  inputDir,    // input directory
       if(lep1->Pt()        < PT_CUT)    continue;
       if(lep2->Pt()       < PT_CUT)    continue;
       
+      // if(lep1->Pt()        > 30)    continue;
+      // if(lep2->Pt()        > 30)    continue;
+      
       hCompareElePtEcalE->Fill(lep1->Pt(),sc1->Pt());
       if(fabs(lep1->Eta())>=ECAL_GAP_LOW && fabs(lep1->Eta())<=ECAL_GAP_HIGH) continue;
       if(fabs(lep2->Eta())>=ECAL_GAP_LOW && fabs(lep2->Eta())<=ECAL_GAP_HIGH) continue;
@@ -365,6 +368,8 @@ void fitZee(const TString  inputDir,    // input directory
         Double_t lp2 = el2.Pt();
         Double_t lq1 = q1;
         Double_t lq2 = q2;
+        
+
         
         TLorentzVector l1, l2;
         if(lp1>lp2) {
@@ -397,11 +402,10 @@ void fitZee(const TString  inputDir,    // input directory
         phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
         
         if(mass        < MASS_LOW)  continue;
-        if(mass        > MASS_HIGH) continue;
-        if(l1.Pt()        < PT_CUT)    continue;
-        if(l2.Pt()        < PT_CUT)    continue;
-        // if(l1.Pt()        > 120)  continue;
-        // if(l2.Pt()        > 120)  continue;
+        if(mass        > MASS_HIGH) continue; 
+        // if(l1.Pt()        < PT_CUT)    continue;
+        // if(l2.Pt()        < PT_CUT)    continue;
+
     
         // hDataEG->Fill(dilepSC->M());
 
@@ -442,8 +446,8 @@ void fitZee(const TString  inputDir,    // input directory
         
         if(mll       < MASS_LOW)  continue;
         if(mll       > MASS_HIGH) continue;
-        if(lp1        < PT_CUT)    continue;
-        if(lp2        < PT_CUT)    continue;
+        // if(lp1        < PT_CUT)    continue;
+        // if(lp2        < PT_CUT)    continue;
       
         // if(genVMass>MASS_LOW && genVMass<MASS_HIGH) continue;      
       

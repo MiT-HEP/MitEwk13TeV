@@ -4,7 +4,9 @@
 
 # NTUPDIR_13=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_PP
 # NTUPDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_5TeV
-NTUPDIR_13=/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV_v5_EleMedID2017
+# NTUPDIR_13=/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV_v5_EleMedID2017
+NTUPDIR_13=/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/Production_13TeV
+# NTUPDIR_5=/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_5TeV_v5_EleMedID2017
 OUTDIR=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction
 
 # NTUPDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV
@@ -22,7 +24,10 @@ S5="5TeV"
 # # root -b -l -q fitZe.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_MET_MedID_newEff_${S13}\",\"${S13}\",${LUMI13},0\) 
 # root -b -l-q  plotZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_MET_MedID_newEff_${S13}\",${LUMI}\,1\)
 # root -b -l-q  plotZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_NewTrigger\",\"${S13}\",${LUMI}\,1\)
-root -b -l-q  fitZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_newEff_${S13}_again_v3\",\"${S13}\",${LUMI13}\,1\)
+# root -b -l -q  fitZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_newEff_${S5}_MedID_13TeVntup\",\"${S5}\",${LUMI13}\,1\)
+
+
+root -b -l -q  fitZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_newEff_${S13}_TEST\",\"${S13}\",${LUMI13}\,1\)
 # root -b -l-q  testZee.C+\(\"${NTUPDIR_13}/Zee/ntuples\",\"${OUTDIR}/PRELIM_Zee_5TeV_newHLT\",\"${S5}\",${LUMI5}\,1\)
 # root -b -l-q  fitZee.C+\(\"${NTUPDIR}/Zee/ntuples\",\"${OUTDIR}/TEST_Zee_5TeV_wEffs13_tryAgain\",\"${S5}\",${LUMI5}\,1\)
 
