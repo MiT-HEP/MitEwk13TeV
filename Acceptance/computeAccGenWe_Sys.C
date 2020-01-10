@@ -206,6 +206,10 @@ void computeAccGenWe_Sys(const TString conf,       // input file
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
+      
+      // -------------------------------------------------
+      // Clean this up
+      // -------------------------------------------------
       // nEvtsv_QCD[ifile][0]+=weight*gen->lheweight[1];
       // nEvtsv_QCD[ifile][1]+=weight*gen->lheweight[2];
       // nEvtsv_QCD[ifile][2]+=weight*gen->lheweight[3];

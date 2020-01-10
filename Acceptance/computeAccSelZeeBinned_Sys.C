@@ -76,10 +76,10 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   // const Double_t ETA_CUT    = 1.444; // to match muons
   const Double_t ELE_MASS   = 0.000511;
 
-  // const Double_t ETA_BARREL = 1.4442;
-  // const Double_t ETA_ENDCAP = 1.566;
-  const Double_t ETA_BARREL = 10.;
-  const Double_t ETA_ENDCAP = 10.;
+  const Double_t ETA_BARREL = 1.4442;
+  const Double_t ETA_ENDCAP = 1.566;
+  // const Double_t ETA_BARREL = 10.;
+  // const Double_t ETA_ENDCAP = 10.;
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
@@ -87,17 +87,26 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 
   const int muEtaNB = 12;
   const float muEtaRange[muEtaNB+1] = {-2.4,-2.0,-1.566,-1.4442,-1.0,-0.5,0,0.5,1.0,1.4442,1.566,2.0,2.4};
-  const int muPtNB = 4;
-  const float muPtRange[muPtNB+1] = {25,35,45,60,8000};
+  const int muPtNB = 3;
+  const float muPtRange[muPtNB+1] = {25,35,50,10000};
+  // const int muPtNB = 9;
+  // const float muPtRange[muPtNB+1] = {25,27,29,31,33,35,40,50,60,10000};
+  // const int muPtNB = 11;
+  // const float muPtRange[muPtNB+1] = {25,26,27,28,29,30,32,35,40,50,60,10000};
+   // const int muPtNB = 6;
+  // const float muPtRange[muPtNB+1] = {25,30,35,40,50,60,10000};
+  
+    const int NBptHLT = 12;
+  const float ptrangeHLT[NBptHLT+1] = {25, 26.5, 28, 29.5, 31, 32.5, 35, 40, 45, 50, 60, 80, 10000};
 
   AppEffSF effs(inputDir);
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
   // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   effs.loadUncSel(SysFileGSFSel);
 
   const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
-  EnergyScaleCorrection eleCorr( corrFiles.Data());// eleCorr.doScale= true; eleCorr.doSmearings =true;
+  EnergyScaleCorrection eleCorr( corrFiles.Data(), EnergyScaleCorrection::ECALELF);// eleCorr.doScale= true; eleCorr.doSmearings =true;
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
   TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
@@ -138,8 +147,8 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
   
   TH2D *h=0;
 
-  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",muEtaNB,muEtaRange,muPtNB,muPtRange);
-  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",muEtaNB,muEtaRange,muPtNB,muPtRange);
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",muEtaNB,muEtaRange,NBptHLT,ptrangeHLT);
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",muEtaNB,muEtaRange,NBptHLT,ptrangeHLT);
   
   TH2D *hGsfSelErr_pos = new TH2D("hGsfSelErr_pos", "",muEtaNB,muEtaRange,muPtNB,muPtRange);
   TH2D *hGsfSelErr_neg = new TH2D("hGsfSelErr_neg", "",muEtaNB,muEtaRange,muPtNB,muPtRange);
@@ -195,9 +204,9 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     // for(UInt_t ientry=0.05*eventTree->GetEntries(); ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry+=15) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
@@ -240,7 +249,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
         vEle1.SetPtEtaPhiM(ele1->pt, ele1->eta, ele1->phi, ELE_MASS);
 	
         // check ECAL gap
-        if(fabs(vEle1.Eta())>=ETA_BARREL && fabs(vEle1.Eta())<=ETA_ENDCAP) continue;
+        // if(fabs(vEle1.Eta())>=ETA_BARREL && fabs(vEle1.Eta())<=ETA_ENDCAP) continue;
 
         if(doScaleCorr && (ele1->r9 < 1.)){
           // set up variable and apply smear correction to ele1 
@@ -271,7 +280,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 	
         if(vEle1.Pt()           < PT_CUT)     continue;  // lepton pT cut
         if(fabs(vEle1.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-        if(!passEleTightID(ele1, vEle1, info->rhoIso))     continue;  // lepton selection
+        if(!passEleMediumID(ele1, vEle1, info->rhoIso))     continue;  // lepton selection
 
 
         for(Int_t i2=i1+1; i2<electronArr->GetEntriesFast(); i2++) {         
@@ -280,7 +289,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
           TLorentzVector vEle2(0,0,0,0);
           vEle2.SetPtEtaPhiM(ele2->pt, ele2->eta, ele2->phi, ELE_MASS); 
 
-          if(fabs(vEle2.Eta())>=ETA_BARREL && fabs(vEle2.Eta())<=ETA_ENDCAP) continue;
+          // if(fabs(vEle2.Eta())>=ETA_BARREL && fabs(vEle2.Eta())<=ETA_ENDCAP) continue;
 
           if(doScaleCorr && (ele2->r9 < 1.)){
             float ele2Smear = 0.;
@@ -309,11 +318,10 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
           if(ele1->q == ele2->q)	continue;
           if(vEle2.Pt()           < PT_CUT)     continue;  // lepton pT cut
           if(fabs(vEle2.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          if(!passEleTightID(ele2, vEle2, info->rhoIso))     continue;  // lepton selection
+          if(!passEleMediumID(ele2, vEle2, info->rhoIso))     continue;  // lepton selection
 
 
-          if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE, is13TeV)) continue;
-          if(!isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE, is13TeV)) continue;
+          if(!isEleTriggerObj(triggerMenu, ele1->hltMatchBits, kFALSE, kFALSE, is13TeV)&&!isEleTriggerObj(triggerMenu, ele2->hltMatchBits, kFALSE, kFALSE, is13TeV)) continue;
           
           TLorentzVector vDilep = vEle1 + vEle2;
           if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
@@ -445,6 +453,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
     cout << "    *** Acceptance ***" << endl;
     cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "          pct: " << 100*accErrCorrv[ifile] /accCorrv[ifile] << endl;
     cout << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
     cout << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
     cout << "          Bkg unc: " << accCorrvBkg[ifile] << " +/- " << accErrCorrvBkg[ifile] << endl;
@@ -452,7 +461,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
     cout << endl;
   }
   
-  char txtfname[100];
+  char txtfname[500];
   sprintf(txtfname,"%s/binned.txt",outputDir.Data());
   ofstream txtfile;
   txtfile.open(txtfname);

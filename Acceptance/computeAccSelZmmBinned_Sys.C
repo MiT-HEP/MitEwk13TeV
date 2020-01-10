@@ -67,17 +67,20 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 13;
   
-  const int NBptSta  = 2;
-  const float ptrangeSta[NBptSta +1]   = {25., 40., 8000.};
+  const int NBptSta  = 3;
+  const float ptrangeSta[NBptSta +1]   = {25., 35,  50., 10000.};
 
   const int NBeta = 12;
   const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
-  const int NBptSIT = 8;
-  const float ptrangeSIT[NBptSIT+1] = {25,30,35,40,45,50,60,80,8000};
+  const int NBptSIT = 3;
+  const float ptrangeSIT[NBptSIT+1] = {25,35,50,10000};
+  
+      const int NBptHLT = 12;
+  const float ptrangeHLT[NBptHLT+1] = {25, 26.5, 28, 29.5, 31, 32.5, 35, 40, 45, 50, 60, 80, 10000};
   
   AppEffSF effs(inputDir);
   effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
   effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   effs.loadUncSel(sysFileSIT);
   effs.loadUncSta(sysFileSta);
@@ -129,8 +132,8 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
   TH2D *hStaErr_pos = new TH2D("hStaErr_pos", "",NBeta,etarange,NBptSta,ptrangeSta);
   TH2D *hStaErr_neg = new TH2D("hStaErr_neg", "",NBeta,etarange,NBptSta,ptrangeSta);
 
-  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
-  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",NBeta,etarange,NBptHLT,ptrangeHLT);
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",NBeta,etarange,NBptHLT,ptrangeHLT);
 
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -190,8 +193,8 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     //
     // loop over events
     //      
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.01*eventTree->GetEntries()); ientry++) {
+    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
@@ -237,7 +240,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
 	
         TLorentzVector vMu1(0,0,0,0);
         vMu1.SetPtEtaPhiM(mu1->pt, mu1->eta, mu1->phi, MUON_MASS);
-        if(!isMuonTriggerObj(triggerMenu, mu1->hltMatchBits, kFALSE,is13TeV)) continue;
+       
 
         for(Int_t i2=i1+1; i2<muonArr->GetEntriesFast(); i2++) {
           const baconhep::TMuon *mu2 = (baconhep::TMuon*)((*muonArr)[i2]);
@@ -251,7 +254,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
           vMu2.SetPtEtaPhiM(mu2->pt, mu2->eta, mu2->phi, MUON_MASS);  
 
           // trigger match
-          if(!isMuonTriggerObj(triggerMenu, mu2->hltMatchBits, kFALSE,is13TeV)) continue;
+           if(!isMuonTriggerObj(triggerMenu, mu1->hltMatchBits, kFALSE,is13TeV) && !isMuonTriggerObj(triggerMenu, mu2->hltMatchBits, kFALSE,is13TeV)) continue;
           // mass window
           TLorentzVector vDilep = vMu1 + vMu2;
           if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
@@ -415,6 +418,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     cout << "    *** Acceptance ***" << endl;
     cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     cout << "     SF corrected: " << accCorrv[ifile]     << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "          pct: " << 100*accErrCorrv[ifile] /accCorrv[ifile] << endl;
     cout << "          FSR unc: " << accCorrvFSR[ifile]  << " / Sel: " << accCorrvFSR_I[ifile] << " / Sta: " << accCorrvFSR_S[ifile] << endl;
     cout << "           MC unc: " << accCorrvMC[ifile]   << " / Sel: " << accCorrvMC_I[ifile]  << " / Sta: " << accCorrvMC_S[ifile]  << endl;
     cout << "          Bkg unc: " << accCorrvBkg[ifile]  << " / Sel: " << accCorrvBkg_I[ifile] << " / Sta: " << accCorrvBkg_S[ifile] << endl;
@@ -424,7 +428,7 @@ void computeAccSelZmmBinned_Sys(const TString conf,      // input file
     cout << endl;
   }
   
-  char txtfname[100];
+  char txtfname[500];
   sprintf(txtfname,"%s/binned.txt",outputDir.Data());
   ofstream txtfile;
   txtfile.open(txtfname);

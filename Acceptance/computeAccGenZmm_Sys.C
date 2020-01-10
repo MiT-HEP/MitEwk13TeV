@@ -139,9 +139,9 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
     //
     // loop over events
     //      
-     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     // for(UInt_t ientry=0; ientry<100; ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.5*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=ientry<(uint)(0.1*eventTree->GetEntries()); ientry<(uint)(0.11*eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
@@ -187,22 +187,33 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
       Double_t weight=gen->weight;
       // Double_t weight=1;
       nEvtsv[ifile]+=weight;
-      nEvtsv_QCD[0]+=weight*gen->lheweight[0];
-      nEvtsv_QCD[1]+=weight*gen->lheweight[1];
-      nEvtsv_QCD[2]+=weight*gen->lheweight[2];
-      nEvtsv_QCD[3]+=weight*gen->lheweight[3];
-      nEvtsv_QCD[4]+=weight*gen->lheweight[5];
-      nEvtsv_QCD[5]+=weight*gen->lheweight[7];
-      // nEvtsv_QCD[0]+=weight*gen->lheweight[1];
-      // nEvtsv_QCD[1]+=weight*gen->lheweight[2];
-      // nEvtsv_QCD[2]+=weight*gen->lheweight[3];
-      // nEvtsv_QCD[3]+=weight*gen->lheweight[4];
-      // nEvtsv_QCD[4]+=weight*gen->lheweight[6];
-      // nEvtsv_QCD[5]+=weight*gen->lheweight[8];
+      
+      // -------------------------------------------------
+      // I'm not sure which indexing is correct for Z's
+      // -------------------------------------------------
+      // nEvtsv_QCD[0]+=weight*gen->lheweight[0];
+      // nEvtsv_QCD[1]+=weight*gen->lheweight[1];
+      // nEvtsv_QCD[2]+=weight*gen->lheweight[2];
+      // nEvtsv_QCD[3]+=weight*gen->lheweight[3];
+      // nEvtsv_QCD[4]+=weight*gen->lheweight[5];
+      // nEvtsv_QCD[5]+=weight*gen->lheweight[7];
+      
+      nEvtsv_QCD[0]+=weight*gen->lheweight[1];
+      nEvtsv_QCD[1]+=weight*gen->lheweight[2];
+      nEvtsv_QCD[2]+=weight*gen->lheweight[3];
+      nEvtsv_QCD[3]+=weight*gen->lheweight[4];
+      nEvtsv_QCD[4]+=weight*gen->lheweight[6];
+      nEvtsv_QCD[5]+=weight*gen->lheweight[8];
+      
+      // nEvtsv_QCD[0]+=weight*gen->lheweight[2];
+      // nEvtsv_QCD[1]+=weight*gen->lheweight[4];
+      // nEvtsv_QCD[2]+=weight*gen->lheweight[5];
+      // nEvtsv_QCD[3]+=weight*gen->lheweight[8];
+      // nEvtsv_QCD[4]+=weight*gen->lheweight[13];
+      // nEvtsv_QCD[5]+=weight*gen->lheweight[14];
       for(int npdf=0; npdf<NPDF; npdf++) {
-          nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
-          // nEvtsv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
-          // std::cout << "e " << nEvtsv[ifile] << "  " <<  nEvtsv_PDF[npdf] << "  " << (nEvtsv[ifile]/nEvtsv_PDF[npdf]-1)*100<< std::endl;
+          // nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+          nEvtsv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
       }
       
       
@@ -222,23 +233,33 @@ void computeAccGenZmm_Sys(const TString conf,             // input file
       if(isB1 && isB2)        nSelBBv[ifile]+=weight;
       else if(!isB1 && !isB2) nSelEEv[ifile]+=weight;
       else		      nSelBEv[ifile]+=weight;       
+      
+      // -------------------------------------------------
+      // I'm not sure which indexing is correct for Z's
+      // -------------------------------------------------
       // Get the values with the QCD and PDF weights:
-      // QCD first
-      nSelv_QCD[0]+=weight*gen->lheweight[0];
-      nSelv_QCD[1]+=weight*gen->lheweight[1];
-      nSelv_QCD[2]+=weight*gen->lheweight[2];
-      nSelv_QCD[3]+=weight*gen->lheweight[3];
-      nSelv_QCD[4]+=weight*gen->lheweight[5];
-      nSelv_QCD[5]+=weight*gen->lheweight[7];
-      // nSelv_QCD[0]+=weight*gen->lheweight[1];
-      // nSelv_QCD[1]+=weight*gen->lheweight[2];
-      // nSelv_QCD[2]+=weight*gen->lheweight[3];
-      // nSelv_QCD[3]+=weight*gen->lheweight[4];
-      // nSelv_QCD[4]+=weight*gen->lheweight[6];
-      // nSelv_QCD[5]+=weight*gen->lheweight[8];
+      // QCD weights for ???
+      // nSelv_QCD[0]+=weight*gen->lheweight[0];
+      // nSelv_QCD[1]+=weight*gen->lheweight[1];
+      // nSelv_QCD[2]+=weight*gen->lheweight[2];
+      // nSelv_QCD[3]+=weight*gen->lheweight[3];
+      // nSelv_QCD[4]+=weight*gen->lheweight[5];
+      // nSelv_QCD[5]+=weight*gen->lheweight[7];
+      
+      // print to test
+      // cout << gen->lheweight[0]  << " " << gen->lheweight[1]  << " " << gen->lheweight[2]  << " " << gen->lheweight[3]  << " " << gen->lheweight[4]  << " " << gen->lheweight[5]  << " " << gen->lheweight[6]  << " " << gen->lheweight[7]  << " " << gen->lheweight[8]  << " " << endl;
+      // not sure which is the correct numbering: 
+      nSelv_QCD[0]+=weight*gen->lheweight[1];
+      nSelv_QCD[1]+=weight*gen->lheweight[2];
+      nSelv_QCD[2]+=weight*gen->lheweight[3];
+      nSelv_QCD[3]+=weight*gen->lheweight[4];
+      nSelv_QCD[4]+=weight*gen->lheweight[6];
+      nSelv_QCD[5]+=weight*gen->lheweight[8];
+      
+      
       for(int npdf=0; npdf<NPDF; npdf++) {
-          nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
-          // nSelv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
+          // nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+          nSelv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
           // std::cout << "s " << nSelv[ifile] << "  " << nSelv_PDF[npdf] << "  " << (nSelv[ifile]/nSelv_PDF[npdf]-1)*100<<  std::endl;
       }
       
