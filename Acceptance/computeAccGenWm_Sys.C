@@ -152,9 +152,9 @@ void computeAccGenWm_Sys(const TString conf,             // input file
     //
     // loop over events
     //    
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
-      if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<(uint)(0.10*eventTree->GetEntries()); ientry++) {
+      if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
@@ -205,6 +205,9 @@ void computeAccGenWm_Sys(const TString conf,             // input file
 
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
+      // -------------------------------------------------
+      // Clean this up? 
+      // -------------------------------------------------
       // nEvtsv_QCD[ifile][0]+=weight*gen->lheweight[1];
       // nEvtsv_QCD[ifile][1]+=weight*gen->lheweight[2];
       // nEvtsv_QCD[ifile][2]+=weight*gen->lheweight[3];

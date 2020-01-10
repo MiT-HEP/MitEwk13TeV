@@ -150,10 +150,10 @@ void computeAccGenZee_Sys(const TString conf,             // input file
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
       TLorentzVector *vec=new TLorentzVector(0,0,0,0);
-	  TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-	  TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       Int_t lepq1=-99;
-	  Int_t lepq2=-99;
+      Int_t lepq2=-99;
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
       
@@ -175,30 +175,30 @@ void computeAccGenZee_Sys(const TString conf,             // input file
       }
 
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
-      // std::cout << "0th " << gen->lheweight[0];
-      // std::cout << "  1st " << gen->lheweight[1];
-      // std::cout << "  2nd " << gen->lheweight[2];
-      // std::cout << "  3rd " << gen->lheweight[3];
-      // std::cout << "  4th " << gen->lheweight[4];
-      // std::cout << "  5th " << gen->lheweight[5];
-      // std::cout << "  6th " << gen->lheweight[6];
-      // std::cout << "  7th " << gen->lheweight[7];
-      // std::cout << "  8th " << gen->lheweight[8];
-      // std::cout << "  9th " << gen->lheweight[9];
-      // std::cout << "  10th " << gen->lheweight[10];
-      // std::cout << "  11th " << gen->lheweight[11];
-      // std::cout << "  12h " << gen->lheweight[12];
-      // std::cout << "  13th " << gen->lheweight[13];
-      // std::cout << "  14th " << gen->lheweight[14] << std::endl;
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight; //std::cout << weight << std::endl;
-      nEvtsv_QCD[0]+=weight*gen->lheweight[0];
-      nEvtsv_QCD[1]+=weight*gen->lheweight[1];
-      nEvtsv_QCD[2]+=weight*gen->lheweight[2];
-      nEvtsv_QCD[3]+=weight*gen->lheweight[3];
-      nEvtsv_QCD[4]+=weight*gen->lheweight[5];
-      nEvtsv_QCD[5]+=weight*gen->lheweight[7];
-      for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+      
+      // -------------------------------------------------
+      // I'm not sure which indexing is correct for Z's 
+      // -------------------------------------------------
+      
+      // standard 13 tev ??
+      // nEvtsv_QCD[0]+=weight*gen->lheweight[0];
+      // nEvtsv_QCD[1]+=weight*gen->lheweight[1];
+      // nEvtsv_QCD[2]+=weight*gen->lheweight[2];
+      // nEvtsv_QCD[3]+=weight*gen->lheweight[3];
+      // nEvtsv_QCD[4]+=weight*gen->lheweight[5];
+      // nEvtsv_QCD[5]+=weight*gen->lheweight[7];
+      // for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+            
+      // minlo
+      nEvtsv_QCD[0]+=weight*gen->lheweight[1];
+      nEvtsv_QCD[1]+=weight*gen->lheweight[2];
+      nEvtsv_QCD[2]+=weight*gen->lheweight[3];
+      nEvtsv_QCD[3]+=weight*gen->lheweight[4];
+      nEvtsv_QCD[4]+=weight*gen->lheweight[6];
+      nEvtsv_QCD[5]+=weight*gen->lheweight[8];
+      for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
 
       if(lep1->Pt() < PT_CUT)         continue;
       if(lep2->Pt() < PT_CUT)         continue;
@@ -218,14 +218,23 @@ void computeAccGenZee_Sys(const TString conf,             // input file
       else if(!isB1 && !isB2) { nSelEEv[ifile]+=weight; }
       else		      { nSelBEv[ifile]+=weight; } 
       // Get the values with the QCD and PDF weights:
-      // // QCD first      
-      nSelv_QCD[0]+=weight*gen->lheweight[0];
-      nSelv_QCD[1]+=weight*gen->lheweight[1];
-      nSelv_QCD[2]+=weight*gen->lheweight[2];
-      nSelv_QCD[3]+=weight*gen->lheweight[3];
-      nSelv_QCD[4]+=weight*gen->lheweight[5];
-      nSelv_QCD[5]+=weight*gen->lheweight[7];
-      for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+      // QCD first
+      // nSelv_QCD[0]+=weight*gen->lheweight[0];
+      // nSelv_QCD[1]+=weight*gen->lheweight[1];
+      // nSelv_QCD[2]+=weight*gen->lheweight[2];
+      // nSelv_QCD[3]+=weight*gen->lheweight[3];
+      // nSelv_QCD[4]+=weight*gen->lheweight[5];
+      // nSelv_QCD[5]+=weight*gen->lheweight[7];
+      // for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+      // cout << "weight = " << weight << endl;
+      // cout << gen->lheweight[0]  << " " << gen->lheweight[1]  << " " << gen->lheweight[2]  << " " << gen->lheweight[3]  << " " << gen->lheweight[4]  << " " << gen->lheweight[5]  << " " << gen->lheweight[6]  << " " << gen->lheweight[7]  << " " << gen->lheweight[8]  << " " << endl;
+      nSelv_QCD[0]+=weight*gen->lheweight[1];
+      nSelv_QCD[1]+=weight*gen->lheweight[2];
+      nSelv_QCD[2]+=weight*gen->lheweight[3];
+      nSelv_QCD[3]+=weight*gen->lheweight[4];
+      nSelv_QCD[4]+=weight*gen->lheweight[6];
+      nSelv_QCD[5]+=weight*gen->lheweight[8];
+      for(int npdf=0; npdf<NPDF; npdf++)  nSelv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
     }
     
     // compute acceptances
