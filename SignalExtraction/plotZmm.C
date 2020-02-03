@@ -30,9 +30,8 @@
 #include "../Utils/CEffUser2D.hh"
 
 //helper class to handle rochester corrections
-// // #include <rochcor2015r.h>
-// #include <muresolution_run2r.h>
 #include <../RochesterCorr/RoccoR.cc>
+#include "../Utils/AppEffSF.cc"
 
 #endif
 
@@ -64,15 +63,41 @@ void plotZmm(const TString  inputDir,    // input directory
   vector<Int_t>   typev;
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
-  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  fnamev.push_back(TString("/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV/Zmumu_testGen/ntuples/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  fnamev.push_back(inputDir + TString("/") + TString("ewk_select.raw.root"));  typev.push_back(eEWK);
-  fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));  typev.push_back(eEWK);
+  fnamev.push_back(inputDir + TString("/") + TString("top1_select.raw.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top2_select.raw.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top3_select.raw.root"));  typev.push_back(eTop);
   
-  fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.raw.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.raw.root"));  typev.push_back(eWx);
   fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eZxx);
-  fnamev.push_back(inputDir + TString("/") + TString("dib_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));  typev.push_back(eDib);
+  
+  
+  // fnamev.push_back(inputDir + TString("/") + TString("data_select.root")); typev.push_back(eData);
+  // fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));  typev.push_back(eEWK);
+  // fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));  typev.push_back(eTop);
+  
+  // fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));  typev.push_back(eZxx);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));  typev.push_back(eDib);
 
   //
   // Fit options
@@ -85,34 +110,18 @@ void plotZmm(const TString  inputDir,    // input directory
 
   const bool doRoch = true;
   // efficiency files
- 
-  const TString baseDir = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/"; 
+  TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
+  AppEffSF effs(baseDir);
+  effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
+  effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   
-
+  string sysDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/";
+  string sysFileSIT = sysDir + "SysUnc_MuSITEff.root";
+  string sysFileSta = sysDir + "SysUnc_MuStaEff.root";
+  effs.loadUncSel(sysFileSIT);
+  effs.loadUncSta(sysFileSta);
   
-    // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_Efficiency-results/";
-  const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
-  // const TString baseDir1 = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/Zmm/";
-  const TString dataHLTEffName_pos = baseDir1 + "Data/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString dataHLTEffName_neg = baseDir1 + "Data/MuHLTEff_aMCxPythia/Negative/eff.root";
-  const TString zmmHLTEffName_pos  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Positive/eff.root";
-  const TString zmmHLTEffName_neg  = baseDir1 + "MC/MuHLTEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataSelEffName_pos = baseDir1 + "Data/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString dataSelEffName_neg = baseDir1 + "Data/MuSITEff_aMCxPythia/Negative/eff.root";
-  const TString zmmSelEffName_pos  = baseDir1 + "MC/MuSITEff_aMCxPythia/Positive/eff.root";
-  const TString zmmSelEffName_neg  = baseDir1 + "MC/MuSITEff_aMCxPythia/Negative/eff.root";
-
-  const TString dataStaEffName_pos = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString dataStaEffName_neg = baseDir1 + "Data/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEffName_pos  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
-  const TString zmmStaEffName_neg  = baseDir1 + "MC/MuStaEff_aMCxPythia/Combined/eff.root";
- 
- 
-  TString StaEffSignalShapeSys     = baseDir + "Results/MuStaSigSys.root";
-  TString StaEffBackgroundShapeSys = baseDir + "Results/MuStaBkgSys.root";
-  TString SelEffSignalShapeSys     = baseDir + "Results/MuSITSigSys.root";
-  TString SelEffBackgroundShapeSys = baseDir + "Results/MuSITBkgSys.root";
   
   //
   // Set up output file
@@ -124,16 +133,6 @@ void plotZmm(const TString  inputDir,    // input directory
 
   // plot output file format
   const TString format("all");
-
-  // setup efficiency shape systematics
-  TFile *StaSigSysFile = new TFile(StaEffSignalShapeSys);
-  TH2D *hStaSigSys = (TH2D*)StaSigSysFile->Get("h");
-  TFile *StaBkgSysFile = new TFile(StaEffBackgroundShapeSys);
-  TH2D *hStaBkgSys = (TH2D*)StaBkgSysFile->Get("h");
-  TFile *SelSigSysFile = new TFile(SelEffSignalShapeSys);
-  TH2D *hSelSigSys = (TH2D*)SelSigSysFile->Get("h");
-  TFile *SelBkgSysFile = new TFile(SelEffBackgroundShapeSys);
-  TH2D *hSelBkgSys = (TH2D*)SelBkgSysFile->Get("h");
 
   Int_t yield = 0;
   Double_t yield_zmm = 0, yield_zmm_unc=0;
@@ -339,7 +338,7 @@ void plotZmm(const TString  inputDir,    // input directory
   TH1D *hEWKLep2Eta_EffBkgShape  = new TH1D("hEWKLep2Eta_EffBkgShape", "",24,0,2.4); hEWKLep2Eta_EffBkgShape->Sumw2();
   TH1D *hTopLep2Eta_EffBkgShape  = new TH1D("hTopLep2Eta_EffBkgShape", "",24,0,2.4); hTopLep2Eta_EffBkgShape->Sumw2();
 
-    
+    TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   //
   // Declare variables to read in ntuple
   //
@@ -357,123 +356,7 @@ void plotZmm(const TString  inputDir,    // input directory
   Double_t nDib=0, nWx=0, nZxx=0;
   Double_t nDibUnc=0, nWxUnc=0, nZxxUnc=0;
 
-  //
-  // HLT efficiency
-  //
-  cout << "Loading trigger efficiencies..." << endl;
-  
-  TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
-  CEffUser2D dataHLTEff_pos;
-  dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
-  CEffUser2D dataHLTEff_neg;
-  dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
-    
-  TFile *zmmHLTEffFile_pos = new TFile(zmmHLTEffName_pos);
-  CEffUser2D zmmHLTEff_pos;
-  zmmHLTEff_pos.loadEff((TH2D*)zmmHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmHLTEffFile_neg = new TFile(zmmHLTEffName_neg);
-  CEffUser2D zmmHLTEff_neg;
-  zmmHLTEff_neg.loadEff((TH2D*)zmmHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEffFile_neg->Get("hErrhEtaPt"));
-
-  TFile *dataHLTEff2BinFile_pos = new TFile(dataHLTEff2BinName_pos);
-  CEffUser2D dataHLTEff2Bin_pos;
-  dataHLTEff2Bin_pos.loadEff((TH2D*)dataHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataHLTEff2BinFile_neg = new TFile(dataHLTEff2BinName_neg);
-  CEffUser2D dataHLTEff2Bin_neg;
-  dataHLTEff2Bin_neg.loadEff((TH2D*)dataHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrhEtaPt"));
-    
-  TFile *zmmHLTEff2BinFile_pos = new TFile(zmmHLTEff2BinName_pos);
-  CEffUser2D zmmHLTEff2Bin_pos;
-  zmmHLTEff2Bin_pos.loadEff((TH2D*)zmmHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zmmHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmHLTEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmHLTEff2BinFile_neg = new TFile(zmmHLTEff2BinName_neg);
-  CEffUser2D zmmHLTEff2Bin_neg;
-  zmmHLTEff2Bin_neg.loadEff((TH2D*)zmmHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmHLTEff2BinFile_neg->Get("hErrhEtaPt"));
-
- 
-  
-  //
-  // Selection efficiency
-  //
-  cout << "Loading selection efficiencies..." << endl;
-  
-  TFile *dataSelEffFile_pos = new TFile(dataSelEffName_pos);
-  CEffUser2D dataSelEff_pos;
-  dataSelEff_pos.loadEff((TH2D*)dataSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataSelEffFile_neg = new TFile(dataSelEffName_neg);
-  CEffUser2D dataSelEff_neg;
-  dataSelEff_neg.loadEff((TH2D*)dataSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmSelEffFile_pos = new TFile(zmmSelEffName_pos);
-  CEffUser2D zmmSelEff_pos;
-  zmmSelEff_pos.loadEff((TH2D*)zmmSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_pos->Get("hErrhEtaPt"));
-
-  TFile *zmmSelEffFile_neg = new TFile(zmmSelEffName_neg);
-  CEffUser2D zmmSelEff_neg;
-  zmmSelEff_neg.loadEff((TH2D*)zmmSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEffFile_neg->Get("hErrhEtaPt"));
-
-  TFile *dataSelEff2BinFile_pos = new TFile(dataSelEff2BinName_pos);
-  CEffUser2D dataSelEff2Bin_pos;
-  dataSelEff2Bin_pos.loadEff((TH2D*)dataSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataSelEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataSelEff2BinFile_neg = new TFile(dataSelEff2BinName_neg);
-  CEffUser2D dataSelEff2Bin_neg;
-  dataSelEff2Bin_neg.loadEff((TH2D*)dataSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataSelEff2BinFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmSelEff2BinFile_pos = new TFile(zmmSelEff2BinName_pos);
-  CEffUser2D zmmSelEff2Bin_pos;
-  zmmSelEff2Bin_pos.loadEff((TH2D*)zmmSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zmmSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmSelEff2BinFile_pos->Get("hErrhEtaPt"));
-
-  TFile *zmmSelEff2BinFile_neg = new TFile(zmmSelEff2BinName_neg);
-  CEffUser2D zmmSelEff2Bin_neg;
-  zmmSelEff2Bin_neg.loadEff((TH2D*)zmmSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmSelEff2BinFile_neg->Get("hErrhEtaPt"));
-
- 
-  //
-  // Standalone efficiency
-  //
-  cout << "Loading standalone efficiencies..." << endl;
-  
-  TFile *dataStaEffFile_pos = new TFile(dataStaEffName_pos);
-  CEffUser2D dataStaEff_pos;
-  dataStaEff_pos.loadEff((TH2D*)dataStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataStaEffFile_neg = new TFile(dataStaEffName_neg);
-  CEffUser2D dataStaEff_neg;
-  dataStaEff_neg.loadEff((TH2D*)dataStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEffFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEffFile_pos = new TFile(zmmStaEffName_pos);
-  CEffUser2D zmmStaEff_pos;
-  zmmStaEff_pos.loadEff((TH2D*)zmmStaEffFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEffFile_neg = new TFile(zmmStaEffName_neg);
-  CEffUser2D zmmStaEff_neg;
-  zmmStaEff_neg.loadEff((TH2D*)zmmStaEffFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEffFile_neg->Get("hErrhEtaPt"));
-
-  TFile *dataStaEff2BinFile_pos = new TFile(dataStaEff2BinName_pos);
-  CEffUser2D dataStaEff2Bin_pos;
-  dataStaEff2Bin_pos.loadEff((TH2D*)dataStaEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataStaEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataStaEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *dataStaEff2BinFile_neg = new TFile(dataStaEff2BinName_neg);
-  CEffUser2D dataStaEff2Bin_neg;
-  dataStaEff2Bin_neg.loadEff((TH2D*)dataStaEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataStaEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataStaEff2BinFile_neg->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEff2BinFile_pos = new TFile(zmmStaEff2BinName_pos);
-  CEffUser2D zmmStaEff2Bin_pos;
-  zmmStaEff2Bin_pos.loadEff((TH2D*)zmmStaEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zmmStaEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zmmStaEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  TFile *zmmStaEff2BinFile_neg = new TFile(zmmStaEff2BinName_neg);
-  CEffUser2D zmmStaEff2Bin_neg;
-  zmmStaEff2Bin_neg.loadEff((TH2D*)zmmStaEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zmmStaEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zmmStaEff2BinFile_neg->Get("hErrhEtaPt"));
- 
-  
   //Setting up rochester corrections
-  // rochcor2015 *rmcor = new rochcor2015();
   RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
 
   TFile *infile=0;
@@ -527,6 +410,16 @@ void plotZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("genMuonPt1",       &genMuonPt1);        // probe lepton 4-vector
     intree->SetBranchAddress("genMuonPt2",       &genMuonPt2);        // probe lepton 4-vector
     
+    TH1D* hGenWeights;
+    double totalNorm = 1.0;
+    cout << "Hello " << endl;
+    if(typev[ifile] != eData ){
+      cout << "get gen weights" << endl;
+      hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      totalNorm = hGenWeights->Integral();
+      cout << totalNorm << endl;
+    }
+    
     //
     // loop over events
     //
@@ -537,15 +430,6 @@ void plotZmm(const TString  inputDir,    // input directory
       if(fabs(lep1->Eta()) > ETA_CUT)   continue;      
       if(fabs(lep2->Eta()) > ETA_CUT)   continue;
       if(q1*q2>0) continue;
-      // if(typev[ifile]!=eData) {
-        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
-      // }
-      
-      // if(abs(genlep1->Pt() - lep1->Pt())/lep1->Pt() > 0.1 || abs(genlep2->Pt() - lep2->Pt())/lep2->Pt() > 0.1){
-        // std::cout << "-------" << ientry << "-----------" << std::endl;
-        // std::cout << "lep 1 " << genlep1->Pt() << " " << lep1->Pt() << std::endl;
-        // std::cout << "lep 2 " << genlep2->Pt() << " " << lep2->Pt() << std::endl;
-      // }
       
       float mass = 0;
       float pt = 0;
@@ -556,34 +440,30 @@ void plotZmm(const TString  inputDir,    // input directory
      
       Double_t weight=1;
       if(typev[ifile]!=eData) {
-	    weight *= scale1fb*prefireWeight*lumi;
-	    // weight *= scale1fb*lumi;
-      }
+	    weight *= scale1fb*prefireWeight*lumi/totalNorm;
+	    // weight *= scale1fb*prefireUp*lumi/totalNorm;
+	    // weight *= scale1fb*prefireDown*lumi/totalNorm;
+	    // weight *= scale1fb*lumi/totalNorm;
+      }  
       
       // fill Z events passing selection
-      if((category==eMuMu2HLT) || (category==eMuMu1HLT) || (category==eMuMu1HLT1L1)) {
-        
-        if(typev[ifile]==eData) { 
+      if(!(category==eMuMu2HLT) && !(category==eMuMu1HLT) && !(category==eMuMu1HLT1mu1)) continue;
+      if(typev[ifile]==eData) { 
 
-	  TLorentzVector mu1;
-	  TLorentzVector mu2;
-	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
-	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-	  float qter1=1.0;
-	  float qter2=1.0;
+        TLorentzVector mu1;
+        TLorentzVector mu2;
+        mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
+        mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
+        float qter1=1.0;
+        float qter2=1.0;
 
-      double dtSF1 = rc.kScaleDT(q1, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
-      double dtSF2 = rc.kScaleDT(q2, mu2.Pt(), mu2.Eta(), mu2.Phi());//s=0, m=0);
-	  // rmcor->momcor_data(mu1,q1,0,qter1);
-	  // rmcor->momcor_data(mu2,q2,0,qter2);
-      // std::cout << "data pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
-      if(doRoch){
+    double dtSF1 = rc.kScaleDT(q1, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
+    double dtSF2 = rc.kScaleDT(q2, mu2.Pt(), mu2.Eta(), mu2.Phi());//s=0, m=0);
+    if(doRoch){
       mu1*=dtSF1;
       mu2*=dtSF2;
-      }
+    }
       
-      // std::cout << "post pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
-
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
 	  Double_t lq1 = q1;
@@ -623,16 +503,13 @@ void plotZmm(const TString  inputDir,    // input directory
 	  hDataPhiStar->Fill(phistar); 
 	  hDataLep1Pt->Fill(l1.Pt()); 
 	  hDataLep2Pt->Fill(l2.Pt()); 
-	  if(lq1<0)
-	    {
+	  if(lq1<0) {
 	      hDataLepNegPt->Fill(l1.Pt()); 
 	      hDataLepPosPt->Fill(l2.Pt());
-	    }
-	  else 
-	    {
+    } else {
 	      hDataLepNegPt->Fill(l2.Pt()); 
 	      hDataLepPosPt->Fill(l1.Pt());
-	    }
+    }
 	  hDataLep1Eta->Fill(fabs(l1.Eta())); 
 	  hDataLep2Eta->Fill(fabs(l2.Eta())); 
 	  hDataZRap->Fill(fabs(rapidity));
@@ -645,22 +522,16 @@ void plotZmm(const TString  inputDir,    // input directory
 	  TLorentzVector mu2;
 	  mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
 	  mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-      // std::cout << "MC pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
-      
       
 	  float qter1=1.0;
 	  float qter2=1.0;
-      double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt1);//, s=0, m=0);
-      double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genMuonPt2);//, s=0, m=0);
-      if(genlep1->Pt()==0 && genlep2->Pt()==0) {mcSF1=1; mcSF2=1;}// stupid gen shit for ttbar is messed up
-	  // rmcor->momcor_mc(mu1,q1,0,qter1);
-	  // rmcor->momcor_mc(mu2,q2,0,qter2);
-      if(doRoch){
+    double mcSF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt1);//, s=0, m=0);
+    double mcSF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genMuonPt2);//, s=0, m=0);
+    if(genlep1->Pt()==0 && genlep2->Pt()==0) {mcSF1=1; mcSF2=1;}// stupid gen shit for ttbar is messed up
+    if(doRoch){
       mu1*=mcSF1;
       mu2*=mcSF2;
-      }
-      // std::cout << "sf " << mcSF1 << "  " << mcSF2 << std::endl;
-      // std::cout << "post pt " << mu1.Pt() << "  " << mu2.Pt() << std::endl;
+    }
 	  Double_t lp1 = mu1.Pt();
 	  Double_t lp2 = mu2.Pt();
 	  Double_t lq1 = q1;
@@ -682,6 +553,7 @@ void plotZmm(const TString  inputDir,    // input directory
 
 	  double mll=(l1+l2).M();
 	  Double_t effdata, effmc;
+    Double_t corrFSR=1, corrMC=1, corrBkg=1, corrTag=1;
 	  Double_t corr=1;
 	  Double_t eff2Bindata, eff2Binmc;
 	  Double_t corr2Bin=1;
@@ -696,249 +568,24 @@ void plotZmm(const TString  inputDir,    // input directory
 	  if(mll       > MASS_HIGH) continue;
 	  if(lp1        < PT_CUT)    continue;
 	  if(lp2        < PT_CUT)    continue;
-	  effdata=1; effmc=1;    
-          if(lq1>0) { 
-            effdata *= (1.-dataHLTEff_pos.getEff((l1.Eta()), l1.Pt())); 
-            effmc   *= (1.-zmmHLTEff_pos.getEff((l1.Eta()), l1.Pt())); 
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff((l1.Eta()), l1.Pt())); 
-            effmc   *= (1.-zmmHLTEff_neg.getEff((l1.Eta()), l1.Pt())); 
-          }
-          if(lq2>0) {
-            effdata *= (1.-dataHLTEff_pos.getEff((l2.Eta()), l2.Pt())); 
-            effmc   *= (1.-zmmHLTEff_pos.getEff((l2.Eta()), l2.Pt()));
-          } else {
-            effdata *= (1.-dataHLTEff_neg.getEff((l2.Eta()), l2.Pt())); 
-            effmc   *= (1.-zmmHLTEff_neg.getEff((l2.Eta()), l2.Pt()));
-          }
-          effdata = 1.-effdata;
-          effmc   = 1.-effmc;
-          corr *= effdata/effmc;
-	  corrSigShape *= effdata/effmc;
-	  corrBkgShape *= effdata/effmc;
     
-          effdata=1; effmc=1;
-	  effSigShapedata=1;
-	  effBkgShapedata=1;
-	  if(lq1>0) { 
-	    effdata *= dataSelEff_pos.getEff((l1.Eta()), l1.Pt()); 
-	    effmc   *= zmmSelEff_pos.getEff((l1.Eta()), l1.Pt()); 
-	    effSigShapedata *= dataSelEff_pos.getEff((l1.Eta()), l1.Pt())*hSelSigSys->GetBinContent(hSelSigSys->GetXaxis()->FindBin(l1.Eta()), hSelSigSys->GetYaxis()->FindBin(l1.Pt())); 
-	    effBkgShapedata *= dataSelEff_pos.getEff((l1.Eta()), l1.Pt())*hSelBkgSys->GetBinContent(hSelBkgSys->GetXaxis()->FindBin(l1.Eta()), hSelBkgSys->GetYaxis()->FindBin(l1.Pt())); 
-	  } else {
-	    effdata *= dataSelEff_neg.getEff((l1.Eta()), l1.Pt()); 
-	    effmc   *= zmmSelEff_neg.getEff((l1.Eta()), l1.Pt()); 
-	    effSigShapedata *= dataSelEff_neg.getEff((l1.Eta()), l1.Pt())*hSelSigSys->GetBinContent(hSelSigSys->GetXaxis()->FindBin(l1.Eta()), hSelSigSys->GetYaxis()->FindBin(l1.Pt()));
-	    effBkgShapedata *= dataSelEff_neg.getEff((l1.Eta()), l1.Pt())*hSelBkgSys->GetBinContent(hSelBkgSys->GetXaxis()->FindBin(l1.Eta()), hSelBkgSys->GetYaxis()->FindBin(l1.Pt())); 
-	  }
-	  if(lq2>0) {
-	    effdata *= dataSelEff_pos.getEff((l2.Eta()), l2.Pt()); 
-	    effmc   *= zmmSelEff_pos.getEff((l2.Eta()), l2.Pt());
-	    effSigShapedata *= dataSelEff_pos.getEff((l2.Eta()), l2.Pt())*hSelSigSys->GetBinContent(hSelSigSys->GetXaxis()->FindBin(l2.Eta()), hSelSigSys->GetYaxis()->FindBin(l2.Pt())); 
-	    effBkgShapedata *= dataSelEff_pos.getEff((l2.Eta()), l2.Pt())*hSelBkgSys->GetBinContent(hSelBkgSys->GetXaxis()->FindBin(l2.Eta()), hSelBkgSys->GetYaxis()->FindBin(l2.Pt())); 
-	  } else {
-	    effdata *= dataSelEff_neg.getEff((l2.Eta()), l2.Pt()); 
-	    effmc   *= zmmSelEff_neg.getEff((l2.Eta()), l2.Pt());
-	    effSigShapedata *= dataSelEff_neg.getEff((l2.Eta()), l2.Pt())*hSelSigSys->GetBinContent(hSelSigSys->GetXaxis()->FindBin(l2.Eta()), hSelSigSys->GetYaxis()->FindBin(l2.Pt()));
-	    effBkgShapedata *= dataSelEff_neg.getEff((l2.Eta()), l2.Pt())*hSelBkgSys->GetBinContent(hSelBkgSys->GetXaxis()->FindBin(l2.Eta()), hSelBkgSys->GetYaxis()->FindBin(l2.Pt()));
-	  }
-	  corr *= effdata/effmc;
-	  corrSigShape *= effSigShapedata/effmc;
-	  corrBkgShape *= effBkgShapedata/effmc;
-	  
-	  effdata=1; effmc=1;
-	  effSigShapedata=1;
-	  effBkgShapedata=1;
-	  if(lq1>0) { 
-	    effdata *= dataStaEff_pos.getEff((l1.Eta()), l1.Pt()); 
-	    effmc   *= zmmStaEff_pos.getEff((l1.Eta()), l1.Pt()); 
-	    effSigShapedata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt())*hStaSigSys->GetBinContent(hStaSigSys->GetXaxis()->FindBin(l1.Eta()), hStaSigSys->GetYaxis()->FindBin(l1.Pt()));
-	    effBkgShapedata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt())*hStaBkgSys->GetBinContent(hStaBkgSys->GetXaxis()->FindBin(l1.Eta()), hStaBkgSys->GetYaxis()->FindBin(l1.Pt())); 
-	  } else {
-	    effdata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt()); 
-	    effmc   *= zmmStaEff_neg.getEff((l1.Eta()), l1.Pt()); 
-	    effSigShapedata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt())*hStaSigSys->GetBinContent(hStaSigSys->GetXaxis()->FindBin(l1.Eta()), hStaSigSys->GetYaxis()->FindBin(l1.Pt()));
-	    effBkgShapedata *= dataStaEff_neg.getEff((l1.Eta()), l1.Pt())*hStaBkgSys->GetBinContent(hStaBkgSys->GetXaxis()->FindBin(l1.Eta()), hStaBkgSys->GetYaxis()->FindBin(l1.Pt())); 
-	  }
-	  if(lq2>0) {
-	    effdata *= dataStaEff_pos.getEff((l2.Eta()), l2.Pt()); 
-	    effmc   *= zmmStaEff_pos.getEff((l2.Eta()), l2.Pt());
-	    effSigShapedata *= dataStaEff_pos.getEff((l2.Eta()), l2.Pt())*hStaSigSys->GetBinContent(hStaSigSys->GetXaxis()->FindBin(l2.Eta()), hStaSigSys->GetYaxis()->FindBin(l2.Pt())); 
-	    effBkgShapedata *= dataStaEff_pos.getEff((l2.Eta()), l2.Pt())*hStaBkgSys->GetBinContent(hStaBkgSys->GetXaxis()->FindBin(l2.Eta()), hStaBkgSys->GetYaxis()->FindBin(l2.Pt())); 
-	  } else {
-	    effdata *= dataStaEff_neg.getEff((l2.Eta()), l2.Pt()); 
-	    effmc   *= zmmStaEff_neg.getEff((l2.Eta()), l2.Pt());
-	    effSigShapedata *= dataStaEff_neg.getEff((l2.Eta()), l2.Pt())*hStaSigSys->GetBinContent(hStaSigSys->GetXaxis()->FindBin(l2.Eta()), hStaSigSys->GetYaxis()->FindBin(l2.Pt()));
-	    effBkgShapedata *= dataStaEff_neg.getEff((l2.Eta()), l2.Pt())*hStaBkgSys->GetBinContent(hStaBkgSys->GetXaxis()->FindBin(l2.Eta()), hStaBkgSys->GetYaxis()->FindBin(l2.Pt()));
-	  }
-	  corr *= effdata/effmc; 
-	  corrSigShape *= effSigShapedata/effmc;
-	  corrBkgShape *= effBkgShapedata/effmc;
-
-
-	  // scale factor uncertainties   
-	  
-	  double var=0.;      
-	  
-	  
-	  // STANDALONE
-	  if(lq1>0) {
-	    Double_t effdata = dataStaEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataStaEff_pos.getErrLow(l1.Eta(), l1.Pt()), dataStaEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmStaEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmStaEff_pos.getErrLow(l1.Eta(), l1.Pt()), zmmStaEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSta*errSta;
-	  } else {
-	    Double_t effdata = dataStaEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataStaEff_neg.getErrLow(l1.Eta(), l1.Pt()), dataStaEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmStaEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmStaEff_neg.getErrLow(l1.Eta(), l1.Pt()), zmmStaEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSta*errSta;
-	  }
-	  
-	  if(lq2>0) {
-	    Double_t effdata = dataStaEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataStaEff_pos.getErrLow(l2.Eta(), l2.Pt()), dataStaEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmStaEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmStaEff_pos.getErrLow(l2.Eta(), l2.Pt()), zmmStaEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errSta = ((effdata/effmc))*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSta*errSta;
-	  } else {
-	    Double_t effdata = dataStaEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataStaEff_neg.getErrLow(l2.Eta(), l2.Pt()), dataStaEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmStaEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmStaEff_neg.getErrLow(l2.Eta(), l2.Pt()), zmmStaEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errSta = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSta*errSta;
-	  }
-	  
-	  // SELECTION
-	  if(lq1>0) {
-	    Double_t effdata = dataSelEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataSelEff_pos.getErrLow(l1.Eta(), l1.Pt()), dataSelEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmSelEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmSelEff_pos.getErrLow(l1.Eta(), l1.Pt()), zmmSelEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSel*errSel;
-	  } else {
-	    Double_t effdata = dataSelEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataSelEff_neg.getErrLow(l1.Eta(), l1.Pt()), dataSelEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmSelEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmSelEff_neg.getErrLow(l1.Eta(), l1.Pt()), zmmSelEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSel*errSel;
-	  }
-	  
-	  if(lq2>0) {
-	    Double_t effdata = dataSelEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataSelEff_pos.getErrLow(l2.Eta(), l2.Pt()), dataSelEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmSelEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmSelEff_pos.getErrLow(l2.Eta(), l2.Pt()), zmmSelEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSel*errSel;
-	  } else {
-	    Double_t effdata = dataSelEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataSelEff_neg.getErrLow(l2.Eta(), l2.Pt()), dataSelEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmSelEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmSelEff_neg.getErrLow(l2.Eta(), l2.Pt()), zmmSelEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errSel*errSel;
-	  }
-
-	  
-	  //HLT
-	  if(lq1>0) {
-	    Double_t effdata = dataHLTEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(l1.Eta(), l1.Pt()), dataHLTEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmHLTEff_pos.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmHLTEff_pos.getErrLow(l1.Eta(), l1.Pt()), zmmHLTEff_pos.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(l1.Eta(), l1.Pt()), dataHLTEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t effmc   = zmmHLTEff_neg.getEff(l1.Eta(), l1.Pt());
-	    Double_t errmc   = TMath::Max(zmmHLTEff_neg.getErrLow(l1.Eta(), l1.Pt()), zmmHLTEff_neg.getErrHigh(l1.Eta(), l1.Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  }
-	  
-	  if(lq2>0) {
-	    Double_t effdata = dataHLTEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(l2.Eta(), l2.Pt()), dataHLTEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmHLTEff_pos.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmHLTEff_pos.getErrLow(l2.Eta(), l2.Pt()), zmmHLTEff_pos.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  } else {
-	    Double_t effdata = dataHLTEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(l2.Eta(), l2.Pt()), dataHLTEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t effmc   = zmmHLTEff_neg.getEff(l2.Eta(), l2.Pt());
-	    Double_t errmc   = TMath::Max(zmmHLTEff_neg.getErrLow(l2.Eta(), l2.Pt()), zmmHLTEff_neg.getErrHigh(l2.Eta(), l2.Pt()));
-	    Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    var+=errHLT*errHLT;
-	  }
-	  
-	  corrUp=corr+sqrt(var);
-	  corrDown=corr-sqrt(var);  
-
-	  eff2Bindata=1; eff2Binmc=1;    
-          if(lq1>0) { 
-            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((l1.Eta()), l1.Pt())); 
-            eff2Binmc   *= (1.-zmmHLTEff2Bin_pos.getEff((l1.Eta()), l1.Pt())); 
-          } else {
-            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((l1.Eta()), l1.Pt())); 
-            eff2Binmc   *= (1.-zmmHLTEff2Bin_neg.getEff((l1.Eta()), l1.Pt())); 
-          }
-          if(lq2>0) {
-            eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((l2.Eta()), l2.Pt())); 
-            eff2Binmc   *= (1.-zmmHLTEff2Bin_pos.getEff((l2.Eta()), l2.Pt()));
-          } else {
-            eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((l2.Eta()), l2.Pt())); 
-            eff2Binmc   *= (1.-zmmHLTEff2Bin_neg.getEff((l2.Eta()), l2.Pt()));
-          }
-          eff2Bindata = 1.-eff2Bindata;
-          eff2Binmc   = 1.-eff2Binmc;
-          corr2Bin *= eff2Bindata/eff2Binmc;
+    corr = effs.fullEfficiencies(&mu1,q1,&mu2,q2);
     
-          eff2Bindata=1; eff2Binmc=1;
-          if(lq1>0) { 
-            eff2Bindata *= dataSelEff2Bin_pos.getEff((l1.Eta()), l1.Pt()); 
-            eff2Binmc   *= zmmSelEff2Bin_pos.getEff((l1.Eta()), l1.Pt()); 
-          } else {
-            eff2Bindata *= dataSelEff2Bin_neg.getEff((l1.Eta()), l1.Pt()); 
-            eff2Binmc   *= zmmSelEff2Bin_neg.getEff((l1.Eta()), l1.Pt()); 
-          }
-          if(lq2>0) {
-            eff2Bindata *= dataSelEff2Bin_pos.getEff((l2.Eta()), l2.Pt()); 
-            eff2Binmc   *= zmmSelEff2Bin_pos.getEff((l2.Eta()), l2.Pt());
-          } else {
-            eff2Bindata *= dataSelEff2Bin_neg.getEff((l2.Eta()), l2.Pt()); 
-            eff2Binmc   *= zmmSelEff2Bin_neg.getEff((l2.Eta()), l2.Pt());
-          }
-          corr2Bin *= eff2Bindata/eff2Binmc;
+    vector<double> uncs_sta = effs.getUncSta(&mu1,q1,&mu2,q2);
+    vector<double> uncs_sit = effs.getUncSel(&mu1,q1,&mu2,q2);
     
-	  eff2Bindata=1; eff2Binmc=1;
-          if(lq1>0) { 
-            eff2Bindata *= dataStaEff2Bin_pos.getEff((l1.Eta()), l1.Pt()); 
-            eff2Binmc   *= zmmStaEff2Bin_pos.getEff((l1.Eta()), l1.Pt()); 
-          } else {
-            eff2Bindata *= dataStaEff2Bin_neg.getEff((l1.Eta()), l1.Pt()); 
-            eff2Binmc   *= zmmStaEff2Bin_neg.getEff((l1.Eta()), l1.Pt()); 
-          }
-          if(lq2>0) {
-            eff2Bindata *= dataStaEff2Bin_pos.getEff((l2.Eta()), l2.Pt()); 
-            eff2Binmc   *= zmmStaEff2Bin_pos.getEff((l2.Eta()), l2.Pt());
-          } else {
-            eff2Bindata *= dataStaEff2Bin_neg.getEff((l2.Eta()), l2.Pt()); 
-            eff2Binmc   *= zmmStaEff2Bin_neg.getEff((l2.Eta()), l2.Pt());
-          }
-	  corr2Bin *= eff2Bindata/eff2Binmc; 
+    corrFSR *= uncs_sta[0]*uncs_sit[0]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate fsr model
+    corrMC  *= uncs_sta[1]*uncs_sit[1]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate mc gen model
+    corrBkg *= uncs_sta[2]*uncs_sit[2]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate bkg model
+    corrTag *= uncs_sta[3]*uncs_sit[3]*effs.computeHLTSF(&mu1,q1,&mu2,q2); // alternate bkg model
 	  
-    // corr=1;
-	// std::cout << evtNum << " " << corr << " " << std::endl;
+	  double var=0.;        
+    var += effs.statUncSta(&mu1, q1, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncSta(&mu2, q2, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncSel(&mu1, q1, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncSel(&mu2, q2, hErr, hErr, fabs(weight)*corr);
+    var += effs.statUncHLTDilep(&mu1, q1, &mu2, q2);
+    
 	  mass = (l1+l2).M();
 	  pt = (l1+l2).Pt();
 	  rapidity = (l1+l2).Rapidity();
@@ -959,251 +606,238 @@ void plotZmm(const TString  inputDir,    // input directory
         nWxUnc+=weight*weight*corr*corr;
       }
     }
-	  if(typev[ifile]==eZmm) 
-	    {
-	      yield_zmm += weight*corr;
-	      yield_zmm_unc += weight*weight*corr*corr;
-	      hZmm->Fill(mass,weight*corr); 
-	      hMC->Fill(mass,weight*corr);
-	      hZmmNPV->Fill(npv,weight*corr); 
-	      hMCNPV->Fill(npv,weight*corr);
-	      hZmmZPt->Fill(pt,weight*corr); 
-	      hMCZPt->Fill(pt,weight*corr);
-	      hZmmPhiStar->Fill(phistar,weight*corr); 
-	      hMCPhiStar->Fill(phistar,weight*corr);
-	      hZmmZRap->Fill(fabs(rapidity),weight*corr); 
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
-	      hZmmLep1Pt->Fill(l1.Pt(),weight*corr); 
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
-	      hZmmLep2Pt->Fill(l2.Pt(),weight*corr); 
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
-	      if(lq1<0)
-		{
-		  hZmmLepNegPt->Fill(l1.Pt(),weight*corr); 
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hZmmLepPosPt->Fill(l2.Pt(),weight*corr); 
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
-		}
-	      else 
-		{
-		  hZmmLepNegPt->Fill(l2.Pt(),weight*corr); 
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hZmmLepPosPt->Fill(l1.Pt(),weight*corr); 
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
-		}
-	      hZmmLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-	      hZmmLep2Eta->Fill(fabs(l2.Eta()),weight*corr); 
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	    }
-	  if(typev[ifile]==eEWK) 
-	    {
-	      yield_ewk += weight*corr;
-	      yield_ewk_unc += weight*weight*corr*corr;
-	      hEWK->Fill(mass,weight*corr); 
-	      hMC->Fill(mass,weight*corr);
-
-	      hEWKNPV->Fill(npv,weight*corr); 
-	      hMCNPV->Fill(npv,weight*corr);
-
-	      hEWKZPt->Fill(pt,weight*corr); 
-	      hEWKZPt_EffBin->Fill(pt,weight*corr2Bin); 
-	      hEWKZPt_EffStatUp->Fill(pt,weight*corrUp);
-	      hEWKZPt_EffStatDown->Fill(pt,weight*corrDown);
-	      hEWKZPt_EffSigShape->Fill(pt,weight*corrSigShape);
-	      hEWKZPt_EffBkgShape->Fill(pt,weight*corrBkgShape);
-	      hMCZPt->Fill(pt,weight*corr);
-
-	      hEWKPhiStar->Fill(phistar,weight*corr);
-	      hEWKPhiStar_EffBin->Fill(phistar,weight*corr2Bin); 
-	      hEWKPhiStar_EffStatUp->Fill(phistar,weight*corrUp);
-	      hEWKPhiStar_EffStatDown->Fill(phistar,weight*corrDown);
-	      hEWKPhiStar_EffSigShape->Fill(phistar,weight*corrSigShape);
-	      hEWKPhiStar_EffBkgShape->Fill(phistar,weight*corrBkgShape);
-	      hMCPhiStar->Fill(phistar,weight*corr);
-
-	      hEWKZRap->Fill(fabs(rapidity),weight*corr); 
-	      hEWKZRap_EffBin->Fill(fabs(rapidity),weight*corr2Bin);
-	      hEWKZRap_EffStatUp->Fill(fabs(rapidity),weight*corrUp);
-	      hEWKZRap_EffStatDown->Fill(fabs(rapidity),weight*corrDown);
-	      hEWKZRap_EffSigShape->Fill(fabs(rapidity),weight*corrSigShape);
-	      hEWKZRap_EffBkgShape->Fill(fabs(rapidity),weight*corrBkgShape);
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
-
-	      hEWKLep1Pt->Fill(l1.Pt(),weight*corr);
-	      hEWKLep1Pt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-	      hEWKLep1Pt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-	      hEWKLep1Pt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-	      hEWKLep1Pt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-	      hEWKLep1Pt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
-
-	      hEWKLep2Pt->Fill(l2.Pt(),weight*corr);
-	      hEWKLep2Pt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-	      hEWKLep2Pt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-	      hEWKLep2Pt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-	      hEWKLep2Pt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-	      hEWKLep2Pt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
-
-	      if(lq1<0)
-		{
-		  hEWKLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hEWKLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hEWKLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hEWKLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hEWKLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hEWKLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  
-		  hEWKLepPosPt->Fill(l2.Pt(),weight*corr);
-		  hEWKLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hEWKLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hEWKLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hEWKLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hEWKLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
-		}
-	      else
-		{
-		  hEWKLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hEWKLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hEWKLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hEWKLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hEWKLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hEWKLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  
-		  hEWKLepPosPt->Fill(l1.Pt(),weight*corr);
-		  hEWKLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hEWKLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hEWKLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hEWKLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hEWKLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
-		}
-
-	      hEWKLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
-	      hEWKLep1Eta_EffBin->Fill(fabs(l1.Eta()),weight*corr2Bin);
-	      hEWKLep1Eta_EffStatUp->Fill(fabs(l1.Eta()),weight*corrUp);
-	      hEWKLep1Eta_EffStatDown->Fill(fabs(l1.Eta()),weight*corrDown);
-	      hEWKLep1Eta_EffSigShape->Fill(fabs(l1.Eta()),weight*corrSigShape);
-	      hEWKLep1Eta_EffBkgShape->Fill(fabs(l1.Eta()),weight*corrBkgShape);
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-
-	      hEWKLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	      hEWKLep2Eta_EffBin->Fill(fabs(l2.Eta()),weight*corr2Bin);
-	      hEWKLep2Eta_EffStatUp->Fill(fabs(l2.Eta()),weight*corrUp);
-	      hEWKLep2Eta_EffStatDown->Fill(fabs(l2.Eta()),weight*corrDown);
-	      hEWKLep2Eta_EffSigShape->Fill(fabs(l2.Eta()),weight*corrSigShape);
-	      hEWKLep2Eta_EffBkgShape->Fill(fabs(l2.Eta()),weight*corrBkgShape);
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	    }
-	  if(typev[ifile]==eTop) 
-	    {
-	      yield_top += weight*corr;
-	      yield_top_unc += weight*weight*corr*corr;
-	      hTop->Fill(mass,weight*corr); 
-	      hMC->Fill(mass,weight*corr);
-
-	      hTopNPV->Fill(npv,weight*corr); 
-	      hMCNPV->Fill(npv,weight*corr);
-
-	      hTopZPt->Fill(pt,weight*corr); 
-	      hTopZPt_EffBin->Fill(pt,weight*corr2Bin); 
-	      hTopZPt_EffStatUp->Fill(pt,weight*corrUp);
-	      hTopZPt_EffStatDown->Fill(pt,weight*corrDown);
-	      hTopZPt_EffSigShape->Fill(pt,weight*corrSigShape); 
-	      hTopZPt_EffBkgShape->Fill(pt,weight*corrBkgShape); 
-	      hMCZPt->Fill(pt,weight*corr);
-
-	      hTopPhiStar->Fill(phistar,weight*corr);
-	      hTopPhiStar_EffBin->Fill(phistar,weight*corr2Bin); 
-	      hTopPhiStar_EffStatUp->Fill(phistar,weight*corrUp);
-	      hTopPhiStar_EffStatDown->Fill(phistar,weight*corrDown);
-	      hTopPhiStar_EffSigShape->Fill(phistar,weight*corrSigShape); 
-	      hTopPhiStar_EffBkgShape->Fill(phistar,weight*corrBkgShape); 
-	      hMCPhiStar->Fill(phistar,weight*corr);
-
-	      hTopZRap->Fill(fabs(rapidity),weight*corr); 
-	      hTopZRap_EffBin->Fill(fabs(rapidity),weight*corr2Bin);
-	      hTopZRap_EffStatUp->Fill(fabs(rapidity),weight*corrUp);
-	      hTopZRap_EffStatDown->Fill(fabs(rapidity),weight*corrDown);
-	      hTopZRap_EffSigShape->Fill(fabs(rapidity),weight*corrSigShape); 
-	      hTopZRap_EffBkgShape->Fill(fabs(rapidity),weight*corrBkgShape); 
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
-
-	      hTopLep1Pt->Fill(l1.Pt(),weight*corr);
-	      hTopLep1Pt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-	      hTopLep1Pt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-	      hTopLep1Pt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-	      hTopLep1Pt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-	      hTopLep1Pt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
-
-	      hTopLep2Pt->Fill(l2.Pt(),weight*corr);
-	      hTopLep2Pt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-	      hTopLep2Pt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-	      hTopLep2Pt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-	      hTopLep2Pt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-	      hTopLep2Pt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
-
-	      if(lq1<0)
-		{
-		  hTopLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hTopLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hTopLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hTopLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hTopLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hTopLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  
-		  hTopLepPosPt->Fill(l2.Pt(),weight*corr);
-		  hTopLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hTopLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hTopLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hTopLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hTopLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
-		}
-	      else
-		{
-		  hTopLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hTopLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hTopLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hTopLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hTopLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hTopLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  
-		  hTopLepPosPt->Fill(l1.Pt(),weight*corr);
-		  hTopLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hTopLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hTopLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hTopLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hTopLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
-		}
-
-	      hTopLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-	      hTopLep1Eta_EffBin->Fill(fabs(l1.Eta()),weight*corr2Bin);
-	      hTopLep1Eta_EffStatUp->Fill(fabs(l1.Eta()),weight*corrUp);
-	      hTopLep1Eta_EffStatDown->Fill(fabs(l1.Eta()),weight*corrDown);
-	      hTopLep1Eta_EffSigShape->Fill(fabs(l1.Eta()),weight*corrSigShape);
-	      hTopLep1Eta_EffBkgShape->Fill(fabs(l1.Eta()),weight*corrBkgShape);
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-
-	      hTopLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	      hTopLep2Eta_EffBin->Fill(fabs(l2.Eta()),weight*corr2Bin);
-	      hTopLep2Eta_EffStatUp->Fill(fabs(l2.Eta()),weight*corrUp);
-	      hTopLep2Eta_EffStatDown->Fill(fabs(l2.Eta()),weight*corrDown);
-	      hTopLep2Eta_EffSigShape->Fill(fabs(l2.Eta()),weight*corrSigShape);
-	      hTopLep2Eta_EffBkgShape->Fill(fabs(l2.Eta()),weight*corrBkgShape);
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
-	    }
-	}
+	  if(typev[ifile]==eZmm) {
+      yield_zmm += weight*corr;
+      yield_zmm_unc += weight*weight*corr*corr;
+      hZmm->Fill(mass,weight*corr); 
+      hMC->Fill(mass,weight*corr);
+      hZmmNPV->Fill(npv,weight*corr); 
+      hMCNPV->Fill(npv,weight*corr);
+      hZmmZPt->Fill(pt,weight*corr); 
+      hMCZPt->Fill(pt,weight*corr);
+      hZmmPhiStar->Fill(phistar,weight*corr); 
+      hMCPhiStar->Fill(phistar,weight*corr);
+      hZmmZRap->Fill(fabs(rapidity),weight*corr); 
+      hMCZRap->Fill(fabs(rapidity),weight*corr);
+      hZmmLep1Pt->Fill(l1.Pt(),weight*corr); 
+      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+      hZmmLep2Pt->Fill(l2.Pt(),weight*corr); 
+      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
+      if(lq1<0) {
+        hZmmLepNegPt->Fill(l1.Pt(),weight*corr); 
+        hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+        hZmmLepPosPt->Fill(l2.Pt(),weight*corr); 
+        hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+      } else {
+        hZmmLepNegPt->Fill(l2.Pt(),weight*corr); 
+        hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+        hZmmLepPosPt->Fill(l1.Pt(),weight*corr); 
+        hMCLepPosPt->Fill(l1.Pt(),weight*corr);
       }
+      hZmmLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
+      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+      hZmmLep2Eta->Fill(fabs(l2.Eta()),weight*corr); 
+      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+    }
+	  if(typev[ifile]==eEWK) {
+      yield_ewk += weight*corr;
+      yield_ewk_unc += weight*weight*corr*corr;
+      hEWK->Fill(mass,weight*corr); 
+      hMC->Fill(mass,weight*corr);
+
+      hEWKNPV->Fill(npv,weight*corr); 
+      hMCNPV->Fill(npv,weight*corr);
+
+      hEWKZPt->Fill(pt,weight*corr); 
+      hEWKZPt_EffBin->Fill(pt,weight*corr2Bin); 
+      hEWKZPt_EffStatUp->Fill(pt,weight*corrUp);
+      hEWKZPt_EffStatDown->Fill(pt,weight*corrDown);
+      hEWKZPt_EffSigShape->Fill(pt,weight*corrSigShape);
+      hEWKZPt_EffBkgShape->Fill(pt,weight*corrBkgShape);
+      hMCZPt->Fill(pt,weight*corr);
+
+      hEWKPhiStar->Fill(phistar,weight*corr);
+      hEWKPhiStar_EffBin->Fill(phistar,weight*corr2Bin); 
+      hEWKPhiStar_EffStatUp->Fill(phistar,weight*corrUp);
+      hEWKPhiStar_EffStatDown->Fill(phistar,weight*corrDown);
+      hEWKPhiStar_EffSigShape->Fill(phistar,weight*corrSigShape);
+      hEWKPhiStar_EffBkgShape->Fill(phistar,weight*corrBkgShape);
+      hMCPhiStar->Fill(phistar,weight*corr);
+
+      hEWKZRap->Fill(fabs(rapidity),weight*corr); 
+      hEWKZRap_EffBin->Fill(fabs(rapidity),weight*corr2Bin);
+      hEWKZRap_EffStatUp->Fill(fabs(rapidity),weight*corrUp);
+      hEWKZRap_EffStatDown->Fill(fabs(rapidity),weight*corrDown);
+      hEWKZRap_EffSigShape->Fill(fabs(rapidity),weight*corrSigShape);
+      hEWKZRap_EffBkgShape->Fill(fabs(rapidity),weight*corrBkgShape);
+      hMCZRap->Fill(fabs(rapidity),weight*corr);
+
+      hEWKLep1Pt->Fill(l1.Pt(),weight*corr);
+      hEWKLep1Pt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+      hEWKLep1Pt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+      hEWKLep1Pt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+      hEWKLep1Pt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+      hEWKLep1Pt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+
+      hEWKLep2Pt->Fill(l2.Pt(),weight*corr);
+      hEWKLep2Pt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+      hEWKLep2Pt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+      hEWKLep2Pt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+      hEWKLep2Pt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+      hEWKLep2Pt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
+
+	    if(lq1<0)	{
+        hEWKLepNegPt->Fill(l1.Pt(),weight*corr);
+        hEWKLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+        hEWKLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+        hEWKLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+        hEWKLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+        hEWKLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+        hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+        
+        hEWKLepPosPt->Fill(l2.Pt(),weight*corr);
+        hEWKLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+        hEWKLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+        hEWKLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+        hEWKLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+        hEWKLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+        hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+      } else {
+        hEWKLepNegPt->Fill(l2.Pt(),weight*corr);
+        hEWKLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+        hEWKLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+        hEWKLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+        hEWKLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+        hEWKLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+        hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+        
+        hEWKLepPosPt->Fill(l1.Pt(),weight*corr);
+        hEWKLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+        hEWKLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+        hEWKLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+        hEWKLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+        hEWKLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+        hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+      }
+
+      hEWKLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
+      hEWKLep1Eta_EffBin->Fill(fabs(l1.Eta()),weight*corr2Bin);
+      hEWKLep1Eta_EffStatUp->Fill(fabs(l1.Eta()),weight*corrUp);
+      hEWKLep1Eta_EffStatDown->Fill(fabs(l1.Eta()),weight*corrDown);
+      hEWKLep1Eta_EffSigShape->Fill(fabs(l1.Eta()),weight*corrSigShape);
+      hEWKLep1Eta_EffBkgShape->Fill(fabs(l1.Eta()),weight*corrBkgShape);
+      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+
+      hEWKLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+      hEWKLep2Eta_EffBin->Fill(fabs(l2.Eta()),weight*corr2Bin);
+      hEWKLep2Eta_EffStatUp->Fill(fabs(l2.Eta()),weight*corrUp);
+      hEWKLep2Eta_EffStatDown->Fill(fabs(l2.Eta()),weight*corrDown);
+      hEWKLep2Eta_EffSigShape->Fill(fabs(l2.Eta()),weight*corrSigShape);
+      hEWKLep2Eta_EffBkgShape->Fill(fabs(l2.Eta()),weight*corrBkgShape);
+      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+    }
+	  if(typev[ifile]==eTop) {
+      yield_top += weight*corr;
+      yield_top_unc += weight*weight*corr*corr;
+      hTop->Fill(mass,weight*corr); 
+      hMC->Fill(mass,weight*corr);
+
+      hTopNPV->Fill(npv,weight*corr); 
+      hMCNPV->Fill(npv,weight*corr);
+
+      hTopZPt->Fill(pt,weight*corr); 
+      hTopZPt_EffBin->Fill(pt,weight*corr2Bin); 
+      hTopZPt_EffStatUp->Fill(pt,weight*corrUp);
+      hTopZPt_EffStatDown->Fill(pt,weight*corrDown);
+      hTopZPt_EffSigShape->Fill(pt,weight*corrSigShape); 
+      hTopZPt_EffBkgShape->Fill(pt,weight*corrBkgShape); 
+      hMCZPt->Fill(pt,weight*corr);
+
+      hTopPhiStar->Fill(phistar,weight*corr);
+      hTopPhiStar_EffBin->Fill(phistar,weight*corr2Bin); 
+      hTopPhiStar_EffStatUp->Fill(phistar,weight*corrUp);
+      hTopPhiStar_EffStatDown->Fill(phistar,weight*corrDown);
+      hTopPhiStar_EffSigShape->Fill(phistar,weight*corrSigShape); 
+      hTopPhiStar_EffBkgShape->Fill(phistar,weight*corrBkgShape); 
+      hMCPhiStar->Fill(phistar,weight*corr);
+
+      hTopZRap->Fill(fabs(rapidity),weight*corr); 
+      hTopZRap_EffBin->Fill(fabs(rapidity),weight*corr2Bin);
+      hTopZRap_EffStatUp->Fill(fabs(rapidity),weight*corrUp);
+      hTopZRap_EffStatDown->Fill(fabs(rapidity),weight*corrDown);
+      hTopZRap_EffSigShape->Fill(fabs(rapidity),weight*corrSigShape); 
+      hTopZRap_EffBkgShape->Fill(fabs(rapidity),weight*corrBkgShape); 
+      hMCZRap->Fill(fabs(rapidity),weight*corr);
+
+      hTopLep1Pt->Fill(l1.Pt(),weight*corr);
+      hTopLep1Pt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+      hTopLep1Pt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+      hTopLep1Pt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+      hTopLep1Pt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+      hTopLep1Pt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+
+      hTopLep2Pt->Fill(l2.Pt(),weight*corr);
+      hTopLep2Pt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+      hTopLep2Pt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+      hTopLep2Pt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+      hTopLep2Pt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+      hTopLep2Pt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
+
+      if(lq1<0) {
+        hTopLepNegPt->Fill(l1.Pt(),weight*corr);
+        hTopLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+        hTopLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+        hTopLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+        hTopLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+        hTopLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+        hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+        
+        hTopLepPosPt->Fill(l2.Pt(),weight*corr);
+        hTopLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+        hTopLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+        hTopLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+        hTopLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+        hTopLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+        hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+      } else {
+        hTopLepNegPt->Fill(l2.Pt(),weight*corr);
+        hTopLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+        hTopLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+        hTopLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+        hTopLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+        hTopLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+        hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+        
+        hTopLepPosPt->Fill(l1.Pt(),weight*corr);
+        hTopLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+        hTopLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+        hTopLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+        hTopLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+        hTopLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+        hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+      }
+
+      hTopLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+      hTopLep1Eta_EffBin->Fill(fabs(l1.Eta()),weight*corr2Bin);
+      hTopLep1Eta_EffStatUp->Fill(fabs(l1.Eta()),weight*corrUp);
+      hTopLep1Eta_EffStatDown->Fill(fabs(l1.Eta()),weight*corrDown);
+      hTopLep1Eta_EffSigShape->Fill(fabs(l1.Eta()),weight*corrSigShape);
+      hTopLep1Eta_EffBkgShape->Fill(fabs(l1.Eta()),weight*corrBkgShape);
+      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+
+      hTopLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+      hTopLep2Eta_EffBin->Fill(fabs(l2.Eta()),weight*corr2Bin);
+      hTopLep2Eta_EffStatUp->Fill(fabs(l2.Eta()),weight*corrUp);
+      hTopLep2Eta_EffStatDown->Fill(fabs(l2.Eta()),weight*corrDown);
+      hTopLep2Eta_EffSigShape->Fill(fabs(l2.Eta()),weight*corrSigShape);
+      hTopLep2Eta_EffBkgShape->Fill(fabs(l2.Eta()),weight*corrBkgShape);
+      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+    }
+	}
     }
     
     delete infile;
