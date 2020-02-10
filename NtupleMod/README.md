@@ -60,5 +60,6 @@ The code for this is fairly contained, just two macros and some scripts to run.
 * runFitsMu5.sh
 * runFitsEle5.sh 
 
+The selection code now allows for splitting the ntuple selection into smaller sections, and stores the output in directories with ntuple_{i}_{N} for the i-th section out of N total. The repsective variables in the scripts here should match how the selection was done. The ntuples can be combined after running this step by using hadd.
 
 
