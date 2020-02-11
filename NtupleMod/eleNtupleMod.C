@@ -25,15 +25,11 @@
 #include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"            // various helper functions
-// #include "../Utils/CPlot.hh"              // helper class for plots
 #include "../Utils/MitStyleRemix.hh"      // style settings for drawing
-// #include "../Utils/WModels.hh"            // definitions of PDFs for fitting
 #include "../Utils/RecoilCorrector_asym2.hh"
-// #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 // helper class to handle efficiency tables
 #include "../Utils/CEffUser1D.hh"
 #include "../Utils/CEffUser2D.hh"
-
 //helper class to handle rochester corrections
 #include <../RochesterCorr/RoccoR.cc>
 
@@ -60,8 +56,6 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   bool doEta = true; // eta-binned 3-Gaus fit
   bool doStat = true; //  Statistical Uncertainty
   int nNV = 10;
-  // int nNV = 2; //TEST
-  // which MET type we use
   bool doPF = true;
   
   std::string u1_name; std::string u2_name;
@@ -100,12 +94,10 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   const Double_t ELE_MASS   = 0.000511;
  
  
-  // TString effDir =  "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
-  TString effDir =  "/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV_v5_EleMedID2017/results/Zee/";
+  TString effDir =  "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
   AppEffSF effs(effDir);
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
   effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
-  // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   effs.loadUncSel(SysFileGSFSel);
   TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
 
@@ -122,7 +114,6 @@ void eleNtupleMod(const TString  outputDir,   // output directory
  //   Load the Recoil Correction Files
  // ------------------------------------------------------------------------------------------------------------------------------------------
   // ===================== Recoil correction files ============================
-  // const TString directory("/afs/cern.ch/user/s/sabrandt/lowPU/CMSSW_9_4_12/src/MitEwk13TeV/Recoil");
   const TString directory("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil");
   
   // New Recoil Correctors for everything

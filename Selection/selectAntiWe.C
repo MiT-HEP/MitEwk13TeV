@@ -470,11 +470,13 @@ void selectAntiWe(const TString conf="we.conf", // input file
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
-              // eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
-              // eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
-              
+              if(is13TeV){
+                eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
+                eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
+              } else {
+                eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
+                eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
+              }
               if(sigma==0){
                 (vEle) *= eleScale;
               }else if(sigma==1){

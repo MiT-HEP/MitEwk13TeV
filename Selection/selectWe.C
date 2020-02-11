@@ -209,6 +209,7 @@ void selectWe(const TString conf="we.conf", // input file
     Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
     else if (isam==0) isData=kTRUE;
+    cout << "hello, doing file" << " " << snamev[isam] << endl;
 
     // std::cout << "string compare1 " << snamev[isam].CompareTo("we",TString::kIgnoreCase) << std::endl;
     // std::cout << "string compare2 " << snamev[isam].CompareTo("wx",TString::kIgnoreCase) << std::endl;
@@ -218,7 +219,7 @@ void selectWe(const TString conf="we.conf", // input file
     Bool_t isSignal=false;
     Bool_t isWrongFlavor=false;
     if(is13TeV){
-      isSignal = (snamev[isam].CompareTo("we0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("we1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("we2",TString::kIgnoreCase)==0);
+      isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0||snamev[isam].CompareTo("we0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("we1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("we2",TString::kIgnoreCase)==0);
       isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
     } else {
       isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
@@ -361,7 +362,9 @@ void selectWe(const TString conf="we.conf", // input file
       
       Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
+      cout << "Check gen info" << endl;
       if(hasGen) {
+        cout << "Has Gen levl info" << endl;
         eventTree->SetBranchAddress("GenEvtInfo", &gen); genBr = eventTree->GetBranch("GenEvtInfo");
         eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
       }
@@ -497,10 +500,13 @@ void selectWe(const TString conf="we.conf", // input file
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
 
-              eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
-              // eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
-              // eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
+              if(is13TeV){
+                eleScale = eleCorr.scaleCorr(info->runNum, eTregress, eleAbsEta, ele->r9);
+                eleError = eleCorr.scaleCorrUncert(info->runNum, eTregress, eleAbsEta, ele->r9);
+              } else {
+                eleScale = eleCorr.scaleCorr(306936, eTregress, eleAbsEta, ele->r9);
+                eleError = eleCorr.scaleCorrUncert(306936, eTregress, eleAbsEta, ele->r9);
+              }
               
               if(sigma==0){
                 (vEle) *= eleScale;

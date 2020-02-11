@@ -550,12 +550,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
       // if(tag->r9>0.94) continue;
 
-
+              if(is13TeV){
               tagScale = ec.scaleCorr(info->runNum, eTregress, tagAbsEta, tag->r9);
               tagError = ec.scaleCorrUncert(info->runNum, eTregress, tagAbsEta, tag->r9,gainSeed,1);
               tagSCScale = ec.scaleCorr(info->runNum, tagSCEt, tagSCAbsEta, tag->r9);
               tagSCError = ec.scaleCorrUncert(info->runNum, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
-              if(!is13TeV){
+              } else {
                 tagScale = ec.scaleCorr(306936, eTregress, tagAbsEta, tag->r9);
                 tagError = ec.scaleCorrUncert(306936, eTregress, tagAbsEta, tag->r9,gainSeed,1);
                 tagSCScale = ec.scaleCorr(306936, tagSCEt, tagSCAbsEta, tag->r9);
@@ -689,10 +689,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             bool  probeisBarrel = probeAbsEta < 1.4442;
             
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
-              probeScale = ec.scaleCorr(info->runNum, probeEt, probeAbsEta, scProbe->r9);
-              probeError = ec.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
+              if(is13TeV){
+                probeScale = ec.scaleCorr(info->runNum, probeEt, probeAbsEta, scProbe->r9);
+                probeError = ec.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
               
-              if(!is13TeV){
+              } else {
                 probeScale = ec.scaleCorr(306936, probeEt, probeAbsEta, scProbe->r9);
                 probeError = ec.scaleCorrUncert(306936, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
               }
@@ -763,12 +764,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
                 // eleProbeScale = ec.scaleCorr(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
                 // eleProbeError = ec.scaleCorrUncert(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
 
-                eleProbeScale = ec.scaleCorr(info->runNum, eTregress, eleProbeAbsEta, eleProbe->r9);
-                eleProbeError = ec.scaleCorrUncert(info->runNum, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
-                eleProbeSCScale = ec.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
-                eleProbeSCError = ec.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
+                if(is13TeV) {
+                  eleProbeScale = ec.scaleCorr(info->runNum, eTregress, eleProbeAbsEta, eleProbe->r9);
+                  eleProbeError = ec.scaleCorrUncert(info->runNum, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
+                  eleProbeSCScale = ec.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
+                  eleProbeSCError = ec.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
                 
-                if(!is13TeV){
+                } else {
                   eleProbeScale = ec.scaleCorr(306936, eTregress, eleProbeAbsEta, eleProbe->r9);
                   eleProbeError = ec.scaleCorrUncert(306936, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
                   eleProbeSCScale = ec.scaleCorr(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
