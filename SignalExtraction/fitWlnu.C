@@ -24,30 +24,8 @@
 #include <TGaxis.h>
 #include "TLorentzVector.h"           // 4-vector class
 
-#include "BaconAna/DataFormats/interface/TGenParticle.hh"  
-
-#include "../Utils/MyTools.hh"            // various helper functions
-#include "../Utils/CPlot.hh"              // helper class for plots
-#include "../Utils/MitStyleRemix.hh"      // style settings for drawing
-#include "../Utils/WModels.hh"            // definitions of PDFs for fitting
-// #include "../Utils/RecoilCorrector_asym2.hh"
-// #include "../Utils/RecoilCorrector_addJets.hh"
-// #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 #include "Math/MinimizerOptions.h"
 #include "Math/Minimizer.h"
-
-#include "../Utils/AppEffSF.cc"
-// #include "ZBackgrounds.hh"
-
-// // // helper class to handle rochester corrections
-// // // #include <rochcor2015r.h>
-// // // #include <muresolution_run2r.h>
-// #include <../RochesterCorr/RoccoR.cc>
-
-// // // helper class to handle efficiency tables
-// #include "../Utils/CEffUser1D.hh"
-// #include "../Utils/CEffUser2D.hh"
-
 // RooFit headers
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -64,6 +42,17 @@
 #include "RooWorkspace.h"
 #include "RooConstVar.h"
 #include "RooMinuit.h"
+
+// Bacon
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"  
+
+// Custom tools from this package
+#include "../Utils/MyTools.hh"            // various helper functions
+#include "../Utils/CPlot.hh"              // helper class for plots
+#include "../Utils/MitStyleRemix.hh"      // style settings for drawing
+#include "../Utils/WModels.hh"            // definitions of PDFs for fitting
+#include "../Utils/AppEffSF.cc"
+
 #endif
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -244,83 +233,18 @@ double isoTrkCut=9999;
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
-  // MET histogram binning and range
-  // const Int_t    NBINS   = 75*4;
-  // const Int_t    NBINS   = 125;
-  // const Int_t    NBINS   = 50;
-  // const Int_t    NBINS   = 100;
-  
   const Double_t PT_CUT  = 25;
-  // const Double_t PT_CUT  = 30;
-  // const Double_t PT_CUT  = 35;
   const Double_t ETA_CUT = 2.4;
-  // const Double_t ETA_CUT = 1.4442;
   
   const Double_t MT_CUT = 40.0;
-  
   const Double_t mu_MASS = 0.1057;
-
-  //
-  // Set up output file
-  //
-  // TString outfilename = outputDir + TString("/") + TString("Zmm_DataBkg.root");
-  // TFile *outFile = new TFile(outfilename,"RECREATE");
-  // TH1::AddDirectory(kFALSE);
-
-
- 
-  // // -----------------------------------------------------------
-  // TString effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_5TeV/results/Zmm/";
-  // TString sysFileSta = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/SysUnc_MuStaEff.root";
-  // TString sysFileSIT = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/SysUnc_MuSITEff.root";
-  // // string effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
-  // AppEffSF effs(effDir);
-  // effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
-  // effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
-  // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
-  
-  // effs.loadUncSel(sysFileSIT);
-  // effs.loadUncSta(sysFileSta);
- 
-  // TString effDir =  "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
-  // TString effDir =  "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV_v5/results/Zee/";
-  // TString SysFileGSFSel = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics/SysUnc_EleGSFSelEff.root";
-  // AppEffSF effs(effDir);
-  // effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
-  // effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
-  // // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
-  // effs.loadUncSel(SysFileGSFSel);
-  
   
   TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
-  
-  // not sure i'll be needing these?
-  // ----------------------------------------------------
-  // Load the plots of relative difference, to create the up/down shapes
-  // TFile *_rdWmp = new TFile("shapeDiff/Wmp_relDiff.root");
-  // TFile *_rdWmm = new TFile("shapeDiff/Wmm_relDiff.root");
-  
-  // TH1D *hh_diffm = new TH1D("hh_diffm","hh_diffm",75,0,150);
-  // TH1D *hh_diffp = new TH1D("hh_diffp","hh_diffp",75,0,150);
-  
-  // hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
-  // hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
   
   RooMsgService::instance().setSilentMode(true);
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   // -----------------------------------------------------
-  
-  // // Load the Z data and Z MC Pt spectra
-  // TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
-  // TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal"); 
-  // hh_mc->Scale(1/hh_mc->Integral()); // normalize
-  
-  // // TFile *_rat2 = new TFile("shapeDiff/UnfoldingOutputZPt.root");
-  // // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // // hh_diff = (TH1D*)_rat2->Get("hUnfold");
-  // // hh_diff->Scale(1/hh_diff->Integral()); // normalize
-  // // hh_diff->Divide(hh_mc);
+
    
   //
   // input ntuple file names
@@ -331,6 +255,8 @@ double isoTrkCut=9999;
   
   if(flav.CompareTo("Wenu") == 0 && lumi < 250){
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));  typev.push_back(eData);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wep_powheg_select.root"));  typev.push_back(eWlnu);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wem_powheg_select.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eWlnu);
@@ -353,36 +279,20 @@ double isoTrkCut=9999;
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wep_powheg_select.root")); typev.push_back(eAntiWlnu);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wem_powheg_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we0_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we1_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we2_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top1_select.root"));  typev.push_back(eAntiTtb);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top2_select.root"));  typev.push_back(eAntiTtb);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top3_select.root"));  typev.push_back(eAntiTtb);
-   
-    // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));  typev.push_back(eData);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.root"));  typev.push_back(eWx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eZxx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.root")); typev.push_back(eTtb);
-   
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we_select.root")); typev.push_back(eAntiWlnu);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
   }
   // // // // 13 TEV Muon Channel
   if(flav.CompareTo("Wmunu") == 0 && lumi < 250){
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wmp_powheg_select.raw.root"));  typev.push_back(eWlnu);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wmm_powheg_select.raw.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
@@ -405,32 +315,14 @@ double isoTrkCut=9999;
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wmp_powheg_select.root")); typev.push_back(eAntiWlnu);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wmm_powheg_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm0_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm1_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm2_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top1_select.root"));  typev.push_back(eAntiTtb);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top2_select.root"));  typev.push_back(eAntiTtb);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top3_select.root"));  typev.push_back(eAntiTtb);
-   
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
-
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
   }
  
   // // // For the 5 TeV
@@ -529,16 +421,8 @@ double isoTrkCut=9999;
   TH1D *hWlnuMetpPhi   = new TH1D("hWlnuMetpPhi","",  100,-3.15, 6.30); hWlnuMetpPhi->Sumw2();
   TH1D *hWlnuMetmPhi   = new TH1D("hWlnuMetmPhi","",  100,-3.15, 6.30); hWlnuMetmPhi->Sumw2();
   
-  
-  // TH1D **hAntiDataMetIsoBins   = new TH1D*[5];// hAntiDataMet->Sumw2();
-  TH1D **hDataMetm2d  = new TH1D*[nIsoBins];// hAntiDataMetm->Sumw2();  
-  TH1D **hDataMetp2d  = new TH1D*[nIsoBins];// hAntiDataMetp->Sumw2();
-  // TH1D **hAntiWlnuMetIsoBins   = new TH1D*[5];// hAntiWlnuMet->Sumw2();
-  // these are the uncorrected shapes
-  TH1D **hWlnuMetp2d  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+
   // All teh uncertainties? 
-  // this is an array of arrays of histograms // first index is iso bin, 2nd is uncertainty shape
   TH1D ***hWlnupMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
   TH1D ***hWlnumMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
   TH1D ***hWlnupMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
@@ -749,10 +633,18 @@ double isoTrkCut=9999;
     hTtbmLHE[i]  = new TH1D*[nQCD+nPDF];
     
   }
-  // TH1D **hAntiEWKMetIsoBins    = new TH1D*[5];// hAntiEWKMet->Sumw2();
+  
+  // -----------------------------------------------------------------------
+  //           the main shapes  
+  // -----------------------------------------------------------------------
+  TH1D **hDataMetm2d  = new TH1D*[nIsoBins];// hAntiDataMetm->Sumw2();  
+  TH1D **hDataMetp2d  = new TH1D*[nIsoBins];// hAntiDataMetp->Sumw2();
+  
+  TH1D **hWlnuMetp2d  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  
   TH1D **hEWKMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hEWKMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  
   
   TH1D **hDibMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hDibMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
@@ -762,7 +654,6 @@ double isoTrkCut=9999;
   
   TH1D **hWxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hWxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // eta binned
   
   TH1D **hZxxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hZxxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
@@ -848,9 +739,6 @@ double isoTrkCut=9999;
         sprintf(type,"%i_%sUp",i,(vWeight[j]).c_str());
       }
       
-      // Wlnu
-      // sprintf(hname,"hWlnuMetpBin%s",type);
-      // hWlnupMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       sprintf(hname,"hWlnuMetpBin%s",type);
       hWlnupWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       sprintf(hname,"hWlnuMetmBin%s",type);
@@ -946,21 +834,12 @@ double isoTrkCut=9999;
   double tolerance = ROOT::Math::MinimizerOptions::DefaultTolerance();
   string algo = ROOT::Math::MinimizerOptions::DefaultMinimizerAlgo();
   string type = ROOT::Math::MinimizerOptions::DefaultMinimizerType();
-  // ROOT::Math::MinimizerOptions::SetStrategy(2);
   int strategy= ROOT::Math::MinimizerOptions::DefaultStrategy();
-  // int strategy= ROOT::Math::MinimizerOptions::Strategy();
 
   int precision= ROOT::Math::MinimizerOptions::DefaultPrecision();
   int MaxFunctionCalls= ROOT::Math::MinimizerOptions::DefaultMaxFunctionCalls();
   int MaxIterations= ROOT::Math::MinimizerOptions::DefaultMaxIterations();
 
-  cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " tolerance " << tolerance << " strategy " << strategy << " precision " << precision << " MaxIterations " << MaxIterations << " MaxFunctionCalls " << MaxFunctionCalls << endl;
-
-  // TFile *_rat2 = new TFile("TEST_Zmm_13TeV_incl_ZpTrw_v0/zPt_Normal13TeV.root");
-  // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // hh_diff = (TH1D*)_rat2->Get("hZptRatio");  
-
-//   
   //
   // Declare variables to read in ntuple
   //
@@ -973,10 +852,7 @@ double isoTrkCut=9999;
   TLorentzVector *lep=0, *lep_raw=0, *genV=0, *genLep=0;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso, trkIso;
   Double_t mtCorr;
-  // Double_t (*metVars)[no], (*metVars)[cent], (*metVars)[eta], metCorrStat, (*metVars)[keys], mtCorr;
-  // Double_t (*metVarsPhi)[no], (*metVarsPhi)[cent], (*metVarsPhi)[eta], metCorrStatPhi, (*metVarsPhi)[keys];
   Double_t effSFweight=1, relIso;
-  // Double_t (*evtWeight)SysFSR=1, (*evtWeight)SysMC=1, (*evtWeight)SysBkg=1,totalEvtWeight=1, ;
 
 
   vector<Double_t>  *metVars=0, *metVarsPhi=0;
@@ -1039,15 +915,14 @@ double isoTrkCut=9999;
     intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
     // intree->SetBranchAddress("deta",        &deta);         // pdf and qcdwgtLum[main]s
   
-    TH1D* hGenWeights;
-    double totalNorm = 1.0;
-    cout << "Hello " << endl;
+    TH1D* hGenWeights; double totalNorm = 1.0;
+    // cout << "Hello " << endl;
     // if(typev[ifile] != eData && typev[ifile] != eAntiData && !(flav.CompareTo("Wmunu") == 0)){
     if(typev[ifile] != eData && typev[ifile] != eAntiData){
-      cout << "get gen weights" << endl;
+      // cout << "get gen weights" << endl;
       hGenWeights = (TH1D*)infile->Get("hGenWeights");
       totalNorm = hGenWeights->Integral();
-      cout << totalNorm << endl;
+      // cout << totalNorm << endl;
     }
   
     UInt_t iterator=100;
@@ -1061,108 +936,33 @@ double isoTrkCut=9999;
     }
     // if(typev[ifile]==eTtb) frac=1;
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
     // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
-    // for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
+    for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
       if(ientry%1000000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
 
       if(lep->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
-      // if(fabs(lep->Eta()) < ETA_CUT || fabs(lep->Eta()) > 2.4) continue;//std::cout << " pass eta " << std::endl;
-        Double_t corr=1, corrdu=1, corrdd=1, corrmu=1, corrmd=1;
-        Double_t corrFSR=1;
-        Double_t corrMC=1;
-        Double_t corrBkg=1;
-        Double_t corrTag=1;
-        vector<double> wgtLum;
-      // for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/prefireWeight);
-      // corr = effs.fullEfficiencies(lep,q);
-      // // For muons
-      // vector<double> uncs_sta = effs.getUncSta(lep,q);
-      // vector<double> uncs_sit = effs.getUncSel(lep,q);
-      
-      // corrFSR *= uncs_sta[0]*uncs_sit[0]*effs.computeHLTSF(lep,q); // alternate fsr model
-      // corrMC  *= uncs_sta[1]*uncs_sit[1]*effs.computeHLTSF(lep,q); // alternate mc gen model
-      // corrBkg *= uncs_sta[2]*uncs_sit[2]*effs.computeHLTSF(lep,q); // alternate bkg model
-      // corrTag *= uncs_sta[3]*uncs_sit[3]*effs.computeHLTSF(lep,q); // alternate bkg model
+      Double_t corr=1, corrdu=1, corrdd=1, corrmu=1, corrmd=1;
+      Double_t corrFSR=1;
+      Double_t corrMC=1;
+      Double_t corrBkg=1;
+      Double_t corrTag=1;
+      vector<double> wgtLum;
 
-      // double var=0.;        
-      // // var += effs.statUncSta(&l1, q) + effs.statUncSta(&l2, q2);
-      // var += effs.statUncSta(lep, q, hErr, hErr, 1.0);
-      // var += effs.statUncSel(lep, q, hErr, hErr, 1.0);
-      // var += effs.statUncHLT(lep, q, hErr, hErr, 1.0);
-      
-        // For Electrons
-        // vector<double> uncs_gsf = effs.getUncSel(lep,q);
-        
-        // corrFSR *= uncs_gsf[0]*effs.computeHLTSF(lep,q); // alternate fsr model
-        // corrMC  *= uncs_gsf[1]*effs.computeHLTSF(lep,q); // alternate mc gen model
-        // corrBkg *= uncs_gsf[2]*effs.computeHLTSF(lep,q); // alternate bkg model
-        // corrTag *= uncs_gsf[3]*effs.computeHLTSF(lep,q); // alternate bkg model
-        
-        // double var=0.;        
-        // var += effs.statUncSta(&l1, q1) + effs.statUncSta(&l2, q2);
-        // var += effs.statUncSel(&l1, q1, hErr, hErr, fabs(weight)*corr);
-        // var += effs.statUncSel(&l2, q2, hErr, hErr, fabs(weight)*corr);
-        // var += effs.statUncHLTDilep(&l1, q1, &l2, q2);
-    
-      // (*evtWeight)[main]=corr*scale1fb*prefireWeight;
-      // (*evtWeight)[fsr]=corrFSR*scale1fb*prefireWeight;
-      // (*evtWeight)[mc] =corrMC*scale1fb*prefireWeight;
-      // (*evtWeight)[bkg]=corrBkg*scale1fb*prefireWeight;
-      // (*evtWeight)[tagpt]=corrTag*scale1fb*prefireWeight;
-      // (*evtWeight)[effstat]=var*scale1fb*prefireWeight*scale1fb*prefireWeight;
-      // (*evtWeight)[pfireu]=corr*scale1fb*prefireUp;
-      // (*evtWeight)[pfired]=corr*scale1fb*prefireDown;
-
-      
-      // Enforce the flat tight ID Cut
-      // relIso = pfCombIso/lep->Pt();
-    // if(typev[ifile]==eData || typev[ifile]==eWlnu || typev[ifile]==eWx|| typev[ifile]==eZxx || typev[ifile]==eDib || typev[ifile]==eTtb) {
-      // if(!pass2015Iso(pfCombIso/lep->Pt(),lep->Eta())) continue;
-    // }
-      
-    // if(typev[ifile]==eAntiData || typev[ifile]==eAntiWlnu ||typev[ifile]==eAntiWx|| typev[ifile]==eAntiZxx || typev[ifile]==eAntiDib || typev[ifile]==eAntiTtb) {
-      // // // some shit to correctly fill the isolation bins
-      // setRelIsoVarCR(relIso,lep->Pt(),lep->Eta());
-    // }
-      
-      // wgtLum.push_back(lumi*((*evtWeight)[0])/totalNorm);
-      // if(typev[ifile]==eAntiWlnu ||typev[ifile]==eAntiWx|| typev[ifile]==eAntiZxx ){
-          // wgtLum[0]*=1.05;
-        // }
       for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/totalNorm);
       
       if(overwriteMET && typev[ifile] != eData && typev[ifile] != eAntiData){
         makeUncMT(*metVars, *metVarsPhi, lep);
-      } else if (overwriteMET) {
-        (*metVars)[no] = mtCorr;
-      }
-      // cout << "mt corr = " << mtCorr << "   new calculation: " <<  (*metVars)[no] << endl;
-      // set up the mT
-      // if(typev[ifile]==eTtb || typev[ifile]==eDib|| typev[ifile]==eAntiWlnu|| typev[ifile]==eAntiDib|| typev[ifile]==eAntiTtb|| typev[ifile]==eAntiZxx|| typev[ifile]==eAntiWx) {
-        // mtCorr  = sqrt( 2.0 * (lep->Pt()) * ((*metVars)[no]) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),((*metVars)[no])))) );
-      // }
-      
-      // cout << "mt " << (*metVars)[no] << " " << (*metVars)[no] << " " << mtCorr << endl;
-      
+      } else if (overwriteMET) (*metVars)[no] = mtCorr;
+
       if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
       if(typev[ifile]==eData) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
         
-        
-        // if(abs(lep->Eta())<1.4442){
-          // // if(pfCombIso/lep->Pt() >= 0.0354) continue;
-          // hBarrelIsoPosData->Fill(lep->Pt(),pfCombIso/lep->Pt());
-          // hBarrelIsoNegData->Fill(lep->Pt(),relIso);
-        // } else {
-          // // if(pfCombIso/lep->Pt() >= 0.0646) continue;
-          // hEndcapIsoPosData->Fill(lep->Pt(),pfCombIso/lep->Pt());
-          // hEndcapIsoNegData->Fill(lep->Pt(),relIso);
-        // }
         hDataMet->Fill((*metVars)[no]);
         if(q>0) {
           doMET ? hDataMetp->Fill((*metVars)[no]) : hDataMetp->Fill(mtCorr);
@@ -1180,13 +980,10 @@ double isoTrkCut=9999;
           hMetmIsoValues[0]->Fill(relIso);
         }
       } else if(typev[ifile]==eAntiData) {
-        // relIso = 1.0;
         if(abs(lep->Eta())<1.4442){
-        // if(pfCombIso/lep->Pt() < 0.05) continue;
           if(q > 0)hBarrelIsoPosData->Fill(lep->Pt(),pfCombIso/lep->Pt());
           else hBarrelIsoNegData->Fill(lep->Pt(),relIso);
         } else {
-          // if(pfCombIso/lep->Pt() < 0.09) continue;
           if(q > 0)hEndcapIsoPosData->Fill(lep->Pt(),pfCombIso/lep->Pt());
           else hEndcapIsoNegData->Fill(lep->Pt(),relIso);
         }
@@ -1212,10 +1009,8 @@ double isoTrkCut=9999;
       } else if(typev[ifile]==eWlnu) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
-        // std::cout << "doing signal" << std::endl;
         int bin=0;
         if(typev[ifile]==eWlnu){
-          // cout << "in wlnu " <<  scale1fb << " " << lumi << " " << prefireWeight << endl;
           // start filling the counters
           if(prefireWeight > 1 &&prefireWeight <= 2 ){
             prefireWeight/=2;
@@ -1240,23 +1035,6 @@ double isoTrkCut=9999;
           
         }
         
-        // if(abs(lep->Eta())<1.4442){
-          // // if(pfCombIso/lep->Pt() >= 0.0354) continue;
-          // hBarrelIsoPosWsig->Fill(lep->Pt(),pfCombIso/lep->Pt());
-          // hBarrelIsoNegWsig->Fill(lep->Pt(),relIso);
-        // } else {
-          // // if(pfCombIso/lep->Pt() >= 0.0646) continue;
-          // hEndcapIsoPosWsig->Fill(lep->Pt(),pfCombIso/lep->Pt());
-          // hEndcapIsoNegWsig->Fill(lep->Pt(),relIso);
-        // }
-        // for(int i = 0; i <= hh_diff->GetNbinsX();++i){
-          // if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
-        // }
-        // double w2 =  hh_diff->GetBinContent(bin);
-        //wgtLum[main]*=w2;
-        // quick and dirty rescaling for the W+njets for 13 tev
-        // cross sections used: 55980,  7060 , 1577
-        // // should be: 50131.98+8426.09+3172.96
         hWlnuMet->Fill((*metVars)[cent],wgtLum[main]);
         if(q>0){
           hMuonEtaMCp->Fill(fabs(lep->Eta()),wgtLum[main]);
@@ -1277,7 +1055,6 @@ double isoTrkCut=9999;
       } else if(typev[ifile]==eWx) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
-        // std::cout << "doing Wx" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
           doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
@@ -1426,124 +1203,6 @@ double isoTrkCut=9999;
       }
     }
   }
- // // char plotname[100];
-  // TCanvas *canv = MakeCanvas("canv","canv",800,600);
-  // TH1D *hBarMCProj = hBarrelIsoPosWsig->ProjectionY("_py");
-  // hBarMCProj->SetLineColor(kRed);
-  // hBarMCProj->DrawNormalized();
-  // TH1D *hBarDatProj = hBarrelIsoPosData->ProjectionY("_py");
-  // hBarDatProj->SetMarkerColor(kBlack);
-  // hBarDatProj->DrawNormalized("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_Isolation_hist.png").Data());
-  
-  // TH1D *hEndMCProj = hEndcapIsoPosWsig->ProjectionY("_py");
-  // hEndMCProj->SetLineColor(kRed);
-  // hEndMCProj->DrawNormalized();
-  // TH1D *hEndDatProj = hEndcapIsoPosData->ProjectionY("_py");
-  // hEndDatProj->SetMarkerColor(kBlack);
-  // hEndDatProj->DrawNormalized("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_Isolation_hist.png").Data());
-  
-  // // plot the isolations?
-  // hBarrelIsoPosWsig->SetMarkerColor(kRed);
-  // hBarrelIsoPosWsig->Draw();
-  // hBarrelIsoPosData->SetMarkerColor(kBlack);
-  // hBarrelIsoPosData->Draw("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_Isolation.png").Data());
-  
-  // hEndcapIsoPosWsig->SetMarkerColor(kRed);
-  // hEndcapIsoPosWsig->Draw();
-  // hEndcapIsoPosData->SetMarkerColor(kBlack);
-  // hEndcapIsoPosData->Draw("same");
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_Isolation.png").Data());
-  
-
-  
-  // // Relative Iso variable
-  
-  // TH1D *hBarRelMCProj = hBarrelIsoNegWsig->ProjectionY("_py");
-  // hBarRelMCProj->SetLineColor(kRed);
-  // hBarRelMCProj->DrawNormalized();
-  // TH1D *hBarRelDatProj = hBarrelIsoNegData->ProjectionY("_py");
-  // hBarRelDatProj->SetMarkerColor(kBlack);
-  // hBarRelDatProj->DrawNormalized("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_RelIso_hist.png").Data());
-  
-  // // hBarMCProj->SetLineStyle(7);
-  // hBarMCProj->SetLineColor(kRed-7);
-  // hBarMCProj->DrawNormalized("same");
-  
-  // // hBarDatProj->SetLineStyle(7);
-  // hBarDatProj->SetLineColor(kBlack+2);
-  // hBarDatProj->DrawNormalized("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_All.png").Data());
-  
-  // TH1D *hEndRelMCProj = hEndcapIsoNegWsig->ProjectionY("_py");
-  // hEndRelMCProj->SetLineColor(kRed);
-  // hEndRelMCProj->DrawNormalized();
-  // TH1D *hEndRelDatProj = hEndcapIsoNegData->ProjectionY("_py");
-  // hEndRelDatProj->SetMarkerColor(kBlack);
-  // hEndRelDatProj->DrawNormalized("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_RelIso_hist.png").Data());
-  
-
-  
-  // // hEndMCProj->SetLineStyle(7);
-  // hEndMCProj->SetLineColor(kRed-7);
-  // hEndMCProj->DrawNormalized("same");
-  // // hEndDatProj->SetLineStyle(7);
-  // hEndDatProj->SetLineColor(kBlack+2);
-  // hEndDatProj->DrawNormalized("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_All.png").Data());
-  
-  // // plot the isolations?
-  // hBarrelIsoNegWsig->SetMarkerColor(kRed);
-  // hBarrelIsoNegWsig->Draw();
-  // hBarrelIsoNegData->SetMarkerColor(kBlack);
-  // hBarrelIsoNegData->Draw("same");
-  
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_RelIso.png").Data());
-  
-  // hEndcapIsoNegWsig->SetMarkerColor(kRed);
-  // hEndcapIsoNegWsig->Draw();
-  // hEndcapIsoNegData->SetMarkerColor(kBlack);
-  // hEndcapIsoNegData->Draw("same");
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_RelIso.png").Data());
-  
-  
-  // canv->SetLogz();
-  // hBarrelIsoPosWsig->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_Isolation_MC.png").Data());
-  
-  // hBarrelIsoPosData->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_Isolation_Data.png").Data());
-  
-  // hEndcapIsoPosWsig->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_Isolation_MC.png").Data());
-  
-  // hEndcapIsoPosData->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_Isolation_Data.png").Data());
-  
-  // hBarrelIsoNegWsig->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_RelIso_MC.png").Data());
-  
-  // hBarrelIsoNegData->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Barrel_RelIso_Data.png").Data());
-  
-  // hEndcapIsoNegWsig->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_RelIso_MC.png").Data());
-  
-  // hEndcapIsoNegData->Draw("colz");
-  // canv->SaveAs((CPlot::sOutDir+"/Endcap_RelIso_Data.png").Data());
-  
-  // return;
   
   char sname[50];
   for(int it = 0; it < nIsoBins; it++){
@@ -1601,17 +1260,13 @@ double isoTrkCut=9999;
     hQCDMetm2d[it]->Add(hWlnuMetm2d[it],-1);
 
     for(Int_t ibin=1; ibin<=hQCDMetp2d[it]->GetNbinsX(); ibin++) {
-      {
-	if(hQCDMetp2d[it]->GetBinContent(ibin)<0)
-	  {
-	    hQCDMetp2d[it]->SetBinContent(ibin,0);
-	    hQCDMetp2d[it]->SetBinError(ibin,1.8);
-	  }
-	if(hQCDMetm2d[it]->GetBinContent(ibin)<0)
-	  {
-	    hQCDMetm2d[it]->SetBinContent(ibin,0);
-	    hQCDMetm2d[it]->SetBinError(ibin,1.8);
-	  }
+      if(hQCDMetp2d[it]->GetBinContent(ibin)<0) {
+        hQCDMetp2d[it]->SetBinContent(ibin,0);
+        hQCDMetp2d[it]->SetBinError(ibin,1.8);
+      }
+      if(hQCDMetm2d[it]->GetBinContent(ibin)<0) {
+        hQCDMetm2d[it]->SetBinContent(ibin,0);
+        hQCDMetm2d[it]->SetBinError(ibin,1.8);
       }
     }
    
@@ -1636,7 +1291,7 @@ double isoTrkCut=9999;
     }
     
   }
-  std::cout << "blahasfadsfa " << std::endl;
+  // std::cout << "blahasfadsfa " << std::endl;
   for(int it=0; it<1; it++){
     
     for(int i=0; i < nWeight; i++){
@@ -1691,13 +1346,13 @@ double isoTrkCut=9999;
   txtfilePF << "---- W+ ----- " << endl;
   txtfilePF << "No PF: " << noPrefire_Wp << endl;
   txtfilePF << "PF: " << prefire_Wp << "  scale factor: " << noPrefire_Wp/prefire_Wp << endl;
-  txtfilePF << "PF (jet only): " << prefireJet_Wp << endl;
-  txtfilePF << "PF (photon only): " << prefirePhoton_Wp << endl << endl;
+  txtfilePF << "PF (jet only): " << prefireJet_Wp << "  scale factor: " << noPrefire_Wp/prefireJet_Wp << endl;
+  txtfilePF << "PF (photon only): " << prefirePhoton_Wp << "  scale factor: " << noPrefire_Wp/prefirePhoton_Wp << endl << endl;
   txtfilePF << "---- W- ----- " << endl;
   txtfilePF << "No PF: " << noPrefire_Wm << endl;
   txtfilePF << "PF: " << prefire_Wm << "  scale factor: " << noPrefire_Wm/prefire_Wm << endl;
-  txtfilePF << "PF (jet only): " << prefireJet_Wm << endl;
-  txtfilePF << "PF (photon only): " << prefirePhoton_Wm << endl << endl;
+  txtfilePF << "PF (jet only): " << prefireJet_Wm << "  scale factor: " << noPrefire_Wm/prefireJet_Wm << endl;
+  txtfilePF << "PF (photon only): " << prefirePhoton_Wm << "  scale factor: " << noPrefire_Wm/prefirePhoton_Wm << endl << endl;
   txtfilePF.close();
    
     ofstream txtfile2;
