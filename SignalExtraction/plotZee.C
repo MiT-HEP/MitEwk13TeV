@@ -287,9 +287,9 @@ void plotZee(const TString  inputDir,    // input directory
   CPlot::sOutDir = outputDir;  
 
   // histograms for full selection
-  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,200};
   double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
-  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
   double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
   double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
   double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
@@ -614,7 +614,7 @@ void plotZee(const TString  inputDir,    // input directory
 	    // weight *= scale1fb*lumi/totalNorm;
       }  
       
-      if(!(category==eMuMu2HLT) && !(category==eMuMu1HLT) && !(category==eMuMu1HLT1mu1)) continue;
+      if(!(category==1) && !(category==2) && !(category==3)) continue;
       if(typev[ifile]==eData) {
     
         TLorentzVector el1;
@@ -678,10 +678,15 @@ void plotZee(const TString  inputDir,    // input directory
         Double_t lp2 = lep2->Pt();
         Double_t lq1 = q1;
         Double_t lq2 = q2;
-
+	  
         TLorentzVector l1, l2;
-	      l1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
-	      l2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
+        if(lp1>lp2) {
+          l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+          l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+        } else {
+          l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+          l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+        }
 
         double tagSmear1 = ec.smearingSigma(runNumber, sc1->Pt(), fabs(sc1->Eta()), r91, 12, 0., 0.);
         double tagSmear2 = ec.smearingSigma(runNumber, sc2->Pt(), fabs(sc2->Eta()), r92, 12, 0., 0.);
@@ -1337,7 +1342,8 @@ void plotZee(const TString  inputDir,    // input directory
   sprintf(lumitext,"%.1f fb^{-1}  (13 TeV)",lumi/1000);  
   
   char normtext[100];
-  sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
+  // sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
+  sprintf(normtext,"",MCscale);  
 
   string norm="";
   if(normToData)norm="_norm";
@@ -1692,7 +1698,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeZPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeZPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeZPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeZPt.SetLogx();
+  // plotZeeZPt.SetLogx();
   plotZeeZPt.SetLogy(0);
   plotZeeZPt.SetYRange(0.01,1.2*(hDataZPt->GetMaximum() + sqrt(hDataZPt->GetMaximum())));
   plotZeeZPt.TransLegend(0.1,-0.05);
@@ -1700,7 +1706,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeZPtDiff("zeeZPt"+norm,"","p_{T}^{e^{+}e^{-}} [GeV]","#frac{Data-Pred}{Data}");
   plotZeeZPtDiff.AddHist1D(hZeeZPtDiff,"EX0",ratioColor);
-  plotZeeZPtDiff.SetLogx();
+  // plotZeeZPtDiff.SetLogx();
   plotZeeZPtDiff.SetYRange(-0.2,0.2);
   plotZeeZPtDiff.AddLine(0, 0,1000, 0,kBlack,1);
   plotZeeZPtDiff.AddLine(0, 0.1,1000, 0.1,kBlack,3);
@@ -1715,7 +1721,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeZPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeZPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeZPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeZPt2.SetLogx();
+  // plotZeeZPt2.SetLogx();
   plotZeeZPt2.SetLogy();
   plotZeeZPt2.SetYRange(1e-6*(hDataZPt->GetMaximum()),10*(hDataZPt->GetMaximum()));
   plotZeeZPt2.TransLegend(0.1,-0.05);
@@ -1731,7 +1737,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeePhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeePhiStar.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeePhiStar.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeePhiStar.SetLogx();
+  // plotZeePhiStar.SetLogx();
   plotZeePhiStar.SetLogy(0);
   plotZeePhiStar.SetYRange(0.01,1.2*(hDataPhiStar->GetMaximum() + sqrt(hDataPhiStar->GetMaximum())));
   plotZeePhiStar.TransLegend(0.1,-0.05);
@@ -1739,7 +1745,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeePhiStarDiff("zeePhiStar"+norm,"","#phi_{#eta}*","#frac{Data-Pred}{Data}");
   plotZeePhiStarDiff.AddHist1D(hZeePhiStarDiff,"EX0",ratioColor);
-  plotZeePhiStarDiff.SetLogx();
+  // plotZeePhiStarDiff.SetLogx();
   plotZeePhiStarDiff.SetYRange(-0.2,0.2);
   plotZeePhiStarDiff.AddLine(0, 0,3, 0,kBlack,1);
   plotZeePhiStarDiff.AddLine(0, 0.1,3, 0.1,kBlack,3);
@@ -1754,7 +1760,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeePhiStar2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeePhiStar2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeePhiStar2.AddTextBox(normtext,0.21,0.75,0.45,0.80,0,13,0.03,-1);
-  plotZeePhiStar2.SetLogx();
+  // plotZeePhiStar2.SetLogx();
   plotZeePhiStar2.SetLogy();
   plotZeePhiStar2.SetYRange(1e-5*(hDataPhiStar->GetMaximum()),10*(hDataPhiStar->GetMaximum()));
   plotZeePhiStar2.TransLegend(0.1,-0.05);
@@ -1808,7 +1814,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep1Pt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep1Pt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLep1Pt.SetLogx();
+  // plotZeeLep1Pt.SetLogx();
   plotZeeLep1Pt.SetLogy(0);
   plotZeeLep1Pt.SetYRange(0.01,1.2*(hDataLep1Pt->GetMaximum() + sqrt(hDataLep1Pt->GetMaximum())));
   plotZeeLep1Pt.TransLegend(0.1,-0.05);
@@ -1816,7 +1822,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLep1PtDiff("zeeLep1Pt"+norm,"","p_{T}(leading electron) [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLep1PtDiff.AddHist1D(hZeeLep1PtDiff,"EX0",ratioColor);
-  plotZeeLep1PtDiff.SetLogx();
+  // plotZeeLep1PtDiff.SetLogx();
   plotZeeLep1PtDiff.SetYRange(-0.2,0.2);
   plotZeeLep1PtDiff.AddLine(25, 0,300, 0,kBlack,1);
   plotZeeLep1PtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
@@ -1831,7 +1837,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep1Pt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep1Pt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep1Pt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLep1Pt2.SetLogx();
+  // plotZeeLep1Pt2.SetLogx();
   plotZeeLep1Pt2.SetLogy();
   plotZeeLep1Pt2.SetYRange(1e-5*(hDataLep1Pt->GetMaximum()),10*(hDataLep1Pt->GetMaximum()));
   plotZeeLep1Pt2.TransLegend(0.1,-0.05);
@@ -1847,7 +1853,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep2Pt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep2Pt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLep2Pt.SetLogx();
+  // plotZeeLep2Pt.SetLogx();
   plotZeeLep2Pt.SetLogy(0);
   plotZeeLep2Pt.SetYRange(0.01,1.2*(hDataLep2Pt->GetMaximum() + sqrt(hDataLep2Pt->GetMaximum())));
   plotZeeLep2Pt.TransLegend(0.1,-0.05);
@@ -1855,7 +1861,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLep2PtDiff("zeeLep2Pt"+norm,"","p_{T}(2nd leading electron) [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLep2PtDiff.AddHist1D(hZeeLep2PtDiff,"EX0",ratioColor);
-  plotZeeLep2PtDiff.SetLogx();
+  // plotZeeLep2PtDiff.SetLogx();
   plotZeeLep2PtDiff.SetYRange(-0.2,0.2);
   plotZeeLep2PtDiff.AddLine(25, 0,150, 0,kBlack,1);
   plotZeeLep2PtDiff.AddLine(25, 0.1,150, 0.1,kBlack,3);
@@ -1870,7 +1876,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep2Pt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep2Pt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep2Pt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLep2Pt2.SetLogx();
+  // plotZeeLep2Pt2.SetLogx();
   plotZeeLep2Pt2.SetLogy();
   plotZeeLep2Pt2.SetYRange(1e-5*(hDataLep2Pt->GetMaximum()),10*(hDataLep2Pt->GetMaximum()));
   plotZeeLep2Pt2.TransLegend(0.1,-0.05);
@@ -1886,7 +1892,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepNegPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepNegPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLepNegPt.SetLogx();
+  // plotZeeLepNegPt.SetLogx();
   plotZeeLepNegPt.SetLogy(0);
   plotZeeLepNegPt.SetYRange(0.01,1.2*(hDataLepNegPt->GetMaximum() + sqrt(hDataLepNegPt->GetMaximum())));
   plotZeeLepNegPt.TransLegend(0.1,-0.05);
@@ -1894,7 +1900,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLepNegPtDiff("zeeLepNegPt"+norm,"","p_{T}^{e^{-}} [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLepNegPtDiff.AddHist1D(hZeeLepNegPtDiff,"EX0",ratioColor);
-  plotZeeLepNegPtDiff.SetLogx();
+  // plotZeeLepNegPtDiff.SetLogx();
   plotZeeLepNegPtDiff.SetYRange(-0.2,0.2);
   plotZeeLepNegPtDiff.AddLine(25, 0,300, 0,kBlack,1);
   plotZeeLepNegPtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
@@ -1909,7 +1915,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepNegPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepNegPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepNegPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLepNegPt2.SetLogx();
+  // plotZeeLepNegPt2.SetLogx();
   plotZeeLepNegPt2.SetLogy();
   plotZeeLepNegPt2.SetYRange(1e-5*(hDataLepNegPt->GetMaximum()),10*(hDataLepNegPt->GetMaximum()));
   plotZeeLepNegPt2.TransLegend(0.1,-0.05);
@@ -1925,7 +1931,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepPosPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepPosPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLepPosPt.SetLogx();
+  // plotZeeLepPosPt.SetLogx();
   plotZeeLepPosPt.SetLogy(0);
   plotZeeLepPosPt.SetYRange(0.01,1.2*(hDataLepPosPt->GetMaximum() + sqrt(hDataLepPosPt->GetMaximum())));
   plotZeeLepPosPt.TransLegend(0.1,-0.05);
@@ -1933,7 +1939,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLepPosPtDiff("zeeLepPosPt"+norm,"","p_{T}^{e^{+}} [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLepPosPtDiff.AddHist1D(hZeeLepPosPtDiff,"EX0",ratioColor);
-  plotZeeLepPosPtDiff.SetLogx();
+  // plotZeeLepPosPtDiff.SetLogx();
   plotZeeLepPosPtDiff.SetYRange(-0.2,0.2);
   plotZeeLepPosPtDiff.AddLine(25, 0,300, 0,kBlack,1);
   plotZeeLepPosPtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
@@ -1948,7 +1954,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepPosPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepPosPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepPosPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLepPosPt2.SetLogx();
+  // plotZeeLepPosPt2.SetLogx();
   plotZeeLepPosPt2.SetLogy();
   plotZeeLepPosPt2.SetYRange(1e-5*(hDataLepPosPt->GetMaximum()),10*(hDataLepPosPt->GetMaximum()));
   plotZeeLepPosPt2.TransLegend(0.1,-0.05);
