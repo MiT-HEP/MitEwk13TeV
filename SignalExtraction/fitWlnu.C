@@ -215,21 +215,7 @@ double isoTrkCut=9999;
   std::cout << "size of weight array is " << nWeight << std::endl;
   std::cout << "size of met array is " << nMET << std::endl;
   
-    // Double_t vIsoBins[] = {0.0,0.025,0.05,0.075,
-                         // 0.1,0.125,0.15,0.175,
-                         // 0.2,0.225,0.25,0.275,
-                         // 0.3,0.325,0.35,0.375,
-                         // 0.4,0.425,0.45,0.475,
-                         // 0.5,0.525,0.55,0.575,
-                         // 0.6,0.7,0.8};
-  // Double_t vIsoBins[] = {0.0,0.05,0.1,0.2,0.3,0.4,0.5};
-  // Double_t vIsoBins[] = {0.0,0.20,0.30,0.40,0.50,0.60,0.70};
   Double_t vIsoBins[] = {0.0,0.15,0.30,0.45,0.55,0.65};
-  // Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
-  // Double_t vIsoBins[] = {0.0,0.05,0.15,0.25,0.35,0.45,0.55,0.65};
-  // Double_t vIsoBins[] = {0.0,0.05,0.25,0.45,0.65};
-  // Double_t vIsoBins[] = {0.0,0.15,0.50,2.0,3.0,4.0,100};
-  // Double_t vIsoBins[] = {0.0,0.25,0.35,0.45,0.55,0.65};
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
