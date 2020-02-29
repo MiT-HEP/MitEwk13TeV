@@ -65,7 +65,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   int nNV = 10;
   // which MET type we use
   bool doPF = true;
-  bool doNewMET = false;
+  // bool doNewMET = false;
   
   std::string u1_name; std::string u2_name;
   std::string met_name; std::string metPhi_name;
@@ -83,12 +83,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   const string vWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
-  if (doNewMET && doPF) {
-    u1_name = "u1DJee";
-    u2_name = "u2DJee";
-    met_name = "metDJee";
-    metPhi_name = "metPhiDJee";
-  } else if(!doNewMET && doPF){
+  // if (doNewMET && doPF) {
+    // u1_name = "u1DJee";
+    // u2_name = "u2DJee";
+    // met_name = "metDJee";
+    // metPhi_name = "metPhiDJee";
+  // } else 
+  if(doPF){
     u1_name = "u1";
     u2_name = "u2";
     met_name = "met";
@@ -168,6 +169,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   if (doStat){
     int rec_sig = 1;
     for(int i = 0; i < nNV; i++){
+    // for(int i = 1; i < 2; i++){
       rcStatW[i]->loadRooWorkspacesDiagMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()), i, rec_sig);
       rcStatW[i]->loadRooWorkspacesDiagData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()), i, rec_sig);
       rcStatW[i]->loadRooWorkspacesDiagMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()), i, rec_sig);
@@ -386,6 +388,10 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       metVars[no]=corrMetWithLepton;
       metVars[ru]=corrMetWithLeptonu;
       metVars[rd]=corrMetWithLeptond;
+      metVarsPhi[no]=corrMetPhiLepton;
+      metVarsPhi[ru]=corrMetPhiLeptonu;
+      metVarsPhi[rd]=corrMetPhiLeptond;
+      
       mtCorr=mt;
     } else {
       
@@ -508,6 +514,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
           }
           if(doStat){
             for(int i = 0; i < nNV; i++){
+            // for(int i = 1; i < 2; i++){
               int ofs=i+ns;
               // std::cout << "filling stat " << i << std::endl;
               rcStatW[i]->CorrectInvCdf(metVars[ofs],metVarsPhi[ofs],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
@@ -539,6 +546,7 @@ void muonNtupleMod(const TString  outputDir,   // output directory
           }
           if(doStat){
             for(int i =0; i < nNV; i++){
+            // for(int i =1; i < 2; i++){
               int ofs=i+ns;
               // metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
               rcStatW[i]->CorrectInvCdf(metVars[ofs],metVarsPhi[ofs],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
