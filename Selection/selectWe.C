@@ -184,7 +184,7 @@ void selectWe(const TString conf="we.conf", // input file
   TLorentzVector *sc=0;
   // Bool_t passHLT;
   
-  Bool_t passVeto=kTRUE;
+  // Bool_t passVeto=kTRUE;
 
 
   vector<Double_t> lheweight(NPDF+NQCD,0);
@@ -330,7 +330,7 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("sc",        "TLorentzVector", &sc);         // supercluster 4-vector
     outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     // outTree->Branch("passHLT", &passHLT, "passHLT/b");
-    outTree->Branch("passVeto", &passVeto, "passVeto/B");
+    // outTree->Branch("passVeto", &passVeto, "passVeto/B");
 
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     
@@ -463,7 +463,7 @@ void selectWe(const TString conf="we.conf", // input file
           // std::cout << "veto5" << std::endl;
           if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
           if(nLooseLep>0) {  // extra lepton veto
-            passVeto=kFALSE;
+            passSel=kFALSE;
             break;
           }
         }
@@ -834,7 +834,7 @@ void selectWe(const TString conf="we.conf", // input file
 	  delete genV; 
 	  delete genLep;
 	  genV=0, genLep=0, lep=0, sc=0;
-    passVeto=kTRUE;
+    // passVeto=kTRUE;
         }
       }
       delete infile;

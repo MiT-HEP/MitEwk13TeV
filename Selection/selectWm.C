@@ -154,7 +154,7 @@ void selectWm(const TString conf="wm.conf", // input file
   Float_t muNchi2;
   UInt_t nPixHits, nTkLayers, nValidHits, nMatch, typeBits;
   // Bool_t passHLT;
-  Bool_t passVeto=kTRUE;
+  // Bool_t passVeto=kTRUE;
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info  = new baconhep::TEventInfo();
@@ -298,7 +298,7 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("nValidHits", &nValidHits, "nValidHits/i");   // number of valid muon hits of muon 
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");     // number of valid muon hits of muon 
     // outTree->Branch("passHLT", &passHLT, "passHLT/b");
-    outTree->Branch("passVeto", &passVeto, "passVeto/B");
+    // outTree->Branch("passVeto", &passVeto, "passVeto/B");
     
   TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
@@ -391,7 +391,7 @@ cout << "n sections " << NSEC << endl;
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
         infoBr->GetEntry(ientry);
-
+        // passVeto=kTRUE;
         if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
         Double_t weight=xsec;
         Double_t weightUp=xsec;
@@ -497,7 +497,7 @@ cout << "n sections " << NSEC << endl;
           if(vEle.Pt()     < VETO_PT)  continue; // loose lepton pT cut
           if(passEleLooseID(ele,vEle, info->rhoIso)) nLooseLep++;
           if(nLooseLep>0) {  // extra lepton veto
-            passVeto=kFALSE;
+            passSel=kFALSE;
             break;
           }
         }
@@ -867,7 +867,7 @@ cout << "n sections " << NSEC << endl;
 	  delete genV;
 	  delete genLep;
 	  genV=0, genLep=0, lep=0;
-    passVeto=kTRUE;
+    // passVeto=kTRUE;
         }
       }
       delete infile;
