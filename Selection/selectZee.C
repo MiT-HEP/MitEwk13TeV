@@ -502,13 +502,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           double El_Pt=0;
           El_Pt = vTag.Pt();
 
-          if(El_Pt>Pt1)
-            {
+          if( El_Pt > Pt1 ) {
               Pt2=Pt1;
               Pt1=El_Pt;
-            }
-          else if(El_Pt>Pt2&&El_Pt<Pt1)
-            {
+            } else if ( El_Pt > Pt2 && El_Pt < Pt1 ) {
               Pt2=El_Pt;
             }
 
@@ -610,27 +607,22 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           TLorentzVector vEleProbe(0,0,0,0), vEleProbeSC(0,0,0,0);
           if(eleProbe){
             double probeEcalE = eleProbe->ecalEnergy;
-            double eTregress = probeEcalE/cosh(fabs(eleProbe->eta));
+            double eTregress = eleProbe->ecalEnergy/cosh(fabs(eleProbe->eta));
             vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
             vEleProbeSC.SetPtEtaPhiM(eleProbe->scEt, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
             if(fabs(vEleProbe.Eta())>=ECAL_GAP_LOW && fabs(vEleProbe.Eta())<=ECAL_GAP_HIGH) continue;
 
-            float eleProbeError = 0.;
-            float eleProbeSCError = 0.;
+            float eleProbeError = 0., eleProbeSCError = 0.;
+            
             if(doScaleCorr && (eleProbe->r9 < 1.)){
-              float eleProbeSmear = 0.;
-              float eleProbeScale = 1.;
-
-              float eleProbeSCSmear = 0.;
-              float eleProbeSCScale = 1.;
+              float eleProbeSmear   = 0., eleProbeScale   = 1.;
+              float eleProbeSCSmear = 0., eleProbeSCScale = 1.;
 
               float eleProbeAbsEta   = fabs(vEleProbe.Eta());
               float eleProbeEt       = vEleProbe.E() / cosh(eleProbeAbsEta);
-              bool  eleProbeisBarrel = eleProbeAbsEta < 1.4442;
 
               float eleProbeSCAbsEta   = fabs(vEleProbeSC.Eta());
               float eleProbeSCEt       = vEleProbeSC.E() / cosh(eleProbeSCAbsEta);
-              bool  eleProbeSCisBarrel = eleProbeSCAbsEta < 1.4442;
   
               if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
                 int runNumber = is13TeV ? info->runNum : 306936 ;
