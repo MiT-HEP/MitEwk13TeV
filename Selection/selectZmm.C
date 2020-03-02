@@ -40,8 +40,6 @@
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
-#include "CCorrUser2D.hh"
-
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
 #include "../Utils/PrefiringEfficiency.cc"      // prefiring efficiency functions
@@ -82,18 +80,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
   PrefiringEfficiency pfire( prefireFileName.Data() , (is13TeV ? "2017H" : "2017G"));
   
-  const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
-  TFile *prefireFile = new TFile(prefireFileName);
-  CCorrUser2D prefirePhotonCorr, prefireJetCorr;
-  if(!is13TeV){
-    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // 5 TeV photon prefire
-    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017G")); // 5 TeV jet prefire
-  } else if(is13TeV){
-    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // 13 TeV photon prefire
-    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017H")); // 13 TeV jet prefire
-  }
-  
-
+ 
   // load pileup reweighting file                                                                                       
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
 
@@ -563,81 +550,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
         if(icat==0) continue;
           
-         if(!isData){
-           
-           pfire.setObjects(scArr,jetArr);
-          // cout << "main call to photons " << endl;
+        if(!isData){
+          pfire.setObjects(scArr,jetArr);
           pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
           pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
           pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
-          // // Loop through the photons to determine the Prefiring scale factor
-          // double prefireUnc = 0;
-          // prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
-          // for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-            // const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-            // if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-            // prefirePhoton *= 1. - TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 );
-            // double unc = max((double)prefirePhotonCorr.getErr(photon->eta, photon->pt),(double)prefirePhotonCorr.getCorr(photon->eta, photon->pt)*0.20);
-            // // cout << "20% = " << (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt)*0.20 << "  , other: " << (double)prefirePhotonCorr.getErr(photon->eta, photon->pt) << endl;
-            // prefireUnc += unc*unc;
-          // } 
-          // prefirePhotUp = max(prefirePhoton+(1-prefirePhoton)*0.20,1.0);
-          // prefirePhotDown = max(prefirePhoton-(1-prefirePhoton)*0.20,1.0);
-          
-        
-          // prefireJet=1; prefireJetUp=1; prefireJetDown=1;
-          // if(hasJet){
-            // for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-              // const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
-              // if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-              // prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
-              // double unc = max((double)prefireJetCorr.getErr(jet->eta, jet->pt),(double)prefireJetCorr.getCorr(jet->eta, jet->pt)*0.20);
-              // prefireUnc += unc*unc;
-            // } 
-          // }
-          // prefireJetUp = max(prefireJet+(1-prefireJet)*0.20,1.0);
-          // prefireJetDown = max(prefireJet-(1-prefireJet)*0.20,1.0);
-          // // loop through photons and jets
-          // // overlap is anything within deltaR < 0.4.
-          // // take max prefire prob for any overlap cases
-          // //toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi))<0.4
-          // // total prefire probability = product of all (1-prob) for photons,jets, & remove the overlap
-          // prefireWeight=prefireJet*prefirePhoton;
-          // prefireUp=prefireJetUp*prefirePhotUp;
-          // prefireDown=prefireJetDown*prefirePhotDown;
-          // if(hasJet) {
-            // for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-              // const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-              // if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-              // // now loop through jets:
-              // double rmP = 1;
-              // double rmU = 0;
-
-              // for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-                // const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-                // if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-                // // check if the jet and photon overlap: 
-                // if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
-                // // photon & jet overlap, now get min to divide out 
-                  // rmP = min(TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 ), TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.));
-                  // rmU = min( max((double)prefireJetCorr.getErr(jet->eta, jet->pt),(double)prefireJetCorr.getCorr(jet->eta, jet->pt)*0.20), max((double)prefirePhotonCorr.getErr(photon->eta, photon->pt),(double)prefirePhotonCorr.getCorr(photon->eta, photon->pt)*0.20));
-                  
-              // }
-              // // divide out the lesser of the two probabilities
-              // if(rmP<1.0)prefireWeight = prefireWeight / (1 - rmP);
-              // prefireUnc -= rmU*rmU;
-            // }
-          // }
-          // double unc = max(sqrt(prefireUnc), (1-prefireWeight)*0.20);
-          // prefireUp = min(prefireWeight+unc,1.0);
-          // prefireDown = max(prefireWeight-unc,0.0);
-          
-          // // cout << "prefire " << prefireWeight << "    prefireUP " << prefireUp << "   prefireDown " << prefireDown << endl;
-          // // cout << "ratios Up " << prefireUp/prefireWeight << "   down " << prefireDown/prefireWeight << endl;
-          
-          // // cout << " prefire weight = " << prefireWeight << "  prefire up " << prefireUp-prefireWeight << "  other " << sqrt(prefireUnc)  << endl;
         }
-  // cout << "blah " << endl;
+
         /******** We have a Z candidate! HURRAY! ********/
         nsel+=weight;
         nselvar+=weight*weight;
