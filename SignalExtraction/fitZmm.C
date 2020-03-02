@@ -68,6 +68,16 @@ void fitZmm(const TString  inputDir,    // input directory
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root"));      typev.push_back(eData);
   fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
+  
+  // // 5 TeV background samples
+  // fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));   typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));    typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));   typev.push_back(eZxx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));   typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));   typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));   typev.push_back(eDib);
+  
+  // // 13 TeV background samples
   fnamev.push_back(inputDir + TString("/") + TString("top1_select.raw.root"));   typev.push_back(eTop);
   fnamev.push_back(inputDir + TString("/") + TString("top2_select.raw.root"));   typev.push_back(eTop);
   fnamev.push_back(inputDir + TString("/") + TString("top3_select.raw.root"));   typev.push_back(eTop);
@@ -300,14 +310,11 @@ void fitZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("genlep2",       &genlep2);        // probe lepton 4-vector
     intree->SetBranchAddress("genMuonPt1",       &genMuonPt1);        // probe lepton 4-vector
     intree->SetBranchAddress("genMuonPt2",       &genMuonPt2);        // probe lepton 4-vector
-        TH1D* hGenWeights;
-    double totalNorm = 1.0;
-    cout << "Hello " << endl;
+    
+    TH1D* hGenWeights; double totalNorm = 1.0;
     if(typev[ifile] != eData ){
-      cout << "get gen weights" << endl;
       hGenWeights = (TH1D*)infile->Get("hGenWeights");
       totalNorm = hGenWeights->Integral();
-      cout << totalNorm << endl;
     }
     //
     // loop over events
@@ -324,6 +331,12 @@ void fitZmm(const TString  inputDir,    // input directory
       if(lep1->Pt() < PT_CUT) continue;
       if(lep2->Pt() < PT_CUT) continue;
       if(q1*q2>0) continue;
+     
+     
+      if(isnan(prefireUp) || isnan(prefireDown)){
+        prefireUp   = prefireWeight;
+        prefireDown = prefireWeight;
+      }
      
       // cout << "pass kinematics " << endl;
       float mass = 0;
@@ -483,7 +496,9 @@ void fitZmm(const TString  inputDir,    // input directory
     if(mu1.Pt()        < PT_CUT)    continue;
     if(mu2.Pt()        < PT_CUT)    continue;
 
-	  if(typev[ifile]==eZmm) {//mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown
+	  if(typev[ifile]==eZmm) {
+        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
+        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) continue;//mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown
 	      yield_zmm += weight*corr;
 	      yield_zmm_unc += weight*weight*corr*corr;
         yield_zmm_up += weight*corrUp;
@@ -491,8 +506,6 @@ void fitZmm(const TString  inputDir,    // input directory
         yield_zmm_noPrefire += scale1fb*lumi*corr/totalNorm;
         yield_zmm_pfPhoton += scale1fb*lumi*corr*prefirePhoton/totalNorm;
         yield_zmm_pfJet += scale1fb*lumi*corr*prefireJet/totalNorm;
-        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
-        
         hZmmUnc[mcUp]->Fill(mass,weight*corrMC);
         hZmmUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
         hZmmUnc[fsrUp]->Fill(mass,weight*corrFSR);
@@ -808,8 +821,8 @@ void fitZmm(const TString  inputDir,    // input directory
   
   // label for lumi
   char lumitext[100];
-  sprintf(lumitext,"%.1f fb^{-1}  (13 TeV)",lumi/1000);  
-  // sprintf(lumitext,"%.1f fb^{-1}  (5 TeV)",lumi/1000);  
+  if(sqrts=="13TeV")sprintf(lumitext,"%.1f pb^{-1}  (13 TeV)",lumi);  
+  else sprintf(lumitext,"%.1f pb^{-1}  (5 TeV)",lumi);
   
   char normtext[100];
   sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
