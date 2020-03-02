@@ -312,11 +312,12 @@ void selectAntiWe(const TString conf       ="we.conf", // input file
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);
       Bool_t hasJet = eventTree->GetBranchStatus("AK4");
-      eventTree->SetBranchAddress("Info",     &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
-      eventTree->SetBranchAddress("Electron", &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
-      eventTree->SetBranchAddress("PV",   &vertexArr);       TBranch *vertexBr = eventTree->GetBranch("PV");
-      eventTree->SetBranchAddress("Muon", &muonArr);         TBranch *muonBr     = eventTree->GetBranch("Muon");
-      eventTree->SetBranchAddress("Photon",   &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
+      eventTree->SetBranchAddress("Info",     &info        );  TBranch *infoBr     = eventTree->GetBranch("Info"    );
+      eventTree->SetBranchAddress("Electron", &electronArr );  TBranch *electronBr = eventTree->GetBranch("Electron");
+      eventTree->SetBranchAddress("PV",       &vertexArr   );  TBranch *vertexBr   = eventTree->GetBranch("PV"      );
+      eventTree->SetBranchAddress("Muon",     &muonArr     );  TBranch *muonBr     = eventTree->GetBranch("Muon"    );
+      eventTree->SetBranchAddress("Photon",   &scArr       );  TBranch *scBr       = eventTree->GetBranch("Photon"  );
+      
       if(hasJet)eventTree->SetBranchAddress("AK4",      &jetArr     ); TBranch *jetBr      = eventTree->GetBranch("AK4");
       
       Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
