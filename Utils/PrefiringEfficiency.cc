@@ -17,9 +17,6 @@
 #include <fstream>                        // functions for file I/O
 #include <string>                         // C++ string class
 #include <sstream>                        // class for parsing strings
-#include <TRandom3.h>
-#include <TGaxis.h>
-#include "TLorentzVector.h"           // 4-vector class
 
 // The bacon particle interfaces
 #include "BaconAna/DataFormats/interface/TPhoton.hh"
