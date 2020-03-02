@@ -49,26 +49,22 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectZee(const TString conf="zee.conf", // input file
-               const TString outputDir=".",   // output directory
-	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
-	       const Int_t   sigma=0,
-         const Bool_t  doPU=0,
-         const Bool_t  is13TeV=1,
-         const Int_t NSEC = 1,
-         const Int_t ITH = 0
-) {
+void selectZee(const TString conf        ="zee.conf", // input file
+               const TString outputDir   =".",   // output directory
+               const Bool_t  doScaleCorr =0,    // apply energy scale corrections?
+               const Int_t   sigma       =0,
+               const Bool_t  doPU        =0,
+               const Bool_t  is13TeV     =1,
+               const Int_t   NSEC        =1,
+               const Int_t   ITH         =0  ) {
   gBenchmark->Start("selectZee");
-std::cout << "is 13 TeV " << is13TeV << std::endl;
+  cout << "Currently doing selecting samples with sqrt(s) = "  << ( is13TeV ? "13 TeV" : "5 TeV" ) << std::endl;
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
-
-  // int runNumberTemp = 306936;
-
+  // probably don't need random
   TRandom3 *rand = new TRandom3();
   rand->SetSeed(1313131313);
-  // gRandom = rand;
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
@@ -84,11 +80,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
   
-  const int gainSeed = 12;
-
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
@@ -175,9 +167,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t lep1error, lep2error, sc1error, sc2error; 
   Float_t random;
   
-  vector<Double_t> lheweight(NPDF+NQCD,0);
-  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
-  
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
@@ -203,12 +192,17 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     
     // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
-    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
+    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
     //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWboson);
+    Bool_t isRecoil = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0||
+                       isWboson);
     // flag to reject Z->ee events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0); 
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
   
@@ -277,16 +271,16 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("glepq1",         &glepq1,         "glepq1/I");          // charge of tag lepton
     outTree->Branch("glepq2",         &glepq2,         "glepq2/I");          // charge of probe lepton
-    outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
-    outTree->Branch("dilepSC",      "TLorentzVector",  &dilepSC);    // di-lepton 4-vector
-    outTree->Branch("lep1",       "TLorentzVector",  &lep1);     // tag lepton 4-vector
-    outTree->Branch("lep2",       "TLorentzVector",  &lep2);     // probe lepton 4-vector
+    outTree->Branch("dilep",         "TLorentzVector",  &dilep);    // di-lepton 4-vector
+    outTree->Branch("dilepSC",       "TLorentzVector",  &dilepSC);    // di-lepton 4-vector
+    outTree->Branch("lep1",          "TLorentzVector",  &lep1);     // tag lepton 4-vector
+    outTree->Branch("lep2",          "TLorentzVector",  &lep2);     // probe lepton 4-vector
     outTree->Branch("genlep1",       "TLorentzVector",  &genlep1);     // tag lepton 4-vector
     outTree->Branch("genlep2",       "TLorentzVector",  &genlep2);     // probe lepton 4-vector
-    outTree->Branch("lep1_raw",       "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
-    outTree->Branch("lep2_raw",       "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
-    outTree->Branch("lep1EcalE",       &lep1EcalE,  "lep1EcalE/d");     // probe lepton 4-vector
-    outTree->Branch("lep2EcalE",       &lep2EcalE,  "lep2EcalE/d");     // probe lepton 4-vector
+    outTree->Branch("lep1_raw",      "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
+    outTree->Branch("lep2_raw",      "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
+    outTree->Branch("lep1EcalE",     &lep1EcalE,       "lep1EcalE/d");     // probe lepton 4-vector
+    outTree->Branch("lep2EcalE",     &lep2EcalE,       "lep2EcalE/d");     // probe lepton 4-vector
     ///// electron specific /////
     outTree->Branch("trkIso1",    &trkIso1,    "trkIso1/F");     // track isolation of tag lepton
     outTree->Branch("trkIso2",    &trkIso2,    "trkIso2/F");     // track isolation of probe lepton
@@ -326,16 +320,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("nexphits2",  &nexphits2,  "nexphits2/i");   // number of missing expected inner hits of probe lepton
     outTree->Branch("typeBits1",  &typeBits1,  "typeBits1/i");   // electron type of tag lepton
     outTree->Branch("typeBits2",  &typeBits2,  "typeBits2/i");   // electron type of probe lepton
-    outTree->Branch("sc1",       "TLorentzVector",  &sc1);       // tag supercluster 4-vector
-    outTree->Branch("sc2",       "TLorentzVector",  &sc2);       // probe supercluster 4-vector
+    outTree->Branch("sc1",        "TLorentzVector",  &sc1);       // tag supercluster 4-vector
+    outTree->Branch("sc2",        "TLorentzVector",  &sc2);       // probe supercluster 4-vector
     outTree->Branch("r91",        &r91,        "r91/F");	 // transverse impact parameter of tag
     outTree->Branch("r92",        &r92,        "r92/F");	 // transverse impact parameter of probe	  
     outTree->Branch("lep1error",  &lep1error,  "lep1error/F");   // scale and smear correction uncertainty for tag lepton
     outTree->Branch("lep2error",  &lep2error,  "lep2error/F");   // scale and smear correction uncertainty for probe leptom
     outTree->Branch("sc1error",   &sc1error,   "sc1error/F");    // scale and smear correction uncertainty for tag supercluster
     outTree->Branch("sc2error",   &sc2error,   "sc2error/F");    // scale and smear correction uncertainty for probe supercluster
-    outTree->Branch("random",   &random,   "random/F");    // scale and smear correction uncertainty for probe supercluster
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
 
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
@@ -447,7 +439,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         random = tagRandom;
         for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
           const baconhep::TElectron *tag = (baconhep::TElectron*)((*electronArr)[i1]);
-         // double tagRandom = rand->Gaus(0,1);
           double tagEcalE = tag->ecalEnergy;
           double eTregress = tagEcalE/cosh(fabs(tag->eta));
           vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
@@ -476,19 +467,19 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
               tagScale   = ec.scaleCorr(runNumber, eTregress, tagAbsEta  , tag->r9);
               tagSCScale = ec.scaleCorr(runNumber, tagSCEt  , tagSCAbsEta, tag->r9);
               
-              tagError   = ec.scaleCorrUncert(runNumber, eTregress, tagAbsEta  , tag->r9,gainSeed,1);
-              tagSCError = ec.scaleCorrUncert(runNumber, tagSCEt  , tagSCAbsEta, tag->r9,gainSeed,1);
+              tagError   = ec.scaleCorrUncert(runNumber, eTregress, tagAbsEta  , tag->r9,12,1);
+              tagSCError = ec.scaleCorrUncert(runNumber, tagSCEt  , tagSCAbsEta, tag->r9,12,1);
               
               (vTag)*=tagScale*(1+sigma*tagError);
               (vTagSC)*=tagSCScale*(1+sigma*tagSCError);
 
             } else {//MC
-              tagSmear = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, gainSeed, sigma, 0.);
-              tagSCSmear = ec.smearingSigma(info->runNum, tagSCEt, tagSCAbsEta, tag->r9, gainSeed, sigma, 0.);           
+              tagSmear = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, 12, sigma, 0.);
+              tagSCSmear = ec.smearingSigma(info->runNum, tagSCEt, tagSCAbsEta, tag->r9, 12, sigma, 0.);           
               (vTag) *= (1. + tagSmear*tagRandom);
               (vTagSC) *= 1. + tagSCSmear * tagRandom;
-              double tagSmearEP = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, gainSeed,  1., 0.);
-              double tagSmearEM = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, gainSeed, -1., 0.);
+              double tagSmearEP = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, 12,  1., 0.);
+              double tagSmearEM = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, 12, -1., 0.);
               tagError = tagRandom * std::hypot(tagSmearEP - tagSmear, tagSmearEM - tagSmear); 
             } 
           }
@@ -515,7 +506,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           tagPt=El_Pt;
           itag=i1;
           tagscID=tag->scID;
-          // random = tagRandom;
           lep1EcalE = tagEcalE;
           vTagfinal = vTag;
           vTagSCfinal = vTagSC;
@@ -580,15 +570,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
               int runNumber = is13TeV ? info->runNum : 306936 ;
               probeScale   = ec.scaleCorr(runNumber, probeEt, probeAbsEta  , scProbe->r9);
-              probeError   = ec.scaleCorrUncert(runNumber, probeEt, probeAbsEta  , scProbe->r9,gainSeed,1);
+              probeError   = ec.scaleCorrUncert(runNumber, probeEt, probeAbsEta  , scProbe->r9,12,1);
               (vProbe) *= probeScale * (1 + sigma*probeError);
             } else {//MC
-              probeSmear = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, gainSeed, sigma, 0.);
+              probeSmear = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, 12, sigma, 0.);
 
               (vProbe) *= (1. + probeSmear*probeRandom);
-              // (vProbe) *= 1. + sigma * probeSmear * probeRandom;              
-              double probeSmearEP = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, gainSeed,  1., 0.);
-              double probeSmearEM = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, gainSeed, -1., 0.);
+              double probeSmearEP = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, 12,  1., 0.);
+              double probeSmearEM = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, 12, -1., 0.);
               probeError = probeRandom * std::hypot(probeSmearEP - probeSmear, probeSmearEM - probeSmear);
             }
           }
@@ -629,8 +618,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
                 eleProbeScale   = ec.scaleCorr(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9);
                 eleProbeSCScale = ec.scaleCorr(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
                 
-                eleProbeError   = ec.scaleCorrUncert(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9, gainSeed, 1);
-                eleProbeSCError = ec.scaleCorrUncert(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
+                eleProbeError   = ec.scaleCorrUncert(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9, 12, 1);
+                eleProbeSCError = ec.scaleCorrUncert(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, 12, 1);
                 
                 (vEleProbe)   *= eleProbeScale   * (1 + sigma*eleProbeError);
                 (vEleProbeSC) *= eleProbeSCScale * (1 + sigma*eleProbeSCError);
@@ -639,14 +628,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
               float eleProbeR9Prime = eleProbe->r9; // no r9 after 2016
 
-              eleProbeSmear   = ec.smearingSigma(info->runNum, eTregress   , eleProbeAbsEta  , eleProbeR9Prime, gainSeed, sigma, 0.);
-              eleProbeSCSmear = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, sigma, 0.);
+              eleProbeSmear   = ec.smearingSigma(info->runNum, eTregress   , eleProbeAbsEta  , eleProbeR9Prime, 12, sigma, 0.);
+              eleProbeSCSmear = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, sigma, 0.);
               
-              float eleProbeSmearEP = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
-              float eleProbeSmearEM = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+              float eleProbeSmearEP = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, 1., 0.);
+              float eleProbeSmearEM = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, -1., 0.);
 
-              float eleProbeSCSmearEP = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
-              float eleProbeSCSmearEM = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+              float eleProbeSCSmearEP = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, 1., 0.);
+              float eleProbeSCSmearEM = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, -1., 0.);
 
               (vEleProbe) *= (1.+ eleProbeSmear*eleProbeRandom);
               (vEleProbeSC) *= 1. + eleProbeSCSmear * eleProbeSCRandom;
@@ -772,25 +761,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       }
       
       if (hasGen) {
-        if(isRecoil&&!isSignal&&!isWrongFlavor){
-          lheweight[0]=gen->lheweight[0];
-          lheweight[1]=gen->lheweight[1];
-          lheweight[2]=gen->lheweight[2];
-          lheweight[3]=gen->lheweight[3];
-          lheweight[4]=gen->lheweight[5];
-          lheweight[5]=gen->lheweight[7];
-          for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-        } else {
-          lheweight[0]=gen->lheweight[1];
-          lheweight[1]=gen->lheweight[2];
-          lheweight[2]=gen->lheweight[3];
-          lheweight[3]=gen->lheweight[4];
-          lheweight[4]=gen->lheweight[6];
-          lheweight[5]=gen->lheweight[8];
-          for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        }
-
-        
         id_1      = gen->id_1;
         id_2      = gen->id_2;
         x_1       = gen->x_1;
@@ -799,8 +769,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         xPDF_2    = gen->xPDF_2;
         scalePDF  = gen->scalePDF;
         weightPDF = gen->weight;
-      }
-      else {
+      } else {
         id_1      = -999;
         id_2      = -999;
         x_1       = -999;
