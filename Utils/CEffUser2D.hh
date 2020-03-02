@@ -17,9 +17,11 @@ public:
   void    printEff(std::ostream& os);
   void    printErrLow(std::ostream& os);
   void    printErrHigh(std::ostream& os);
+  void    printEffLatex(std::ostream& os);
 
 protected:
   void    printHist2D(const TH2D* h,std::ostream& os);
+  void    printHist2DLatex(const TH2D* hEff,const TH2D* hErrl,const TH2D* hErrh,std::ostream& os);
   Float_t getValue(const TH2D* h, const Double_t x, const Double_t y);
 
   TH2D *hEff;

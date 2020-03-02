@@ -70,6 +70,26 @@ void plotZee(const TString  inputDir,    // input directory
   fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   // fnamev.push_back(inputDir + TString("/") + TString("ewk_select.root"));  typev.push_back(eEWK);
   // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  
+  if(sqrts == "5TeV" ){
+    fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  } else {
+    fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eEWK);
+    fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
+    fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
+    fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
+  }
  
   //
   // Fit options
@@ -94,42 +114,11 @@ void plotZee(const TString  inputDir,    // input directory
   // std::string baseDirs = baseDir.Data();
   AppEffSF effs(baseDir);
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("EleGSFSelEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
   // effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
 
-  // const TString baseDir1 = "/afs/cern.ch/work/x/xniu/public/WZXSection/wz-efficiency/";
-// // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/LowPU_13TeV_2017ID_Efficiency_v1/results/";
-  // // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency_Old/LowPU2017ID_13TeV/results/Zee/";
-  // const TString baseDir = "/afs/cern.ch/user/s/sabrandt/work/public/TEST_Wenu_Corrected/Efficiency/results/Zee/";
-    // const TString dataHLTEffName_pos = baseDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
-  // const TString dataHLTEffName_neg = baseDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
-  // const TString zeeHLTEffName_pos  = baseDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
-  // const TString zeeHLTEffName_neg  = baseDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
-
-  // const TString dataGsfSelEffName_pos = baseDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
-  // const TString dataGsfSelEffName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
-  // const TString zeeGsfSelEffName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
-  // const TString zeeGsfSelEffName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
-
-  
-   // const TString dataHLTEff2BinName_pos = baseDir + "Data/EleHLTEff_aMCxPythia/Positive/eff.root";
-  // const TString dataHLTEff2BinName_neg = baseDir + "Data/EleHLTEff_aMCxPythia/Negative/eff.root";
-  // const TString zeeHLTEff2BinName_pos  = baseDir + "MC/EleHLTEff_aMCxPythia/Positive/eff.root";
-  // const TString zeeHLTEff2BinName_neg  = baseDir + "MC/EleHLTEff_aMCxPythia/Negative/eff.root";
-
-  // const TString dataGsfSelEff2BinName_pos = baseDir + "Data/EleGSFSelEff_aMCxPythia/Positive/eff.root";
-  // const TString dataGsfSelEff2BinName_neg = baseDir + "Data/EleGSFSelEff_aMCxPythia/Negative/eff.root";
-  // const TString zeeGsfSelEff2BinName_pos  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Positive/eff.root";
-  // const TString zeeGsfSelEff2BinName_neg  = baseDir + "MC/EleGSFSelEff_aMCxPythia/Negative/eff.root";
-
-  
-  
-
-  // TString GsfSelEffSignalShapeSys = baseDir1 + "Results/EleGsfSelSigSys.root";
-  // TString GsfSelEffBackgroundShapeSys = baseDir1 + "Results/EleGsfSelBkgSys.root";
-
-  const TString corrFiles = "../EleScale/Run2017_LowPU_v1";
-  EnergyScaleCorrection ec( corrFiles.Data());
+  const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
+  EnergyScaleCorrection ec( corrFiles.Data(),EnergyScaleCorrection::ECALELF);
 
   //
   // Set up output file
@@ -211,11 +200,6 @@ void plotZee(const TString  inputDir,    // input directory
     
     if(clep1.Pt() < PT_CUT || clep2.Pt() < PT_CUT) continue;
     dl = clep1+clep2;
-    
-    // std::cout << eventNumber << " " << eclep1.Pt() << " " << eclep1.Eta() << " " << eclep1.Phi() << " " << eclep2.Pt() << " " << eclep2.Eta() << " " << eclep2.Phi() << " " << (eclep1+eclep2).M() << std::endl; 
-    // std::cout << eventNumber << " " << clep1.Pt() << " " << clep1.Eta() << " " << clep1.Phi() << " " << clep2.Pt() << " " << clep2.Eta() << " " << clep2.Phi() << " " << dl.M() << std::endl; 
-    // std::cout << R9Ele[0] << " " << R9Ele[1] << std::endl;
-    // std::cout << "-----" << std::endl;
     
     double mass = dl.M();
     // hDataEG->Fill(invMass_ECAL_ele);
@@ -303,9 +287,9 @@ void plotZee(const TString  inputDir,    // input directory
   CPlot::sOutDir = outputDir;  
 
   // histograms for full selection
-  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,190,220,250,400,1000};
+  double ZPtBins[]={0,1.25,2.5,3.75,5,6.25,7.5,8.75,10,11.25,12.5,15,17.5,20,25,30,35,40,45,50,60,70,80,90,100,110,130,150,170,200};
   double PhiStarBins[]={0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.01,0.012,0.014,0.016,0.018,0.021,0.024,0.027,0.030,0.034,0.038,0.044,0.050,0.058,0.066,0.076,0.088,0.10,0.12,0.14,0.16,0.18,0.20,0.24,0.28,0.34,0.42,0.52,0.64,0.8,1.0,1.5,2,3};
-  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
+  double Lep1PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
   double Lep2PtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150};
   double LepNegPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
   double LepPosPtBins[]={25,26.3,27.6,28.9,30.4,31.9,33.5,35.2,36.9,38.8,40.7,42.8,44.9,47.1,49.5,52.0,54.6,57.3,60.7,65.6,72.2,80.8,92.1,107,126,150,200,300};
@@ -370,6 +354,10 @@ void plotZee(const TString  inputDir,    // input directory
   TH1D *hEWKZRap  = new TH1D("hEWKZRap", "",24,0,2.4); hEWKZRap->Sumw2();
   TH1D *hTopZRap  = new TH1D("hTopZRap", "",24,0,2.4); hTopZRap->Sumw2();
   TH1D *hMCZRap   = new TH1D("hMCZRap",  "",24,0,2.4); hMCZRap->Sumw2();
+  
+  
+  TH1D *hZeeZRapUp  = new TH1D("hZeeZRapUp", "",24,0,2.4); hZeeZRapUp->Sumw2();
+  TH1D *hZeeZRapDown  = new TH1D("hZeeZRapDown", "",24,0,2.4); hZeeZRapDown->Sumw2();
 
   TH1D *hEWKZRap_EffBin  = new TH1D("hEWKZRap_EffBin", "",24,0,2.4); hEWKZRap_EffBin->Sumw2();
   TH1D *hTopZRap_EffBin  = new TH1D("hTopZRap_EffBin", "",24,0,2.4); hTopZRap_EffBin->Sumw2();
@@ -512,81 +500,6 @@ void plotZee(const TString  inputDir,    // input directory
   TLorentzVector *dilep=0, *dilepSC = 0;
   TLorentzVector *sc1=0, *sc2=0;
   
-  //
-  // // HLT efficiency
-  // //
-  // cout << "Loading trigger efficiencies..." << endl;
-
-  // TFile *dataHLTEffFile_pos = new TFile(dataHLTEffName_pos);
-  // CEffUser2D dataHLTEff_pos;
-  // dataHLTEff_pos.loadEff((TH2D*)dataHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  // TFile *dataHLTEffFile_neg = new TFile(dataHLTEffName_neg);
-  // CEffUser2D dataHLTEff_neg;
-  // dataHLTEff_neg.loadEff((TH2D*)dataHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEffFile_neg->Get("hErrhEtaPt"));
-  
-  // TFile *zeeHLTEffFile_pos = new TFile(zeeHLTEffName_pos);
-  // CEffUser2D zeeHLTEff_pos;
-  // zeeHLTEff_pos.loadEff((TH2D*)zeeHLTEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_pos->Get("hErrhEtaPt"));
-  
-  // TFile *zeeHLTEffFile_neg = new TFile(zeeHLTEffName_neg);
-  // CEffUser2D zeeHLTEff_neg;
-  // zeeHLTEff_neg.loadEff((TH2D*)zeeHLTEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEffFile_neg->Get("hErrhEtaPt"));
-   
-  // TFile *dataHLTEff2BinFile_pos = new TFile(dataHLTEff2BinName_pos);
-  // CEffUser2D dataHLTEff2Bin_pos;
-  // dataHLTEff2Bin_pos.loadEff((TH2D*)dataHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  // TFile *dataHLTEff2BinFile_neg = new TFile(dataHLTEff2BinName_neg);
-  // CEffUser2D dataHLTEff2Bin_neg;
-  // dataHLTEff2Bin_neg.loadEff((TH2D*)dataHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataHLTEff2BinFile_neg->Get("hErrhEtaPt"));
-    
-  // TFile *zeeHLTEff2BinFile_pos = new TFile(zeeHLTEff2BinName_pos);
-  // CEffUser2D zeeHLTEff2Bin_pos;
-  // zeeHLTEff2Bin_pos.loadEff((TH2D*)zeeHLTEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zeeHLTEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeHLTEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  // TFile *zeeHLTEff2BinFile_neg = new TFile(zeeHLTEff2BinName_neg);
-  // CEffUser2D zeeHLTEff2Bin_neg;
-  // zeeHLTEff2Bin_neg.loadEff((TH2D*)zeeHLTEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zeeHLTEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeHLTEff2BinFile_neg->Get("hErrhEtaPt"));
-
-  // //
-  // // Selection efficiency
-  // //
-  // cout << "Loading GSF+selection efficiencies..." << endl;
-  
-  // TFile *dataGsfSelEffFile_pos = new TFile(dataGsfSelEffName_pos);
-  // CEffUser2D dataGsfSelEff_pos;
-  // dataGsfSelEff_pos.loadEff((TH2D*)dataGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_pos->Get("hErrhEtaPt"));
-  
-  // TFile *dataGsfSelEffFile_neg = new TFile(dataGsfSelEffName_neg);
-  // CEffUser2D dataGsfSelEff_neg;
-  // dataGsfSelEff_neg.loadEff((TH2D*)dataGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEffFile_neg->Get("hErrhEtaPt"));
-
-  // TFile *zeeGsfSelEffFile_pos = new TFile(zeeGsfSelEffName_pos);
-  // CEffUser2D zeeGsfSelEff_pos;
-  // zeeGsfSelEff_pos.loadEff((TH2D*)zeeGsfSelEffFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_pos->Get("hErrhEtaPt"));
-
-  // TFile *zeeGsfSelEffFile_neg = new TFile(zeeGsfSelEffName_neg);
-  // CEffUser2D zeeGsfSelEff_neg;
-  // zeeGsfSelEff_neg.loadEff((TH2D*)zeeGsfSelEffFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEffFile_neg->Get("hErrhEtaPt"));
-
-  // TFile *dataGsfSelEff2BinFile_pos = new TFile(dataGsfSelEff2BinName_pos);
-  // CEffUser2D dataGsfSelEff2Bin_pos;
-  // dataGsfSelEff2Bin_pos.loadEff((TH2D*)dataGsfSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)dataGsfSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEff2BinFile_pos->Get("hErrhEtaPt"));
-  
-  // TFile *dataGsfSelEff2BinFile_neg = new TFile(dataGsfSelEff2BinName_neg);
-  // CEffUser2D dataGsfSelEff2Bin_neg;
-  // dataGsfSelEff2Bin_neg.loadEff((TH2D*)dataGsfSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)dataGsfSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)dataGsfSelEff2BinFile_neg->Get("hErrhEtaPt"));
-  
-  // TFile *zeeGsfSelEff2BinFile_pos = new TFile(zeeGsfSelEff2BinName_pos);
-  // CEffUser2D zeeGsfSelEff2Bin_pos;
-  // zeeGsfSelEff2Bin_pos.loadEff((TH2D*)zeeGsfSelEff2BinFile_pos->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_pos->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_pos->Get("hErrhEtaPt"));
-
-  // TFile *zeeGsfSelEff2BinFile_neg = new TFile(zeeGsfSelEff2BinName_neg);
-  // CEffUser2D zeeGsfSelEff2Bin_neg;
-  // zeeGsfSelEff2Bin_neg.loadEff((TH2D*)zeeGsfSelEff2BinFile_neg->Get("hEffEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_neg->Get("hErrlEtaPt"), (TH2D*)zeeGsfSelEff2BinFile_neg->Get("hErrhEtaPt"));
- 
-
   TFile *infile=0;
   TTree *intree=0;
   Float_t r91=0; 
@@ -608,6 +521,7 @@ void plotZee(const TString  inputDir,    // input directory
     intree -> SetBranchStatus("npv",1);
     intree -> SetBranchStatus("npu",1);
     intree -> SetBranchStatus("prefireWeight",1);
+    intree -> SetBranchStatus("prefirePhoton",1);
     intree -> SetBranchStatus("prefireUp",1);
     intree -> SetBranchStatus("prefireDown",1);
     intree -> SetBranchStatus("scale1fb",1);
@@ -654,12 +568,21 @@ void plotZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("r91",       &r91);        // sc2 4-vector
     intree->SetBranchAddress("r92",       &r92);        // sc2 4-vector
     intree->SetBranchAddress("random",       &random);        // sc2 4-vector
-  
+      
+      TH1D* hGenWeights;
+    double totalNorm = 1.0;
+    cout << "Hello " << endl;
+    if(typev[ifile] != eData ){
+      cout << "get gen weights" << endl;
+      hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      totalNorm = hGenWeights->Integral();
+      cout << totalNorm << endl;
+    }
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<1000; ientry++) {
+    // for(UInt_t ientry=0; ientry<(UInt_t)(0.1*intree->GetEntries()); ientry++) {
         if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " percent done with this file." << endl;
       intree->GetEntry(ientry);
       // std::cout << "r92 " << r92 << std::endl;
@@ -675,59 +598,6 @@ void plotZee(const TString  inputDir,    // input directory
       
       // if(fabs(lep1->Eta()) < ETA_CUT || fabs(lep2->Eta()) < ETA_CUT) continue;
       float ETA_LOW = 0; float ETA_HIGH = 1.0;
-      // float ETA_LOW = 1.0; float ETA_HIGH = 1.4;
-      // float ETA_LOW = 1.4; float ETA_HIGH = 2.0;
-      // float ETA_LOW = 2; float ETA_HIGH = 2.4;
-      //if((fabs(lep1->Eta()) < ETA_LOW && fabs(lep2->Eta()) < ETA_LOW) || (fabs(lep1->Eta()) > ETA_HIGH && fabs(lep2->Eta()) > ETA_HIGH)) continue;
-      // if((fabs(lep1->Eta()) < ETA_LOW || fabs(lep1->Eta()) > ETA_HIGH) || (fabs(lep2->Eta()) < ETA_LOW && fabs(lep2->Eta()) > ETA_HIGH)) continue;
-      
-      // // if(lep1->Pt()        > 120)  continue;
-      // // if(lep2->Pt()      > 120)  continue;
-      
-      // if(r91 > 0.94 || r92 > 0.94) continue; // high R9 only
-      // if(r91 < 0.94 || r92 < 0.94) continue; // high R9 only
-      
-      
-      // 
-      
-      // if(fabs(sc1->Eta()) > ETA_CUT)   continue;      
-      // if(fabs(sc2->Eta()) > ETA_CUT)   continue;
-      // if(q1*q2>0) continue;
-      // if(sc1->Pt()        < PT_CUT)    continue;
-      // if(sc2->Pt()       < PT_CUT)    continue;
-      // // if(sc1->Pt()        > 120)  continue;
-      // // if(sc2->Pt()      > 120)  continue;
-      
-    // if(fabs(lep1_raw->Eta()) > ETA_CUT)   continue;      
-    // if(fabs(lep2_raw->Eta()) > ETA_CUT)   continue;
-    // if(q1*q2>0) continue;
-    // if(lep1_raw->Pt()        < PT_CUT)    continue;
-    // if(lep2_raw->Pt()       < PT_CUT)    continue;
-    // if(lep1_raw->Pt()        > 120)  continue;
-    // if(lep2_raw->Pt()      > 120)  continue;
-      // if(r91>1.0 || r92 > 1.0) continue;
-      
-      // if(fabs(lep1_raw->Eta()) < 1.44 || fabs(lep2_raw->Eta()) < 1.44) continue; // EE
-      // if(fabs(sc1->Eta()) > 1.44 || fabs(sc2->Eta()) > 1.44 ) continue; // EB
-      // if((fabs(lep1->Eta()) > 1.44 && fabs(lep2->Eta()) > 1.44)||(fabs(lep1->Eta()) < 1.44 && fabs(lep2->Eta()) < 1.44) ) continue;
-      
-      // if(typev[ifile]!=eData) {
-        // if(genVMass > MASS_LOW && genVMass < MASS_HIGH) continue;
-      // }
-      
-      // double corr1 = lep1->Pt()/lep1_raw->Pt();
-      // double corr2 = lep2->Pt()/lep2_raw->Pt();
-      // (*sc1)*=corr1;
-      // (*sc2)*=corr2;
-      // if(runNum!=307017) continue;// || lumiSec != 81) continue;
-  
-    // std::cout << "====  before corrections " << std::endl;
-    // std::cout << evtNum << " " << lep1->Pt() << " " << lep1->Eta() << " " << lep1->Phi() << " " << lep2->Pt() << " " << lep2->Eta() << " " << lep2->Phi() << " " << dilep->M() << std::endl; 
-    
-    // // std::cout << evtNum << " " << lep1_raw->Pt() << " " << lep1_raw->Eta() << " " << lep1_raw->Phi() << " " << lep2_raw->Pt() << " " << lep2_raw->Eta() << " " << lep2_raw->Phi() << " " << (*lep1_raw+*lep2_raw).M() << std::endl; 
-    // // std::cout << r91 << " " << r92 << std::endl;
-    // std::cout << evtNum << " " << sc1->Pt() << " " << sc1->Eta() << " " << sc1->Phi() << " " << sc2->Pt() << " " << sc2->Eta() << " " << sc2->Phi() << " " << (*sc1+*sc2).M() << std::endl; 
-  
       
       float mass = 0;
       float pt = 0;
@@ -736,440 +606,159 @@ void plotZee(const TString  inputDir,    // input directory
       float costhetastar=0;
       float phistar=0;
      
-      Double_t weight=1;
+      Double_t weight=1, weightUp=1, weightDown=1;
       if(typev[ifile]!=eData) {
-	    // weight *= scale1fb*prefireWeight*lumi;
-	    // weight *= scale1fb*prefireUp*lumi;
-	    // weight *= scale1fb*prefireDown*lumi;
-	    weight *= scale1fb*lumi;
+	    weight *= scale1fb*prefireWeight*lumi/totalNorm;
+	    weightUp *= scale1fb*prefireUp*lumi/totalNorm;
+	    weightDown *= scale1fb*prefireDown*lumi/totalNorm;
+	    // weight *= scale1fb*lumi/totalNorm;
       }  
       
-      // fill Z events passing selection (EleEle2HLT + EleEle1HLT)
-      // if((category==eEleEle2HLT) || (category==eEleEle1HLT) || (category==eEleEle1HLT1L1)) {
-      if((category==1) || (category==2) || (category==3)) {
-	if(typev[ifile]==eData) {
+      if(!(category==1) && !(category==2) && !(category==3)) continue;
+      if(typev[ifile]==eData) {
     
-    // if(runNum!=307017) continue;// || lumiSec != 81) continue;
-	  TLorentzVector el1;
-	  TLorentzVector el2;
-	  el1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
-	  el2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
-    // el1.SetPtEtaPhiM(sc1->Pt(),sc1->Eta(),sc1->Phi(),ELE_MASS);
-	  // el2.SetPtEtaPhiM(sc2->Pt(),sc2->Eta(),sc2->Phi(),ELE_MASS);
-    // el1.SetPtEtaPhiM(lep1_raw->Pt(),lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
-	  // el2.SetPtEtaPhiM(lep2_raw->Pt(),lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
-	  
-          
+        TLorentzVector el1;
+        TLorentzVector el2;
+        el1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
+        el2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
 
-          
-	  Double_t lp1 = el1.Pt();
-	  Double_t lp2 = el2.Pt();
-	  Double_t lq1 = q1;
-	  Double_t lq2 = q2;
+        Double_t lp1 = el1.Pt();
+        Double_t lp2 = el2.Pt();
+        Double_t lq1 = q1;
+        Double_t lq2 = q2;
 	  
-	  TLorentzVector l1, l2;
-	  if(lp1>lp2)
-	    {
-	      l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-	      l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
-        // l1.SetPtEtaPhiM(lp1,sc1->Eta(),sc1->Phi(),ELE_MASS);
-	      // l2.SetPtEtaPhiM(lp2,sc2->Eta(),sc2->Phi(),ELE_MASS);
-        // double scale = ec.scaleCorr(runNum, l1.Pt(), fabs(l1.Eta()), r91);
-        // l1*=scale;
-        // scale = ec.scaleCorr(runNum, l2.Pt(), fabs(l2.Eta()), r92);
-        // l2*=scale;
+        TLorentzVector l1, l2;
+        if(lp1>lp2) {
+          l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+          l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+        } else {
+          l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+          l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+        }
+
+
+
+        mass=(l1+l2).M();
+        pt =(l1+l2).Pt();
+        rapidity = (l1+l2).Rapidity();
+
+        phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
+        if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+        else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+        phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
         
-	    }
-	  else
-	    {
-	      l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
-	      l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-        // l1.SetPtEtaPhiM(lp2,sc2->Eta(),sc2->Phi(),ELE_MASS);
-	      // l2.SetPtEtaPhiM(lp1,sc1->Eta(),sc1->Phi(),ELE_MASS);
-        // double scale = ec.scaleCorr(runNum, l1.Pt(), fabs(l1.Eta()), r92);
-        // l1*=scale;
-        // scale = ec.scaleCorr(runNum, l2.Pt(), fabs(l2.Eta()), r91);
-        // l2*=scale;
-	      // lq1=q2;
-	      // lq2=q1;
-	    }
+        if(mass        < MASS_LOW)  continue;
+        if(mass        > MASS_HIGH) continue;
+        if(l1.Pt()        < PT_CUT)    continue;
+        if(l2.Pt()        < PT_CUT)    continue;
+        hDataEG->Fill(dilepSC->M());
 
-
-
-	  mass=(l1+l2).M();
-	  // mass=dilepSC->M();
-	  pt =(l1+l2).Pt();
-	  rapidity = (l1+l2).Rapidity();
-
-	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
-	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
-	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
-	  
-	  if(mass        < MASS_LOW)  continue;
-	  if(mass        > MASS_HIGH) continue;
-	  if(l1.Pt()        < PT_CUT)    continue;
-	  if(l2.Pt()        < PT_CUT)    continue;
-    // if(l1.Pt()        > 120)  continue;
-    // if(l2.Pt()        > 120)  continue;
-    
-    // std::cout << "----- sscaled the data" << std::endl;
-    // std::cout << evtNum << " " << el1.Pt() << " " << el1.Eta() << " " << el1.Phi() << " " << el2.Pt() << " " << el2.Eta() << " " << el2.Phi() << " " << (el1+el2).M() << std::endl; 
-    
-    // std::cout << evtNum << " " << l1.Pt() << " " << l1.Eta() << " " << l1.Phi() << " " << l2.Pt() << " " << l2.Eta() << " " << l2.Phi() << " " << mass << std::endl; 
-    // std::cout << r91 << " " << r92 << std::endl;
-    // std::cout << evtNum << " " << lep1->Pt() << " " << lep1->Eta() << " " << lep1->Phi() << " " << lep2->Pt() << " " << lep2->Eta() << " " << lep2->Phi() << " " << dilep->M() << std::endl; 
-    hDataEG->Fill(dilepSC->M());
-
-	  hData->Fill(mass); 
-	  hDataNPV->Fill(npv);
-	  hDataZPt->Fill(pt); 
-	  hDataPhiStar->Fill(phistar); 
-	  hDataLep1Pt->Fill(l1.Pt()); 
-	  hDataLep2Pt->Fill(l2.Pt()); 
-	  if(lq1<0)
-	    {
-	      hDataLepNegPt->Fill(l1.Pt()); 
-	      hDataLepPosPt->Fill(l2.Pt());
-	    }
-	  else 
-	    {
-	      hDataLepNegPt->Fill(l2.Pt()); 
-	      hDataLepPosPt->Fill(l1.Pt());
-	    }
-	  hDataLep1Eta->Fill(fabs(l1.Eta())); 
-	  hDataLep2Eta->Fill(fabs(l2.Eta())); 
-	  hDataZRap->Fill(fabs(rapidity));
-	  
-	  yield++;
-	  
-	} else {
-
-  // cout << "!!!!!!!!!!!!!!!" << endl;
-    // std::cout << evtNum << " " << sc1->Pt() << " " << sc1->Eta() << " " << sc1->Phi() << " " << sc2->Pt() << " " << sc2->Eta() << " " << sc2->Phi() << " " << (*sc1+*sc2).M() << std::endl; 
-	  
-	  Double_t lp1 = lep1->Pt();
-	  Double_t lp2 = lep2->Pt();
-    // Double_t lp1 = sc1->Pt();
-	  // Double_t lp2 = sc2->Pt();
-    // Double_t lp1 = lep1_raw->Pt();
-	  // Double_t lp2 = lep2_raw->Pt();
-	  Double_t lq1 = q1;
-	  Double_t lq2 = q2;
-    double rand1;
-	  
-    // set the smearings here
-   for(int i = 0; i < 5; ++i){
-      double rand = gRandom->Gaus(0,1);
-      
-     if(i==2) rand1=rand;
-     // if(lp1*(1+rand) < 25) 
-    }
-    hGausRandHere->Fill(rand1);
-    // double rand1 = gRandom->Gaus(0,1);
-    // double rand2 = gRandom->Gaus(0,1);
-    // double rand1 = 1;
-    // doublerand2 = 1;
-	  TLorentzVector l1, l2;
-	  // if(lp1>lp2)
-	    // {
-        // std::cout << "no swappy" << std::endl;
-	      l1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),ELE_MASS);
-	      l2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),ELE_MASS);
-        // l1.SetPtEtaPhiM(sc1->Pt(),sc1->Eta(),sc1->Phi(),ELE_MASS);
-	     // l2.SetPtEtaPhiM(sc2->Pt(),sc2->Eta(),sc2->Phi(),ELE_MASS);
-        // l1.SetPtEtaPhiM(lp1,lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
-	      // l2.SetPtEtaPhiM(lp2,lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
+        hData->Fill(mass); 
+        hDataNPV->Fill(npv);
+        hDataZPt->Fill(pt); 
+        hDataPhiStar->Fill(phistar); 
+        hDataLep1Pt->Fill(l1.Pt()); 
+        hDataLep2Pt->Fill(l2.Pt()); 
+        if(lq1<0) {
+          hDataLepNegPt->Fill(l1.Pt()); 
+          hDataLepPosPt->Fill(l2.Pt());
+        } else  {
+          hDataLepNegPt->Fill(l2.Pt()); 
+          hDataLepPosPt->Fill(l1.Pt());
+        }
+        hDataLep1Eta->Fill(fabs(l1.Eta())); 
+        hDataLep2Eta->Fill(fabs(l2.Eta())); 
+        hDataZRap->Fill(fabs(rapidity));
         
-        // double tagSmear = ec.smearingSigma(runNumber, l1.Pt(), fabs(l1.Eta()), r91, 12, 0., 0.);
+        yield++;
+	  
+      } else {
+
+        Double_t lp1 = lep1->Pt();
+        Double_t lp2 = lep2->Pt();
+        Double_t lq1 = q1;
+        Double_t lq2 = q2;
+	  
+        TLorentzVector l1, l2;
+        if(lp1>lp2) {
+          l1.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+          l2.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+        } else {
+          l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
+          l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
+        }
+
         double tagSmear1 = ec.smearingSigma(runNumber, sc1->Pt(), fabs(sc1->Eta()), r91, 12, 0., 0.);
         double tagSmear2 = ec.smearingSigma(runNumber, sc2->Pt(), fabs(sc2->Eta()), r92, 12, 0., 0.);
-        // // std::cout << l1.Pt() << std::endl;
-        // l1*= 1+ rand1*tagSmear;
-        // // std::cout << tagSmear << " " << l1.Pt() << std::endl;
-        // tagSmear = ec.smearingSigma(runNumber, l2.Pt(), fabs(l2.Eta()), r92, 12, 0., 0.);
-        // // std::cout << l2.Pt() << std::endl;
-        // l2*= 1+rand2*tagSmear;
-        // // std::cout << tagSmear << " " << l2.Pt() << std::endl;
-	    // }
-	  // else
-	    // // {
-        // // std::cout << "swappy" << std::endl;
-	      // // l1.SetPtEtaPhiM(lp2,lep2->Eta(),lep2->Phi(),ELE_MASS);
-	      // // l2.SetPtEtaPhiM(lp1,lep1->Eta(),lep1->Phi(),ELE_MASS);
-        // l1.SetPtEtaPhiM(lp2,sc2->Eta(),sc2->Phi(),ELE_MASS);
-	      // l2.SetPtEtaPhiM(lp1,sc1->Eta(),sc1->Phi(),ELE_MASS);
-        // // l1.SetPtEtaPhiM(lp2,lep2_raw->Eta(),lep2_raw->Phi(),ELE_MASS);
-	      // // l2.SetPtEtaPhiM(lp1,lep1_raw->Eta(),lep1_raw->Phi(),ELE_MASS);
+        hGausRandNtuple->Fill(random);
+
         
+        double mll=(l1+l2).M();
+        Double_t effdata, effmc;
+        Double_t corr=1;
+        Double_t eff2Bindata, eff2Binmc;
+        Double_t corr2Bin=1;
+        Double_t corrUp=1;
+        Double_t corrDown=1;
+        Double_t effSigShapedata;
+        Double_t corrSigShape=1;
+        Double_t effBkgShapedata;
+        Double_t corrBkgShape=1;
         
-        // double tagSmear = ec.smearingSigma(runNumber, l2.Pt(), fabs(l2.Eta()), r91, 12, 0., 0.);
-        // // std::cout << l2.Pt() << std::endl;
-        // l2*= 1+ rand1*tagSmear;
-        // // std::cout << tagSmear << " " << l1.Pt() << std::endl;
-        // tagSmear = ec.smearingSigma(runNumber, l1.Pt(), fabs(l1.Eta()), r92, 12, 0., 0.);
-        // // std::cout << l1.Pt() << std::endl;
-        // l1*= 1+rand2*tagSmear;
-        // // std::cout << tagSmear << " " << l1.Pt() << std::endl;
-	      // lq1=q2;
-	      // lq2=q1;
-	    // // }
-      // std::cout << "lep1 pt " << lep1->Pt() << " sc1 pt " << sc1->Pt() << "  ratio " << lep1->Pt()/sc1->Pt() <<std::endl;
-      // std::cout << " minus 1 " << lep1->Pt()/sc1->Pt()-1 << " tag smear " <<tagSmear << "  ratio " << (lep1->Pt()/sc1->Pt()-1)/tagSmear << std::endl;
-      // hGausRandNtuple->Fill((lep1->Pt()/sc1->Pt()-1)/tagSmear1);
-      hGausRandNtuple->Fill(random);
-      // double newRandome1 =  (lep1->Pt()/sc1->Pt()-1)/tagSmear1 -0.083;
-      // l1.SetPtEtaPhiM(sc1->Pt(),sc1->Eta(),sc1->Phi(),ELE_MASS);
-      // l1*=(1+newRandome1*tagSmear1);
-      // double newRandome2 =  (lep2->Pt()/sc2->Pt()-1)/tagSmear2 -0.083;
-      // l2.SetPtEtaPhiM(sc2->Pt(),sc2->Eta(),sc2->Phi(),ELE_MASS);
-      // l2*=(1+newRandome2*tagSmear2);
-      
-      // // if(fabs(lep1->Pt()-l1.Pt())>0.001||fabs(lep2->Pt()-l2.Pt())>0.001){
-          // std::cout << "----- sscaled the data" << std::endl;
-      // // // // std::cout << evtNum << " " << el1.Pt() << " " << el1.Eta() << " " << el1.Phi() << " " << el2.Pt() << " " << el2.Eta() << " " << el2.Phi() << " " << (el1+el2).M() << std::endl; 
-      // std::cout << evtNum << " " << sc1->Pt() << " " << sc1->Eta() << " " << sc1->Phi() << " " << sc2->Pt() << " " << sc2->Eta() << " " << sc2->Phi() << " " << dilepSC->M() << std::endl; 
-      // std::cout << evtNum << " " << l1.Pt() << " " << l1.Eta() << " " << l1.Phi() << " " << l2.Pt() << " " << l2.Eta() << " " << l2.Phi() << " " << (l1+l2).M() << std::endl; 
-      // std::cout << r91 << " " << r92 << std::endl;
-      // std::cout << evtNum << " " << lep1->Pt() << " " << lep1->Eta() << " " << lep1->Phi() << " " << lep2->Pt() << " " << lep2->Eta() << " " << lep2->Phi() << " " << dilep->M() << std::endl; 
-    
-    // std::cout << "ratios from select " << lep1->Pt()/sc1->Pt()-1 << " " << lep2->Pt()/sc2->Pt()-1 << std::endl;
-    // std::cout << "ratios from this  " << l1.Pt()/sc1->Pt()-1 << " " << l2.Pt()/sc2->Pt()-1 << std::endl;
-    // // }
-// //
-    // std::cout << "------------------------------------" << std::endl;
-	  
-	  double mll=(l1+l2).M();
-	  Double_t effdata, effmc;
-	  Double_t corr=1;
-	  Double_t eff2Bindata, eff2Binmc;
-	  Double_t corr2Bin=1;
-	  Double_t corrUp=1;
-	  Double_t corrDown=1;
-	  Double_t effSigShapedata;
-	  Double_t corrSigShape=1;
-	  Double_t effBkgShapedata;
-	  Double_t corrBkgShape=1;
-	  
-	  if(mll       < MASS_LOW)  continue;
-	  if(mll       > MASS_HIGH) continue;
-	  if(lp1        < PT_CUT)    continue;
-	  if(lp2        < PT_CUT)    continue;
-	  
-	  // effdata=1; effmc=1;
-          // if(q1>0) { 
-            // effdata *= (1.-dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
-            // effmc   *= (1.-zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt())); 
-          // } else {
-            // effdata *= (1.-dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
-            // effmc   *= (1.-zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt())); 
-          // }
-          // if(q2>0) {
-            // effdata *= (1.-dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt())); 
-            // effmc   *= (1.-zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt()));
-          // } else {
-            // effdata *= (1.-dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt())); 
-            // effmc   *= (1.-zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt()));
-          // }
-          // effdata = 1.-effdata;
-          // effmc   = 1.-effmc;
-          // corr *= effdata/effmc;
-	  // corrSigShape *= effdata/effmc;
-	  // corrBkgShape *= effdata/effmc;
-	  
-          // effdata=1; effmc=1;
-	  // effSigShapedata=1;
-	  // effBkgShapedata=1;
-          // if(q1>0) { 
-            // effdata *= dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt()); 
-            // effmc   *= zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
-            // effSigShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
-            // effBkgShapedata *= dataGsfSelEff_pos.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
-          // } else {
-            // effdata *= dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-            // effmc   *= zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt()); 
-            // effSigShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep1->Pt())); 
-            // effBkgShapedata *= dataGsfSelEff_neg.getEff((lep1->Eta()), lep1->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep1->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep1->Pt()));
-          // }
-          // if(q2>0) {
-            // effdata *= dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt()); 
-            // effmc   *= zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-            // effSigShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
-            // effBkgShapedata *= dataGsfSelEff_pos.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
-          // } else {
-            // effdata *= dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt()); 
-            // effmc   *= zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-            // effSigShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelSigSys->GetBinContent(hGsfSelSigSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelSigSys->GetYaxis()->FindBin(lep2->Pt())); 
-            // effBkgShapedata *= dataGsfSelEff_neg.getEff((lep2->Eta()), lep2->Pt())*hGsfSelBkgSys->GetBinContent(hGsfSelBkgSys->GetXaxis()->FindBin(lep2->Eta()), hGsfSelBkgSys->GetYaxis()->FindBin(lep2->Pt()));
-          // }
-          // corr *= effdata/effmc;
-          // corrSigShape *= effSigShapedata/effmc;
-          // corrBkgShape *= effBkgShapedata/effmc;
-          // //corr=1;
-	  
-          // // scale factor uncertainties   
-	  
-	  // double var=0.; 
-
-	  // // GSF+SELECTION
-	  // if(lq1>0) {
-	    // Double_t effdata = dataGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t effmc   = zeeGsfSelEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errGsfSel*errGsfSel;
-	  // } else {
-	    // Double_t effdata = dataGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t effmc   = zeeGsfSelEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeGsfSelEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errGsfSel*errGsfSel;
-	  // }
-	  
-	  // if(lq2>0) {
-	    // Double_t effdata = dataGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errdata = TMath::Max(dataGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t effmc   = zeeGsfSelEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errGsfSel*errGsfSel;
-	  // } else {
-	    // Double_t effdata = dataGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errdata = TMath::Max(dataGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t effmc   = zeeGsfSelEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errmc   = TMath::Max(zeeGsfSelEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeGsfSelEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t errGsfSel = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errGsfSel*errGsfSel;
-	  // }
-
-	  
-	  // //HLT
-	  // if(lq1>0) {
-	    // Double_t effdata = dataHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t effmc   = zeeHLTEff_pos.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_pos.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errHLT*errHLT;
-	  // } else {
-	    // Double_t effdata = dataHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), dataHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t effmc   = zeeHLTEff_neg.getEff(lep1->Eta(), lep1->Pt());
-	    // Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep1->Eta(), lep1->Pt()), zeeHLTEff_neg.getErrHigh(lep1->Eta(), lep1->Pt()));
-	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errHLT*errHLT;
-	  // }
-	  
-	  // if(lq2>0) {
-	    // Double_t effdata = dataHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errdata = TMath::Max(dataHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t effmc   = zeeHLTEff_pos.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errmc   = TMath::Max(zeeHLTEff_pos.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_pos.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errHLT*errHLT;
-	  // } else {
-	    // Double_t effdata = dataHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errdata = TMath::Max(dataHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), dataHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t effmc   = zeeHLTEff_neg.getEff(lep2->Eta(), lep2->Pt());
-	    // Double_t errmc   = TMath::Max(zeeHLTEff_neg.getErrLow(lep2->Eta(), lep2->Pt()), zeeHLTEff_neg.getErrHigh(lep2->Eta(), lep2->Pt()));
-	    // Double_t errHLT = (effdata/effmc)*sqrt(errdata*errdata/effdata/effdata + errmc*errmc/effmc/effmc);
-	    // var+=errHLT*errHLT;
-	  // }
-	  
-	  // corrUp=corr+sqrt(var);
-	  // corrDown=corr-sqrt(var);  
-
-	  // eff2Bindata=1; eff2Binmc=1;    
-          // if(lq1>0) { 
-            // eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
-            // eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt())); 
-          // } else {
-            // eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
-            // eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt())); 
-          // }
-          // if(lq2>0) {
-            // eff2Bindata *= (1.-dataHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt())); 
-            // eff2Binmc   *= (1.-zeeHLTEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()));
-          // } else {
-            // eff2Bindata *= (1.-dataHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt())); 
-            // eff2Binmc   *= (1.-zeeHLTEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()));
-          // }
-          // eff2Bindata = 1.-eff2Bindata;
-          // eff2Binmc   = 1.-eff2Binmc;
-          // corr2Bin *= eff2Bindata/eff2Binmc;
-    
-          // eff2Bindata=1; eff2Binmc=1;
-          // if(lq1>0) { 
-            // eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
-            // eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep1->Eta()), lep1->Pt()); 
-          // } else {
-            // eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
-            // eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep1->Eta()), lep1->Pt()); 
-          // }
-          // if(lq2>0) {
-            // eff2Bindata *= dataGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt()); 
-            // eff2Binmc   *= zeeGsfSelEff2Bin_pos.getEff((lep2->Eta()), lep2->Pt());
-          // } else {
-            // eff2Bindata *= dataGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt()); 
-            // eff2Binmc   *= zeeGsfSelEff2Bin_neg.getEff((lep2->Eta()), lep2->Pt());
-          // }
-          // corr2Bin *= eff2Bindata/eff2Binmc;
-    // corr=1;
-    double var = 0;
+        if(mll       < MASS_LOW)  continue;
+        if(mll       > MASS_HIGH) continue;
+        if(lp1        < PT_CUT)    continue;
+        if(lp2        < PT_CUT)    continue;
+        
+        double var = 0;
     
         corr = effs.fullEfficiencies(&l1,q1,&l2,q2);
-	  mass = (l1+l2).M();
-	  // mass = dilepSC->M();
-	  // pt = (l1+l2).Pt();
-	  rapidity = (l1+l2).Rapidity();
+        mass = (l1+l2).M();
+        pt = (l1+l2).Pt();
+        rapidity = (l1+l2).Rapidity();
 
-	  phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
-	  if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
-	  else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
-	  phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
+        phiacop=TMath::Pi()-fabs(l1.DeltaPhi(l2));
+        if(lq1<0) costhetastar=tanh(float((l1.Rapidity()-l2.Rapidity())/2));
+        else costhetastar=tanh(float((l2.Rapidity()-l1.Rapidity())/2));
+        phistar=tan(phiacop/2)*sqrt(1-pow(costhetastar,2));
 	  
-	  if(typev[ifile]==eZee) 
-	    { 
-	      yield_zee += weight*corr;
-	      yield_zee_unc += weight*weight*corr*corr;
-	      hZee->Fill(mass,weight*corr); 
-	      hZeeEG->Fill(dilepSC->M(),weight*corr); 
-	      hMC->Fill(mass,weight*corr);
-	      hZeeNPV->Fill(npv,weight*corr); 
-	      hMCNPV->Fill(npv,weight*corr);
-	      hZeeZPt->Fill(pt,weight*corr); 
-	      hMCZPt->Fill(pt,weight*corr);
-	      hZeePhiStar->Fill(phistar,weight*corr); 
-	      hMCPhiStar->Fill(phistar,weight*corr);
-	      hZeeZRap->Fill(fabs(rapidity),weight*corr); 
-	      hMCZRap->Fill(fabs(rapidity),weight*corr);
-	      hZeeLep1Pt->Fill(l1.Pt(),weight*corr); 
-	      hMCLep1Pt->Fill(l1.Pt(),weight*corr);
-	      hZeeLep2Pt->Fill(l2.Pt(),weight*corr); 
-	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
-	      if(lq1<0)
-		{
-		  hZeeLepNegPt->Fill(l1.Pt(),weight*corr); 
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hZeeLepPosPt->Fill(l2.Pt(),weight*corr); 
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
-		}
-	      else 
-		{
-		  hZeeLepNegPt->Fill(l2.Pt(),weight*corr); 
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hZeeLepPosPt->Fill(l1.Pt(),weight*corr); 
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
-		}
-	      hZeeLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
-	      hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
-	      hZeeLep2Eta->Fill(fabs(l2.Eta()),weight*corr); 
-	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
+      if(typev[ifile]==eZee)  { 
+        yield_zee += weight*corr;
+        yield_zee_unc += weight*weight*corr*corr;
+        hZee->Fill(mass,weight*corr); 
+        hZeeEG->Fill(dilepSC->M(),weight*corr); 
+        hMC->Fill(mass,weight*corr);
+        hZeeNPV->Fill(npv,weight*corr); 
+        hMCNPV->Fill(npv,weight*corr);
+        hZeeZPt->Fill(pt,weight*corr); 
+        hMCZPt->Fill(pt,weight*corr);
+        hZeePhiStar->Fill(phistar,weight*corr); 
+        hMCPhiStar->Fill(phistar,weight*corr);
+        hZeeZRap->Fill(fabs(rapidity),weight*corr); 
+        hZeeZRapUp->Fill(fabs(rapidity),weightUp*corr); 
+        hZeeZRapDown->Fill(fabs(rapidity),weightDown*corr); 
+        hMCZRap->Fill(fabs(rapidity),weight*corr);
+        hZeeLep1Pt->Fill(l1.Pt(),weight*corr); 
+        hMCLep1Pt->Fill(l1.Pt(),weight*corr);
+        hZeeLep2Pt->Fill(l2.Pt(),weight*corr); 
+        hMCLep2Pt->Fill(l2.Pt(),weight*corr);
+        if(lq1<0)	{
+          hZeeLepNegPt->Fill(l1.Pt(),weight*corr); 
+          hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+          hZeeLepPosPt->Fill(l2.Pt(),weight*corr); 
+          hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+        } else {
+          hZeeLepNegPt->Fill(l2.Pt(),weight*corr); 
+          hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+          hZeeLepPosPt->Fill(l1.Pt(),weight*corr); 
+          hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+        }
+        hZeeLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
+        hMCLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
+        hZeeLep2Eta->Fill(fabs(l2.Eta()),weight*corr); 
+        hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
 	    }
-	  if(typev[ifile]==eEWK) 
-	    { 
+      if(typev[ifile]==eEWK) { 
 	      yield_ewk += weight*corr;
 	      yield_ewk_unc += weight*weight*corr*corr;
 	      hEWK->Fill(mass,weight*corr); 
@@ -1217,42 +806,39 @@ void plotZee(const TString  inputDir,    // input directory
 	      hEWKLep2Pt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
 	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
 	      
-	      if(lq1<0)
-		{
-		  hEWKLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hEWKLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hEWKLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hEWKLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hEWKLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hEWKLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  
-		  hEWKLepPosPt->Fill(l2.Pt(),weight*corr);
-		  hEWKLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hEWKLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hEWKLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hEWKLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hEWKLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
-		}
-	      else
-		{
-		  hEWKLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hEWKLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hEWKLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hEWKLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hEWKLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hEWKLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  
-		  hEWKLepPosPt->Fill(l1.Pt(),weight*corr);
-		  hEWKLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hEWKLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hEWKLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hEWKLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hEWKLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
-		}
+	      if(lq1<0) {
+          hEWKLepNegPt->Fill(l1.Pt(),weight*corr);
+          hEWKLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+          hEWKLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+          hEWKLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+          hEWKLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+          hEWKLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+          hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+          
+          hEWKLepPosPt->Fill(l2.Pt(),weight*corr);
+          hEWKLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+          hEWKLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+          hEWKLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+          hEWKLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+          hEWKLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+          hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+        } else {
+          hEWKLepNegPt->Fill(l2.Pt(),weight*corr);
+          hEWKLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+          hEWKLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+          hEWKLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+          hEWKLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+          hEWKLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+          hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+          
+          hEWKLepPosPt->Fill(l1.Pt(),weight*corr);
+          hEWKLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+          hEWKLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+          hEWKLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+          hEWKLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+          hEWKLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+          hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+        }
 	      
 	      hEWKLep1Eta->Fill(fabs(l1.Eta()),weight*corr); 
 	      hEWKLep1Eta_EffBin->Fill(fabs(l1.Eta()),weight*corr2Bin);
@@ -1270,8 +856,7 @@ void plotZee(const TString  inputDir,    // input directory
 	      hEWKLep2Eta_EffBkgShape->Fill(fabs(l2.Eta()),weight*corrBkgShape);
 	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
 	    }
-	  if(typev[ifile]==eTop) 
-	    {
+      if(typev[ifile]==eTop) {
 	      yield_top += weight*corr;
 	      yield_top_unc += weight*weight*corr*corr;
 	      hTop->Fill(mass,weight*corr); 
@@ -1320,42 +905,39 @@ void plotZee(const TString  inputDir,    // input directory
 	      hTopLep2Pt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
 	      hMCLep2Pt->Fill(l2.Pt(),weight*corr);
 
-	      if(lq1<0)
-		{
-		  hTopLepNegPt->Fill(l1.Pt(),weight*corr);
-		  hTopLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hTopLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hTopLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hTopLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hTopLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l1.Pt(),weight*corr);
-		  
-		  hTopLepPosPt->Fill(l2.Pt(),weight*corr);
-		  hTopLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hTopLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hTopLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hTopLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hTopLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l2.Pt(),weight*corr);
-		}
-	      else
-		{
-		  hTopLepNegPt->Fill(l2.Pt(),weight*corr);
-		  hTopLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
-		  hTopLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
-		  hTopLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
-		  hTopLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
-		  hTopLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
-		  hMCLepNegPt->Fill(l2.Pt(),weight*corr);
-		  
-		  hTopLepPosPt->Fill(l1.Pt(),weight*corr);
-		  hTopLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
-		  hTopLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
-		  hTopLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
-		  hTopLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
-		  hTopLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
-		  hMCLepPosPt->Fill(l1.Pt(),weight*corr);
-		}
+	      if(lq1<0) {
+          hTopLepNegPt->Fill(l1.Pt(),weight*corr);
+          hTopLepNegPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+          hTopLepNegPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+          hTopLepNegPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+          hTopLepNegPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+          hTopLepNegPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+          hMCLepNegPt->Fill(l1.Pt(),weight*corr);
+          
+          hTopLepPosPt->Fill(l2.Pt(),weight*corr);
+          hTopLepPosPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+          hTopLepPosPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+          hTopLepPosPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+          hTopLepPosPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+          hTopLepPosPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+          hMCLepPosPt->Fill(l2.Pt(),weight*corr);
+        } else  {
+          hTopLepNegPt->Fill(l2.Pt(),weight*corr);
+          hTopLepNegPt_EffBin->Fill(l2.Pt(),weight*corr2Bin);
+          hTopLepNegPt_EffStatUp->Fill(l2.Pt(),weight*corrUp);
+          hTopLepNegPt_EffStatDown->Fill(l2.Pt(),weight*corrDown);
+          hTopLepNegPt_EffSigShape->Fill(l2.Pt(),weight*corrSigShape);
+          hTopLepNegPt_EffBkgShape->Fill(l2.Pt(),weight*corrBkgShape);
+          hMCLepNegPt->Fill(l2.Pt(),weight*corr);
+          
+          hTopLepPosPt->Fill(l1.Pt(),weight*corr);
+          hTopLepPosPt_EffBin->Fill(l1.Pt(),weight*corr2Bin);
+          hTopLepPosPt_EffStatUp->Fill(l1.Pt(),weight*corrUp);
+          hTopLepPosPt_EffStatDown->Fill(l1.Pt(),weight*corrDown);
+          hTopLepPosPt_EffSigShape->Fill(l1.Pt(),weight*corrSigShape);
+          hTopLepPosPt_EffBkgShape->Fill(l1.Pt(),weight*corrBkgShape);
+          hMCLepPosPt->Fill(l1.Pt(),weight*corr);
+        }
 
 	      hTopLep1Eta->Fill(fabs(l1.Eta()),weight*corr);
 	      hTopLep1Eta_EffBin->Fill(fabs(l1.Eta()),weight*corr2Bin);
@@ -1373,7 +955,6 @@ void plotZee(const TString  inputDir,    // input directory
 	      hTopLep2Eta_EffBkgShape->Fill(fabs(l2.Eta()),weight*corrBkgShape);
 	      hMCLep2Eta->Fill(fabs(l2.Eta()),weight*corr);
 	    }
-	}
       }
     }
 
@@ -1550,6 +1131,8 @@ void plotZee(const TString  inputDir,    // input directory
       hEWKPhiStar->Scale(MCscale);
       hTopPhiStar->Scale(MCscale);
       hZeeZRap->Scale(MCscale);
+      hZeeZRapUp->Scale(MCscale);
+      hZeeZRapDown->Scale(MCscale);
       hMCZRap->Scale(MCscale);
       hEWKZRap->Scale(MCscale);
       hTopZRap->Scale(MCscale);
@@ -1732,6 +1315,22 @@ void plotZee(const TString  inputDir,    // input directory
   hZeeLep2EtaDiff->SetMarkerSize(0.9);
   
   
+  TH1D *hZeeZRapDiffUnc = new TH1D("hZeeZRapDiffUnc","hZeeZRapDiffUnc",24, 0.0, 2.4);
+  TH1D *hLine = new TH1D("hLine","hLine", 24, 0.0, 2.4);
+  
+	for(int i =1 ; i <= NBINS ; ++i){
+		hZeeZRapDiffUnc->SetBinContent(i,0);
+		hLine->SetBinContent(i,0);
+		hLine->SetBinError(i,0);
+    // double dataup = (hData->GetBinContent(i)-hZeeZRapDiffUp->GetBinContent(i))/hData->GetBinContent(i);
+    // double datadown = (hData->GetBinContent(i)-hZeeZRapDiffDown->GetBinContent(i))/hData->GetBinContent(i);
+    double zeeup = (hZeeZRap->GetBinContent(i)-hZeeZRapUp->GetBinContent(i))/hZeeZRap->GetBinContent(i);
+    double zeedown = (hZeeZRap->GetBinContent(i)-hZeeZRapDown->GetBinContent(i))/hZeeZRap->GetBinContent(i);
+		// massUnc->SetBinError(i,sqrt(dataup*dataup+datadown*datadown+zeeup*zeeup+zeedown*zeedown));
+		hZeeZRapDiffUnc->SetBinError(i,sqrt(zeeup*zeeup+zeedown*zeedown));
+    cout << "Bin Error is " << hZeeZRapDiffUnc->GetBinError(i) << endl;
+	}
+  
   //--------------------------------------------------------------------------------------------------------------
   // Make plots 
   //==============================================================================================================  
@@ -1743,7 +1342,8 @@ void plotZee(const TString  inputDir,    // input directory
   sprintf(lumitext,"%.1f fb^{-1}  (13 TeV)",lumi/1000);  
   
   char normtext[100];
-  sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
+  // sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
+  sprintf(normtext,"",MCscale);  
 
   string norm="";
   if(normToData)norm="_norm";
@@ -2098,7 +1698,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeZPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeZPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeZPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeZPt.SetLogx();
+  // plotZeeZPt.SetLogx();
   plotZeeZPt.SetLogy(0);
   plotZeeZPt.SetYRange(0.01,1.2*(hDataZPt->GetMaximum() + sqrt(hDataZPt->GetMaximum())));
   plotZeeZPt.TransLegend(0.1,-0.05);
@@ -2106,7 +1706,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeZPtDiff("zeeZPt"+norm,"","p_{T}^{e^{+}e^{-}} [GeV]","#frac{Data-Pred}{Data}");
   plotZeeZPtDiff.AddHist1D(hZeeZPtDiff,"EX0",ratioColor);
-  plotZeeZPtDiff.SetLogx();
+  // plotZeeZPtDiff.SetLogx();
   plotZeeZPtDiff.SetYRange(-0.2,0.2);
   plotZeeZPtDiff.AddLine(0, 0,1000, 0,kBlack,1);
   plotZeeZPtDiff.AddLine(0, 0.1,1000, 0.1,kBlack,3);
@@ -2121,7 +1721,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeZPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeZPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeZPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeZPt2.SetLogx();
+  // plotZeeZPt2.SetLogx();
   plotZeeZPt2.SetLogy();
   plotZeeZPt2.SetYRange(1e-6*(hDataZPt->GetMaximum()),10*(hDataZPt->GetMaximum()));
   plotZeeZPt2.TransLegend(0.1,-0.05);
@@ -2137,7 +1737,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeePhiStar.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeePhiStar.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeePhiStar.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeePhiStar.SetLogx();
+  // plotZeePhiStar.SetLogx();
   plotZeePhiStar.SetLogy(0);
   plotZeePhiStar.SetYRange(0.01,1.2*(hDataPhiStar->GetMaximum() + sqrt(hDataPhiStar->GetMaximum())));
   plotZeePhiStar.TransLegend(0.1,-0.05);
@@ -2145,7 +1745,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeePhiStarDiff("zeePhiStar"+norm,"","#phi_{#eta}*","#frac{Data-Pred}{Data}");
   plotZeePhiStarDiff.AddHist1D(hZeePhiStarDiff,"EX0",ratioColor);
-  plotZeePhiStarDiff.SetLogx();
+  // plotZeePhiStarDiff.SetLogx();
   plotZeePhiStarDiff.SetYRange(-0.2,0.2);
   plotZeePhiStarDiff.AddLine(0, 0,3, 0,kBlack,1);
   plotZeePhiStarDiff.AddLine(0, 0.1,3, 0.1,kBlack,3);
@@ -2160,7 +1760,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeePhiStar2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeePhiStar2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeePhiStar2.AddTextBox(normtext,0.21,0.75,0.45,0.80,0,13,0.03,-1);
-  plotZeePhiStar2.SetLogx();
+  // plotZeePhiStar2.SetLogx();
   plotZeePhiStar2.SetLogy();
   plotZeePhiStar2.SetYRange(1e-5*(hDataPhiStar->GetMaximum()),10*(hDataPhiStar->GetMaximum()));
   plotZeePhiStar2.TransLegend(0.1,-0.05);
@@ -2182,6 +1782,8 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeZRap.Draw(c,kFALSE,format,1);
 
   CPlot plotZeeZRapDiff("zeeZRap"+norm,"","|y^{e^{+}e^{-}}|","#frac{Data-Pred}{Data}");
+  plotZeeZRapDiff.AddHist1D(hZeeZRapDiffUnc,"E3",kGray,1,1);
+  plotZeeZRapDiff.AddHist1D(hLine,"E3",kBlack,1,1);
   plotZeeZRapDiff.AddHist1D(hZeeZRapDiff,"EX0",ratioColor);
   plotZeeZRapDiff.SetYRange(-0.2,0.2);
   plotZeeZRapDiff.AddLine(0, 0,2.4, 0,kBlack,1);
@@ -2212,7 +1814,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep1Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep1Pt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep1Pt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLep1Pt.SetLogx();
+  // plotZeeLep1Pt.SetLogx();
   plotZeeLep1Pt.SetLogy(0);
   plotZeeLep1Pt.SetYRange(0.01,1.2*(hDataLep1Pt->GetMaximum() + sqrt(hDataLep1Pt->GetMaximum())));
   plotZeeLep1Pt.TransLegend(0.1,-0.05);
@@ -2220,7 +1822,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLep1PtDiff("zeeLep1Pt"+norm,"","p_{T}(leading electron) [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLep1PtDiff.AddHist1D(hZeeLep1PtDiff,"EX0",ratioColor);
-  plotZeeLep1PtDiff.SetLogx();
+  // plotZeeLep1PtDiff.SetLogx();
   plotZeeLep1PtDiff.SetYRange(-0.2,0.2);
   plotZeeLep1PtDiff.AddLine(25, 0,300, 0,kBlack,1);
   plotZeeLep1PtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
@@ -2235,7 +1837,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep1Pt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep1Pt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep1Pt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLep1Pt2.SetLogx();
+  // plotZeeLep1Pt2.SetLogx();
   plotZeeLep1Pt2.SetLogy();
   plotZeeLep1Pt2.SetYRange(1e-5*(hDataLep1Pt->GetMaximum()),10*(hDataLep1Pt->GetMaximum()));
   plotZeeLep1Pt2.TransLegend(0.1,-0.05);
@@ -2251,7 +1853,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep2Pt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep2Pt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep2Pt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLep2Pt.SetLogx();
+  // plotZeeLep2Pt.SetLogx();
   plotZeeLep2Pt.SetLogy(0);
   plotZeeLep2Pt.SetYRange(0.01,1.2*(hDataLep2Pt->GetMaximum() + sqrt(hDataLep2Pt->GetMaximum())));
   plotZeeLep2Pt.TransLegend(0.1,-0.05);
@@ -2259,7 +1861,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLep2PtDiff("zeeLep2Pt"+norm,"","p_{T}(2nd leading electron) [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLep2PtDiff.AddHist1D(hZeeLep2PtDiff,"EX0",ratioColor);
-  plotZeeLep2PtDiff.SetLogx();
+  // plotZeeLep2PtDiff.SetLogx();
   plotZeeLep2PtDiff.SetYRange(-0.2,0.2);
   plotZeeLep2PtDiff.AddLine(25, 0,150, 0,kBlack,1);
   plotZeeLep2PtDiff.AddLine(25, 0.1,150, 0.1,kBlack,3);
@@ -2274,7 +1876,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLep2Pt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLep2Pt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLep2Pt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLep2Pt2.SetLogx();
+  // plotZeeLep2Pt2.SetLogx();
   plotZeeLep2Pt2.SetLogy();
   plotZeeLep2Pt2.SetYRange(1e-5*(hDataLep2Pt->GetMaximum()),10*(hDataLep2Pt->GetMaximum()));
   plotZeeLep2Pt2.TransLegend(0.1,-0.05);
@@ -2290,7 +1892,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepNegPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepNegPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepNegPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLepNegPt.SetLogx();
+  // plotZeeLepNegPt.SetLogx();
   plotZeeLepNegPt.SetLogy(0);
   plotZeeLepNegPt.SetYRange(0.01,1.2*(hDataLepNegPt->GetMaximum() + sqrt(hDataLepNegPt->GetMaximum())));
   plotZeeLepNegPt.TransLegend(0.1,-0.05);
@@ -2298,7 +1900,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLepNegPtDiff("zeeLepNegPt"+norm,"","p_{T}^{e^{-}} [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLepNegPtDiff.AddHist1D(hZeeLepNegPtDiff,"EX0",ratioColor);
-  plotZeeLepNegPtDiff.SetLogx();
+  // plotZeeLepNegPtDiff.SetLogx();
   plotZeeLepNegPtDiff.SetYRange(-0.2,0.2);
   plotZeeLepNegPtDiff.AddLine(25, 0,300, 0,kBlack,1);
   plotZeeLepNegPtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
@@ -2313,7 +1915,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepNegPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepNegPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepNegPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLepNegPt2.SetLogx();
+  // plotZeeLepNegPt2.SetLogx();
   plotZeeLepNegPt2.SetLogy();
   plotZeeLepNegPt2.SetYRange(1e-5*(hDataLepNegPt->GetMaximum()),10*(hDataLepNegPt->GetMaximum()));
   plotZeeLepNegPt2.TransLegend(0.1,-0.05);
@@ -2329,7 +1931,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepPosPt.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepPosPt.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepPosPt.AddTextBox(normtext,0.6,0.65,0.95,0.70,0,13,0.03,-1);
-  plotZeeLepPosPt.SetLogx();
+  // plotZeeLepPosPt.SetLogx();
   plotZeeLepPosPt.SetLogy(0);
   plotZeeLepPosPt.SetYRange(0.01,1.2*(hDataLepPosPt->GetMaximum() + sqrt(hDataLepPosPt->GetMaximum())));
   plotZeeLepPosPt.TransLegend(0.1,-0.05);
@@ -2337,7 +1939,7 @@ void plotZee(const TString  inputDir,    // input directory
 
   CPlot plotZeeLepPosPtDiff("zeeLepPosPt"+norm,"","p_{T}^{e^{+}} [GeV]","#frac{Data-Pred}{Data}");
   plotZeeLepPosPtDiff.AddHist1D(hZeeLepPosPtDiff,"EX0",ratioColor);
-  plotZeeLepPosPtDiff.SetLogx();
+  // plotZeeLepPosPtDiff.SetLogx();
   plotZeeLepPosPtDiff.SetYRange(-0.2,0.2);
   plotZeeLepPosPtDiff.AddLine(25, 0,300, 0,kBlack,1);
   plotZeeLepPosPtDiff.AddLine(25, 0.1,300, 0.1,kBlack,3);
@@ -2352,7 +1954,7 @@ void plotZee(const TString  inputDir,    // input directory
   plotZeeLepPosPt2.AddTextBox("#bf{CMS} #scale[0.75]{#it{Preliminary}}",0.205,0.80,0.465,0.88,0);
   plotZeeLepPosPt2.AddTextBox(lumitext,0.66,0.91,0.95,0.96,0);
   if(normToData)plotZeeLepPosPt2.AddTextBox(normtext,0.6,0.55,0.95,0.60,0,13,0.03,-1);
-  plotZeeLepPosPt2.SetLogx();
+  // plotZeeLepPosPt2.SetLogx();
   plotZeeLepPosPt2.SetLogy();
   plotZeeLepPosPt2.SetYRange(1e-5*(hDataLepPosPt->GetMaximum()),10*(hDataLepPosPt->GetMaximum()));
   plotZeeLepPosPt2.TransLegend(0.1,-0.05);

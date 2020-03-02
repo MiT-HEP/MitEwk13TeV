@@ -24,29 +24,8 @@
 #include <TGaxis.h>
 #include "TLorentzVector.h"           // 4-vector class
 
-#include "BaconAna/DataFormats/interface/TGenParticle.hh"  
-
-#include "../Utils/MyTools.hh"            // various helper functions
-#include "../Utils/CPlot.hh"              // helper class for plots
-#include "../Utils/MitStyleRemix.hh"      // style settings for drawing
-#include "../Utils/WModels.hh"            // definitions of PDFs for fitting
-// #include "../Utils/RecoilCorrector_asym2.hh"
-// #include "../Utils/RecoilCorrector_addJets.hh"
-// #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 #include "Math/MinimizerOptions.h"
 #include "Math/Minimizer.h"
-
-// #include "ZBackgrounds.hh"
-
-// // // helper class to handle rochester corrections
-// // // #include <rochcor2015r.h>
-// // // #include <muresolution_run2r.h>
-// #include <../RochesterCorr/RoccoR.cc>
-
-// // // helper class to handle efficiency tables
-// #include "../Utils/CEffUser1D.hh"
-// #include "../Utils/CEffUser2D.hh"
-
 // RooFit headers
 #include "RooRealVar.h"
 #include "RooDataSet.h"
@@ -63,6 +42,17 @@
 #include "RooWorkspace.h"
 #include "RooConstVar.h"
 #include "RooMinuit.h"
+
+// Bacon
+#include "BaconAna/DataFormats/interface/TGenParticle.hh"  
+
+// Custom tools from this package
+#include "../Utils/MyTools.hh"            // various helper functions
+#include "../Utils/CPlot.hh"              // helper class for plots
+#include "../Utils/MitStyleRemix.hh"      // style settings for drawing
+#include "../Utils/WModels.hh"            // definitions of PDFs for fitting
+#include "../Utils/AppEffSF.cc"
+
 #endif
 
 //=== FUNCTION DECLARATIONS ======================================================================================
@@ -75,7 +65,7 @@ void calcLHE(TH1D* hQCD, TH1D* hPDF, TH1D** hlhe, TH1D* hMain, bool isSignal);
 void drawLHE(TH1D** hlhe, TH1D* hMain, TString name, TString outdir, bool isSignal);
 
 void drawShapes(TH1D** vars, TH1D* hMain, TString outdir, TString name, vector<string> leg, int max);
-
+void makeUncMT(vector<Double_t> &metVars, vector<Double_t> &metVarsPhi, TLorentzVector* lep);
 // make data-fit difference plots
 TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
@@ -96,6 +86,42 @@ void printChi2AndKSResults(ostream& os,
 // make webpage
 void makeHTML(const TString outDir);
 
+// check a flat Iso cut
+bool pass2015Iso(double relIso, double eta){
+  if(abs(eta)<1.4442){
+    if(relIso >= 0.0354) return false;
+    // if(relIso >= 0.02) return false;
+  } else {
+    if(relIso >= 0.0646) return false;
+    // if(relIso >= 0.02) return false;
+  }
+  return true;
+}
+
+// some trash
+void setRelIsoVarCR(double &relIso, double pT,double eta){
+  if(abs(eta)<1.4442){
+    // if(pT < 30) {
+      // if(relIso > 0.0354) relIso = 1.0;
+    // } else {
+      // if(relIso > 0.05) relIso = 1.0;
+    // }
+    // relIso += 0.10-0.0354;
+    // relIso*=10;
+    // relIso += 0.10-0.035;
+  } else {
+    // if(pT < 30) {
+      // if(relIso > 0.0646) relIso = 1.0;
+    // } else {
+      // if(relIso > 0.1) relIso = 1.0;
+    // }
+    // relIso += 0.10-0.0646;
+    relIso -= 0.0646-0.0354;
+    // relIso*=10;
+    // relIso += 0.10-0.060;
+  }
+}
+
 // global variables yolo
 const  Int_t linecolorW   = kOrange-3;
 const  Int_t fillcolorW   = kOrange-2;
@@ -106,11 +132,13 @@ const  Int_t fillcolorQCD = kViolet-5;
 const  Int_t ratioColor   = kGray+2;
 
 const Int_t    NBINS   = 50;
+// const Int_t    NBINS   = 75;
 // const Int_t    NBINS   = 20;
-const Double_t METMIN  = 0;
-// const Double_t METMIN  = 25;
-// const Double_t METMAX  = 50;
-const Double_t METMAX  = 100;
+// const Double_t METMIN  = 50;
+// const Double_t METMIN  = 0;
+// const Double_t METMAX  = 100;
+const Double_t METMIN  = 40;
+const Double_t METMAX  = 140;
 const Int_t    nPDF = 100;
 const Int_t    nQCD = 6;
 
@@ -132,8 +160,11 @@ void fitWlnu(const TString  outputDir,   // output directory
   const TString format("png"); 
   
   bool doMTCut = false;
-  bool doMET = true;
+  // use this to change if we use mT or MET
+  bool overwriteMET = true;
   bool doTemplate = true;
+  // don't change this part
+  bool doMET = true;
 
 double isoSigCut=9999;
 double isoTrkCut=9999;
@@ -152,16 +183,9 @@ double isoTrkCut=9999;
     std::vector<string> vLHE;
   for(int i = 0; i < nLHE; i++){vLHE.push_back(vaLHE[i]);}
   
-  // Control the types of uncertainties
-  // enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  // systematics
-  // enum{no,keys,eta,cent,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  // enum{no,eta,cent,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  // enum{no,ru,eta,keys,cent,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
   // main set
   enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
   const string vaMET[]={"no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"};
-  // const vector<string> vMET{ "no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"}; 
   int nMET = sizeof(vaMET)/sizeof(vaMET[0]);
   std::vector<string> vMET;
   for(int i = 0; i < nMET; i++){vMET.push_back(vaMET[i]);}
@@ -170,122 +194,103 @@ double isoTrkCut=9999;
   
   enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
   const string vaWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
-  // enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
-  // const string vaWeight[]={"main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
-  // const vector<string> v{ "main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"}; 
   int nWeight = sizeof(vaWeight)/sizeof(vaWeight[0]);
   std::vector<string> vWeight;
   for(int i = 0; i < nWeight; i++){vWeight.push_back(vaWeight[i]);}
   
-  // enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
-  // const string vWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
-  // int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
-  
   std::cout << "size of weight array is " << nWeight << std::endl;
   std::cout << "size of met array is " << nMET << std::endl;
   
-  // Double_t vIsoBins[] = {0.0,0.20,0.30,0.40,0.50,0.60,0.70};
-  Double_t vIsoBins[] = {0.0,0.15,0.25,0.35,0.45,0.55,0.65};
-  // Double_t vIsoBins[] = {0.0,0.25,0.35,0.45,0.55,0.65};
+  Double_t vIsoBins[] = {0.0,0.15,0.30,0.45,0.55,0.65};
   int nIsoBins = sizeof(vIsoBins)/sizeof(vIsoBins[0])-1;
   std::cout << "size of isobin array is " << nIsoBins << std::endl;
   
-  // MET histogram binning and range
-  // const Int_t    NBINS   = 75*4;
-  // const Int_t    NBINS   = 125;
-  // const Int_t    NBINS   = 50;
-  // const Int_t    NBINS   = 100;
-  
   const Double_t PT_CUT  = 25;
-  // const Double_t PT_CUT  = 35;
   const Double_t ETA_CUT = 2.4;
   
-  const Double_t MT_CUT = 25.0;
-  
+  const Double_t MT_CUT = 40.0;
   const Double_t mu_MASS = 0.1057;
-
-  //
-  // Set up output file
-  //
-  TString outfilename = outputDir + TString("/") + TString("Zmm_DataBkg.root");
-  TFile *outFile = new TFile(outfilename,"RECREATE");
-  TH1::AddDirectory(kFALSE);
-
   
-  // not sure i'll be needing these?
-  // ----------------------------------------------------
-  // Load the plots of relative difference, to create the up/down shapes
-  TFile *_rdWmp = new TFile("shapeDiff/Wmp_relDiff.root");
-  TFile *_rdWmm = new TFile("shapeDiff/Wmm_relDiff.root");
+  TH2D *hErr  = new TH2D("hErr", "",10,0,10,20,0,20);
   
-  TH1D *hh_diffm = new TH1D("hh_diffm","hh_diffm",75,0,150);
-  TH1D *hh_diffp = new TH1D("hh_diffp","hh_diffp",75,0,150);
-  
-  hh_diffm = (TH1D*)_rdWmm->Get("hh_diff");
-  hh_diffp = (TH1D*)_rdWmp->Get("hh_diff");
+  RooMsgService::instance().setSilentMode(true);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   // -----------------------------------------------------
-  
-  // // Load the Z data and Z MC Pt spectra
-  // TFile *_rat1 = new TFile("shapeDiff/zmm_PDFUnc.root");
-  // TH1D *hh_mc;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // hh_mc = (TH1D*)_rat1->Get("hZPtTruthNominal"); 
-  // hh_mc->Scale(1/hh_mc->Integral()); // normalize
-  
-  // // TFile *_rat2 = new TFile("shapeDiff/UnfoldingOutputZPt.root");
-  // // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // // hh_diff = (TH1D*)_rat2->Get("hUnfold");
-  // // hh_diff->Scale(1/hh_diff->Integral()); // normalize
-  // // hh_diff->Divide(hh_mc);
+
    
   //
   // input ntuple file names
   //
-  enum {eData, eWlnu, eW0j, eW1j, eW2j, eZxx, eWx, eTtb, eDib, eQCD, eAntiData, eAntiWlnu, eAntiQCD, eAntiTtb, eAntiDib, eAntiWx, eAntiZxx };  // data type enum
+  enum {eData, eWlnu, eZxx, eWx, eTtb, eDib, eQCD, eAntiData, eAntiWlnu, eAntiQCD, eAntiTtb, eAntiDib, eAntiWx, eAntiZxx };  // data type enum
   vector<TString> fnamev;
   vector<Int_t>   typev;
   
   if(flav.CompareTo("Wenu") == 0 && lumi < 250){
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));  typev.push_back(eData);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eW0j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eW1j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eW2j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.root"));  typev.push_back(eWx);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wep_powheg_select.root"));  typev.push_back(eWlnu);
+   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wem_powheg_select.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we0_select.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we1_select.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/we2_select.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx0_select.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx1_select.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx2_select.root"));  typev.push_back(eWx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top1_select.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top2_select.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top3_select.root")); typev.push_back(eTtb);
 
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx0_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx1_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx2_select.root")); typev.push_back(eAntiWx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we_select.root")); typev.push_back(eAntiWlnu);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wep_powheg_select.root")); typev.push_back(eAntiWlnu);
+   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wem_powheg_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we0_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we1_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/we2_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top1_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top2_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top3_select.root"));  typev.push_back(eAntiTtb);
   }
   // // // // 13 TEV Muon Channel
   if(flav.CompareTo("Wmunu") == 0 && lumi < 250){
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eW0j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eW1j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eW2j);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx0_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx1_select.raw.root"));  typev.push_back(eWx);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wx2_select.raw.root"));  typev.push_back(eWx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zxx_select.raw.root")); typev.push_back(eZxx);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/zz_select.raw.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/ww_select.raw.root"));  typev.push_back(eDib);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wz_select.raw.root"));  typev.push_back(eDib);
-   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top_select.raw.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top1_select.raw.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top2_select.raw.root")); typev.push_back(eTtb);
+   fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/top3_select.raw.root")); typev.push_back(eTtb);
 
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/data_select.root")); typev.push_back(eAntiData);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx0_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx1_select.root")); typev.push_back(eAntiWx);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wx2_select.root")); typev.push_back(eAntiWx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zxx_select.root")); typev.push_back(eAntiZxx);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm_select.root")); typev.push_back(eAntiWlnu);
-   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm0_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm1_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm2_select.root")); typev.push_back(eAntiWlnu);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top1_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top2_select.root"));  typev.push_back(eAntiTtb);
+   fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/top3_select.root"));  typev.push_back(eAntiTtb);
   }
  
   // // // For the 5 TeV
@@ -338,6 +343,8 @@ double isoTrkCut=9999;
   gSystem->mkdir(outputDir,kTRUE);
   CPlot::sOutDir = outputDir;  
   
+
+  // TH1D *hGenWeights;
   //
   // Declare MET histograms
   //
@@ -382,16 +389,8 @@ double isoTrkCut=9999;
   TH1D *hWlnuMetpPhi   = new TH1D("hWlnuMetpPhi","",  100,-3.15, 6.30); hWlnuMetpPhi->Sumw2();
   TH1D *hWlnuMetmPhi   = new TH1D("hWlnuMetmPhi","",  100,-3.15, 6.30); hWlnuMetmPhi->Sumw2();
   
-  
-  // TH1D **hAntiDataMetIsoBins   = new TH1D*[5];// hAntiDataMet->Sumw2();
-  TH1D **hDataMetm2d  = new TH1D*[nIsoBins];// hAntiDataMetm->Sumw2();  
-  TH1D **hDataMetp2d  = new TH1D*[nIsoBins];// hAntiDataMetp->Sumw2();
-  // TH1D **hAntiWlnuMetIsoBins   = new TH1D*[5];// hAntiWlnuMet->Sumw2();
-  // these are the uncorrected shapes
-  TH1D **hWlnuMetp2d  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
-  TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+
   // All teh uncertainties? 
-  // this is an array of arrays of histograms // first index is iso bin, 2nd is uncertainty shape
   TH1D ***hWlnupMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
   TH1D ***hWlnumMETU  = new TH1D**[nIsoBins];// hAntiWlnuMetm->Sumw2();
   TH1D ***hWlnupMETD  = new TH1D**[nIsoBins];// hAntiWlnuMetp->Sumw2();
@@ -602,10 +601,18 @@ double isoTrkCut=9999;
     hTtbmLHE[i]  = new TH1D*[nQCD+nPDF];
     
   }
-  // TH1D **hAntiEWKMetIsoBins    = new TH1D*[5];// hAntiEWKMet->Sumw2();
+  
+  // -----------------------------------------------------------------------
+  //           the main shapes  
+  // -----------------------------------------------------------------------
+  TH1D **hDataMetm2d  = new TH1D*[nIsoBins];// hAntiDataMetm->Sumw2();  
+  TH1D **hDataMetp2d  = new TH1D*[nIsoBins];// hAntiDataMetp->Sumw2();
+  
+  TH1D **hWlnuMetp2d  = new TH1D*[nIsoBins];// hAntiWlnuMetp->Sumw2();
+  TH1D **hWlnuMetm2d  = new TH1D*[nIsoBins];// hAntiWlnuMetm->Sumw2();
+  
   TH1D **hEWKMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hEWKMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  
   
   TH1D **hDibMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hDibMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
@@ -615,10 +622,12 @@ double isoTrkCut=9999;
   
   TH1D **hWxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hWxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
-  // eta binned
   
   TH1D **hZxxMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
   TH1D **hZxxMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
+
+  TH1D **hQCDMetp2d   = new TH1D*[nIsoBins];// hAntiEWKMetp->Sumw2();
+  TH1D **hQCDMetm2d   = new TH1D*[nIsoBins];// hAntiEWKMetm->Sumw2();
   
   
   TH1D **hMetpIsoValues = new TH1D*[nIsoBins];
@@ -633,18 +642,21 @@ double isoTrkCut=9999;
     
     hEWKMetp2d[i]      = new TH1D(("hEwkMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hEWKMetm2d[i]      = new TH1D(("hEwkMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-	
-	  hDibMetp2d[i]  = new TH1D(("hDibMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hDibMetp2d[i]  = new TH1D(("hDibMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hDibMetm2d[i]  = new TH1D(("hDibMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-	
-	  hTtbMetp2d[i]  = new TH1D(("hTtbMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hTtbMetp2d[i]  = new TH1D(("hTtbMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hTtbMetm2d[i]  = new TH1D(("hTtbMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
 	
-  	hWxMetp2d[i]      = new TH1D(("hWxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    hWxMetp2d[i]      = new TH1D(("hWxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hWxMetm2d[i]      = new TH1D(("hWxMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
-	
-	  hZxxMetp2d[i]      = new TH1D(("hZxxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hZxxMetp2d[i]      = new TH1D(("hZxxMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     hZxxMetm2d[i]      = new TH1D(("hZxxMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    
+    hQCDMetp2d[i]      = new TH1D(("hQCDMetpBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
+    hQCDMetm2d[i]      = new TH1D(("hQCDMetmBin"+std::to_string(i)).c_str(),"",  NBINS,METMIN,METMAX); 
     
     // Create a loop over the # of uncertainty shapes to produce the uncertainty histograms for the "up" shapes
     // Do the recoil ones here
@@ -695,9 +707,6 @@ double isoTrkCut=9999;
         sprintf(type,"%i_%sUp",i,(vWeight[j]).c_str());
       }
       
-      // Wlnu
-      // sprintf(hname,"hWlnuMetpBin%s",type);
-      // hWlnupMETU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       sprintf(hname,"hWlnuMetpBin%s",type);
       hWlnupWeightU[i][j] = new TH1D(hname,"",NBINS,METMIN,METMAX);
       sprintf(hname,"hWlnuMetmBin%s",type);
@@ -734,7 +743,7 @@ double isoTrkCut=9999;
       hWlnupLHE[i][j] = new TH1D(("hWlnuMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
       hWlnumLHE[i][j] = new TH1D(("hWlnuMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
       
-      hEWKpLHE[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_lhe"+std::to_string(i)).c_str(),"",NBINS,METMIN,METMAX);
+      hEWKpLHE[i][j] = new TH1D(("hEwkMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
       hEWKmLHE[i][j] = new TH1D(("hEwkMetmBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
       
       hWxpLHE[i][j] = new TH1D(("hWxMetpBin"+std::to_string(i)+"_lhe"+std::to_string(j)).c_str(),"",NBINS,METMIN,METMAX);
@@ -770,45 +779,48 @@ double isoTrkCut=9999;
     }
     
 
-	  hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
+    hMetpIsoValues[i] = new TH1D(("hMetpIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
     hMetmIsoValues[i] = new TH1D(("hMetmIsoValues_"+std::to_string(i)).c_str(),"",  100,vIsoBins[i],vIsoBins[i+1]);
   }
   
 
+  // Some test plots: 
+  // pfiso/pt vs rel comb iso in barrel
+  // in endcap
+  TH2D *hBarrelIsoPosData = new TH2D("hBarrelIsoPosData","hBarrelIsoPosData",100,25,100,100,0,0.50);
+  TH2D *hEndcapIsoPosData = new TH2D("hEndcapIsoPosData","hEndcapIsoPosData",100,25,100,100,0,0.50);
+  
+  TH2D *hBarrelIsoPosWsig = new TH2D("hBarrelIsoPosWsig","hBarrelIsoPosWsig",100,25,100,100,0,0.50);
+  TH2D *hEndcapIsoPosWsig = new TH2D("hEndcapIsoPosWsig","hEndcapIsoPosWsig",100,25,100,100,0,0.50);
+  
+  TH2D *hBarrelIsoNegData = new TH2D("hBarrelIsoNegData","hBarrelIsoNegData",100,25,100,100,0,0.50);
+  TH2D *hEndcapIsoNegData = new TH2D("hEndcapIsoNegData","hEndcapIsoNegData",100,25,100,100,0,0.50);
+  
+  TH2D *hBarrelIsoNegWsig = new TH2D("hBarrelIsoNegWsig","hBarrelIsoNegWsig",100,25,100,100,0,0.50);
+  TH2D *hEndcapIsoNegWsig = new TH2D("hEndcapIsoNegWsig","hEndcapIsoNegWsig",100,25,100,100,0,0.50);
 
   double tolerance = ROOT::Math::MinimizerOptions::DefaultTolerance();
   string algo = ROOT::Math::MinimizerOptions::DefaultMinimizerAlgo();
   string type = ROOT::Math::MinimizerOptions::DefaultMinimizerType();
-  // ROOT::Math::MinimizerOptions::SetStrategy(2);
   int strategy= ROOT::Math::MinimizerOptions::DefaultStrategy();
-  // int strategy= ROOT::Math::MinimizerOptions::Strategy();
 
   int precision= ROOT::Math::MinimizerOptions::DefaultPrecision();
   int MaxFunctionCalls= ROOT::Math::MinimizerOptions::DefaultMaxFunctionCalls();
   int MaxIterations= ROOT::Math::MinimizerOptions::DefaultMaxIterations();
 
-  cout << "DEFAULTS: algo " << algo.c_str() << " type " << type.c_str() << " tolerance " << tolerance << " strategy " << strategy << " precision " << precision << " MaxIterations " << MaxIterations << " MaxFunctionCalls " << MaxFunctionCalls << endl;
-
-  // TFile *_rat2 = new TFile("TEST_Zmm_13TeV_incl_ZpTrw_v0/zPt_Normal13TeV.root");
-  // TH1D *hh_diff;// = new TH1D("hh_diff","hh_diff",75,0,150);
-  // hh_diff = (TH1D*)_rat2->Get("hZptRatio");  
-
-//   
   //
   // Declare variables to read in ntuple
   //
   UInt_t  runNum, lumiSec, evtNum, npv, npu;
   Float_t genVPt, genVPhi, genVy, genLepPt, genLepPhi;
   Float_t scale1fb, scale1fbUp, scale1fbDown, prefireWeight, prefirePhoton, prefireJet;
-  Float_t met, metPhi, sumEt, mt, u1, u2;
+  Float_t prefireUp, prefireDown;
+  Float_t met, metPhi, sumEt, mt, u1, u2, deta;
   Int_t   q;
   TLorentzVector *lep=0, *lep_raw=0, *genV=0, *genLep=0;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso, trkIso;
   Double_t mtCorr;
-  // Double_t (*metVars)[no], (*metVars)[cent], (*metVars)[eta], metCorrStat, (*metVars)[keys], mtCorr;
-  // Double_t (*metVarsPhi)[no], (*metVarsPhi)[cent], (*metVarsPhi)[eta], metCorrStatPhi, (*metVarsPhi)[keys];
   Double_t effSFweight=1, relIso;
-  // Double_t (*evtWeight)SysFSR=1, (*evtWeight)SysMC=1, (*evtWeight)SysBkg=1,totalEvtWeight=1, ;
 
 
   vector<Double_t>  *metVars=0, *metVarsPhi=0;
@@ -844,6 +856,8 @@ double isoTrkCut=9999;
     intree->SetBranchAddress("genLepPt",   &genLepPt);    // GEN lepton pT (signal MC)
     intree->SetBranchAddress("genLepPhi",  &genLepPhi);   // GEN lepton phi (signal MC)
     intree->SetBranchAddress("prefireWeight",  &prefireWeight);  // eventwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("prefireUp",      &prefireUp);  // eventwgtLum[main] per 1/fb (MC)
+    intree->SetBranchAddress("prefireDown",    &prefireDown);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("prefirePhoton",  &prefirePhoton);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("prefireJet",    &prefireJet);  // eventwgtLum[main] per 1/fb (MC)
     intree->SetBranchAddress("scale1fb",      &scale1fb);  // MCwgtLum[main] per 1/fb (MC)
@@ -867,69 +881,82 @@ double isoTrkCut=9999;
     intree->SetBranchAddress("metVars",       &metVars);            // contains the different met variations
     intree->SetBranchAddress("metVarsPhi",    &metVarsPhi);         // met phi for variations
     intree->SetBranchAddress("lheweight",     &lheweight);         // pdf and qcdwgtLum[main]s
+    // intree->SetBranchAddress("deta",        &deta);         // pdf and qcdwgtLum[main]s
   
-    UInt_t iterator=100;
-    // UInt_t iterator=10;
-    // if(typev[ifile]==eTtb)iterator=1;
-    // // if(typev[ifile]==eData||typev[ifile]==eAntiData)iterator=1;
+    TH1D* hGenWeights; double totalNorm = 1.0;
+    // cout << "Hello " << endl;
+    // if(typev[ifile] != eData && typev[ifile] != eAntiData && !(flav.CompareTo("Wmunu") == 0)){
+    if(typev[ifile] != eData && typev[ifile] != eAntiData){
+      // cout << "get gen weights" << endl;
+      hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      totalNorm = hGenWeights->Integral();
+      // cout << totalNorm << endl;
+    }
+  
+    UInt_t iterator=10;
     //
     // loop over events
     //
-    double frac=0.1;
+    // double frac=0.1;
+    // if(typev[ifile]==eAntiData || typev[ifile]==eAntiWlnu ||typev[ifile]==eAntiWx|| typev[ifile]==eAntiZxx || typev[ifile]==eAntiDib || typev[ifile]==eAntiTtb) {
+      // // frac = 1.0;
+      // frac = 0.2;
+    // }
     // if(typev[ifile]==eTtb) frac=1;
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
     for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
     // for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
       if(ientry%1000000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
 
-// figure out later what to do
-        // if(typev[ifile]==eWlnu || typev[ifile]==eWx || typev[ifile]==eZxx) {
-          // // what was this
-            // double bin = 0;
-            // for(int i = 1; i <= hh_diff->GetNbinsX();++i){
-              // if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
-            // }
-            // double w2 = 1.0;//hh_diff->GetBinContent(bin);
-      // std::cout << " pass PT " << std::endl;
-      // if(lep_raw->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(lep->Pt() < PT_CUT) continue;//std::cout << " pass PT " << std::endl;
       if(fabs(lep->Eta()) > ETA_CUT) continue;//std::cout << " pass eta " << std::endl;
-      if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
+      Double_t corr=1, corrdu=1, corrdd=1, corrmu=1, corrmd=1;
+      Double_t corrFSR=1;
+      Double_t corrMC=1;
+      Double_t corrBkg=1;
+      Double_t corrTag=1;
       vector<double> wgtLum;
-      // for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/prefireWeight);
+
+      // accidentally set up prefire uncertainties in a way that a very rare event gets nan for the up/down variation
       for(int jt=0; jt < nWeight; jt++) {
-        // prefire shit is slightly messed up
-        // also divide by 2 if > 2...
-        wgtLum.push_back(lumi*((*evtWeight)[jt]));
-        
-        // if(typev[ifile]==eW0j||typev[ifile]==eW1j||typev[ifile]==eW2j||typev[ifile]==eWx||typev[ifile]==eAntiWlnu||typev[ifile]==eAntiWx){
-          // wgtLum.back()*=0.96084;
-        // }
+        wgtLum.push_back(lumi*(isnan((*evtWeight)[jt]) ? (*evtWeight)[main] : (*evtWeight)[jt])/totalNorm);
       }
-      // if(typev[ifile]==eTtb){
-        // for(int jt=0; jt < nWeight; jt++) wgtLum[jt]=1;
-      // }
+      
+      if(overwriteMET && typev[ifile] != eData && typev[ifile] != eAntiData){
+        makeUncMT(*metVars, *metVarsPhi, lep);
+      } else if (overwriteMET) (*metVars)[no] = mtCorr;
+
+      if(doMTCut&&(mtCorr<MT_CUT)) continue;//std::cout << " pass mt " << std::endl;
       if(typev[ifile]==eData) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
+        
         hDataMet->Fill((*metVars)[no]);
         if(q>0) {
           doMET ? hDataMetp->Fill((*metVars)[no]) : hDataMetp->Fill(mtCorr);
           hDataMetpPhi->Fill((*metVarsPhi)[no]);
           hMuonEtaDatap->Fill(fabs(lep->Eta()));
           doMET ? hDataMetp2d[0]->Fill((*metVars)[no]) : hDataMetp2d[0]->Fill(mtCorr);
+          doMET ? hQCDMetp2d[0]->Fill((*metVars)[no]) : hQCDMetp2d[0]->Fill(mtCorr);
           hMetpIsoValues[0]->Fill(relIso);
         } else {
           doMET ? hDataMetm->Fill((*metVars)[no]) : hDataMetm->Fill(mtCorr);
           hMuonEtaDatam->Fill(fabs(lep->Eta()));
           hDataMetmPhi->Fill((*metVarsPhi)[no]);
           doMET ? hDataMetm2d[0]->Fill((*metVars)[no]) : hDataMetm2d[0]->Fill(mtCorr);
+          doMET ? hQCDMetm2d[0]->Fill((*metVars)[no]) : hQCDMetm2d[0]->Fill(mtCorr); 
           hMetmIsoValues[0]->Fill(relIso);
         }
       } else if(typev[ifile]==eAntiData) {
+        if(abs(lep->Eta())<1.4442){
+          if(q > 0)hBarrelIsoPosData->Fill(lep->Pt(),pfCombIso/lep->Pt());
+          else hBarrelIsoNegData->Fill(lep->Pt(),relIso);
+        } else {
+          if(q > 0)hEndcapIsoPosData->Fill(lep->Pt(),pfCombIso/lep->Pt());
+          else hEndcapIsoNegData->Fill(lep->Pt(),relIso);
+        }
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
             hAntiDataMet->Fill((*metVars)[no]);
@@ -937,33 +964,24 @@ double isoTrkCut=9999;
               doMET ? hAntiDataMetp->Fill((*metVars)[no]) : hAntiDataMetp->Fill(mtCorr);
               hMuonEtaAntiDatap->Fill(fabs(lep->Eta()));
               doMET ? hDataMetp2d[it]->Fill((*metVars)[no]) : hDataMetp2d[it]->Fill(mtCorr);
+              doMET ? hQCDMetp2d[it]->Fill((*metVars)[no]) : hQCDMetp2d[it]->Fill(mtCorr);
               hMetpIsoValues[it]->Fill(relIso);
             } else { 
               doMET ? hAntiDataMetm->Fill((*metVars)[no]) : hAntiDataMetm->Fill(mtCorr);
               hMuonEtaAntiDatap->Fill(fabs(lep->Eta()));
               doMET ? hDataMetm2d[it]->Fill((*metVars)[no]) : hDataMetm2d[it]->Fill(mtCorr);
+              doMET ? hQCDMetm2d[it]->Fill((*metVars)[no]) : hQCDMetm2d[it]->Fill(mtCorr);
               hMetmIsoValues[it]->Fill(relIso);
               break;
             }
           }
         }
-      } else if(typev[ifile]==eWlnu|| typev[ifile]==eW0j|| typev[ifile]==eW1j||typev[ifile]==eW2j) {
+      } else if(typev[ifile]==eWlnu) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
-        // std::cout << "doing signal" << std::endl;
         int bin=0;
-        if(typev[ifile]==eWlnu|| typev[ifile]==eW0j|| typev[ifile]==eW1j||typev[ifile]==eW2j){
-          // cout << "in wlnu " <<  scale1fb << " " << lumi << " " << prefireWeight << endl;
+        if(typev[ifile]==eWlnu){
           // start filling the counters
-          if(prefireWeight > 1 &&prefireWeight <= 2 ){
-            prefireWeight/=2;
-          }
-          if(prefireJet > 1 &&prefireJet <= 2 ){
-            prefireJet/=2;
-          }
-          if(prefirePhoton > 1 &&prefirePhoton <= 2 ){
-            prefirePhoton/=2;
-          }
           if(q > 0){
             noPrefire_Wp+=wgtLum[main]/prefireWeight;
             prefire_Wp+=wgtLum[main];
@@ -977,117 +995,88 @@ double isoTrkCut=9999;
           }
           
         }
-        // for(int i = 0; i <= hh_diff->GetNbinsX();++i){
-          // if(genVPt > hh_diff->GetBinLowEdge(i) && genVPt < hh_diff->GetBinLowEdge(i+1)){ bin = i; break; }
-        // }
-        // double w2 =  hh_diff->GetBinContent(bin);
-        //wgtLum[main]*=w2;
-        // quick and dirty rescaling for the W+njets for 13 tev
-        // cross sections used: 55980,  7060 , 1577
-        // // should be: 50131.98+8426.09+3172.96
-        // if(typev[ifile]==eW0j) wgtLum[main]*=50131.98/55980;
-        // if(typev[ifile]==eW1j) wgtLum[main]*=8426.09/7060;
-        // if(typev[ifile]==eW2j) wgtLum[main]*=3172.96/1577;
+        
         hWlnuMet->Fill((*metVars)[cent],wgtLum[main]);
         if(q>0){
           hMuonEtaMCp->Fill(fabs(lep->Eta()),wgtLum[main]);
           hWlnuMetpPhi->Fill((*metVarsPhi)[cent]);
           doMET ? hWlnuMetp->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp->Fill(mtCorr,wgtLum[main]);
-          doMET ? hWlnuMetp2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWlnuMetp2d[0]->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
           fillMETs(doMET,hWlnupMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
           fillWeights(doMET,hWlnupWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
-          fillLHE(hWlnupLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
 
         } else {
           hMuonEtaMCm->Fill(fabs(lep->Eta()),wgtLum[main]);
           hWlnuMetmPhi->Fill((*metVarsPhi)[cent]);
           doMET ? hWlnuMetm->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm->Fill(mtCorr,wgtLum[main]);
-          doMET ? hWlnuMetm2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm2d[0]    ->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWlnuMetm2d[0]->Fill((*metVars)[cent],wgtLum[main]) : hWlnuMetm2d[0]->Fill(mtCorr,wgtLum[main]);
           fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
           fillWeights(doMET,hWlnumWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
-          fillLHE(hWlnumLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eWx) {
-        
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
-        // std::cout << "doing Wx" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
           doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
-          doMET ? hWxMetp2d[0]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetp2d[0]     ->Fill(mtCorr,wgtLum[main]);
+          doMET ? hWxMetp2d[0]->Fill((*metVars)[cent],wgtLum[main]) : hWxMetp2d[0]->Fill(mtCorr,wgtLum[main]);
           fillMETs(doMET,hWxpMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
           fillWeights(doMET,hWxpWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
-          fillLHE(hWxpLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[cent],wgtLum[main]): hEWKMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hWxMetm2d[0]     ->Fill((*metVars)[cent],wgtLum[main]) : hWxMetm2d[0] ->Fill(mtCorr,wgtLum[main]);
           fillMETs(doMET,hWxmMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
           fillWeights(doMET,hWxmWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
-          fillLHE(hWxmLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eZxx){
-        
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
-        // std::cout << "doing Zxx" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[cent],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
  				  doMET ? hEWKMetp->Fill((*metVars)[cent],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
           doMET ? hZxxMetp2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetp2d[0]    ->Fill(mtCorr,wgtLum[main]);
           fillMETs(doMET,hZxxpMETU[0],(*metVars),nMET,wgtLum[main],mtCorr);
           fillWeights(doMET,hZxxpWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
-          fillLHE(hZxxpLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[cent],wgtLum[main]) :  hEWKMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hZxxMetm2d[0]    ->Fill((*metVars)[cent],wgtLum[main]) : hZxxMetm2d[0]    ->Fill(mtCorr,wgtLum[main]);
           fillMETs(doMET,hZxxmMETU[0],(*metVars),nMET,wgtLum[0],mtCorr);
           fillWeights(doMET,hZxxmWeightU[0],(*metVars)[cent],nWeight,wgtLum,mtCorr);
-          fillLHE(hZxxmLHE[0],(*metVars)[cent], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eDib) {
-        
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
         doMET ? hEWKMet->Fill((*metVars)[no],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
-          // std::cout << "filling dib + " << std::endl;
           doMET ? hEWKMetp->Fill((*metVars)[no],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
           doMET ? hDibMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
           fillWeights(doMET,hDibpWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
-          fillLHE(hDibpLHE[0],(*metVars)[no], wgtLum[main],lheweight);
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hEWKMetm->Fill(mtCorr,wgtLum[main]);
           doMET ? hDibMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
           fillWeights(doMET,hDibmWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
-          fillLHE(hDibmLHE[0],(*metVars)[no], wgtLum[main],lheweight);
-          // }
         }
       } else if(typev[ifile]==eTtb) {
         if(relIso > isoSigCut) continue;
         if(trkIso > isoTrkCut) continue;
-        // std::cout << "doing TTBar" << std::endl;
         doMET ? hEWKMet->Fill((*metVars)[no],wgtLum[main]) : hEWKMet->Fill(mtCorr,wgtLum[main]);
         if(q>0){
-          // std::cout << "filling ttbar with " << (*metVars)[no] << " " << wgtLum[main] << std::endl;
           doMET ? hEWKMetp->Fill((*metVars)[no],wgtLum[main]) : hEWKMetp->Fill(mtCorr,wgtLum[main]);
-          // doMET ? hTtbMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[0]->Fill(mtCorr,wgtLum[main]);
           doMET ? hTtbMetp2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
           fillWeights(doMET,hTtbpWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
-          fillLHE(hTtbpLHE[0],(*metVars)[no], wgtLum[main],lheweight);
-          // }
         } else {
           doMET ? hEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hEWKMetm->Fill(mtCorr,wgtLum[main]);
-          // doMET ? hTtbMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[0]->Fill(mtCorr,wgtLum[main]);
           doMET ? hTtbMetm2d[0]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[0]->Fill(mtCorr,wgtLum[main]);
-          // fillMETs(doMET,hTtbmWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
           fillWeights(doMET,hTtbmWeightU[0],(*metVars)[no],nWeight,wgtLum,mtCorr);
-          fillLHE(hTtbmLHE[0],(*metVars)[no], wgtLum[main],lheweight);
         }
       } else if(typev[ifile]==eAntiWlnu){
+        if(abs(lep->Eta())<1.4442){
+          if(q > 0)hBarrelIsoPosWsig->Fill(lep->Pt(),pfCombIso/lep->Pt());
+          else hBarrelIsoNegWsig->Fill(lep->Pt(),relIso);
+        } else {
+          if(q > 0)hEndcapIsoPosWsig->Fill(lep->Pt(),pfCombIso/lep->Pt());
+          else hEndcapIsoNegWsig->Fill(lep->Pt(),relIso);
+        }
         hAntiWlnuMet->Fill((*metVars)[no],wgtLum[main]);
         for(int it=1; it < nIsoBins; ++it){
           if(relIso >= vIsoBins[it] && relIso < vIsoBins[it+1]) {
@@ -1096,14 +1085,11 @@ double isoTrkCut=9999;
               doMET ? hWlnuMetp2d[it]    ->Fill((*metVars)[no],wgtLum[main]) : hWlnuMetp2d[it]    ->Fill(mtCorr,wgtLum[main]);
               fillMETs(doMET,hWlnupMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
               fillWeights(doMET,hWlnupWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hWlnupLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             } else {
               doMET ? hAntiWlnuMetm->Fill((*metVars)[no],wgtLum[main]) : hAntiWlnuMetm->Fill(mtCorr,wgtLum[main]);
               doMET ? hWlnuMetm2d[it]    ->Fill((*metVars)[no],wgtLum[main]) : hWlnuMetm2d[it]    ->Fill(mtCorr,wgtLum[main]);
               fillMETs(doMET,hWlnumMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
               fillWeights(doMET,hWlnumWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hWlnumLHE[it],(*metVars)[no], wgtLum[main],lheweight);
-              // }
             }
           }
         }
@@ -1116,13 +1102,11 @@ double isoTrkCut=9999;
               doMET ? hWxMetp2d[it]     ->Fill((*metVars)[no],wgtLum[main]) : hWxMetp2d[it]     ->Fill(mtCorr,wgtLum[main]);
               fillMETs(doMET,hWxpMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
               fillWeights(doMET,hWxpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hWxpLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             } else {
               doMET ? hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]) : hAntiEWKMetm->Fill(mtCorr,wgtLum[main]);
               doMET ? hWxMetm2d[it]     ->Fill((*metVars)[no],wgtLum[main]) : hWxMetm2d[it]     ->Fill(mtCorr,wgtLum[main]);
               fillMETs(doMET,hWxmMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
               fillWeights(doMET,hWxmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hWxmLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             }
             break;
           }
@@ -1136,13 +1120,11 @@ double isoTrkCut=9999;
               doMET ? hZxxMetp2d[it]    ->Fill((*metVars)[no],wgtLum[main]) : hZxxMetp2d[it]->Fill(mtCorr,wgtLum[main]);
               fillMETs(doMET,hZxxpMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
               fillWeights(doMET,hZxxpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hZxxpLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             } else {
               hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hZxxMetm2d[it]    ->Fill((*metVars)[no],wgtLum[main]) : hZxxMetm2d[it]    ->Fill(mtCorr,wgtLum[main]);
               fillMETs(doMET,hZxxmMETU[it],(*metVars),nMET,wgtLum[main],mtCorr);
               fillWeights(doMET,hZxxmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hZxxmLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             }
           }
         }
@@ -1153,18 +1135,11 @@ double isoTrkCut=9999;
             if(q>0){
               hAntiEWKMetp->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hDibMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetp2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hDibpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hDibpLHE[it],(*metVars)[no], wgtLum[main],lheweight);
             } else {
               hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hDibMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hDibMetm2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hDibmWeightU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hDibmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hDibmLHE[it],(*metVars)[no], wgtLum[main],lheweight);
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hDibmWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hDibmWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
-              // }
             }
           }
         }
@@ -1175,21 +1150,11 @@ double isoTrkCut=9999;
             if(q>0){
               hAntiEWKMetp->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hTtbMetp2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetp2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hTtbpWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hTtbpLHE[it],(*metVars)[no], wgtLum[main],lheweight);
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hTtbpWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbpWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
-              // }
             } else {
               hAntiEWKMetm->Fill((*metVars)[no],wgtLum[main]); 
               doMET ? hTtbMetm2d[it]->Fill((*metVars)[no],wgtLum[main]) : hTtbMetm2d[it]->Fill(mtCorr,wgtLum[main]);
-              // fillMETs(doMET,hWlnumMETU[0],(*metVars),nMET,wgtLum,mtCorr);
               fillWeights(doMET,hTtbmWeightU[it],(*metVars)[no],nWeight,wgtLum,mtCorr);
-              fillLHE(hTtbmLHE[it],(*metVars)[no], wgtLum[main],lheweight);
-              // for(int k=mc; k < nWeight; k++){
-                // doMET ? hTtbmWeightU[it][k]->Fill((*metVars)[no], wgtLum[k]) : hTtbmWeightU[it][k]->Fill(mtCorr, wgtLum[k]);
-              // }
             }
           }
         }
@@ -1200,20 +1165,52 @@ double isoTrkCut=9999;
     }
   }
   
+  
+  // Print the yields in each of the isolation bins
+  ofstream txtIso;
+  char txtnameIso[100];
+  std::cout << "Printing Yields by Isolation Bin: " << std::endl;
+  sprintf(txtnameIso,"%s/isoBins_Yields.txt",CPlot::sOutDir.Data());
+  txtIso.open(txtnameIso);
+  assert(txtIso.is_open());
+	txtIso << "W+ " << std::endl << "data" << std::endl;
+	for(int i = 0; i < nIsoBins; ++i){
+		txtIso << "bin " << i << "  Data# "  << hDataMetp2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  Wsig# "  << hWlnuMetp2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  ewk # "  << hEWKMetp2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "   wx # "  << hWxMetp2d[i]->Integral()   << std::endl;
+		txtIso << "bin " << i << "  zxx # "  << hZxxMetp2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  ttb # "  << hTtbMetp2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  dib # "  << hDibMetp2d[i]->Integral()  << std::endl;
+	}
+	
+	txtIso << "W- " << std::endl << "data" << std::endl;
+	for(int i = 0; i < nIsoBins; ++i){
+		txtIso << "bin " << i << "  Data# "  << hDataMetm2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  Wsig# "  << hWlnuMetm2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  ewk # "  << hEWKMetm2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "   wx # "  << hWxMetm2d[i]->Integral()   << std::endl;
+		txtIso << "bin " << i << "  zxx # "  << hZxxMetm2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  ttb # "  << hTtbMetm2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  dib # "  << hDibMetm2d[i]->Integral()  << std::endl;
+	}
+	txtIso.close();
+  
+  
   char sname[50];
   for(int it = 0; it < nIsoBins; it++){
     
-    sprintf(sname,"hWlnuMetp2d%i",it);  drawLHE(hWlnupLHE[it], hWlnuMetp2d[it], sname, CPlot::sOutDir.Data(), 1);
-    sprintf(sname,"hWlnuMetm2d%i",it);  drawLHE(hWlnumLHE[it], hWlnuMetm2d[it], sname, CPlot::sOutDir.Data(), 1);
+    // sprintf(sname,"hWlnuMetp2d%i",it);  drawLHE(hWlnupLHE[it], hWlnuMetp2d[it], sname, CPlot::sOutDir.Data(), 1);
+    // sprintf(sname,"hWlnuMetm2d%i",it);  drawLHE(hWlnumLHE[it], hWlnuMetm2d[it], sname, CPlot::sOutDir.Data(), 1);
     
-    sprintf(sname,"hEWKMetp2d%i",it);  drawLHE(hEWKpLHE[it], hEWKMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
-    sprintf(sname,"hEWKMetm2d%i",it);  drawLHE(hEWKmLHE[it], hEWKMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hEWKMetp2d%i",it);  drawLHE(hEWKpLHE[it], hEWKMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hEWKMetm2d%i",it);  drawLHE(hEWKmLHE[it], hEWKMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
     
-    sprintf(sname,"hZxxMetp2d%i",it);  drawLHE(hZxxpLHE[it], hZxxMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
-    sprintf(sname,"hZxxMetm2d%i",it);  drawLHE(hZxxmLHE[it], hZxxMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hZxxMetp2d%i",it);  drawLHE(hZxxpLHE[it], hZxxMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hZxxMetm2d%i",it);  drawLHE(hZxxmLHE[it], hZxxMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
     
-    sprintf(sname,"hWxMetp2d%i",it);  drawLHE(hWxpLHE[it], hWxMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
-    sprintf(sname,"hWxMetm2d%i",it);  drawLHE(hWxmLHE[it], hWxMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hWxMetp2d%i",it);  drawLHE(hWxpLHE[it], hWxMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
+    // sprintf(sname,"hWxMetm2d%i",it);  drawLHE(hWxmLHE[it], hWxMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
     
     // sprintf(sname,"hDibMetp2d%i",it);  drawLHE(hDibpLHE[it], hDibMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
     // sprintf(sname,"hDibMetm2d%i",it);  drawLHE(hDibmLHE[it], hDibMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
@@ -1221,19 +1218,19 @@ double isoTrkCut=9999;
     // sprintf(sname,"hTtbMetp2d%i",it);  drawLHE(hTtbpLHE[it], hTtbMetp2d[it], sname, CPlot::sOutDir.Data(), 0);
     // sprintf(sname,"hTtbMetm2d%i",it);  drawLHE(hTtbmLHE[it], hTtbMetm2d[it], sname, CPlot::sOutDir.Data(), 0);
     // std::cout << "calc lhe1" << std::endl;
-    std::cout << hWlnupThyUncU[it][0]->Integral() << std::endl;
-    std::cout << hWlnupThyUncU[it][1]->Integral() << std::endl;
-    calcLHE(hWlnupThyUncU[it][uqcd], hWlnupThyUncU[it][pdf], hWlnupLHE[it], hWlnuMetp2d[it], 1);
-    calcLHE(hWlnumThyUncU[it][uqcd], hWlnumThyUncU[it][pdf], hWlnumLHE[it], hWlnuMetm2d[it], 1);
-    // std::cout << "calc lhe2" << std::endl;
-    calcLHE(hEWKpThyUncU[it][uqcd], hEWKpThyUncU[it][pdf], hEWKpLHE[it], hEWKMetp2d[it], 0);
-    calcLHE(hEWKmThyUncU[it][uqcd], hEWKmThyUncU[it][pdf], hEWKmLHE[it], hEWKMetm2d[it], 0);
-    // std::cout << "calc lhe3" << std::endl;
-    calcLHE(hWxpThyUncU[it][uqcd], hWxpThyUncU[it][pdf], hWxpLHE[it], hWxMetp2d[it], 0);
-    calcLHE(hWxmThyUncU[it][uqcd], hWxmThyUncU[it][pdf], hWxmLHE[it], hWxMetm2d[it], 0);
-    // std::cout << "calc lhe4" << std::endl;
-    calcLHE(hZxxpThyUncU[it][uqcd], hZxxpThyUncU[it][pdf], hZxxpLHE[it], hZxxMetp2d[it], 0);
-    calcLHE(hZxxmThyUncU[it][uqcd], hZxxmThyUncU[it][pdf], hZxxmLHE[it], hZxxMetm2d[it], 0);
+    // std::cout << hWlnupThyUncU[it][0]->Integral() << std::endl;
+    // std::cout << hWlnupThyUncU[it][1]->Integral() << std::endl;
+    // calcLHE(hWlnupThyUncU[it][uqcd], hWlnupThyUncU[it][pdf], hWlnupLHE[it], hWlnuMetp2d[it], 1);
+    // calcLHE(hWlnumThyUncU[it][uqcd], hWlnumThyUncU[it][pdf], hWlnumLHE[it], hWlnuMetm2d[it], 1);
+    // // std::cout << "calc lhe2" << std::endl;
+    // calcLHE(hEWKpThyUncU[it][uqcd], hEWKpThyUncU[it][pdf], hEWKpLHE[it], hEWKMetp2d[it], 0);
+    // calcLHE(hEWKmThyUncU[it][uqcd], hEWKmThyUncU[it][pdf], hEWKmLHE[it], hEWKMetm2d[it], 0);
+    // // std::cout << "calc lhe3" << std::endl;
+    // calcLHE(hWxpThyUncU[it][uqcd], hWxpThyUncU[it][pdf], hWxpLHE[it], hWxMetp2d[it], 0);
+    // calcLHE(hWxmThyUncU[it][uqcd], hWxmThyUncU[it][pdf], hWxmLHE[it], hWxMetm2d[it], 0);
+    // // std::cout << "calc lhe4" << std::endl;
+    // calcLHE(hZxxpThyUncU[it][uqcd], hZxxpThyUncU[it][pdf], hZxxpLHE[it], hZxxMetp2d[it], 0);
+    // calcLHE(hZxxmThyUncU[it][uqcd], hZxxmThyUncU[it][pdf], hZxxmLHE[it], hZxxMetm2d[it], 0);
     
     // CPlot::sOutDir.Data()
     // calcLHE(TH1D* hQCD, TH1D* hPDF, hTtbmLHE[it], hTtbMetm2d[it], 0);
@@ -1248,6 +1245,24 @@ double isoTrkCut=9999;
     hEWKMetm2d[it]->Add(hDibMetm2d[it],1);
     hEWKMetm2d[it]->Add(hZxxMetm2d[it],1);
     hEWKMetm2d[it]->Add(hWxMetm2d[it],1);
+
+    hQCDMetp2d[it]->Add(hEWKMetp2d[it],-1);
+    hQCDMetp2d[it]->Add(hWlnuMetp2d[it],-1);
+	
+    hQCDMetm2d[it]->Add(hEWKMetm2d[it],-1);
+    hQCDMetm2d[it]->Add(hWlnuMetm2d[it],-1);
+
+    for(Int_t ibin=1; ibin<=hQCDMetp2d[it]->GetNbinsX(); ibin++) {
+      if(hQCDMetp2d[it]->GetBinContent(ibin)<0) {
+        hQCDMetp2d[it]->SetBinContent(ibin,0);
+        hQCDMetp2d[it]->SetBinError(ibin,1.8);
+      }
+      if(hQCDMetm2d[it]->GetBinContent(ibin)<0) {
+        hQCDMetm2d[it]->SetBinContent(ibin,0);
+        hQCDMetm2d[it]->SetBinError(ibin,1.8);
+      }
+    }
+   
     
     for(int j=0; j< nWeight; j++){
       hEWKpWeightU[it][j]->Add(hTtbpWeightU[it][j],1);
@@ -1269,7 +1284,7 @@ double isoTrkCut=9999;
     }
     
   }
-  std::cout << "blahasfadsfa " << std::endl;
+  // std::cout << "blahasfadsfa " << std::endl;
   for(int it=0; it<1; it++){
     
     for(int i=0; i < nWeight; i++){
@@ -1324,13 +1339,13 @@ double isoTrkCut=9999;
   txtfilePF << "---- W+ ----- " << endl;
   txtfilePF << "No PF: " << noPrefire_Wp << endl;
   txtfilePF << "PF: " << prefire_Wp << "  scale factor: " << noPrefire_Wp/prefire_Wp << endl;
-  txtfilePF << "PF (jet only): " << prefireJet_Wp << endl;
-  txtfilePF << "PF (photon only): " << prefirePhoton_Wp << endl << endl;
+  txtfilePF << "PF (jet only): " << prefireJet_Wp << "  scale factor: " << noPrefire_Wp/prefireJet_Wp << endl;
+  txtfilePF << "PF (photon only): " << prefirePhoton_Wp << "  scale factor: " << noPrefire_Wp/prefirePhoton_Wp << endl << endl;
   txtfilePF << "---- W- ----- " << endl;
   txtfilePF << "No PF: " << noPrefire_Wm << endl;
   txtfilePF << "PF: " << prefire_Wm << "  scale factor: " << noPrefire_Wm/prefire_Wm << endl;
-  txtfilePF << "PF (jet only): " << prefireJet_Wm << endl;
-  txtfilePF << "PF (photon only): " << prefirePhoton_Wm << endl << endl;
+  txtfilePF << "PF (jet only): " << prefireJet_Wm << "  scale factor: " << noPrefire_Wm/prefireJet_Wm << endl;
+  txtfilePF << "PF (photon only): " << prefirePhoton_Wm << "  scale factor: " << noPrefire_Wm/prefirePhoton_Wm << endl << endl;
   txtfilePF.close();
    
     ofstream txtfile2;
@@ -1378,36 +1393,6 @@ double isoTrkCut=9999;
     hDataMetmPhi->Draw("same");
 	  c2->Update();c2->SaveAs(plotname);
     
-  
-  ofstream txtfile3;
-  char txtfname3[100];
-  std::cout << "Printing We+. " << std::endl;
-  sprintf(txtfname3,"%s/isoBins_Yields.txt",CPlot::sOutDir.Data());
-  txtfile3.open(txtfname3);
-  assert(txtfile3.is_open());
-	txtfile3 << "W+ " << std::endl << "data" << std::endl;
-	for(int i = 0; i < nIsoBins; ++i){
-		txtfile3 << "bin " << i << "  Data# " << hDataMetp2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  Wsig# " << hWlnuMetp2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  ewk# "  << hEWKMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "   wx# "  << hWxMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  zxx# "  << hZxxMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  ttb# "  << hTtbMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  dib# "  << hDibMetp2d[i]->Integral()  << std::endl;
-	}
-	
-	txtfile3 << "W- " << std::endl << "data" << std::endl;
-	for(int i = 0; i < nIsoBins; ++i){
-		txtfile3 << "bin " << i << "  Data# " << hDataMetm2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  Wsig# " << hWlnuMetm2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  ewk# "  << hEWKMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "   wx# "  << hWxMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  zxx# "  << hZxxMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  ttb# "  << hTtbMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  dib# "  << hDibMetm2d[i]->Integral()  << std::endl;
-	}
-
-	txtfile3.close();
   
   
   std::cout << " ==== nEvents === " << std::endl;
@@ -1665,7 +1650,7 @@ double isoTrkCut=9999;
   vector<RooHistPdf*> pdfZxxpEtaD_(nIsoBins), pdfZxxpKeysD_(nIsoBins), pdfZxxpStatD_(nIsoBins);
   vector<RooHistPdf*> pdfZxxmEtaD_(nIsoBins), pdfZxxmKeysD_(nIsoBins), pdfZxxmStatD_(nIsoBins);
   
-  std::cout << "blah here" << std::endl;
+  // std::cout << "blah here" << std::endl;
   
   TH1D *hIsoBinQCDp = (TH1D*) hDataMetp2d[2]->Clone("hQCDMetpBin");
   TH1D *hIsoBinQCDm = (TH1D*) hDataMetm2d[2]->Clone("hQCDMetmBin");
@@ -1938,56 +1923,38 @@ double isoTrkCut=9999;
   
     
   
-  // Anti-Signal PDFs
-  RooDataHist aWlnuMet ("aWlnuMET", "aWlnuMET", RooArgSet(pfmet),hAntiWlnuMet);  RooHistPdf apdfWm ("awm", "awm", pfmet,aWlnuMet, 1);
-  RooDataHist aWlnuMetp("aWlnuMETp","aWlnuMETp",RooArgSet(pfmet),hAntiWlnuMetp); RooHistPdf apdfWmp("awmp","awmp",pfmet,aWlnuMetp,1);
-  RooDataHist aWlnuMetm("aWlnuMETm","aWlnuMETm",RooArgSet(pfmet),hAntiWlnuMetm); RooHistPdf apdfWmm("awmm","awmm",pfmet,aWlnuMetm,1); 
+  // // Anti-Signal PDFs
+  // RooDataHist aWlnuMet ("aWlnuMET", "aWlnuMET", RooArgSet(pfmet),hAntiWlnuMet);  RooHistPdf apdfWm ("awm", "awm", pfmet,aWlnuMet, 1);
+  // RooDataHist aWlnuMetp("aWlnuMETp","aWlnuMETp",RooArgSet(pfmet),hAntiWlnuMetp); RooHistPdf apdfWmp("awmp","awmp",pfmet,aWlnuMetp,1);
+  // RooDataHist aWlnuMetm("aWlnuMETm","aWlnuMETm",RooArgSet(pfmet),hAntiWlnuMetm); RooHistPdf apdfWmm("awmm","awmm",pfmet,aWlnuMetm,1); 
   
-  // Anti-EWK+top PDFs
-  RooDataHist aewkMet ("aewkMET", "aewkMET", RooArgSet(pfmet),hAntiEWKMet);  RooHistPdf apdfEWK ("aewk", "aewk", pfmet,aewkMet, 1);
-  RooDataHist aewkMetp("aewkMETp","aewkMETp",RooArgSet(pfmet),hAntiEWKMetp); RooHistPdf apdfEWKp("aewkp","aewkp",pfmet,aewkMetp,1); 
-  RooDataHist aewkMetm("aewkMETm","aewkMETm",RooArgSet(pfmet),hAntiEWKMetm); RooHistPdf apdfEWKm("aewkm","aewkm",pfmet,aewkMetm,1); 
+  // // Anti-EWK+top PDFs
+  // RooDataHist aewkMet ("aewkMET", "aewkMET", RooArgSet(pfmet),hAntiEWKMet);  RooHistPdf apdfEWK ("aewk", "aewk", pfmet,aewkMet, 1);
+  // RooDataHist aewkMetp("aewkMETp","aewkMETp",RooArgSet(pfmet),hAntiEWKMetp); RooHistPdf apdfEWKp("aewkp","aewkp",pfmet,aewkMetp,1); 
+  // RooDataHist aewkMetm("aewkMETm","aewkMETm",RooArgSet(pfmet),hAntiEWKMetm); RooHistPdf apdfEWKm("aewkm","aewkm",pfmet,aewkMetm,1); 
   
-//   // Anti-QCD Pdfs
-  CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
-  CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
-  CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
+// //   // Anti-QCD Pdfs
+  // CPepeModel2 aqcd("aqcd",pfmet, qcd.a1);
+  // CPepeModel2 aqcdp("aqcdp",pfmet, qcdp.a1);
+  // CPepeModel2 aqcdm("aqcdm",pfmet, qcdm.a1);
 
 //   CPepeModel2 aqcd("aqcd",pfmet);
 //   CPepeModel2 aqcdp("aqcdp",pfmet);
 //   CPepeModel2 aqcdm("aqcdm",pfmet);
   
-  // Anti-selection PDFs
-  RooAddPdf apdfMet ("apdfMet", "apdfMet", RooArgList(apdfWm,apdfEWK,*(aqcd.model)),   RooArgList(nAntiSig,nAntiEWK,nAntiQCD));  
-  RooAddPdf apdfMetp("apdfMetp","apdfMetp",RooArgList(apdfWmp,apdfEWKp,*(aqcdp.model)),RooArgList(nAntiSigp,nAntiEWKp,nAntiQCDp));
-  RooAddPdf apdfMetm("apdfMetm","apdfMetm",RooArgList(apdfWmm,apdfEWKm,*(aqcdm.model)),RooArgList(nAntiSigm,nAntiEWKm,nAntiQCDm));
+  // // Anti-selection PDFs
+  // RooAddPdf apdfMet ("apdfMet", "apdfMet", RooArgList(apdfWm,apdfEWK,*(aqcd.model)),   RooArgList(nAntiSig,nAntiEWK,nAntiQCD));  
+  // RooAddPdf apdfMetp("apdfMetp","apdfMetp",RooArgList(apdfWmp,apdfEWKp,*(aqcdp.model)),RooArgList(nAntiSigp,nAntiEWKp,nAntiQCDp));
+  // RooAddPdf apdfMetm("apdfMetm","apdfMetm",RooArgList(apdfWmm,apdfEWKm,*(aqcdm.model)),RooArgList(nAntiSigm,nAntiEWKm,nAntiQCDm));
   
   
   // regular linear dependence
   vector <CPepeModel2isobinsMuons*> qcdp_(nIsoBins), qcdm_(nIsoBins);
   qcdp_[0] = new CPepeModel2isobinsMuons("qcdp2d0",pfmet, 0.0);
-  qcdm_[0] = new CPepeModel2isobinsMuons("qcdm2d0",pfmet, 0.0);
+  qcdm_[0] = new CPepeModel2isobinsMuons("qcdm2d0",pfmet, 0.0);  
   
-  // quadratic dependence
-  // vector <CPepeModel2isobinsQuad*> qcdp_(nIsoBins), qcdm_(nIsoBins);
-  // qcdp_[0] = new CPepeModel2isobinsQuad("qcdp2d0",pfmet, 0.075);
-  // qcdm_[0] = new CPepeModel2isobinsQuad("qcdm2d0",pfmet, 0.075);
-  
-  // totally uncorrelated
-  // vector <CPepeModel2*> qcdp_(nIsoBins), qcdm_(nIsoBins);
-  // qcdp_[0] = new CPepeModel2("qcdp2d0",pfmet);
-  // qcdm_[0] = new CPepeModel2("qcdm2d0",pfmet);
-  std::cout << "start doing QCD" << std::endl;
-  
+  // Make some goddamn Pepe
   for (int j = 1; j < nIsoBins; ++j){
-	  
-      // quadratic isolation dependence
-	  // sprintf(nname, "qcdp2d%d",j);
-	  // qcdp_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->b1, qcdp_[0]->b2, qcdp_[0]->b3, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
-	  
-	  // printf(nname, "qcdm2d%d",j);
-	  // qcdm_[j] = new CPepeModel2isobinsQuad(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2,  qcdm_[0]->b1, qcdm_[0]->b2, qcdm_[0]->b3, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
-	  
 	  // // Original isolation linear dependence
       sprintf(nname, "qcdp2d%d",j);
       qcdp_[j] = new CPepeModel2isobinsMuons(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdp_[0]->c1, qcdp_[0]->c2, qcdp_[0]->c3, qcdp_[0]->d1, qcdp_[0]->d2, qcdp_[0]->d3);
@@ -1995,48 +1962,12 @@ double isoTrkCut=9999;
 	  sprintf(nname, "qcdm2d%d",j);
       qcdm_[j] = new CPepeModel2isobinsMuons(nname,pfmet, (vIsoBins[j]+vIsoBins[j+1])/2, qcdm_[0]->c1, qcdm_[0]->c2, qcdm_[0]->c3, qcdm_[0]->d1, qcdm_[0]->d2, qcdm_[0]->d3);
   
-      // sprintf(nname, "qcdp2d%d",j);
-      // qcdp_[j] = new CPepeModel2(nname,pfmet);
-	  
-	  // sprintf(nname, "qcdm2d%d",j);
-      // qcdm_[j] = new CPepeModel2(nname,pfmet);
-  
   }
-   std::cout << "just finished making the pepes" << std::endl;
-   
-   // create the appropriate gaussian constraint for the signal region electroweak+ttbar 
-    RooGaussian constm_sr("constm_sr","constm_sr",*nEWKm_[0],RooConst(nEWKm_[0]->getVal()),RooConst(0.10*nEWKm_[0]->getVal()));
-    RooGaussian constp_sr("constp_sr","constp_sr",*nEWKp_[0],RooConst(nEWKp_[0]->getVal()),RooConst(0.10*nEWKp_[0]->getVal()));
-	
-	RooGaussian constm_cr("constm_cr","constm_cr",*nEWKm_[1],RooConst(nEWKm_[1]->getVal()),RooConst(0.10*nEWKm_[1]->getVal()));
-    RooGaussian constp_cr("constp_cr","constp_cr",*nEWKp_[1],RooConst(nEWKp_[1]->getVal()),RooConst(0.10*nEWKp_[1]->getVal()));
-	
-	// RooGaussian constm_sr("constm_sr","constm_sr",*dewkm_[0],RooConst(dewkm_[0]->getVal()),RooConst(0.15*dewkm_[0]->getVal()));
-    // RooGaussian constp_sr("constp_sr","constp_sr",*dewkp_[0],RooConst(dewkp_[0]->getVal()),RooConst(0.15*dewkp_[0]->getVal()));
-	
-	
-	   std::cout << "nsigp " << nSigp_[0]->getVal() << std::endl;
-		 std::cout << "nttbp " << nTtbp_[0]->getVal() << std::endl;
-		 std::cout << "nqcdp " << nQCDp_[0]->getVal() << std::endl;
-		 std::cout << "nwxp " << nWxp_[0]->getVal() << std::endl;
-		 std::cout << "nzxxp " << nZxxp_[0]->getVal() << std::endl;
-	
-     // contstuct the PDFs for the 2 test isolation bins
-  // Test the vector map 
-  // // map <string, RooAddPdf> pdfMetp_;
-   // map <int, RooAddPdf*> pdfMetp_;
-   vector < RooAddPdf*> pdfMetp_(nIsoBins), pdfMetm_(nIsoBins);
-  // make the pdfs?
-  for(int j = 0; j < nIsoBins; ++j){
-	 // if(j==0 || j==1){
-   
-	 if(j==0||j==1||j==2||j==3||j==4){
-		 // sprintf(nname,"pdfWep%d",j);
 
-		 // (doMET&&(!doTemplate)) ? pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j])) : pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*pdfQCDp_[j]),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j]));
-		 
-		 // sprintf(nname,"pdfWem%d",j);
-		 // (doMET&&(!doTemplate)) ? pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*(qcdm_[j]->model)),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j])) : pdfMetm_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWem_[j],*pdfEWKm_[j],*pdfQCDm_[j]),RooArgList(*nSigm_[j],*nEWKm_[j],*nQCDm_[j]));		
+   vector < RooAddPdf*> pdfMetp_(nIsoBins), pdfMetm_(nIsoBins);
+  for(int j = 0; j < nIsoBins; ++j){
+	 if(j==0||j==1||j==2||j==3||j==4){
+
      sprintf(nname,"pdfWep%d",j);
 
 		 (doMET&&(!doTemplate)) ? pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfEWKp_[j],*(qcdp_[j]->model)),RooArgList(*nSigp_[j],*nEWKp_[j],*nQCDp_[j])) : pdfMetp_[j] = new RooAddPdf(nname,nname,RooArgList(*pdfWep_[j],*pdfWxp_[j],*pdfZxxp_[j],*pdfDibp_[j],*pdfTtbp_[j],*pdfQCDp_[j]),RooArgList(*nSigp_[j],*nWxp_[j],*nZxxp_[j],*nDibp_[j],*nTtbp_[j],*nQCDp_[j]));
@@ -2062,36 +1993,36 @@ double isoTrkCut=9999;
 	  }
   }
   
-  std::cout << "made pdfs" << std::endl;
+  // std::cout << "made pdfs" << std::endl;
   
   
-  // PDF for simultaneous fit  
-  RooCategory rooCat("rooCat","rooCat");
-  rooCat.defineType("Select");
-  rooCat.defineType("Anti");
+  // // PDF for simultaneous fit  
+  // RooCategory rooCat("rooCat","rooCat");
+  // rooCat.defineType("Select");
+  // rooCat.defineType("Anti");
   
-  RooSimultaneous pdfTotal("pdfTotal","pdfTotal",rooCat);
-  pdfTotal.addPdf(pdfMet, "Select");
-  //pdfTotal.addPdf(apdfMet,"Anti");
+  // RooSimultaneous pdfTotal("pdfTotal","pdfTotal",rooCat);
+  // pdfTotal.addPdf(pdfMet, "Select");
+  // //pdfTotal.addPdf(apdfMet,"Anti");
   
-  RooSimultaneous pdfTotalp("pdfTotalp","pdfTotalp",rooCat);
-  pdfTotalp.addPdf(pdfMetp, "Select");
-  pdfTotalp.addPdf(apdfMetp,"Anti");
+  // RooSimultaneous pdfTotalp("pdfTotalp","pdfTotalp",rooCat);
+  // pdfTotalp.addPdf(pdfMetp, "Select");
+  // pdfTotalp.addPdf(apdfMetp,"Anti");
   
-  RooSimultaneous pdfTotalm("pdfTotalm","pdfTotalm",rooCat);
-  pdfTotalm.addPdf(pdfMetm, "Select");
-  pdfTotalm.addPdf(apdfMetm,"Anti");
+  // RooSimultaneous pdfTotalm("pdfTotalm","pdfTotalm",rooCat);
+  // pdfTotalm.addPdf(pdfMetm, "Select");
+  // pdfTotalm.addPdf(apdfMetm,"Anti");
 
   //
   // Perform fits
   //
-  RooDataHist dataMet("dataMet", "dataMet", RooArgSet(pfmet),hDataMet);
-  RooDataHist dataMetp("dataMetp","dataMetp",RooArgSet(pfmet),hDataMetp);
-  RooDataHist dataMetm("dataMetm","dataMetm",RooArgSet(pfmet),hDataMetm);
+  // RooDataHist dataMet("dataMet", "dataMet", RooArgSet(pfmet),hDataMet);
+  // RooDataHist dataMetp("dataMetp","dataMetp",RooArgSet(pfmet),hDataMetp);
+  // RooDataHist dataMetm("dataMetm","dataMetm",RooArgSet(pfmet),hDataMetm);
  
-  RooDataHist antiMet("antiMet", "antiMet", RooArgSet(pfmet), hAntiDataMet);
-  RooDataHist antiMetp("antiMetp", "antiMetp", RooArgSet(pfmet), hAntiDataMetp);
-  RooDataHist antiMetm("antiMetm", "antiMetm", RooArgSet(pfmet), hAntiDataMetm);
+  // RooDataHist antiMet("antiMet", "antiMet", RooArgSet(pfmet), hAntiDataMet);
+  // RooDataHist antiMetp("antiMetp", "antiMetp", RooArgSet(pfmet), hAntiDataMetp);
+  // RooDataHist antiMetm("antiMetm", "antiMetm", RooArgSet(pfmet), hAntiDataMetm);
 
 //   RooDataHist dataTotalp("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat),
 // 			 Import("Select", dataMetp),
@@ -2130,6 +2061,12 @@ double isoTrkCut=9999;
   for (int i = 0; i < nIsoBins; ++ i){
 	  sprintf(nname,"iso%d",i); rooCat2dTest.defineType(nname);
   }
+  // RooDataHist sigDatap("dataTotalp","dataTotalp", RooArgList(pfmet),Import(dataMetp_));
+  
+  
+  // RooDataHist dataMet("dataMet", "dataMet", RooArgSet(pfmet),hDataMet);
+  RooDataHist dataMetp("dataMetp","dataMetp",RooArgSet(pfmet),hDataMetp2d[0]);
+  RooDataHist dataMetm("dataMetm","dataMetm",RooArgSet(pfmet),hDataMetm2d[0]);
 
   RooDataHist combDatap("dataTotalp","dataTotalp", RooArgList(pfmet), Index(rooCat2dTest),Import(dataMetp_));
   RooDataHist combDatam("dataTotalm","dataTotalm", RooArgList(pfmet), Index(rooCat2dTest),Import(dataMetm_));
@@ -2142,41 +2079,41 @@ double isoTrkCut=9999;
   }
 
   
-  cout << "Starting values for Wlnu yields: " << endl;
-  cout << "Selected: " << hDataMet->Integral() << endl;
-  cout << "   sig: " << hWlnuMet->Integral() << endl;
-  cout << "   EWK: " << hEWKMet->Integral() << endl;
-  cout << "   qcd: " << hDataMet->Integral()-hWlnuMet->Integral()-hEWKMet->Integral() << endl;
+  // cout << "Starting values for Wlnu yields: " << endl;
+  // cout << "Selected: " << hDataMet->Integral() << endl;
+  // cout << "   sig: " << hWlnuMet->Integral() << endl;
+  // cout << "   EWK: " << hEWKMet->Integral() << endl;
+  // cout << "   qcd: " << hDataMet->Integral()-hWlnuMet->Integral()-hEWKMet->Integral() << endl;
 
-  cout << "Starting values for Wlnu_p yields: " << endl;
-  cout << "   sig: " << hWlnuMetp->Integral() << endl;
-  cout << "   EWK: " << hEWKMetp->Integral() << endl;
-  cout << "   qcd: " << hDataMetp->Integral()-hWlnuMetp->Integral()-hEWKMetp->Integral() << endl;
+  // cout << "Starting values for Wlnu_p yields: " << endl;
+  // cout << "   sig: " << hWlnuMetp->Integral() << endl;
+  // cout << "   EWK: " << hEWKMetp->Integral() << endl;
+  // cout << "   qcd: " << hDataMetp->Integral()-hWlnuMetp->Integral()-hEWKMetp->Integral() << endl;
 
-  cout << "Starting values for Wlnu_m yields: " << endl;
-  cout << "   sig: " << hWlnuMetm->Integral() << endl;
-  cout << "   EWK: " << hEWKMetm->Integral() << endl;
-  cout << "   qcd: " << hDataMetm->Integral()-hWlnuMetm->Integral()-hEWKMetm->Integral() << endl;
+  // cout << "Starting values for Wlnu_m yields: " << endl;
+  // cout << "   sig: " << hWlnuMetm->Integral() << endl;
+  // cout << "   EWK: " << hEWKMetm->Integral() << endl;
+  // cout << "   qcd: " << hDataMetm->Integral()-hWlnuMetm->Integral()-hEWKMetm->Integral() << endl;
   
   
-  cout << "Starting values for AntiWlnu yields: " << endl;
-  cout << "Selected: " << hAntiDataMet->Integral() << endl;
-  cout << "   sig: " << hAntiWlnuMet->Integral() << endl;
-  cout << "   EWK: " << hAntiEWKMet->Integral() << endl;
-  cout << "   qcd: " << hAntiDataMet->Integral()-hAntiWlnuMet->Integral()-hAntiEWKMet->Integral() << endl;
+  // cout << "Starting values for AntiWlnu yields: " << endl;
+  // cout << "Selected: " << hAntiDataMet->Integral() << endl;
+  // cout << "   sig: " << hAntiWlnuMet->Integral() << endl;
+  // cout << "   EWK: " << hAntiEWKMet->Integral() << endl;
+  // cout << "   qcd: " << hAntiDataMet->Integral()-hAntiWlnuMet->Integral()-hAntiEWKMet->Integral() << endl;
 
-  cout << "Starting values for AntiWlnu_p yields: " << endl;
-  cout << "   sig: " << hWlnuMetp->Integral() << endl;
-  cout << "   EWK: " << hEWKMetp->Integral() << endl;
-  cout << "   qcd: " << hAntiDataMetp->Integral()-hAntiWlnuMetp->Integral()-hAntiEWKMetp->Integral() << endl;
+  // cout << "Starting values for AntiWlnu_p yields: " << endl;
+  // cout << "   sig: " << hWlnuMetp->Integral() << endl;
+  // cout << "   EWK: " << hEWKMetp->Integral() << endl;
+  // cout << "   qcd: " << hAntiDataMetp->Integral()-hAntiWlnuMetp->Integral()-hAntiEWKMetp->Integral() << endl;
 
-  cout << "Starting values for AntiWlnu_m yields: " << endl;
-  cout << "   sig: " << hAntiWlnuMetm->Integral() << endl;
-  cout << "   EWK: " << hAntiEWKMetm->Integral() << endl;
-  cout << "   qcd: " << hAntiDataMetm->Integral()-hAntiWlnuMetm->Integral()-hAntiEWKMetm->Integral() << endl;
+  // cout << "Starting values for AntiWlnu_m yields: " << endl;
+  // cout << "   sig: " << hAntiWlnuMetm->Integral() << endl;
+  // cout << "   EWK: " << hAntiEWKMetm->Integral() << endl;
+  // cout << "   qcd: " << hAntiDataMetm->Integral()-hAntiWlnuMetm->Integral()-hAntiEWKMetm->Integral() << endl;
 
-//   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
-//   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+// //   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
+// //   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",0.3*(hDataMet->Integral()),0,hDataMet->Integral());
 
   RooRealVar pepe2Pdf_qcdp_norm("pepe2Pdf_qcdp_norm","pepe2Pdf_qcdp_norm",0.3*(hDataMetp->Integral()),0,hDataMetp->Integral());
   RooRealVar pepe2Pdf_qcdm_norm("pepe2Pdf_qcdm_norm","pepe2Pdf_qcdm_norm",0.3*(hDataMetm->Integral()),0,hDataMetm->Integral());
@@ -2202,14 +2139,48 @@ double isoTrkCut=9999;
      }
   }
   std::cout << "mark 3 " << std::endl;
-  
+
+  TH1 *qcdp2 = (TH1*) hQCDMetp2d[2]->Clone();   TH1 *qcdp3=(TH1*) hQCDMetp2d[3]->Clone();
+  TH1 *qcdm2 = (TH1*) hQCDMetm2d[2]->Clone();   TH1 *qcdm3=(TH1*) hQCDMetm2d[3]->Clone();
+  qcdp3->Scale(qcdp2->Integral()/qcdp3->Integral());
+  qcdm3->Scale(qcdm2->Integral()/qcdm3->Integral());
+  TH1D *hQCDMetpBin2_shapeUp   = (TH1D*) hQCDMetp2d[2]->Clone();  
+  hQCDMetpBin2_shapeUp->SetTitle("hQCDMetpBin2_shapeUp");
+  hQCDMetpBin2_shapeUp->SetName("hQCDMetpBin2_shapeUp");
+  TH1D *hQCDMetpBin2_shapeDown = (TH1D*) hQCDMetp2d[2]->Clone();
+  hQCDMetpBin2_shapeDown->SetTitle("hQCDMetpBin2_shapeDown");
+  hQCDMetpBin2_shapeDown->SetName("hQCDMetpBin2_shapeDown");
+  TH1D *hQCDMetmBin2_shapeUp   = (TH1D*) hQCDMetm2d[2]->Clone();
+  hQCDMetmBin2_shapeUp->SetTitle("hQCDMetmBin2_shapeUp");
+  hQCDMetmBin2_shapeUp->SetName("hQCDMetmBin2_shapeUp");
+  TH1D *hQCDMetmBin2_shapeDown  = (TH1D*) hQCDMetm2d[2]->Clone();
+  hQCDMetmBin2_shapeDown->SetTitle("hQCDMetmBin2_shapeDown");
+  hQCDMetmBin2_shapeDown->SetName("hQCDMetmBin2_shapeDown");
+
+  for(Int_t ibin=1; ibin<=qcdp2->GetNbinsX(); ibin++) 
+    {
+      double targetp = qcdp3->GetBinContent(ibin);
+      double medianp = qcdp2->GetBinContent(ibin);
+      double targetm = qcdm3->GetBinContent(ibin);
+      double medianm = qcdm2->GetBinContent(ibin);
+      hQCDMetpBin2_shapeUp->SetBinContent(ibin,targetp);
+      hQCDMetmBin2_shapeUp->SetBinContent(ibin,targetm);
+      hQCDMetpBin2_shapeDown->SetBinContent(ibin,2*medianp-targetp);
+      hQCDMetmBin2_shapeDown->SetBinContent(ibin,2*medianm-targetm);
+    }
+  //create qcd up/down shapes
+
 //   RooRealVar pepe1Pdf_qcdp_norm("pepe1Pdf_qcdp_norm","pepe1Pdf_qcdp_norm",40000,0,100000);
 //   RooRealVar pepe1Pdf_qcdm_norm("pepe1Pdf_qcdm_norm","pepe1Pdf_qcdm_norm",40000,0,100000);
   TString histfname = outputDir + TString("/Wlnu_Histograms.root");
   TFile *histFile = new TFile(histfname,"RECREATE");
   histFile->cd();
+  hQCDMetpBin2_shapeUp->Write();
+  hQCDMetmBin2_shapeUp->Write();
+  hQCDMetpBin2_shapeDown->Write();
+  hQCDMetmBin2_shapeDown->Write();
   for(int j = 0; j < nIsoBins; ++j){
-    std::cout << "writing" << std::endl;
+    // std::cout << "writing" << std::endl;
     hDataMetp2d[j]->Write();
     hDataMetm2d[j]->Write();
     
@@ -2230,12 +2201,15 @@ double isoTrkCut=9999;
     
     hDibMetp2d[j]->Write();
     hDibMetm2d[j]->Write();
+
+    hQCDMetp2d[j]->Write();
+    hQCDMetm2d[j]->Write();
     
     hIsoBinQCDp->Write();
     hIsoBinQCDm->Write();
     
     for(int k=0; k < nMET; k++){
-    std::cout << "writing MET" << std::endl;
+    // std::cout << "writing MET" << std::endl;
       hWlnupMETU[j][k]->Write();
       hWlnumMETU[j][k]->Write();
       
@@ -2248,7 +2222,7 @@ double isoTrkCut=9999;
       hZxxpMETU[j][k]->Write();
       hZxxmMETU[j][k]->Write();
       
-      std::cout << "writing MET DOWN" << std::endl;
+      // std::cout << "writing MET DOWN" << std::endl;
       if(k==rd||k==ru)continue;
       hWlnupMETD[j][k]->Write();
       hWlnumMETD[j][k]->Write();
@@ -2265,7 +2239,7 @@ double isoTrkCut=9999;
     }
     
     for(int k=0; k < nWeight; k++){
-      std::cout << "writing weight" << std::endl;
+      // std::cout << "writing weight" << std::endl;
       hWlnupWeightU[j][k]->Write();
       hWlnumWeightU[j][k]->Write();
 
@@ -2287,7 +2261,7 @@ double isoTrkCut=9999;
 
       hTtbpWeightU[j][k]->Write();
       hTtbmWeightU[j][k]->Write();
-      std::cout << "writing weight DOWN" << std::endl;
+      // std::cout << "writing weight DOWN" << std::endl;
       if(k==pfireu||k==pfired)continue;
             
       hWlnupWeightD[j][k]->Write();
@@ -2308,32 +2282,32 @@ double isoTrkCut=9999;
       hTtbpWeightD[j][k]->Write();
       hTtbmWeightD[j][k]->Write();
     }
-    for(int k=0; k < nLHE; k++){
-      std::cout << "writing LHE" << std::endl;
-      hWlnupThyUncU[j][k]->Write();
-      hWlnumThyUncU[j][k]->Write();
+    // for(int k=0; k < nLHE; k++){
+      // // std::cout << "writing LHE" << std::endl;
+      // hWlnupThyUncU[j][k]->Write();
+      // hWlnumThyUncU[j][k]->Write();
       
-      hWlnupThyUncD[j][k]->Write();
-      hWlnumThyUncD[j][k]->Write();
+      // hWlnupThyUncD[j][k]->Write();
+      // hWlnumThyUncD[j][k]->Write();
       
-      hEWKpThyUncU[j][k]->Write();
-      hEWKmThyUncU[j][k]->Write();
+      // hEWKpThyUncU[j][k]->Write();
+      // hEWKmThyUncU[j][k]->Write();
       
-      hEWKpThyUncD[j][k]->Write();
-      hEWKmThyUncD[j][k]->Write();
+      // hEWKpThyUncD[j][k]->Write();
+      // hEWKmThyUncD[j][k]->Write();
       
-      hWxpThyUncU[j][k]->Write();
-      hWxmThyUncU[j][k]->Write();
+      // hWxpThyUncU[j][k]->Write();
+      // hWxmThyUncU[j][k]->Write();
       
-      hWxpThyUncD[j][k]->Write();
-      hWxmThyUncD[j][k]->Write();
+      // hWxpThyUncD[j][k]->Write();
+      // hWxmThyUncD[j][k]->Write();
       
-      hZxxpThyUncU[j][k]->Write();
-      hZxxmThyUncU[j][k]->Write();
+      // hZxxpThyUncU[j][k]->Write();
+      // hZxxmThyUncU[j][k]->Write();
       
-      hZxxpThyUncD[j][k]->Write();
-      hZxxmThyUncD[j][k]->Write();
-    }
+      // hZxxpThyUncD[j][k]->Write();
+      // hZxxmThyUncD[j][k]->Write();
+    // }
     
   }
   histFile->Write();
@@ -2362,55 +2336,56 @@ double isoTrkCut=9999;
     RooGaussian constantip("constantip","constantip",nAntiSigp,RooConst(hAntiWlnuMetp->Integral()),RooConst(0.15*hAntiWlnuMetp->Integral()));
 	
 
-  
-     // had commented out the Min2/Strat2 when running some of the other options
-  // RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),PrintEvalErrors(-1));
-  // RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),RooFit::Strategy(2)/*,Minimizer("Minuit2","minimize")*/,ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),PrintEvalErrors(-1));
+
+  // RooFitResult *fitResp2dCatTest = pdfMetp.fitTo(dataMetp,Extended(),Save(kTRUE),RooFit::Strategy(2),Minos(kTRUE),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
+  // RooFitResult *fitResm2dCatTest = pdfMetm.fitTo(dataMetm,Extended(),Save(kTRUE),RooFit::Strategy(2),Minos(kTRUE),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
+
+ 
   
   RooFitResult *fitResp2dCatTest = simPdfp.fitTo(combDatap,Extended(),Save(kTRUE),/*ExternalConstraints(RooArgList(const_wxp,const_zxxp,const_dibp,const_ttbp)),*/RooFit::Strategy(2),Minos(kTRUE),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
   RooFitResult *fitResm2dCatTest = simPdfm.fitTo(combDatam,Extended(),Save(kTRUE),/*ExternalConstraints(RooArgList(const_wxm,const_zxxm,const_dibm,const_ttbm)),*/RooFit::Strategy(2),Minos(kTRUE),Minimizer("Minuit2","minimize"),PrintEvalErrors(-1));
   
-  TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", pfmet));
-  hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
-  TH1D *hMetDiff = makeDiffHist(hDataMet,hPdfMet,"hMetDiff");
-  hMetDiff->SetMarkerStyle(kFullCircle); hMetDiff->SetMarkerSize(0.9);
+  // TH1D *hPdfMet = (TH1D*)(pdfMet.createHistogram("hPdfMet", pfmet));
+  // hPdfMet->Scale((nSig.getVal()+nEWK.getVal()+nQCD.getVal())/hPdfMet->Integral());
+  // TH1D *hMetDiff = makeDiffHist(hDataMet,hPdfMet,"hMetDiff");
+  // hMetDiff->SetMarkerStyle(kFullCircle); hMetDiff->SetMarkerSize(0.9);
    
-  TH1D *hPdfMetp = (TH1D*)(pdfMetp.createHistogram("hPdfMetp", pfmet));
-  for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWlnuMetp->GetBinError(ibin));}
-  // std::cout << nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal() << std::endl;
-  // std::cout << nSigp.getVal()+nWxp.getVal()+nZxxp.getVal()+nDibp.getVal()+nTtbp.getVal()+nQCDp.getVal() << std::endl;
-  hPdfMetp->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp->Integral());
-  TH1D *hMetpDiff = makeDiffHist(hDataMetp,hPdfMetp,"hMetpDiff");
-  hMetpDiff->SetMarkerStyle(kFullCircle); hMetpDiff->SetMarkerSize(0.9);
+  // TH1D *hPdfMetp = (TH1D*)(pdfMetp.createHistogram("hPdfMetp", pfmet));
+  // for(int ibin = 1; ibin < hPdfMetp->GetNbinsX(); ++ibin){hPdfMetp->SetBinError(ibin, hWlnuMetp->GetBinError(ibin));}
+  // // std::cout << nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal() << std::endl;
+  // // std::cout << nSigp.getVal()+nWxp.getVal()+nZxxp.getVal()+nDibp.getVal()+nTtbp.getVal()+nQCDp.getVal() << std::endl;
+  // hPdfMetp->Scale((nSigp.getVal()+nEWKp.getVal()+nQCDp.getVal())/hPdfMetp->Integral());
+  // TH1D *hMetpDiff = makeDiffHist(hDataMetp,hPdfMetp,"hMetpDiff");
+  // hMetpDiff->SetMarkerStyle(kFullCircle); hMetpDiff->SetMarkerSize(0.9);
     
-  TH1D *hPdfMetm = (TH1D*)(pdfMetm.createHistogram("hPdfMetm", pfmet)); // why did we not just clone the original histogram...
-  for(int ibin = 1; ibin < hPdfMetm->GetNbinsX(); ++ibin){hPdfMetm->SetBinError(ibin, hWlnuMetm->GetBinError(ibin));}
-  hPdfMetm->Scale((nSigm.getVal()+nEWKm.getVal()+nQCDm.getVal())/hPdfMetm->Integral());
-  TH1D *hMetmDiff = makeDiffHist(hDataMetm,hPdfMetm,"hMetmDiff");
-  hMetmDiff->SetMarkerStyle(kFullCircle); hMetmDiff->SetMarkerSize(0.9);
+  // TH1D *hPdfMetm = (TH1D*)(pdfMetm.createHistogram("hPdfMetm", pfmet)); // why did we not just clone the original histogram...
+  // for(int ibin = 1; ibin < hPdfMetm->GetNbinsX(); ++ibin){hPdfMetm->SetBinError(ibin, hWlnuMetm->GetBinError(ibin));}
+  // hPdfMetm->Scale((nSigm.getVal()+nEWKm.getVal()+nQCDm.getVal())/hPdfMetm->Integral());
+  // TH1D *hMetmDiff = makeDiffHist(hDataMetm,hPdfMetm,"hMetmDiff");
+  // hMetmDiff->SetMarkerStyle(kFullCircle); hMetmDiff->SetMarkerSize(0.9);
   
-  // the diff hists for the anti-selection
+  // // the diff hists for the anti-selection
   
-  TH1D *hPdfAntiMet = (TH1D*)(apdfMet.createHistogram("hPdfAntiMet", pfmet));
+  // TH1D *hPdfAntiMet = (TH1D*)(apdfMet.createHistogram("hPdfAntiMet", pfmet));
   
-  hPdfAntiMet->Scale((nAntiSig.getVal()+nAntiEWK.getVal()+nAntiQCD.getVal())/hPdfAntiMet->Integral());
-  TH1D *hAntiMetDiff = makeDiffHist(hAntiDataMet,hPdfAntiMet,"hAntiMetDiff");
-  hAntiMetDiff->SetMarkerStyle(kFullCircle);
-  hAntiMetDiff->SetMarkerSize(0.9);
+  // hPdfAntiMet->Scale((nAntiSig.getVal()+nAntiEWK.getVal()+nAntiQCD.getVal())/hPdfAntiMet->Integral());
+  // TH1D *hAntiMetDiff = makeDiffHist(hAntiDataMet,hPdfAntiMet,"hAntiMetDiff");
+  // hAntiMetDiff->SetMarkerStyle(kFullCircle);
+  // hAntiMetDiff->SetMarkerSize(0.9);
    
-  TH1D *hPdfAntiMetp = (TH1D*)(apdfMetp.createHistogram("hPdfAntiMetp", pfmet));
-   for(int ibin = 1; ibin < hPdfAntiMetp->GetNbinsX(); ++ibin){hPdfAntiMetp->SetBinError(ibin, hAntiWlnuMetp->GetBinError(ibin));}
-  hPdfAntiMetp->Scale((nAntiSigp.getVal()+nAntiEWKp.getVal()+nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
-  TH1D *hAntiMetpDiff = makeDiffHist(hAntiDataMetp,hPdfAntiMetp,"hAntiMetpDiff");
-  hAntiMetpDiff->SetMarkerStyle(kFullCircle);
-  hAntiMetpDiff->SetMarkerSize(0.9);
+  // TH1D *hPdfAntiMetp = (TH1D*)(apdfMetp.createHistogram("hPdfAntiMetp", pfmet));
+   // for(int ibin = 1; ibin < hPdfAntiMetp->GetNbinsX(); ++ibin){hPdfAntiMetp->SetBinError(ibin, hAntiWlnuMetp->GetBinError(ibin));}
+  // hPdfAntiMetp->Scale((nAntiSigp.getVal()+nAntiEWKp.getVal()+nAntiQCDp.getVal())/hPdfAntiMetp->Integral());
+  // TH1D *hAntiMetpDiff = makeDiffHist(hAntiDataMetp,hPdfAntiMetp,"hAntiMetpDiff");
+  // hAntiMetpDiff->SetMarkerStyle(kFullCircle);
+  // hAntiMetpDiff->SetMarkerSize(0.9);
     
-  TH1D *hPdfAntiMetm = (TH1D*)(apdfMetm.createHistogram("hPdfAntiMetm", pfmet));
-   for(int ibin = 1; ibin < hPdfAntiMetm->GetNbinsX(); ++ibin){hPdfAntiMetm->SetBinError(ibin, hAntiWlnuMetm->GetBinError(ibin));}
-  hPdfAntiMetm->Scale((nAntiSigm.getVal()+nAntiEWKm.getVal()+nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
-  TH1D *hAntiMetmDiff = makeDiffHist(hAntiDataMetm,hPdfAntiMetm,"hAntiMetmDiff");
-  hAntiMetmDiff->SetMarkerStyle(kFullCircle);
-  hAntiMetmDiff->SetMarkerSize(0.9);
+  // TH1D *hPdfAntiMetm = (TH1D*)(apdfMetm.createHistogram("hPdfAntiMetm", pfmet));
+   // for(int ibin = 1; ibin < hPdfAntiMetm->GetNbinsX(); ++ibin){hPdfAntiMetm->SetBinError(ibin, hAntiWlnuMetm->GetBinError(ibin));}
+  // hPdfAntiMetm->Scale((nAntiSigm.getVal()+nAntiEWKm.getVal()+nAntiQCDm.getVal())/hPdfAntiMetm->Integral());
+  // TH1D *hAntiMetmDiff = makeDiffHist(hAntiDataMetm,hPdfAntiMetm,"hAntiMetmDiff");
+  // hAntiMetmDiff->SetMarkerStyle(kFullCircle);
+  // hAntiMetmDiff->SetMarkerSize(0.9);
     
     // char plotname[100];
     //--------------------------------------------------------------------------------------------------------------
@@ -2478,12 +2453,12 @@ double isoTrkCut=9999;
   Double_t chi2probm, chi2ndfm, chi2probp, chi2ndfp;
   Double_t ksprobm, ksprobpem, ksprobp, ksprobpep;
   
-    ofstream txtfile4;
-    char txtfname4[100];
-    std::cout << "Printing We+. " << std::endl;
-    sprintf(txtfname4,"%s/chi2.txt",CPlot::sOutDir.Data());
-    txtfile4.open(txtfname4);
-    assert(txtfile4.is_open());
+    // ofstream txtfile4;
+    // char txtfname4[100];
+    // std::cout << "Printing We+. " << std::endl;
+    // sprintf(txtfname4,"%s/chi2.txt",CPlot::sOutDir.Data());
+    // txtfile4.open(txtfname4);
+    // assert(txtfile4.is_open());
   
   for(int i = 0; i < nIsoBins; ++i){
       
@@ -2509,12 +2484,6 @@ double isoTrkCut=9999;
     hMetmDiff->SetMarkerStyle(kFullCircle); hMetmDiff->SetMarkerSize(0.9);
     std::cout << "did diff " <<  i << std::endl;
 
-    // sprintf(nname,"isop%d",i); sprintf(plotname, "wep_fitmetp_bin%i",i);
-    // drawWMetPlots(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfEWKp_[i], doTemplate?(RooAbsPdf*)pdfQCDp_[i]:(RooAbsPdf*)qcdp_[i]->model, pdfWep_[i], lumitext, hDataMetp2d[i]);
-    
-    // sprintf(nname,"isom%d",i); sprintf(plotname, "wem_fitmetm_bin%i",i);
-    // drawWMetPlots(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfEWKm_[i], doTemplate?(RooAbsPdf*)pdfQCDm_[i]:(RooAbsPdf*)qcdm_[i]->model, pdfWem_[i], lumitext, hDataMetm2d[i]);
-    
     sprintf(nname,"isop%d",i); sprintf(plotname, "wep_fitmetp_bin%i",i);
     drawWMetPlotsSplit(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfWxp_[i],pdfZxxp_[i],pdfDibp_[i],pdfTtbp_[i], (RooAbsPdf*)pdfQCDp_[i], pdfWep_[i], lumitext, hDataMetp2d[i]);
     
@@ -2522,28 +2491,11 @@ double isoTrkCut=9999;
     drawWMetPlotsSplit(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfWxm_[i],pdfZxxm_[i],pdfDibm_[i],pdfTtbm_[i], (RooAbsPdf*)pdfQCDm_[i], pdfWem_[i], lumitext, hDataMetm2d[i]);
 
 
-    chi2probp = hDataMetp2d[i]->Chi2Test(hPdfMetp,"PUW");
-    chi2ndfp  = hDataMetp2d[i]->Chi2Test(hPdfMetp,"CHI2/NDFUW");
-    ksprobp   = hDataMetp2d[i]->KolmogorovTest(hPdfMetp);
-    ksprobpep = hDataMetp2d[i]->KolmogorovTest(hPdfMetp,"DX"); 
-   
-	
-    chi2probm = hDataMetm2d[i]->Chi2Test(hPdfMetm,"PUW");
-    chi2ndfm  = hDataMetm2d[i]->Chi2Test(hPdfMetm,"CHI2/NDFUW");
-    ksprobm   = hDataMetm2d[i]->KolmogorovTest(hPdfMetm);
-    ksprobpem = hDataMetm2d[i]->KolmogorovTest(hPdfMetm,"DX"); 
-	
-    txtfile4 << "bin+ : " << i << " ; chi2 : " << chi2ndfp << endl;
-	  txtfile4 << "bin- : " << i << " ; chi2 : " << chi2ndfm << endl;
-	
-  
-   std::cout << "blah " << i << std::endl;
-  
   }
   
-  txtfile4.close();
+  // txtfile4.close();
   
-  std::cout << "hi" << std::endl;
+  // std::cout << "hi" << std::endl;
   ofstream txtfile;
   char txtfname1[100];
   std::cout << "Printing We+. " << std::endl;
@@ -2556,30 +2508,20 @@ double isoTrkCut=9999;
   // txtfile << " *** Yields *** " << endl;
   txtfile << "Data+: " << hDataMetp2d[0]->Integral() << endl;
   txtfile << "Data-: " << hDataMetm2d[0]->Integral() << endl;
-  // txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "AntiSelected: " << hAntiDataMetp->Integral() << endl;
-  // txtfile << "  AntiSignal: " << nAntiSigp.getVal() << " +/- " << nAntiSigp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "     AntiQCD: " << nAntiQCDp.getVal() << " +/- " << nAntiQCDp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "   AntiOther: " << nAntiEWKp.getVal() << " +/- " << nAntiEWKp.getPropagatedError(*fitResp) << endl;
-  // txtfile << endl;  
-  // txtfile.flags(flags);
   
-   
   
   fitResp2dCatTest->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose); 
   txtfile << endl;
-  printCorrelations(txtfile, fitResp2dCatTest);
+  // printCorrelations(txtfile, fitResp2dCatTest);
   txtfile << endl;
-  printChi2AndKSResults(txtfile, chi2probp, chi2ndfp, ksprobp, ksprobpep);
+  // printChi2AndKSResults(txtfile, chi2probp, chi2ndfp, ksprobp, ksprobpep);
   txtfile<< endl;
   
   fitResm2dCatTest->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
-  printCorrelations(txtfile, fitResm2dCatTest);
+  // printCorrelations(txtfile, fitResm2dCatTest);
   txtfile << endl;
-  printChi2AndKSResults(txtfile, chi2probm, chi2ndfm, ksprobm, ksprobpem);
+  // // printChi2AndKSResults(txtfile, chi2probm, chi2ndfm, ksprobm, ksprobpem);
   txtfile <<endl;
   
   txtfile.close();
@@ -2598,23 +2540,28 @@ double isoTrkCut=9999;
 
 
 void fillMETs(bool doMET,TH1D** h,vector<double> met, int nMET, double wgt, double mtCorr){
+  // return;
   for(int k =2; k < nMET; k++){
-    doMET ? h[k] ->Fill(met[k] , wgt) : h[k] ->Fill(mtCorr,wgt);
+    // doMET ? h[k] ->Fill(met[k] , wgt) : h[k] ->Fill(mtCorr,wgt);
+    h[k] ->Fill(met[k] , wgt);
   }
   // std::cout << "h->int" << h[3]->Integral() << std::endl;
   return;
 }
 
 void fillWeights(bool doMET,TH1D** h,double met, int nWeight,vector<double> wgt,double mtCorr){
+  // return;
   // std::cout <<  wgt[0]<<" " <<  wgt[9]<<" " <<  wgt[10]<<" " << std::endl;
   for(int k =1; k < nWeight; k++){
-    doMET ? h[k] ->Fill(met , wgt[k]) : h[k] ->Fill(mtCorr,wgt[k]);
+    // doMET ? h[k] ->Fill(met , wgt[k]) : h[k] ->Fill(mtCorr,wgt[k]);
+    h[k] ->Fill(met , wgt[k]);
   }
   return;
 }
 
 
 void fillLHE(TH1D** hlhe, double met, double evtweight, vector<double> *lheweight){
+  // return;
   // std::cout << "filling lhe weights" << std::endl;
   for(int k = 0; k < nQCD+nPDF; k ++){
     // std::cout << k << "  " <<  (*lheweight)[k] << std::endl;
@@ -2626,6 +2573,7 @@ void fillLHE(TH1D** hlhe, double met, double evtweight, vector<double> *lheweigh
 }
 
 void calcLHE(TH1D* hQCD, TH1D* hPDF, TH1D** hlhe, TH1D* hMain,  bool isSignal){
+  // return;
   
   // rescale the histograms if it's the signal shape
   // std::cout << "1" << std::endl;
@@ -2687,6 +2635,7 @@ void calcLHE(TH1D* hQCD, TH1D* hPDF, TH1D** hlhe, TH1D* hMain,  bool isSignal){
 }
 
 void drawLHE(TH1D** hlhe, TH1D* hMain, TString name, TString outdir, bool isSignal){
+  // return;
   // std::cout << "draw lhe " << std::endl;
   // rescale the histograms if it's the signal shape
   if(isSignal){
@@ -2747,9 +2696,9 @@ void drawShapes(TH1D** vars, TH1D* hMain, TString outdir, TString name, vector<s
   hMain->SetLineWidth(5);
   hMain->Draw("L");
   // loop through the 6 for QCD
-  std::cout << "here" << std::endl;
+  // std::cout << "here" << std::endl;
   for(int k=1; k < max; k++){
-    std::cout << vars[k]->Integral() << std::endl;
+    // std::cout << vars[k]->Integral() << std::endl;
     vars[k]->SetMarkerColor(k+1);
     vars[k]->SetLineColor(k+1);
     vars[k]->SetMarkerSize(0);
@@ -3012,6 +2961,14 @@ void drawWMetPlotsSplit(string plotname, TH1D *diff, RooRealVar &x, RooDataHist*
   plot.SetYRange(1e-5*(hData->GetMaximum()),10*(hData->GetMaximum()));
   plot.Draw(c,kTRUE,format,1);
   plot.Draw(c,kTRUE,"pdf",1);
+}
+
+void makeUncMT(vector<Double_t> &metVars, vector<Double_t> &metVarsPhi, TLorentzVector* lep){
+  for(int i = 0; i < metVars.size(); ++i){
+    double mtCorr  = sqrt(2.0*(lep->Pt()) * (metVars[i]) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metVarsPhi[i]))));
+    metVars[i] = mtCorr;
+  }
+  return;
 }
 
 //--------------------------------------------------------------------------------------------------

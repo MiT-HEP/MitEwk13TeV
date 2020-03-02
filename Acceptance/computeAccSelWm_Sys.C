@@ -60,37 +60,40 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 
   const Double_t PT_CUT     = 25;
   const Double_t ETA_CUT    = 2.4;
-  const Double_t ETA_BARREL = 1.2;
-  const Double_t ETA_ENDCAP = 1.2;
+  // const Double_t ETA_BARREL = 1.2;
+  // const Double_t ETA_ENDCAP = 1.2;
 
+  const Double_t ETA_BARREL = 1.442;
+  const Double_t ETA_ENDCAP = 1.442;
   const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.4;
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
   
-  const int NBptSta  = 2;
-  const float ptrangeSta[NBptSta +1]   = {25., 40., 8000.};
+  const int NBptSta  = 3;
+  const float ptrangeSta[NBptSta +1]   = {25., 35,  50., 10000.};
+
   const int NBeta = 12;
   const float etarange[NBeta+1] = {-2.4,-2.1,-1.6,-1.2,-0.9,-0.3,0,0.3,0.9,1.2,1.6,2.1,2.4};
-  const int NBptSIT = 8;
-  const float ptrangeSIT[NBptSIT+1] = {25,30,35,40,45,50,60,80,8000};
+  const int NBptHLT = 12;
+  const float ptrangeHLT[NBptHLT+1] = {25, 26.5, 28, 29.5, 31, 32.5, 35, 40, 45, 50, 60, 80, 10000};
   
   AppEffSF effs(inputDir);
   effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
-  effs.loadSel("MuSITEff_aMCxPythia","Positive","Negative");
+  effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
   effs.loadSta("MuStaEff_aMCxPythia","Combined","Combined");
   effs.loadUncSel(sysFileSIT);
   effs.loadUncSta(sysFileSta);
   
-  TH2D *hSelErr_pos = new TH2D("hSelErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
-  TH2D *hSelErr_neg = new TH2D("hSelErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hSelErr_pos = new TH2D("hSelErr_pos", "",NBeta,etarange,NBptSta,ptrangeSta);
+  TH2D *hSelErr_neg = new TH2D("hSelErr_neg", "",NBeta,etarange,NBptSta,ptrangeSta);
   
   TH2D *hStaErr_pos = new TH2D("hStaErr_pos", "",NBeta,etarange,NBptSta,ptrangeSta);
   TH2D *hStaErr_neg = new TH2D("hStaErr_neg", "",NBeta,etarange,NBptSta,ptrangeSta);
 
-  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",NBeta,etarange,NBptSIT,ptrangeSIT);
-  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",NBeta,etarange,NBptSIT,ptrangeSIT);
+  TH2D *hHLTErr_pos = new TH2D("hHLTErr_pos", "",NBeta,etarange,NBptHLT,ptrangeHLT);
+  TH2D *hHLTErr_neg = new TH2D("hHLTErr_neg", "",NBeta,etarange,NBptHLT,ptrangeHLT);
 
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_76X.root", "read");
@@ -196,9 +199,9 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     nSelCorrvBkg_I.push_back(0);  nSelCorrvBkg_S.push_back(0);
     nSelCorrvTag_I.push_back(0);  nSelCorrvTag_S.push_back(0);
     
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(0.25)*((uint)eventTree->GetEntries()); ientry++) {
-      if(ientry%1000000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<(0.25)*((uint)eventTree->GetEntries()); ientry++) {
+      if(ientry%100000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
     //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
       infoBr->GetEntry(ientry);
@@ -207,10 +210,31 @@ void computeAccSelWm_Sys(const TString conf,       // input file
       if (charge==-1 && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
       if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
+      
+      
+      
       /*TLorentzVector *vec=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,1);*/
+      Int_t glepq1=-99;
+      Int_t glepq2=-99;
+      TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+   
+      // TLorentzVector tvec=*glep1+*glep2;
+      // TLorentzVector* genV=new TLorentzVector(0,0,0,0);
+      // genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+      // genVPt   = tvec.Pt();
+      // genVPhi  = tvec.Phi();
+      // genVy    = tvec.Rapidity();
+      // double genVMass = tvec.M();
+      double mtgen  = sqrt( 2.0 * (glep1->Pt()) * (glep2->Pt()) * (1.0-cos(toolbox::deltaPhi(glep1->Phi(),glep2->Phi()))) );
+      // if(mtgen > 40) continue;
+      // if(mtgen < 40 || mtgen > 140) continue;
+     // cout << "mass " << genVMass <<  "   mt " << mt << endl;
       
       vertexArr->Clear();
       vertexBr->GetEntry(ientry);
@@ -251,6 +275,10 @@ void computeAccSelWm_Sys(const TString conf,       // input file
 	
         if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
 	
+        double mtreco  = sqrt( 2.0 * (mu->pt) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(mu->phi,info->pfMETCphi))) );
+        
+        if(mtreco < 40) continue;
+        // if(mtreco > 40 && mtreco < 140) continue;
         passSel=kTRUE;
         goodMuon=mu;
         vMu.SetPtEtaPhiM(mu->pt, mu->eta, mu->phi, mu_MASS);
@@ -300,7 +328,6 @@ void computeAccSelWm_Sys(const TString conf,       // input file
         var += effs.statUncSta(&vMu, q, hStaErr_pos, hStaErr_neg, fabs(weight)*corr);
         var += effs.statUncSel(&vMu, q, hSelErr_pos, hSelErr_neg, fabs(weight)*corr);
         var += effs.statUncHLT(&vMu, q, hHLTErr_pos, hHLTErr_neg, fabs(weight)*corr);
-  
   
         nSelv[ifile]    +=weight;
         nSelCorrvFSR[ifile] +=weight*corrFSR;  nSelCorrvFSR_I[ifile] +=weight*corrFSR_I;  nSelCorrvFSR_S[ifile] +=weight*corrFSR_S;
@@ -437,6 +464,7 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     cout << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     cout << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
     cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "          pct: " << 100*accErrCorrv[ifile] /accCorrv[ifile] << endl;
     cout << "          FSR unc: " << accCorrvFSR[ifile]  << " / Sel: " << accCorrvFSR_I[ifile] << " / Sta: " << accCorrvFSR_S[ifile] << endl;
     cout << "           MC unc: " << accCorrvMC[ifile]   << " / Sel: " << accCorrvMC_I[ifile]  << " / Sta: " << accCorrvMC_S[ifile]  << endl;
     cout << "          Bkg unc: " << accCorrvBkg[ifile]  << " / Sel: " << accCorrvBkg_I[ifile] << " / Sta: " << accCorrvBkg_S[ifile] << endl;
@@ -445,7 +473,7 @@ void computeAccSelWm_Sys(const TString conf,       // input file
     cout << endl;
   }
   
-  char txtfname[100];
+  char txtfname[500];
   sprintf(txtfname,"%s/sel.txt",outputDir.Data());
   ofstream txtfile;
   txtfile.open(txtfname);
@@ -490,7 +518,8 @@ void computeAccSelWm_Sys(const TString conf,       // input file
   ofstream txtfile2;
   txtfile2.open(txtfname);
   
-  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
+  for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {//accv[ifile]
+    txtfile2 << "uncorrected: " << accv[ifile]    << endl;
     txtfile2 << accCorrv[ifile]     << " " << accErrCorrv[ifile]    << endl;
     txtfile2 << accCorrvFSR[ifile]  << " " << accCorrvFSR_I[ifile] << " " << accCorrvFSR_S[ifile] << endl;
     txtfile2 << accCorrvMC[ifile]   << " " << accCorrvMC_I[ifile]  << " " << accCorrvMC_S[ifile]  << endl;

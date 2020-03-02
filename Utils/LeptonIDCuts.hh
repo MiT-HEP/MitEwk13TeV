@@ -137,16 +137,103 @@ Bool_t passMuonLooseID_2015(const baconhep::TMuon *muon, const Double_t rho)
   return kTRUE;
 }
 
+
+// This is the stuff from 2015, delete it eventually
+// //--------------------------------------------------------------------------------------------------
+// //                             Electron ID
+// //--------------------------------------------------------------------------------------------------
+// Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
+// { // Medium Electron ID for 2015
+
+  // const Double_t ECAL_GAP_LOW  = 1.4442;
+  // const Double_t ECAL_GAP_HIGH = 1.566;
+
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+
+  // if(electron->isConv)            return kFALSE;
+
+  // Double_t ea = getEffAreaEl(tag.Eta());
+  // Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+
+  // if(fabs(electron->eta)<=ECAL_GAP_LOW) {
+    // if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
+    // if(electron->nMissingHits > 2)                                    return kFALSE;
+    // if(electron->sieie >= 0.0101)                                     return kFALSE;
+    // if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
+    // if(fabs(electron->dEtaIn) >= 0.0103)                              return kFALSE;
+    // if(electron->hovere >= 0.0876)                                    return kFALSE;
+    // if(fabs(1.0-electron->eoverp) >= 0.0174*(electron->ecalEnergy))   return kFALSE;
+    // if(fabs(electron->d0) >= 0.0118)                                  return kFALSE;
+    // if(fabs(electron->dz) >= 0.373)                                  return kFALSE;
+  // } else {
+    // if(iso >= 0.0678*(tag.Pt()))                                      return kFALSE;
+    // if(electron->nMissingHits > 1)                                    return kFALSE;
+    // if(electron->sieie  	  >= 0.0283)                          return kFALSE;
+    // if(fabs(electron->dPhiIn)     >= 0.114)                           return kFALSE;
+    // if(fabs(electron->dEtaIn)     >= 0.00733)                         return kFALSE;
+    // if(electron->hovere 	  >= 0.0678)                          return kFALSE;
+    // if(fabs(1.0-electron->eoverp) >= 0.0898*(electron->ecalEnergy))   return kFALSE;
+    // if(fabs(electron->d0) >= 0.0739)                                  return kFALSE;
+    // if(fabs(electron->dz) >= 0.602)                                  return kFALSE;
+  // }
+
+  // return kTRUE;
+
+// }
+
+// Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
+// {// ele ID from 2015
+  // const Double_t ECAL_GAP_LOW  = 1.4442;
+  // const Double_t ECAL_GAP_HIGH = 1.566;
+
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+
+  // // conversion rejection
+  // if(electron->isConv)            return kFALSE;
+
+  // Double_t ea = getEffAreaEl(tag.Eta());	
+  // Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
+
+  // // barrel/endcap dependent requirements
+  // if(fabs(electron->eta)<=ECAL_GAP_LOW) {
+    // // barrel
+    // //if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
+    // if(iso < 0.0766*(tag.Pt()))                                      return kFALSE;
+    // if(electron->nMissingHits > 2)                                    return kFALSE;
+    // if(electron->sieie >= 0.0101)                                     return kFALSE;
+    // if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
+    // if(fabs(electron->dEtaIn) >= 0.0103)                              return kFALSE;
+    // if(electron->hovere >= 0.0876)                                    return kFALSE;
+    // if(fabs(1.0-electron->eoverp) >= 0.0174*(electron->ecalEnergy))   return kFALSE;
+    // if(fabs(electron->d0) >= 0.0118)                                  return kFALSE;
+    // if(fabs(electron->dz) >= 0.373)                                  return kFALSE;
+  // } else {
+    // // endcap
+    // //if(iso >= 0.0678*(electron->pt))                                  return kFALSE;
+    // if(iso < 0.0678*(tag.Pt()))                                      return kFALSE;
+    // if(electron->nMissingHits > 1)                                    return kFALSE;
+    // if(electron->sieie  	  >= 0.0283)                          return kFALSE;
+    // if(fabs(electron->dPhiIn)     >= 0.114)                           return kFALSE;
+    // if(fabs(electron->dEtaIn)     >= 0.00733)                         return kFALSE;
+    // if(electron->hovere 	  >= 0.0678)                          return kFALSE;
+    // if(fabs(1.0-electron->eoverp) >= 0.0898*(electron->ecalEnergy))   return kFALSE;
+    // if(fabs(electron->d0) >= 0.0739)                                  return kFALSE;
+    // if(fabs(electron->dz) >= 0.602)                                  return kFALSE;
+  // }
+
+  // return kTRUE;
+// }
+
+
 //--------------------------------------------------------------------------------------------------
-//                             Electron ID
-//--------------------------------------------------------------------------------------------------
-Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
-{ // Medium Electron ID for 2015
+Bool_t passEleMediumID(const baconhep::TElectron *electron, const TLorentzVector tag, const Double_t rho)
+{ // Tight Electron ID from 2017
 
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+  // keeping these for now, can always remove at later step
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
   if(electron->isConv)            return kFALSE;
 
@@ -154,72 +241,78 @@ Bool_t passEleID(const baconhep::TElectron *electron, const TLorentzVector tag, 
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
-    if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
-    if(electron->nMissingHits > 2)                                    return kFALSE;
-    if(electron->sieie >= 0.0101)                                     return kFALSE;
-    if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
-    if(fabs(electron->dEtaIn) >= 0.0103)                              return kFALSE;
-    if(electron->hovere >= 0.0876)                                    return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.0174*(electron->ecalEnergy))   return kFALSE;
-    if(fabs(electron->d0) >= 0.0118)                                  return kFALSE;
-    if(fabs(electron->dz) >= 0.373)                                  return kFALSE;
-  } else {
-    if(iso >= 0.0678*(tag.Pt()))                                      return kFALSE;
+    // // // if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
+    if(iso/(tag.Pt()) >= 0.0478+0.506/(tag.Pt()))                                      return kFALSE; // original
     if(electron->nMissingHits > 1)                                    return kFALSE;
-    if(electron->sieie  	  >= 0.0283)                          return kFALSE;
-    if(fabs(electron->dPhiIn)     >= 0.114)                           return kFALSE;
-    if(fabs(electron->dEtaIn)     >= 0.00733)                         return kFALSE;
-    if(electron->hovere 	  >= 0.0678)                          return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.0898*(electron->ecalEnergy))   return kFALSE;
-    if(fabs(electron->d0) >= 0.0739)                                  return kFALSE;
-    if(fabs(electron->dz) >= 0.602)                                  return kFALSE;
+    if(electron->sieie >= 0.0106)                                     return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.0547)                              return kFALSE; // original
+    if(fabs(electron->dEtaIn) >= 0.0032)                              return kFALSE; // original
+    if(electron->hovere >= 0.046+1.16/electron->ecalEnergy+0.0324*rho/electron->ecalEnergy)          return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.184*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.05)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.10)                                  return kFALSE;
+  } else {
+    // // // if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
+    if(iso/(tag.Pt()) >= 0.0658+0.963/(tag.Pt()))                                      return kFALSE; // original
+    if(electron->nMissingHits > 1)                                    return kFALSE;
+    if(electron->sieie            >= 0.0387)                          return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.0394)                           return kFALSE; // original
+    if(fabs(electron->dEtaIn)     >= 0.00632)                         return kFALSE; // original
+    if(electron->hovere           >= 0.0275+2.52/electron->ecalEnergy+0.183*rho/electron->ecalEnergy)         return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.0721*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.10)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.20)                                 return kFALSE;
   }
 
   return kTRUE;
 
 }
 
-Bool_t passAntiEleID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
-{// ele ID from 2015
+//--------------------------------------------------------------------------------------------------
+
+Bool_t passAntiEleMediumID(const baconhep::TElectron *electron,const TLorentzVector tag, const Double_t rho)
+{// Medium Electron ID from 2017
+
   const Double_t ECAL_GAP_LOW  = 1.4442;
   const Double_t ECAL_GAP_HIGH = 1.566;
 
-  if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
+  // keeping these for now, can always remove at later step
+  // if((fabs(electron->eta)>ECAL_GAP_LOW) && (fabs(electron->eta)<ECAL_GAP_HIGH)) return kFALSE;
 
-  // conversion rejection
   if(electron->isConv)            return kFALSE;
 
-  Double_t ea = getEffAreaEl(tag.Eta());	
+  Double_t ea = getEffAreaEl(tag.Eta());
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
-  // barrel/endcap dependent requirements
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
-    // barrel
-    //if(iso >= 0.0766*(tag.Pt()))                                      return kFALSE;
-    if(iso < 0.0766*(tag.Pt()))                                      return kFALSE;
-    if(electron->nMissingHits > 2)                                    return kFALSE;
-    if(electron->sieie >= 0.0101)                                     return kFALSE;
-    if(fabs(electron->dPhiIn) >= 0.0336)                              return kFALSE;
-    if(fabs(electron->dEtaIn) >= 0.0103)                              return kFALSE;
-    if(electron->hovere >= 0.0876)                                    return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.0174*(electron->ecalEnergy))   return kFALSE;
-    if(fabs(electron->d0) >= 0.0118)                                  return kFALSE;
-    if(fabs(electron->dz) >= 0.373)                                  return kFALSE;
-  } else {
-    // endcap
-    //if(iso >= 0.0678*(electron->pt))                                  return kFALSE;
-    if(iso < 0.0678*(tag.Pt()))                                      return kFALSE;
+    // // // if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
+    // if(iso/(tag.Pt()) >= 0.0478+0.506/(tag.Pt()))                                      return kFALSE; // original
+    if(iso/(tag.Pt()) < 0.0478+0.506/(tag.Pt()))                                      return kFALSE; // reverse
     if(electron->nMissingHits > 1)                                    return kFALSE;
-    if(electron->sieie  	  >= 0.0283)                          return kFALSE;
-    if(fabs(electron->dPhiIn)     >= 0.114)                           return kFALSE;
-    if(fabs(electron->dEtaIn)     >= 0.00733)                         return kFALSE;
-    if(electron->hovere 	  >= 0.0678)                          return kFALSE;
-    if(fabs(1.0-electron->eoverp) >= 0.0898*(electron->ecalEnergy))   return kFALSE;
-    if(fabs(electron->d0) >= 0.0739)                                  return kFALSE;
-    if(fabs(electron->dz) >= 0.602)                                  return kFALSE;
+    if(electron->sieie >= 0.0106)                                     return kFALSE;
+    if(fabs(electron->dPhiIn) >= 0.0547)                              return kFALSE; // original
+    if(fabs(electron->dEtaIn) >= 0.0032)                              return kFALSE; // original
+    if(electron->hovere >= 0.046+1.16/electron->ecalEnergy+0.0324*rho/electron->ecalEnergy)          return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.184*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.05)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.10)                                  return kFALSE;
+  } else {
+    // // // if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
+    // if(iso/(tag.Pt()) >= 0.0658+0.963/(tag.Pt()))                                      return kFALSE; // original
+    if(iso/(tag.Pt()) < 0.0658+0.963/(tag.Pt()))                                      return kFALSE; // reverse
+    if(electron->nMissingHits > 1)                                    return kFALSE;
+    if(electron->sieie            >= 0.0387)                          return kFALSE;
+    if(fabs(electron->dPhiIn)     >= 0.0394)                           return kFALSE; // original
+    if(fabs(electron->dEtaIn)     >= 0.00632)                         return kFALSE; // original
+    if(electron->hovere           >= 0.0275+2.52/electron->ecalEnergy+0.183*rho/electron->ecalEnergy)         return kFALSE;
+    if(fabs(1.0-electron->eoverp) >= 0.0721*(electron->ecalEnergy))   return kFALSE;
+    if(fabs(electron->d0) >= 0.10)                                  return kFALSE;
+    if(fabs(electron->dz) >= 0.20)                                 return kFALSE;
   }
 
   return kTRUE;
+
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -238,6 +331,7 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector 
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
 
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
+    // if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
     if(iso/(tag.Pt()) >= 0.0287+0.506/(tag.Pt()))                                      return kFALSE; // original
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie >= 0.0104)                                     return kFALSE;
@@ -248,6 +342,7 @@ Bool_t passEleTightID(const baconhep::TElectron *electron, const TLorentzVector 
     if(fabs(electron->d0) >= 0.05)                                  return kFALSE;
     if(fabs(electron->dz) >= 0.10)                                  return kFALSE;
   } else {
+    // if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
     if(iso/(tag.Pt()) >= 0.0445+0.963/(tag.Pt()))                                      return kFALSE; // original
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie            >= 0.0353)                          return kFALSE;
@@ -281,10 +376,13 @@ Bool_t passAntiEleTightID(const baconhep::TElectron *electron,const TLorentzVect
   Double_t iso = electron->chHadIso + TMath::Max(electron->neuHadIso + electron->gammaIso - rho*ea, 0.);
  // std::cout << "electron. dEta in " << fabs(electron->dEtaIn) << "  , dPhi in " << fabs(electron->dPhiIn)  << std::endl;
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
-    // if(iso >= 0.0287+0.506/(tag.Pt()))                                      return kFALSE; // original
+    // if(iso < 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
+    // if(iso >= 0.0354*(tag.Pt()))                                      return kFALSE; // regular ISO
+    // if(iso/(tag.Pt()) >= 0.0287+0.506/(tag.Pt()))                                      return kFALSE; // orig
     if(iso/(tag.Pt()) < 0.0287+0.506/(tag.Pt()))                                      return kFALSE; // reverse
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie >= 0.0104)                                     return kFALSE;
+    // if(electron->sieie < 0.0104)                                     return kFALSE;
     if(fabs(electron->dPhiIn) >= 0.022)                              return kFALSE; // original
     if(fabs(electron->dEtaIn) >= 0.00255)                              return kFALSE; // original
     // if(fabs(electron->dPhiIn) < 0.022)                               return kFALSE; // reverse
@@ -294,10 +392,13 @@ Bool_t passAntiEleTightID(const baconhep::TElectron *electron,const TLorentzVect
     if(fabs(electron->d0) >= 0.05)                                  return kFALSE;
     if(fabs(electron->dz) >= 0.10)                                  return kFALSE;
   } else {
-    // if(iso >= 0.0445+0.963/(tag.Pt()))                                      return kFALSE; // original
+    // if(iso < 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
+    // if(iso >= 0.0646*(tag.Pt()))                                      return kFALSE; // regular ISO
+    // if(iso/(tag.Pt()) >= 0.0445+0.963/(tag.Pt()))                                      return kFALSE;  // original
     if(iso/(tag.Pt()) < 0.0445+0.963/(tag.Pt()))                                      return kFALSE;  // reverse
     if(electron->nMissingHits > 1)                                    return kFALSE;
     if(electron->sieie            >= 0.0353)                          return kFALSE;
+    // if(electron->sieie            <  0.0353)                          return kFALSE;
     if(fabs(electron->dPhiIn)     >= 0.0236)                           return kFALSE; // original
     if(fabs(electron->dEtaIn)     >= 0.00501)                         return kFALSE; // original
     // if(fabs(electron->dPhiIn)     < 0.0236)                           return kFALSE; // reverse
@@ -329,6 +430,7 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
   // barrel/endcap dependent requirements
   if(fabs(electron->eta)<=ECAL_GAP_LOW) {
     // barrel
+    // if(iso > 0.126*(tag.Pt()))                                       return kFALSE;
     if(iso/(tag.Pt()) >= 0.198+0.506/(tag.Pt()))                                       return kFALSE;
     if(electron->nMissingHits >= 2)                                   return kFALSE;
     if(electron->sieie        >= 0.0126)                              return kFALSE;
@@ -340,6 +442,7 @@ Bool_t passEleLooseID(const baconhep::TElectron *electron, const TLorentzVector 
     if(fabs(electron->dz)     >= 0.10)                                return kFALSE;
   } else {
     // endcap
+    // if(iso > 0.144*(tag.Pt()))                                   return kFALSE;
     if(iso/(tag.Pt()) >= 0.203+0.963/(tag.Pt()))                                   return kFALSE;
     if(electron->nMissingHits >= 3)                                   return kFALSE;
     if(electron->sieie        >= 0.0457)                              return kFALSE;
@@ -597,26 +700,22 @@ Bool_t isMuonTriggerObjNoIso(baconhep::TTrigger triggerMenu, TriggerObjects hltM
 
 Bool_t isEleTrigger(baconhep::TTrigger triggerMenu, TriggerBits hltBits, Bool_t isData, Bool_t is13TeV=true) {
   if (isData) {
-    return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // both 5 & 13
-    // return triggerMenu.pass("HLT_HIEle20_WPLoose_Gsf_v*",hltBits); // both 5 & 13
-    //return triggerMenu.pass("HLT_Ele27_WPLoose_Gsf_v*",hltBits);
+    if(is13TeV) return triggerMenu.pass("HLT_Ele20_WPLoose_Gsf_v*",hltBits); // 13 TeV
+    else return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // both 5 & 13
   }
   else {
-    if(is13TeV) return triggerMenu.pass("HLT_Ele27_WPTight_Gsf_v*",hltBits); // 13 TeV
-    // else return triggerMenu.pass("HLT_HIEle20_WPLoose_Gsf_v*",hltBits); // 5 TeV
+    if(is13TeV) return triggerMenu.pass("HLT_Ele20_WPLoose_Gsf_v*",hltBits); // 13 TeV
     else return triggerMenu.pass("HLT_HIEle17_WPLoose_Gsf_v*",hltBits); // 5 TeV
   }
 }
 Bool_t isEleTriggerObj(baconhep::TTrigger triggerMenu, TriggerObjects hltMatchBits, Bool_t isL1, Bool_t isData, Bool_t is13TeV=true) {
   if (isData) {
-    return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
-    // return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // both 13 and 5
+    if(is13TeV) return triggerMenu.passObj("HLT_Ele20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilter",hltMatchBits);
+    else return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); 
   }
   else {
-    if(is13TeV){return triggerMenu.passObj("HLT_Ele27_WPTight_Gsf_v*","hltEle27WPTightGsfTrackIsoFilter",hltMatchBits);} // 13 TeV
-    // else{ return triggerMenu.passObj("HLT_HIEle20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilterForHI",hltMatchBits);} // 5 TeV
-    else return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); // 5 TeV
-    // return triggerMenu.passObj("HLT_Ele27_WPLoose_Gsf_v*","hltEle27noerWPLooseGsfTrackIsoFilter",hltMatchBits);
+    if(is13TeV) return triggerMenu.passObj("HLT_Ele20_WPLoose_Gsf_v*","hltEle20WPLoose1GsfTrackIsoFilter",hltMatchBits); 
+    else return triggerMenu.passObj("HLT_HIEle17_WPLoose_Gsf_v*","hltEle17WPLoose1GsfTrackIsoFilterForHI",hltMatchBits); 
   }
 }
 

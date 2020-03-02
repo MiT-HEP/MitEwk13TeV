@@ -20,14 +20,7 @@
 #include <fstream>                  // functions for file I/O
 #include "TLorentzVector.h"         // 4-vector class
 #include "TH1D.h"
-// #include "TRandom.h"
 #include "TGraph.h"
-
-#include "ConfParse.hh"             // input conf file parser
-#include "../Utils/CSample.hh"      // helper class to handle samples
-// #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
-// #include "../EleScale/EnergyScaleCorrection_class.hh" //EGMSmear // commented out to test the new one
-#include "../EleScale/EnergyScaleCorrection.h" //EGMSmear
 
 // define structures to read in ntuple
 #include "BaconAna/DataFormats/interface/BaconAnaDefs.hh"
@@ -40,36 +33,38 @@
 #include "BaconAna/DataFormats/interface/TJet.hh"
 #include "BaconAna/Utils/interface/TTrigger.hh"
 
-#include "CCorrUser2D.hh"
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
-#include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
-#include "../Utils/MyTools.hh"      // various helper functions
+// Utilities belonging to this package
+#include "ConfParse.hh"             // input conf file parser
+#include "../Utils/CSample.hh"      // helper class to handle samples
+#include "../EleScale/EnergyScaleCorrection.h" //EGMSmear
+#include "../Utils/LeptonIDCuts.hh"             // helper functions for lepton ID selection
+#include "../Utils/MyTools.hh"                  // various helper functions
+#include "../Utils/PrefiringEfficiency.cc"      // prefiring efficiency functions
 
 #include <TRandom3.h>
 #endif
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectZee(const TString conf="zee.conf", // input file
-               const TString outputDir=".",   // output directory
-	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections?
-	       const Int_t   sigma=0,
-           const Bool_t  doPU=0,
-           const Bool_t  is13TeV=1
-) {
+void selectZee(const TString conf        ="zee.conf", // input file
+               const TString outputDir   =".",   // output directory
+               const Bool_t  doScaleCorr =0,    // apply energy scale corrections?
+               const Int_t   sigma       =0,
+               const Bool_t  doPU        =0,
+               const Bool_t  is13TeV     =1,
+               const Int_t   NSEC        =1,
+               const Int_t   ITH         =0  ) {
   gBenchmark->Start("selectZee");
-std::cout << "is 13 TeV " << is13TeV << std::endl;
+  cout << "Currently doing selecting samples with sqrt(s) = "  << ( is13TeV ? "13 TeV" : "5 TeV" ) << std::endl;
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
   //============================================================================================================== 
-
-  // int runNumberTemp = 306936;
-
+  // probably don't need random
   TRandom3 *rand = new TRandom3();
   rand->SetSeed(1313131313);
-  // gRandom = rand;
 
   const Double_t MASS_LOW  = 40;
   const Double_t MASS_HIGH = 200;
@@ -85,36 +80,20 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 11;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
   
-  const int gainSeed = 12;
-
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
-  const TString corrFiles = "../EleScale/Run2017_LowPU_v2";//Run2017_17Nov2017_v1_ele_unc";
+  // Set up electron energy scale/smera
+  const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
+  EnergyScaleCorrection ec( corrFiles.Data(), EnergyScaleCorrection::ECALELF);
 
+  // Set up Prefiring Efficiencies
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
-  TFile *prefireFile = new TFile(prefireFileName);
-  CCorrUser2D prefirePhotonCorr, prefireJetCorr;
-  if(!is13TeV){
-    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // 5 TeV photon prefire
-    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017G")); // 5 TeV jet prefire
-  } else if(is13TeV){
-    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // 13 TeV photon prefire
-    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017H")); // 13 TeV jet prefire
-  }
+  PrefiringEfficiency pfire( prefireFileName.Data() , (is13TeV ? "2017H" : "2017G"));
   
-  
-  //data
-  // EnergyScaleCorrection_class ec( corrFiles.Data()); ec.doScale= true; ec.doSmearings =true;
-  EnergyScaleCorrection ec( corrFiles.Data(), EnergyScaleCorrection::ECALELF);// ec.doScale= true; ec.doSmearings =true;
-
   // load pileup reweighting file
   TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
-
-  TFile *f_r9 = TFile::Open("../EleScale/transformation.root","read");
 
   // for systematics we need 3
   TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
@@ -124,9 +103,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_down==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
-
-  TGraph* gR9EB = (TGraph*) f_r9->Get("transformR90");
-  TGraph* gR9EE = (TGraph*) f_r9->Get("transformR91");
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -145,7 +121,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-  const TString ntupDir = outputDir + TString("/ntuples");
+  // const TString ntupDir = outputDir + TString("/ntuples");
+  const TString ntupDir = outputDir + TString("/ntuples_") + Form("%d",ITH) + TString("_") + Form("%d",NSEC);
   gSystem->mkdir(ntupDir,kTRUE);
   
   //
@@ -166,7 +143,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
   Float_t met, metPhi, sumEt, u1, u2;
-  Float_t metDJee, metPhiDJee, sumEtDJee, u1DJee, u2DJee;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
@@ -190,9 +166,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TLorentzVector *sc1=0, *sc2=0;
   Float_t lep1error, lep2error, sc1error, sc2error; 
   Float_t random;
-  
-  vector<Double_t> lheweight(NPDF+NQCD,0);
-  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -219,12 +192,17 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     
     // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
     Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
-    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
+    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
     //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWboson);
+    Bool_t isRecoil = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0||
+                       isWboson);
     // flag to reject Z->ee events when selecting at wrong-flavor background events
     Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0); 
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
   
@@ -274,11 +252,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
-    outTree->Branch("metDJee",        &metDJee,        "metDJee/F");         // MET
-    outTree->Branch("metPhiDJee",     &metPhiDJee,     "metPhiDJee/F");      // phi(MET)
-    outTree->Branch("sumEtDJee",      &sumEtDJee,      "sumEtDJee/F");       // Sum ET
-    outTree->Branch("u1DJee",         &u1DJee,         "u1DJee/F");          // parallel component of recoil
-    outTree->Branch("u2DJee",         &u2DJee,         "u2DJee/F");          // perpendicular component of recoil
     outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
     outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
     outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
@@ -298,16 +271,16 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("q2",         &q2,         "q2/I");          // charge of probe lepton
     outTree->Branch("glepq1",         &glepq1,         "glepq1/I");          // charge of tag lepton
     outTree->Branch("glepq2",         &glepq2,         "glepq2/I");          // charge of probe lepton
-    outTree->Branch("dilep",      "TLorentzVector",  &dilep);    // di-lepton 4-vector
-    outTree->Branch("dilepSC",      "TLorentzVector",  &dilepSC);    // di-lepton 4-vector
-    outTree->Branch("lep1",       "TLorentzVector",  &lep1);     // tag lepton 4-vector
-    outTree->Branch("lep2",       "TLorentzVector",  &lep2);     // probe lepton 4-vector
+    outTree->Branch("dilep",         "TLorentzVector",  &dilep);    // di-lepton 4-vector
+    outTree->Branch("dilepSC",       "TLorentzVector",  &dilepSC);    // di-lepton 4-vector
+    outTree->Branch("lep1",          "TLorentzVector",  &lep1);     // tag lepton 4-vector
+    outTree->Branch("lep2",          "TLorentzVector",  &lep2);     // probe lepton 4-vector
     outTree->Branch("genlep1",       "TLorentzVector",  &genlep1);     // tag lepton 4-vector
     outTree->Branch("genlep2",       "TLorentzVector",  &genlep2);     // probe lepton 4-vector
-    outTree->Branch("lep1_raw",       "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
-    outTree->Branch("lep2_raw",       "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
-    outTree->Branch("lep1EcalE",       &lep1EcalE,  "lep1EcalE/d");     // probe lepton 4-vector
-    outTree->Branch("lep2EcalE",       &lep2EcalE,  "lep2EcalE/d");     // probe lepton 4-vector
+    outTree->Branch("lep1_raw",      "TLorentzVector",  &lep1_raw);     // tag lepton 4-vector
+    outTree->Branch("lep2_raw",      "TLorentzVector",  &lep2_raw);     // probe lepton 4-vector
+    outTree->Branch("lep1EcalE",     &lep1EcalE,       "lep1EcalE/d");     // probe lepton 4-vector
+    outTree->Branch("lep2EcalE",     &lep2EcalE,       "lep2EcalE/d");     // probe lepton 4-vector
     ///// electron specific /////
     outTree->Branch("trkIso1",    &trkIso1,    "trkIso1/F");     // track isolation of tag lepton
     outTree->Branch("trkIso2",    &trkIso2,    "trkIso2/F");     // track isolation of probe lepton
@@ -347,17 +320,16 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("nexphits2",  &nexphits2,  "nexphits2/i");   // number of missing expected inner hits of probe lepton
     outTree->Branch("typeBits1",  &typeBits1,  "typeBits1/i");   // electron type of tag lepton
     outTree->Branch("typeBits2",  &typeBits2,  "typeBits2/i");   // electron type of probe lepton
-    outTree->Branch("sc1",       "TLorentzVector",  &sc1);       // tag supercluster 4-vector
-    outTree->Branch("sc2",       "TLorentzVector",  &sc2);       // probe supercluster 4-vector
+    outTree->Branch("sc1",        "TLorentzVector",  &sc1);       // tag supercluster 4-vector
+    outTree->Branch("sc2",        "TLorentzVector",  &sc2);       // probe supercluster 4-vector
     outTree->Branch("r91",        &r91,        "r91/F");	 // transverse impact parameter of tag
     outTree->Branch("r92",        &r92,        "r92/F");	 // transverse impact parameter of probe	  
     outTree->Branch("lep1error",  &lep1error,  "lep1error/F");   // scale and smear correction uncertainty for tag lepton
     outTree->Branch("lep2error",  &lep2error,  "lep2error/F");   // scale and smear correction uncertainty for probe leptom
     outTree->Branch("sc1error",   &sc1error,   "sc1error/F");    // scale and smear correction uncertainty for tag supercluster
     outTree->Branch("sc2error",   &sc2error,   "sc2error/F");    // scale and smear correction uncertainty for probe supercluster
-    outTree->Branch("random",   &random,   "random/F");    // scale and smear correction uncertainty for probe supercluster
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
 
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -393,59 +365,27 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
-      Double_t totalWeight=0;
-      Double_t totalWeightUp=0;
-      Double_t totalWeightDown=0;
-      Double_t puWeight=0;
-      Double_t puWeightUp=0;
-      Double_t puWeightDown=0;
-
-      if (hasGen) {
-        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.1); ientry++) {
-        // // for(UInt_t ientry=0; ientry<1000; ientry++) {
-          infoBr->GetEntry(ientry);
-          genBr->GetEntry(ientry);
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-          totalWeight+=gen->weight*puWeight;
-          totalWeightUp+=gen->weight*puWeightUp;
-          totalWeightDown+=gen->weight*puWeightDown;
-        }
-      }
-      else if (not isData){
-        // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.01); ientry++) {
-        for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        // for(UInt_t ientry=0; ientry<1000; ientry++) {
-          puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-          totalWeight+= 1.0*puWeight;
-          totalWeightUp+= 1.0*puWeightUp;
-          totalWeightDown+= 1.0*puWeightDown;
-        }
-      }
+      Double_t puWeight=0, puWeightUp=0, puWeightDown=0;
       
       //
       // loop over events
       //
+      // cout << "n sections " << NSEC << endl;
+      double frac = 1.0/NSEC;
+      // cout << "n sections " << NSEC << "  frac " << frac << endl;
+      UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
+      UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
+      // cout << "start, end " << IBEGIN << " " << IEND << endl;
+      // UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.001);
       Double_t nsel=0, nselvar=0;
-      for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-      // for(UInt_t ientry=0; ientry<(uint)(eventTree->GetEntries()*0.1); ientry++) {
-      // for(UInt_t ientry=0; ientry<1000; ientry++) {
+      for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
         infoBr->GetEntry(ientry);
-        if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        // cout << "-----Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-        // std::cout << "-----------" << info->evtNum << std::endl;
-        Double_t weight=1;
-        Double_t weightUp=1;
-        Double_t weightDown=1;
-        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-        if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
-        if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
+        
+        int printIndex = (int)(eventTree->GetEntries()*0.01);
+        if(ientry%printIndex==0) cout << "Processing event " << ientry << ". " << (int)(100*(ientry/(double)eventTree->GetEntries())) << " percent done with this file." << endl;
+        
+        Double_t weight=xsec, weightUp=xsec, weightDown=xsec; 
+        
         if(hasGen) {
           genPartArr->Clear();
           genBr->GetEntry(ientry);
@@ -453,9 +393,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+          hGenWeights->Fill(0.0,gen->weight);
           weight*=gen->weight*puWeight;
           weightUp*=gen->weight*puWeightUp;
           weightDown*=gen->weight*puWeightDown;
+        } else {
+          hGenWeights->Fill(0.0,1.0);
         }
 	
         // veto z -> xx decays for signal and z -> ee for bacground samples (needed for inclusive DYToLL sample)
@@ -496,19 +439,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         random = tagRandom;
         for(Int_t i1=0; i1<electronArr->GetEntriesFast(); i1++) {
           const baconhep::TElectron *tag = (baconhep::TElectron*)((*electronArr)[i1]);
-         // double tagRandom = rand->Gaus(0,1);
           double tagEcalE = tag->ecalEnergy;
           double eTregress = tagEcalE/cosh(fabs(tag->eta));
           vTag.SetPtEtaPhiM(tag->pt, tag->eta, tag->phi, ELE_MASS);
           vTagSC.SetPtEtaPhiM(tag->scEt, tag->scEta, tag->scPhi, ELE_MASS);
-          // vTagSC.SetPtEtaPhiM(eTregress, tag->eta, tag->phi, ELE_MASS);
-          
-          
-          
-          // std::cout << tagRandom << std::endl;
-         // std::cout << "---------event " << info->evtNum << "------------" << std::endl; 
-         // std::cout << "tag pt " << vTag.Pt()   << "   tag eta " <<  vTag.Eta()   << std::endl; 
-         // std::cout << "sc  pt " << vTagSC.Pt() << "   sc  eta " <<  vTagSC.Eta() << std::endl; 
    
           if(fabs(vTag.Eta())>=ECAL_GAP_LOW && fabs(vTag.Eta())<=ECAL_GAP_HIGH) continue;
             
@@ -521,88 +455,48 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             float tagScale = 1.;
             float tagSCSmear = 0.;
             float tagSCScale = 1.;
-            
-
 
             float tagAbsEta   = fabs(vTag.Eta());
             float tagEt       = vTag.E() / cosh(tagAbsEta);
             bool  tagisBarrel = tagAbsEta < 1.4442;
             float tagSCAbsEta   = fabs(vTagSC.Eta());
             float tagSCEt       = vTagSC.E() / cosh(tagSCAbsEta);
-            // bool  tagisBarrel = tagAbsEta < 1.4442;
 
-              
-                // std::cout << "probe pre smear pT " << vTag.Pt() << " presmear ETA " << vTag.Eta() << std::endl;
-              
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
-      // if(tag->r9>0.94) continue;
-
-
-              // tagScale = ec.scaleCorr(info->runNum, eTregress, tagAbsEta, tag->r9);
-              // tagError = ec.scaleCorrUncert(info->runNum, eTregress, tagAbsEta, tag->r9,gainSeed,1);
-              // tagSCScale = ec.scaleCorr(info->runNum, tagSCEt, tagSCAbsEta, tag->r9);
-              // tagSCError = ec.scaleCorrUncert(info->runNum, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
+              int runNumber = is13TeV ? info->runNum : 306936 ;
+              tagScale   = ec.scaleCorr(runNumber, eTregress, tagAbsEta  , tag->r9);
+              tagSCScale = ec.scaleCorr(runNumber, tagSCEt  , tagSCAbsEta, tag->r9);
               
-              tagScale = ec.scaleCorr(306936, eTregress, tagAbsEta, tag->r9);
-              tagError = ec.scaleCorrUncert(306936, eTregress, tagAbsEta, tag->r9,gainSeed,1);
-              tagSCScale = ec.scaleCorr(306936, tagSCEt, tagSCAbsEta, tag->r9);
-              tagSCError = ec.scaleCorrUncert(306936, tagSCEt, tagSCAbsEta, tag->r9,gainSeed,1);
+              tagError   = ec.scaleCorrUncert(runNumber, eTregress, tagAbsEta  , tag->r9,12,1);
+              tagSCError = ec.scaleCorrUncert(runNumber, tagSCEt  , tagSCAbsEta, tag->r9,12,1);
               
               (vTag)*=tagScale*(1+sigma*tagError);
               (vTagSC)*=tagSCScale*(1+sigma*tagSCError);
-              // std::cout << "corr tag pt " << vTag.Pt()   << "   tag eta " <<  vTag.Eta()   << std::endl; 
-              // std::cout << "corr sc  pt " << vTagSC.Pt() << "   sc  eta " <<  vTagSC.Eta() << std::endl; 
 
             } else {//MC
-
-            float tagR9Prime = tag->r9; // no r9 post-2016
-            // double tagRandom = 1;
-
-            tagSmear = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tagR9Prime, gainSeed, 0., 0.);
-            tagSCSmear = ec.smearingSigma(info->runNum, tagSCEt, tagSCAbsEta, tagR9Prime, gainSeed, 0., 0.);
-            // std::cout << "tagSmear " << tagSmear << std::endl;
-            float tagSmearEP = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tagR9Prime, gainSeed, 1., 0.);
-            float tagSmearEM = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tagR9Prime, gainSeed, -1., 0.);	
-            float tagSCSmearEP = ec.smearingSigma(info->runNum, tagSCEt, tagSCAbsEta, tagR9Prime, gainSeed, 1., 0.);
-            float tagSCSmearEM = ec.smearingSigma(info->runNum, tagSCEt, tagSCAbsEta, tagR9Prime, gainSeed, -1., 0.);	
-
-          // std::cout << "tag smear " << tagSmear << std::endl;
-          // std::cout << "tag pre smear pT " << vTag.Pt() << " presmear ETA " << vTag.Eta() << std::endl;
-                  
-              if(sigma==0){
-                (vTag) *= (1. + tagSmear*tagRandom);
-                (vTagSC) *= 1. + tagSCSmear * tagRandom;
-              }else if(sigma==1){
-                (vTag) *= 1. + tagSmearEP * tagRandom;
-                (vTagSC) *= 1. + tagSCSmearEP * tagRandom;
-              }else if(sigma==-1){
-                (vTag) *= 1. + tagSmearEM * tagRandom;
-                (vTagSC) *= 1. + tagSCSmearEM * tagRandom;
-              }
-
+              tagSmear = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, 12, sigma, 0.);
+              tagSCSmear = ec.smearingSigma(info->runNum, tagSCEt, tagSCAbsEta, tag->r9, 12, sigma, 0.);           
+              (vTag) *= (1. + tagSmear*tagRandom);
+              (vTagSC) *= 1. + tagSCSmear * tagRandom;
+              double tagSmearEP = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, 12,  1., 0.);
+              double tagSmearEM = ec.smearingSigma(info->runNum, eTregress, tagAbsEta, tag->r9, 12, -1., 0.);
               tagError = tagRandom * std::hypot(tagSmearEP - tagSmear, tagSmearEM - tagSmear); 
-
             } 
           }
       
-          if(vTag.Pt()	         < PT_CUT)     continue;  // lepton pT cut
-          // std::cout << "Tag PT 1" << std::endl;
-          if(fabs(vTag.Eta())    > ETA_CUT)    continue;  // lepton |eta| cut
-          // std::cout << "Tag eta 1" << std::endl;
-          // if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
-          if(!passEleTightID(tag, vTag, info->rhoIso))     continue;  // lepton selection
+          // Check Kinematic Cuts & Electron ID
+          if(vTag.Pt()	         < PT_CUT)                  continue;  // lepton pT cut
+          if(fabs(vTag.Eta())    > ETA_CUT)                 continue;  // lepton |eta| cut
+          if(!passEleMediumID(tag, vTag, info->rhoIso))     continue;  // lepton selection
           
 
           double El_Pt=0;
           El_Pt = vTag.Pt();
 
-          if(El_Pt>Pt1)
-            {
+          if( El_Pt > Pt1 ) {
               Pt2=Pt1;
               Pt1=El_Pt;
-            }
-          else if(El_Pt>Pt2&&El_Pt<Pt1)
-            {
+            } else if ( El_Pt > Pt2 && El_Pt < Pt1 ) {
               Pt2=El_Pt;
             }
 
@@ -612,7 +506,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           tagPt=El_Pt;
           itag=i1;
           tagscID=tag->scID;
-          // random = tagRandom;
           lep1EcalE = tagEcalE;
           vTagfinal = vTag;
           vTagSCfinal = vTagSC;
@@ -675,32 +568,16 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             bool  probeisBarrel = probeAbsEta < 1.4442;
             
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
-              // probeScale = ec.scaleCorr(info->runNum, probeEt, probeAbsEta, scProbe->r9);
-              // probeError = ec.scaleCorrUncert(info->runNum, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
-              
-              probeScale = ec.scaleCorr(306936, probeEt, probeAbsEta, scProbe->r9);
-              probeError = ec.scaleCorrUncert(306936, probeEt, probeAbsEta, scProbe->r9,gainSeed,1);
-
+              int runNumber = is13TeV ? info->runNum : 306936 ;
+              probeScale   = ec.scaleCorr(runNumber, probeEt, probeAbsEta  , scProbe->r9);
+              probeError   = ec.scaleCorrUncert(runNumber, probeEt, probeAbsEta  , scProbe->r9,12,1);
               (vProbe) *= probeScale * (1 + sigma*probeError);
-
             } else {//MC
+              probeSmear = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, 12, sigma, 0.);
 
-              float probeR9Prime = scProbe->r9; // no r9 post 2016
-              // double probeRandom = rand->Gaus(0,1);
-              probeSmear = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, 0., 0.);
-              // this isn't right.... need to fix the smearing sigma
-              float probeSmearEP = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, 1., 0.);
-              float probeSmearEM = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, probeR9Prime, gainSeed, -1., 0.);
-              if(sigma==0){
-                (vProbe) *= (1. + probeSmear*probeRandom);
-              }else if(sigma==1){
-                (vProbe) *= 1. + probeSmearEP * probeRandom;
-              }else if(sigma==-1){
-                (vProbe) *= 1. + probeSmearEM * probeRandom;
-              }
-              
-              (vProbe) *= 1. + sigma * probeSmear * probeRandom;
-
+              (vProbe) *= (1. + probeSmear*probeRandom);
+              double probeSmearEP = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, 12,  1., 0.);
+              double probeSmearEM = ec.smearingSigma(info->runNum, probeEt, probeAbsEta, scProbe->r9, 12, -1., 0.);
               probeError = probeRandom * std::hypot(probeSmearEP - probeSmear, probeSmearEM - probeSmear);
             }
           }
@@ -718,71 +595,51 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           double El_Pt=0;
           TLorentzVector vEleProbe(0,0,0,0), vEleProbeSC(0,0,0,0);
           if(eleProbe){
-            
             double probeEcalE = eleProbe->ecalEnergy;
-            double eTregress = probeEcalE/cosh(fabs(eleProbe->eta));
+            double eTregress = eleProbe->ecalEnergy/cosh(fabs(eleProbe->eta));
             vEleProbe.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
-            // vEleProbeSC.SetPtEtaPhiM(eTregress, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
-            // vEleProbeSC.SetPtEtaPhiM(eTregress, eleProbe->eta, eleProbe->phi, ELE_MASS);
             vEleProbeSC.SetPtEtaPhiM(eleProbe->scEt, eleProbe->scEta, eleProbe->scPhi, ELE_MASS);
             if(fabs(vEleProbe.Eta())>=ECAL_GAP_LOW && fabs(vEleProbe.Eta())<=ECAL_GAP_HIGH) continue;
 
-            float eleProbeError = 0.;
-            float eleProbeSCError = 0.;
+            float eleProbeError = 0., eleProbeSCError = 0.;
+            
             if(doScaleCorr && (eleProbe->r9 < 1.)){
-              float eleProbeSmear = 0.;
-              float eleProbeScale = 1.;
-
-              float eleProbeSCSmear = 0.;
-              float eleProbeSCScale = 1.;
+              float eleProbeSmear   = 0., eleProbeScale   = 1.;
+              float eleProbeSCSmear = 0., eleProbeSCScale = 1.;
 
               float eleProbeAbsEta   = fabs(vEleProbe.Eta());
               float eleProbeEt       = vEleProbe.E() / cosh(eleProbeAbsEta);
-              bool  eleProbeisBarrel = eleProbeAbsEta < 1.4442;
 
               float eleProbeSCAbsEta   = fabs(vEleProbeSC.Eta());
               float eleProbeSCEt       = vEleProbeSC.E() / cosh(eleProbeSCAbsEta);
-              bool  eleProbeSCisBarrel = eleProbeSCAbsEta < 1.4442;
   
               if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
-                // eleProbeScale = ec.scaleCorr(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
-                // eleProbeError = ec.scaleCorrUncert(info->runNum, eleProbeEt, eleProbeAbsEta, eleProbe->r9);
-
-                // eleProbeScale = ec.scaleCorr(info->runNum, eTregress, eleProbeAbsEta, eleProbe->r9);
-                // eleProbeError = ec.scaleCorrUncert(info->runNum, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
-                // eleProbeSCScale = ec.scaleCorr(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
-                // eleProbeSCError = ec.scaleCorrUncert(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
+                int runNumber = is13TeV ? info->runNum : 306936 ;
+                eleProbeScale   = ec.scaleCorr(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9);
+                eleProbeSCScale = ec.scaleCorr(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
                 
-                eleProbeScale = ec.scaleCorr(306936, eTregress, eleProbeAbsEta, eleProbe->r9);
-                eleProbeError = ec.scaleCorrUncert(306936, eTregress, eleProbeAbsEta, eleProbe->r9, gainSeed, 1);
-                eleProbeSCScale = ec.scaleCorr(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
-                eleProbeSCError = ec.scaleCorrUncert(306936, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, gainSeed, 1);
-
-                (vEleProbe) *= eleProbeScale * (1 + sigma*eleProbeError);
+                eleProbeError   = ec.scaleCorrUncert(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9, 12, 1);
+                eleProbeSCError = ec.scaleCorrUncert(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9, 12, 1);
+                
+                (vEleProbe)   *= eleProbeScale   * (1 + sigma*eleProbeError);
                 (vEleProbeSC) *= eleProbeSCScale * (1 + sigma*eleProbeSCError);
   
               }else{//MC
 
               float eleProbeR9Prime = eleProbe->r9; // no r9 after 2016
 
-              eleProbeSmear = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
-              float eleProbeSmearEP = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
-              float eleProbeSmearEM = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+              eleProbeSmear   = ec.smearingSigma(info->runNum, eTregress   , eleProbeAbsEta  , eleProbeR9Prime, 12, sigma, 0.);
+              eleProbeSCSmear = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, sigma, 0.);
+              
+              float eleProbeSmearEP = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, 1., 0.);
+              float eleProbeSmearEM = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, -1., 0.);
 
-              eleProbeSCSmear = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 0., 0.);
-              float eleProbeSCSmearEP = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, 1., 0.);
-              float eleProbeSCSmearEM = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, gainSeed, -1., 0.);
+              float eleProbeSCSmearEP = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, 1., 0.);
+              float eleProbeSCSmearEM = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, -1., 0.);
 
-              if(sigma==0){
               (vEleProbe) *= (1.+ eleProbeSmear*eleProbeRandom);
-                (vEleProbeSC) *= 1. + eleProbeSCSmear * eleProbeSCRandom;
-              }else if(sigma==1){
-                (vEleProbe) *= 1. + eleProbeSmearEP * eleProbeRandom;
-                (vEleProbeSC) *= 1. + eleProbeSCSmearEP * eleProbeSCRandom;
-              }else if(sigma==-1){
-                (vEleProbe) *= 1. + eleProbeSmearEM * eleProbeRandom;
-                (vEleProbeSC) *= 1. + eleProbeSCSmearEM * eleProbeSCRandom;
-              }
+              (vEleProbeSC) *= 1. + eleProbeSCSmear * eleProbeSCRandom;
+
               eleProbeError = eleProbeRandom * std::hypot(eleProbeSmearEP - eleProbeSmear, eleProbeSmearEM - eleProbeSmear);
               eleProbeSCError = eleProbeSCRandom * std::hypot(eleProbeSCSmearEP - eleProbeSCSmear, eleProbeSCSmearEM - eleProbeSCSmear);
             }
@@ -798,12 +655,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           probeSCErrorfinal = probeError;
         }
         if(El_Pt < PT_CUT) continue;
-        if(passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-        if(passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)) continue;
+        if(passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+        if(passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) continue;
         if(passID&&!eleProbe) continue;
-        if(!passID&&eleProbe&&!passEleTightID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+        if(!passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
         if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-        if(!passID&&eleProbe&&passEleTightID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+        if(!passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
         probePt=El_Pt;
         vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
@@ -840,7 +697,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
         // determine event category
         if(eleProbe) {
-          if(passEleTightID(eleProbe,vEleProbe,info->rhoIso)) {
+          if(passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) {
             if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
               icat=eEleEle2HLT;
             } else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
@@ -857,85 +714,18 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
       if(icat==0) continue;
       
-      // Loop through Jets
-      // set up the met variable, default is PF met
-      metDJee      = info->pfMETC;
-      metPhiDJee   = info->pfMETCphi;
-      sumEtDJee = 0;
-      // if(category==1||category==2||category==3) cout << "Selected! " << endl;
-      if(hasJet){
-      TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
-      for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-        const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-        if(fabs(jet->eta) < 2.65 || fabs(jet->eta) > 3.139) continue;
-        if(jet->pt > 50) continue;
-        TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
-        vMetEE += vJet;
-        // if(category==1||category==2||category==3)cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
-      } 
-      metDJee      = vMetEE.Mod();
-      metPhiDJee   = vMetEE.Phi();
-      }
-      // sumEtDJee = 0;
-        
-         if(!isData){
-          // Loop through the photons to determine the Prefiring scale factor
-          prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
-          for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-            const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-            if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-            prefirePhoton *= 1. - TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 );
-          } 
-          prefirePhotUp = max(prefirePhoton+(1-prefirePhoton)*0.20,1.0);
-          prefirePhotDown = max(prefirePhoton-(1-prefirePhoton)*0.20,1.0);
-          
-        
-          prefireJet=1; prefireJetUp=1; prefireJetDown=1;
-          if(hasJet){
-            for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-              const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
-              if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-              prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
-            } 
-          }
-          prefireJetUp = max(prefireJet+(1-prefireJet)*0.20,1.0);
-          prefireJetDown = max(prefireJet-(1-prefireJet)*0.20,1.0);
-          // loop through photons and jets
-          // overlap is anything within deltaR < 0.4.
-          // take max prefire prob for any overlap cases
-          //toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi))<0.4
-          // total prefire probability = product of all (1-prob) for photons,jets, & remove the overlap
-          prefireWeight=prefireJet*prefirePhoton;
-          prefireUp=prefireJetUp*prefirePhotUp;
-          prefireDown=prefireJetDown*prefirePhotDown;
-          if(hasJet) {
-            for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-              const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-              if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-              // now loop through jets:
-              double rmP = 1;
-
-              for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-                const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-                if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-                // check if the jet and photon overlap: 
-                if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
-                // photon & jet overlap, now get min to divide out 
-                  rmP = min(TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 ), TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.));
-              }
-              // divide out the lesser of the two probabilities
-              if(rmP<1.0)prefireWeight = prefireWeight / (1 - rmP);
-            }
-          }
-          prefireUp = min(prefireWeight+(1-prefireWeight)*0.20,1.0);
-          prefireDown = min(prefireWeight-(1-prefireWeight)*0.20,1.0);
-        }
       
+      // do the prefiring weights
+      if(!isData){
+        pfire.setObjects(scArr,jetArr);
+        pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
+        pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
+        pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
+      }
 
       //******** We have a Z candidate! HURRAY! ********
       nsel+=weight;
       nselvar+=weight*weight;
-      
 
       // Perform matching of dileptons to GEN leptons from Z decay
       TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
@@ -967,32 +757,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         delete glep2;
         glep1=0; glep2=0; gvec=0;
         
-        if(match1 && match2) {
-          hasGenMatch = kTRUE;
-        }
+        if(match1 && match2) hasGenMatch = kTRUE;
       }
+      
       if (hasGen) {
-        
-        
-        if(isRecoil&&!isSignal&&!isWrongFlavor){
-          lheweight[0]=gen->lheweight[0];
-          lheweight[1]=gen->lheweight[1];
-          lheweight[2]=gen->lheweight[2];
-          lheweight[3]=gen->lheweight[3];
-          lheweight[4]=gen->lheweight[5];
-          lheweight[5]=gen->lheweight[7];
-          for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-        }else{
-          lheweight[0]=gen->lheweight[1];
-          lheweight[1]=gen->lheweight[2];
-          lheweight[2]=gen->lheweight[3];
-          lheweight[3]=gen->lheweight[4];
-          lheweight[4]=gen->lheweight[6];
-          lheweight[5]=gen->lheweight[8];
-          for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        }
-
-        
         id_1      = gen->id_1;
         id_2      = gen->id_2;
         x_1       = gen->x_1;
@@ -1001,8 +769,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         xPDF_2    = gen->xPDF_2;
         scalePDF  = gen->scalePDF;
         weightPDF = gen->weight;
-      }
-      else {
+      } else {
         id_1      = -999;
         id_2      = -999;
         x_1       = -999;
@@ -1011,7 +778,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         xPDF_2    = -999;
         scalePDF  = -999;
         weightPDF = -999;
-        }
+      }
       //
       // Fill tree
       //
@@ -1021,8 +788,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
       if (hasGenMatch) matchGen=1;
       else matchGen=0;
-
-
 
 
       category = icat;
@@ -1065,11 +830,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
       u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
       
-      TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
-      TVector2 vUDJ = -1.0*(vMetDJ+vZPt);
-      u1DJee = ((vDilep.Px())*(vUDJ.Px()) + (vDilep.Py())*(vUDJ.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-      u2DJee = ((vDilep.Px())*(vUDJ.Py()) - (vDilep.Py())*(vUDJ.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
-      
       TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
       TVector2 vTkU = -1.0*(vTkMet+vZPt);
       tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
@@ -1085,10 +845,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
       puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
       outTree->Fill();
+      
+      ////   -------         RESET EVERYTHING     -------------
       delete genV;
       delete genlep1;
       delete genlep2;
       genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0, lep1_raw=0, lep2_raw=0, genlep1=0, genlep2=0;
+      prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+      prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
+      prefireWeight=1; prefireUp    =1; prefireDown    =1;
       }
       delete infile;
       infile=0, eventTree=0;    
@@ -1097,6 +862,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       if(!isData) cout << " per 1/fb";
       cout << endl;
     }
+    outFile->cd();
+    hGenWeights->Write();
     outFile->Write();
     outFile->Close(); 
   }

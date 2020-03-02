@@ -68,10 +68,26 @@ void fitZmm(const TString  inputDir,    // input directory
 
   fnamev.push_back(inputDir + TString("/") + TString("data_select.root"));      typev.push_back(eData);
   fnamev.push_back(inputDir + TString("/") + TString("zmm_select.raw.root"));   typev.push_back(eZmm);
-  fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));   typev.push_back(eTop);
-  fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));    typev.push_back(eWx);
+  
+  // // 5 TeV background samples
+  // fnamev.push_back(inputDir + TString("/") + TString("top_select.raw.root"));   typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx_select.raw.root"));    typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));   typev.push_back(eZxx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));   typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));   typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));   typev.push_back(eDib);
+  
+  // // 13 TeV background samples
+  fnamev.push_back(inputDir + TString("/") + TString("top1_select.raw.root"));   typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top2_select.raw.root"));   typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top3_select.raw.root"));   typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.raw.root"));    typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.raw.root"));    typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.raw.root"));    typev.push_back(eWx);
   fnamev.push_back(inputDir + TString("/") + TString("zxx_select.raw.root"));   typev.push_back(eZxx);
-  fnamev.push_back(inputDir + TString("/") + TString("dib_select.raw.root"));   typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("ww_select.raw.root"));   typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("wz_select.raw.root"));   typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("zz_select.raw.root"));   typev.push_back(eDib);
 
   //
   // Fit options
@@ -137,7 +153,7 @@ void fitZmm(const TString  inputDir,    // input directory
   CPlot::sOutDir = outputDir;  
   
   enum{mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown};
-  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effsUp","effsDown","lepsfUp","lepsfDown","pfireUp","pfireDown"};
+  const string vWeight[]={"mcUp","mcDown","fsrUp","fsrDown","bkgUp","bkgDown","tagptUp","tagptDown","effsUp","effsDown","lepsfUp","lepsfDown","prefireUp","prefireDown"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
   TH1D *hData = new TH1D("hData","",NBINS,MASS_LOW,MASS_HIGH); hData->Sumw2();
@@ -295,6 +311,11 @@ void fitZmm(const TString  inputDir,    // input directory
     intree->SetBranchAddress("genMuonPt1",       &genMuonPt1);        // probe lepton 4-vector
     intree->SetBranchAddress("genMuonPt2",       &genMuonPt2);        // probe lepton 4-vector
     
+    TH1D* hGenWeights; double totalNorm = 1.0;
+    if(typev[ifile] != eData ){
+      hGenWeights = (TH1D*)infile->Get("hGenWeights");
+      totalNorm = hGenWeights->Integral();
+    }
     //
     // loop over events
     //
@@ -311,6 +332,12 @@ void fitZmm(const TString  inputDir,    // input directory
       if(lep2->Pt() < PT_CUT) continue;
       if(q1*q2>0) continue;
      
+     
+      if(isnan(prefireUp) || isnan(prefireDown)){
+        prefireUp   = prefireWeight;
+        prefireDown = prefireWeight;
+      }
+     
       // cout << "pass kinematics " << endl;
       float mass = 0;
       float pt = 0;
@@ -321,7 +348,7 @@ void fitZmm(const TString  inputDir,    // input directory
      
       Double_t weight=1;      
       if(typev[ifile]!=eData) {
-        weight *= scale1fb*prefireWeight*lumi;
+        weight *= scale1fb*prefireWeight*lumi/totalNorm;
       } 
       
       // fill Z events passing selection
@@ -469,16 +496,16 @@ void fitZmm(const TString  inputDir,    // input directory
     if(mu1.Pt()        < PT_CUT)    continue;
     if(mu2.Pt()        < PT_CUT)    continue;
 
-	  if(typev[ifile]==eZmm) {//mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown
+	  if(typev[ifile]==eZmm) {
+        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
+        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) continue;//mcUp,mcDown,fsrUp,fsrDown,bkgUp,bkgDown,tagptUp,tagptDown,effsUp,effsDown,lepsfUp,lepsfDown,pfireUp,pfireDown
 	      yield_zmm += weight*corr;
 	      yield_zmm_unc += weight*weight*corr*corr;
         yield_zmm_up += weight*corrUp;
         yield_zmm_dn += weight*corrDown;
-        yield_zmm_noPrefire += scale1fb*lumi*corr;
-        yield_zmm_pfPhoton += scale1fb*lumi*corr*prefirePhoton;
-        yield_zmm_pfJet += scale1fb*lumi*corr*prefireJet;
-        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
-        
+        yield_zmm_noPrefire += scale1fb*lumi*corr/totalNorm;
+        yield_zmm_pfPhoton += scale1fb*lumi*corr*prefirePhoton/totalNorm;
+        yield_zmm_pfJet += scale1fb*lumi*corr*prefireJet/totalNorm;
         hZmmUnc[mcUp]->Fill(mass,weight*corrMC);
         hZmmUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
         hZmmUnc[fsrUp]->Fill(mass,weight*corrFSR);
@@ -493,8 +520,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hZmmUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hZmmUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hZmmUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZmmUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZmmUnc[pfireUp]->Fill(mass,prefireUp*scale1fb*lumi*corr/totalNorm);
+        hZmmUnc[pfireDown]->Fill(mass,prefireDown*scale1fb*lumi*corr/totalNorm);
         
 	      hZmm->Fill(mass,weight*corr); 
 	      hMC->Fill(mass,weight*corr);
@@ -524,8 +551,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hZxxUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hZxxUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hZxxUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb/totalNorm);
+        hZxxUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb/totalNorm);
     } if(typev[ifile]==eWx){
         // cout << "wx? " << nWx << endl;
         nWx+=weight*corr;
@@ -547,8 +574,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hWxUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hWxUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hWxUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb/totalNorm);
+        hWxUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb/totalNorm);
       
     } if(typev[ifile]==eDib){
         // cout << "blah " << endl;
@@ -573,8 +600,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hDibUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hDibUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hDibUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb/totalNorm);
+        hDibUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb/totalNorm);
         // cout << "blah " << endl;
     } if(typev[ifile]==eEWK || typev[ifile]==eDib || typev[ifile]==eWx|| typev[ifile]==eZxx) {
 	      yield_ewk += weight*corr;
@@ -622,8 +649,8 @@ void fitZmm(const TString  inputDir,    // input directory
         hTtbUnc[lepsfUp]->Fill((mu1u+mu2u).M(),weight*corr);
         hTtbUnc[lepsfDown]->Fill((mu1d+mu2d).M(),weight*corr);
         
-        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr);
-        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr);
+        hTtbUnc[pfireUp]->Fill(mass,prefireUp*corr*lumi*scale1fb/totalNorm);
+        hTtbUnc[pfireDown]->Fill(mass,prefireDown*corr*lumi*scale1fb/totalNorm);
       
         
 
@@ -794,8 +821,8 @@ void fitZmm(const TString  inputDir,    // input directory
   
   // label for lumi
   char lumitext[100];
-  sprintf(lumitext,"%.1f fb^{-1}  (13 TeV)",lumi/1000);  
-  // sprintf(lumitext,"%.1f fb^{-1}  (5 TeV)",lumi/1000);  
+  if(sqrts=="13TeV")sprintf(lumitext,"%.1f pb^{-1}  (13 TeV)",lumi);  
+  else sprintf(lumitext,"%.1f pb^{-1}  (5 TeV)",lumi);
   
   char normtext[100];
   sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
