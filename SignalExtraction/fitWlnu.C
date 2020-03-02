@@ -137,8 +137,8 @@ const Int_t    NBINS   = 50;
 // const Double_t METMIN  = 50;
 // const Double_t METMIN  = 0;
 // const Double_t METMAX  = 100;
-const Double_t METMIN  = 50;
-const Double_t METMAX  = 150;
+const Double_t METMIN  = 40;
+const Double_t METMAX  = 140;
 const Int_t    nPDF = 100;
 const Int_t    nQCD = 6;
 
@@ -183,16 +183,9 @@ double isoTrkCut=9999;
     std::vector<string> vLHE;
   for(int i = 0; i < nLHE; i++){vLHE.push_back(vaLHE[i]);}
   
-  // Control the types of uncertainties
-  // enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  // systematics
-  // enum{no,keys,eta,cent,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  // enum{no,eta,cent,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
-  // enum{no,ru,eta,keys,cent,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
   // main set
   enum{no,cent,eta,keys,ru,rd,stat0,stat1,stat2,stat3,stat4,stat5,stat6,stat7,stat8,stat9};
   const string vaMET[]={"no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"};
-  // const vector<string> vMET{ "no","main","eta","keys","ru","rd","stat0","stat1","stat2","stat3","stat4","stat5","stat6","stat7","stat8","stat9"}; 
   int nMET = sizeof(vaMET)/sizeof(vaMET[0]);
   std::vector<string> vMET;
   for(int i = 0; i < nMET; i++){vMET.push_back(vaMET[i]);}
@@ -201,16 +194,9 @@ double isoTrkCut=9999;
   
   enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
   const string vaWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
-  // enum{main,mc,fsr,bkg,tagpt,statu,statd,pfireu,pfired};
-  // const string vaWeight[]={"main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"};
-  // const vector<string> v{ "main","mc","fsr","bkg","tagpt","statu","statd","pfireu","pfired"}; 
   int nWeight = sizeof(vaWeight)/sizeof(vaWeight[0]);
   std::vector<string> vWeight;
   for(int i = 0; i < nWeight; i++){vWeight.push_back(vaWeight[i]);}
-  
-  // enum{main,mc,fsr,bkg,tagpt,effstat,pfireu,pfired};
-  // const string vWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
-  // int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
   
   std::cout << "size of weight array is " << nWeight << std::endl;
   std::cout << "size of met array is " << nMET << std::endl;
@@ -277,8 +263,6 @@ double isoTrkCut=9999;
   // // // // 13 TEV Muon Channel
   if(flav.CompareTo("Wmunu") == 0 && lumi < 250){
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/data_select.root"));    typev.push_back(eData);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wmp_powheg_select.raw.root"));  typev.push_back(eWlnu);
-   // fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wmm_powheg_select.raw.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm0_select.raw.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm1_select.raw.root"));  typev.push_back(eWlnu);
    fnamev.push_back(ntupleDir+TString("/")+flav+TString("/ntuples/wm2_select.raw.root"));  typev.push_back(eWlnu);
@@ -301,8 +285,6 @@ double isoTrkCut=9999;
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/ww_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wz_select.root")); typev.push_back(eAntiDib);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/zz_select.root")); typev.push_back(eAntiDib);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wmp_powheg_select.root")); typev.push_back(eAntiWlnu);
-   // fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wmm_powheg_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm0_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm1_select.root")); typev.push_back(eAntiWlnu);
    fnamev.push_back(ntupleDir+TString("/Anti")+flav+TString("/ntuples/wm2_select.root")); typev.push_back(eAntiWlnu);
@@ -911,20 +893,19 @@ double isoTrkCut=9999;
       // cout << totalNorm << endl;
     }
   
-    UInt_t iterator=100;
+    UInt_t iterator=10;
     //
     // loop over events
     //
-    double frac=0.1;
-    if(typev[ifile]==eAntiData || typev[ifile]==eAntiWlnu ||typev[ifile]==eAntiWx|| typev[ifile]==eAntiZxx || typev[ifile]==eAntiDib || typev[ifile]==eAntiTtb) {
-      // frac = 1.0;
-      frac = 0.2;
-    }
+    // double frac=0.1;
+    // if(typev[ifile]==eAntiData || typev[ifile]==eAntiWlnu ||typev[ifile]==eAntiWx|| typev[ifile]==eAntiZxx || typev[ifile]==eAntiDib || typev[ifile]==eAntiTtb) {
+      // // frac = 1.0;
+      // frac = 0.2;
+    // }
     // if(typev[ifile]==eTtb) frac=1;
     std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
-    // for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(int)(intree->GetEntries()*frac); ientry++) {
-    for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
+    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) {
+    // for(UInt_t ientry=0; ientry<((UInt_t)intree->GetEntries()); ientry+=iterator) {
       intree->GetEntry(ientry);
       if(ientry%1000000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
@@ -938,7 +919,10 @@ double isoTrkCut=9999;
       Double_t corrTag=1;
       vector<double> wgtLum;
 
-      for(int jt=0; jt < nWeight; jt++) wgtLum.push_back(lumi*((*evtWeight)[jt])/totalNorm);
+      // accidentally set up prefire uncertainties in a way that a very rare event gets nan for the up/down variation
+      for(int jt=0; jt < nWeight; jt++) {
+        wgtLum.push_back(lumi*(isnan((*evtWeight)[jt]) ? (*evtWeight)[main] : (*evtWeight)[jt])/totalNorm);
+      }
       
       if(overwriteMET && typev[ifile] != eData && typev[ifile] != eAntiData){
         makeUncMT(*metVars, *metVarsPhi, lep);
@@ -998,15 +982,6 @@ double isoTrkCut=9999;
         int bin=0;
         if(typev[ifile]==eWlnu){
           // start filling the counters
-          if(prefireWeight > 1 &&prefireWeight <= 2 ){
-            prefireWeight/=2;
-          }
-          if(prefireJet > 1 &&prefireJet <= 2 ){
-            prefireJet/=2;
-          }
-          if(prefirePhoton > 1 &&prefirePhoton <= 2 ){
-            prefirePhoton/=2;
-          }
           if(q > 0){
             noPrefire_Wp+=wgtLum[main]/prefireWeight;
             prefire_Wp+=wgtLum[main];
@@ -1189,6 +1164,38 @@ double isoTrkCut=9999;
       }
     }
   }
+  
+  
+  // Print the yields in each of the isolation bins
+  ofstream txtIso;
+  char txtnameIso[100];
+  std::cout << "Printing Yields by Isolation Bin: " << std::endl;
+  sprintf(txtnameIso,"%s/isoBins_Yields.txt",CPlot::sOutDir.Data());
+  txtIso.open(txtnameIso);
+  assert(txtIso.is_open());
+	txtIso << "W+ " << std::endl << "data" << std::endl;
+	for(int i = 0; i < nIsoBins; ++i){
+		txtIso << "bin " << i << "  Data# "  << hDataMetp2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  Wsig# "  << hWlnuMetp2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  ewk # "  << hEWKMetp2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "   wx # "  << hWxMetp2d[i]->Integral()   << std::endl;
+		txtIso << "bin " << i << "  zxx # "  << hZxxMetp2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  ttb # "  << hTtbMetp2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  dib # "  << hDibMetp2d[i]->Integral()  << std::endl;
+	}
+	
+	txtIso << "W- " << std::endl << "data" << std::endl;
+	for(int i = 0; i < nIsoBins; ++i){
+		txtIso << "bin " << i << "  Data# "  << hDataMetm2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  Wsig# "  << hWlnuMetm2d[i]->Integral() << std::endl;
+		txtIso << "bin " << i << "  ewk # "  << hEWKMetm2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "   wx # "  << hWxMetm2d[i]->Integral()   << std::endl;
+		txtIso << "bin " << i << "  zxx # "  << hZxxMetm2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  ttb # "  << hTtbMetm2d[i]->Integral()  << std::endl;
+		txtIso << "bin " << i << "  dib # "  << hDibMetm2d[i]->Integral()  << std::endl;
+	}
+	txtIso.close();
+  
   
   char sname[50];
   for(int it = 0; it < nIsoBins; it++){
@@ -1386,36 +1393,6 @@ double isoTrkCut=9999;
     hDataMetmPhi->Draw("same");
 	  c2->Update();c2->SaveAs(plotname);
     
-  
-  ofstream txtfile3;
-  char txtfname3[100];
-  std::cout << "Printing We+. " << std::endl;
-  sprintf(txtfname3,"%s/isoBins_Yields.txt",CPlot::sOutDir.Data());
-  txtfile3.open(txtfname3);
-  assert(txtfile3.is_open());
-	txtfile3 << "W+ " << std::endl << "data" << std::endl;
-	for(int i = 0; i < nIsoBins; ++i){
-		txtfile3 << "bin " << i << "  Data# " << hDataMetp2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  Wsig# " << hWlnuMetp2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  ewk# "  << hEWKMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "   wx# "  << hWxMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  zxx# "  << hZxxMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  ttb# "  << hTtbMetp2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  dib# "  << hDibMetp2d[i]->Integral()  << std::endl;
-	}
-	
-	txtfile3 << "W- " << std::endl << "data" << std::endl;
-	for(int i = 0; i < nIsoBins; ++i){
-		txtfile3 << "bin " << i << "  Data# " << hDataMetm2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  Wsig# " << hWlnuMetm2d[i]->Integral() << std::endl;
-		txtfile3 << "bin " << i << "  ewk# "  << hEWKMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "   wx# "  << hWxMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  zxx# "  << hZxxMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  ttb# "  << hTtbMetm2d[i]->Integral()  << std::endl;
-		txtfile3 << "bin " << i << "  dib# "  << hDibMetm2d[i]->Integral()  << std::endl;
-	}
-
-	txtfile3.close();
   
   
   std::cout << " ==== nEvents === " << std::endl;
@@ -1673,7 +1650,7 @@ double isoTrkCut=9999;
   vector<RooHistPdf*> pdfZxxpEtaD_(nIsoBins), pdfZxxpKeysD_(nIsoBins), pdfZxxpStatD_(nIsoBins);
   vector<RooHistPdf*> pdfZxxmEtaD_(nIsoBins), pdfZxxmKeysD_(nIsoBins), pdfZxxmStatD_(nIsoBins);
   
-  std::cout << "blah here" << std::endl;
+  // std::cout << "blah here" << std::endl;
   
   TH1D *hIsoBinQCDp = (TH1D*) hDataMetp2d[2]->Clone("hQCDMetpBin");
   TH1D *hIsoBinQCDm = (TH1D*) hDataMetm2d[2]->Clone("hQCDMetmBin");
@@ -2507,12 +2484,6 @@ double isoTrkCut=9999;
     hMetmDiff->SetMarkerStyle(kFullCircle); hMetmDiff->SetMarkerSize(0.9);
     std::cout << "did diff " <<  i << std::endl;
 
-    // sprintf(nname,"isop%d",i); sprintf(plotname, "wep_fitmetp_bin%i",i);
-    // drawWMetPlots(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfEWKp_[i], doTemplate?(RooAbsPdf*)pdfQCDp_[i]:(RooAbsPdf*)qcdp_[i]->model, pdfWep_[i], lumitext, hDataMetp2d[i]);
-    
-    // sprintf(nname,"isom%d",i); sprintf(plotname, "wem_fitmetm_bin%i",i);
-    // drawWMetPlots(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfEWKm_[i], doTemplate?(RooAbsPdf*)pdfQCDm_[i]:(RooAbsPdf*)qcdm_[i]->model, pdfWem_[i], lumitext, hDataMetm2d[i]);
-    
     sprintf(nname,"isop%d",i); sprintf(plotname, "wep_fitmetp_bin%i",i);
     drawWMetPlotsSplit(plotname, hMetpDiff, pfmet, dataMetp_[nname], pdfMetp_[i], pdfWxp_[i],pdfZxxp_[i],pdfDibp_[i],pdfTtbp_[i], (RooAbsPdf*)pdfQCDp_[i], pdfWep_[i], lumitext, hDataMetp2d[i]);
     
@@ -2520,23 +2491,6 @@ double isoTrkCut=9999;
     drawWMetPlotsSplit(plotname, hMetmDiff, pfmet, dataMetm_[nname], pdfMetm_[i], pdfWxm_[i],pdfZxxm_[i],pdfDibm_[i],pdfTtbm_[i], (RooAbsPdf*)pdfQCDm_[i], pdfWem_[i], lumitext, hDataMetm2d[i]);
 
 
-    // chi2probp = hDataMetp2d[i]->Chi2Test(hPdfMetp,"PUW");
-    // chi2ndfp  = hDataMetp2d[i]->Chi2Test(hPdfMetp,"CHI2/NDFUW");
-    // ksprobp   = hDataMetp2d[i]->KolmogorovTest(hPdfMetp);
-    // ksprobpep = hDataMetp2d[i]->KolmogorovTest(hPdfMetp,"DX"); 
-   
-	
-    // chi2probm = hDataMetm2d[i]->Chi2Test(hPdfMetm,"PUW");
-    // chi2ndfm  = hDataMetm2d[i]->Chi2Test(hPdfMetm,"CHI2/NDFUW");
-    // ksprobm   = hDataMetm2d[i]->KolmogorovTest(hPdfMetm);
-    // ksprobpem = hDataMetm2d[i]->KolmogorovTest(hPdfMetm,"DX"); 
-	
-    // txtfile4 << "bin+ : " << i << " ; chi2 : " << chi2ndfp << endl;
-	  // txtfile4 << "bin- : " << i << " ; chi2 : " << chi2ndfm << endl;
-	
-  
-   // std::cout << "blah " << i << std::endl;
-  
   }
   
   // txtfile4.close();
@@ -2554,31 +2508,20 @@ double isoTrkCut=9999;
   // txtfile << " *** Yields *** " << endl;
   txtfile << "Data+: " << hDataMetp2d[0]->Integral() << endl;
   txtfile << "Data-: " << hDataMetm2d[0]->Integral() << endl;
-  // txtfile << "  Signal: " << nSigp.getVal() << " +/- " << nSigp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "     QCD: " << nQCDp.getVal() << " +/- " << nQCDp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "   Other: " << nEWKp.getVal() << " +/- " << nEWKp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "AntiSelected: " << hAntiDataMetp->Integral() << endl;
-  // txtfile << "  AntiSignal: " << nAntiSigp.getVal() << " +/- " << nAntiSigp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "     AntiQCD: " << nAntiQCDp.getVal() << " +/- " << nAntiQCDp.getPropagatedError(*fitResp) << endl;
-  // txtfile << "   AntiOther: " << nAntiEWKp.getVal() << " +/- " << nAntiEWKp.getPropagatedError(*fitResp) << endl;
-  // txtfile << endl;  
-  // txtfile.flags(flags);
-  
-   
   
   
   fitResp2dCatTest->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose); 
   txtfile << endl;
-  printCorrelations(txtfile, fitResp2dCatTest);
+  // printCorrelations(txtfile, fitResp2dCatTest);
   txtfile << endl;
-  printChi2AndKSResults(txtfile, chi2probp, chi2ndfp, ksprobp, ksprobpep);
+  // printChi2AndKSResults(txtfile, chi2probp, chi2ndfp, ksprobp, ksprobpep);
   txtfile<< endl;
   
   fitResm2dCatTest->printStream(txtfile,RooPrintable::kValue,RooPrintable::kVerbose);
   txtfile << endl;
-  printCorrelations(txtfile, fitResm2dCatTest);
+  // printCorrelations(txtfile, fitResm2dCatTest);
   txtfile << endl;
-  printChi2AndKSResults(txtfile, chi2probm, chi2ndfm, ksprobm, ksprobpem);
+  // // printChi2AndKSResults(txtfile, chi2probm, chi2ndfm, ksprobm, ksprobpem);
   txtfile <<endl;
   
   txtfile.close();
@@ -2753,9 +2696,9 @@ void drawShapes(TH1D** vars, TH1D* hMain, TString outdir, TString name, vector<s
   hMain->SetLineWidth(5);
   hMain->Draw("L");
   // loop through the 6 for QCD
-  std::cout << "here" << std::endl;
+  // std::cout << "here" << std::endl;
   for(int k=1; k < max; k++){
-    std::cout << vars[k]->Integral() << std::endl;
+    // std::cout << vars[k]->Integral() << std::endl;
     vars[k]->SetMarkerColor(k+1);
     vars[k]->SetLineColor(k+1);
     vars[k]->SetMarkerSize(0);
@@ -3021,13 +2964,8 @@ void drawWMetPlotsSplit(string plotname, TH1D *diff, RooRealVar &x, RooDataHist*
 }
 
 void makeUncMT(vector<Double_t> &metVars, vector<Double_t> &metVarsPhi, TLorentzVector* lep){
-  // cout << "start " << endl;
   for(int i = 0; i < metVars.size(); ++i){
-    // cout << "hello" << endl;
     double mtCorr  = sqrt(2.0*(lep->Pt()) * (metVars[i]) * (1.0-cos(toolbox::deltaPhi(lep->Phi(),metVarsPhi[i]))));
-    // cout << "lep " << lep->Pt() << " " << lep->Phi() << endl;
-    // cout << "met " << metVars[i] << " " << metVarsPhi[i] << endl;
-    // cout << "mtCorr = " << mtCorr << endl;
     metVars[i] = mtCorr;
   }
   return;
