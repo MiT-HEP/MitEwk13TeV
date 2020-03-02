@@ -54,15 +54,14 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectAntiWe(const TString conf="we.conf", // input file
-                const TString outputDir=".",   // output directory
-                const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
-                const Int_t   sigma=0,
-                const Bool_t  doPU=0,
-                const Bool_t is13TeV=1,
-                const Int_t NSEC = 1,
-                const Int_t ITH = 0
-) {
+void selectAntiWe(const TString conf       ="we.conf", // input file
+                  const TString outputDir  =".",   // output directory
+                  const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+                  const Int_t   sigma      =0,
+                  const Bool_t  doPU       =0,
+                  const Bool_t  is13TeV    =1,
+                  const Int_t   NSEC       =1,
+                  const Int_t   ITH        =0 ) {
   gBenchmark->Start("selectAntiWe");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -88,9 +87,6 @@ void selectAntiWe(const TString conf="we.conf", // input file
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
   
-  // const int gainSeed = 12;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
   // load trigger menu
   const baconhep::TTrigger triggerMenu("/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/BaconAna/DataFormats/data/HLT_50nsGRun");
 
@@ -158,8 +154,6 @@ void selectAntiWe(const TString conf="we.conf", // input file
   Float_t d0, dz;
   UInt_t  isConv, nexphits, typeBits;
   TLorentzVector *sc=0;
-  vector<Double_t> lheweight;
-  for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -295,7 +289,6 @@ void selectAntiWe(const TString conf="we.conf", // input file
     outTree->Branch("nexphits",   &nexphits,   "nexphits/i");    // number of missing expected inner hits of electron
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");    // electron type of electron
     outTree->Branch("sc",         "TLorentzVector", &sc);         // supercluster 4-vector
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
@@ -430,24 +423,20 @@ void selectAntiWe(const TString conf="we.conf", // input file
           // check ECAL gap
           //if(fabs(ele->scEta)>=ECAL_GAP_LOW && fabs(ele->scEta)<=ECAL_GAP_HIGH) continue;
           if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;
-          // double eleEcalE = ;
-          double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
           
           if(doScaleCorr && (ele->r9 < 1.)){
-            float eleSmear = 0.;
-            float eleScale = 1.;
-            float eleError = 0;
             float eleAbsEta   = fabs(vEle.Eta());
+            double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
 
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
               int runNumber = is13TeV ? info->runNum : 306936;
-              eleScale = eleCorr.scaleCorr      (runNumber, eTregress, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
+              float eleScale = eleCorr.scaleCorr      (runNumber, eTregress, eleAbsEta, ele->r9);
+              float eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
               (vEle) *= eleScale * (1 + sigma*eleError);
               lepError = eleError;
             } else {//MC
               double eleRamdom = gRandom->Gaus(0,1);
-              eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, sigma, 0.);
+              float eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, sigma, 0.);
 
               (vEle) *= 1. + eleSmear * eleRamdom;
               float eleSmearEP = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, 1., 0.);
@@ -528,31 +517,6 @@ void selectAntiWe(const TString conf="we.conf", // input file
 	  xPDF_2    = -999;
 	  scalePDF  = -999;
 	  weightPDF = -999;
-
-    if(hasGen){
-      if(isRecoil&&!isSignal&&!isWrongFlavor){
-        // std::cout <<"Filling the Zxx lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[0];
-        lheweight[1]=gen->lheweight[1];
-        lheweight[2]=gen->lheweight[2];
-        lheweight[3]=gen->lheweight[3];
-        lheweight[4]=gen->lheweight[5];
-        lheweight[5]=gen->lheweight[7];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-      }else{
-        // std::cout << "filling the lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[1];
-        lheweight[1]=gen->lheweight[2];
-        lheweight[2]=gen->lheweight[3];
-        lheweight[3]=gen->lheweight[4];
-        lheweight[4]=gen->lheweight[6];
-        lheweight[5]=gen->lheweight[8];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-      }
-    }
 
 	  if(isRecoil && hasGen) {
         Int_t glepq1=-99;

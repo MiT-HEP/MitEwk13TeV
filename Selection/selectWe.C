@@ -54,15 +54,14 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectWe(const TString conf="we.conf", // input file
-                const TString outputDir=".",  // output directory
-                const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
-                const Int_t   sigma=0,
-                const Bool_t  doPU=0,
-                const Bool_t is13TeV=1,
-                const Int_t NSEC = 1,
-                const Int_t ITH = 0
-) {
+void selectWe(const TString  conf        ="we.conf", // input file
+              const TString  outputDir   =".",  // output directory
+              const Bool_t   doScaleCorr =0,   // apply energy scale corrections?
+              const Int_t    sigma       =0,
+              const Bool_t   doPU        =0,
+              const Bool_t   is13TeV     =1,
+              const Int_t    NSEC        =1,
+              const Int_t    ITH         =0 ) {
   gBenchmark->Start("selectWe");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -82,20 +81,9 @@ void selectWe(const TString conf="we.conf", // input file
   const Double_t ECAL_GAP_LOW  = 10.;
   const Double_t ECAL_GAP_HIGH = 10.;
 
-  // const Double_t escaleNbins  = 2;
-  // const Double_t escaleEta[]  = { 1.4442, 2.5   };
-  // const Double_t escaleCorr[] = { 0.992,  1.009 };
-
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 11;
   
-  
-  // const Int_t NPDF = 100;
-  // const Int_t NQCD = 6;
-
-  // const int gainSeed = 12;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
   // load trigger menu
   const baconhep::TTrigger triggerMenu("/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/BaconAna/DataFormats/data/HLT_50nsGRun");
 
@@ -154,8 +142,6 @@ void selectWe(const TString conf="we.conf", // input file
   TLorentzVector *lep=0, *lep_raw=0;
   Float_t lepError=0;
   
-  // vector<Double_t> lheweight;
-  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   Int_t lepID;
   ///// electron specific /////
   Float_t trkIso, emIso, hadIso;
@@ -170,8 +156,6 @@ void selectWe(const TString conf="we.conf", // input file
   // Bool_t passVeto=kTRUE;
 
 
-  vector<Double_t> lheweight(NPDF+NQCD,0);
-  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen = new baconhep::TGenEventInfo();
@@ -307,9 +291,6 @@ void selectWe(const TString conf="we.conf", // input file
     outTree->Branch("nexphits",   &nexphits,   "nexphits/i");    // number of missing expected inner hits of electron
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");    // electron type of electron
     outTree->Branch("sc",        "TLorentzVector", &sc);         // supercluster 4-vector
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
-    // outTree->Branch("passHLT", &passHLT, "passHLT/b");
-    // outTree->Branch("passVeto", &passVeto, "passVeto/B");
 
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     
@@ -446,26 +427,20 @@ void selectWe(const TString conf="we.conf", // input file
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
           vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
-          
-          double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
           // check ECAL gap
           if(fabs(vEle.Eta())>=ECAL_GAP_LOW && fabs(vEle.Eta())<=ECAL_GAP_HIGH) continue;
 
           if(doScaleCorr && (ele->r9 < 1.)){
-            float eleSmear = 0.;
-            float eleScale = 1.;
-            float eleError = 0;
-            
             float eleAbsEta   = fabs(vEle.Eta());
-
+            double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
               int runNumber = is13TeV ? info->runNum : 306936 ;
-              eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
-              eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
+              float eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
+              float eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
               (vEle) *= eleScale * (1 + sigma*eleError);
               lepError = eleError;
             } else {//MC
-              eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, sigma, 0.);
+              float eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, sigma, 0.);
               (vEle) *= 1. + eleSmear * eleRamdom;
               
               float eleSmearEP = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, eleR9Prime, 12, 1., 0.);
@@ -547,31 +522,6 @@ void selectWe(const TString conf="we.conf", // input file
 	  xPDF_2    = -999;
 	  scalePDF  = -999;
 	  weightPDF = -999;
-    
-    if(hasGen){
-      if(isRecoil&&!isSignal&&!isWrongFlavor){
-        // std::cout <<"Filling the Zxx lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[0];
-        lheweight[1]=gen->lheweight[1];
-        lheweight[2]=gen->lheweight[2];
-        lheweight[3]=gen->lheweight[3];
-        lheweight[4]=gen->lheweight[5];
-        lheweight[5]=gen->lheweight[7];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-      }else{
-        // std::cout << "filling the lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[1];
-        lheweight[1]=gen->lheweight[2];
-        lheweight[2]=gen->lheweight[3];
-        lheweight[3]=gen->lheweight[4];
-        lheweight[4]=gen->lheweight[6];
-        lheweight[5]=gen->lheweight[8];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-      }
-    }
 
 	  if(isRecoil && hasGen) {
       Int_t glepq1=-99;
@@ -609,11 +559,6 @@ void selectWe(const TString conf="we.conf", // input file
 	      u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
 	      u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
         
-        // TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
-        // TVector2 vUDJ = -1.0*(vMetDJ+vLepPt);
-        // u1DJee = ((vWPt.Px())*(vUDJ.Px()) + (vWPt.Py())*(vUDJ.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        // u2DJee = ((vWPt.Px())*(vUDJ.Py()) - (vWPt.Py())*(vUDJ.Px()))/(genVPt);  // u2 = (pT x u)/|peleProbe	
-
 	      TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
 	      TVector2 vTkU = -1.0*(vTkMet+vLepPt);
 	      tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
@@ -645,10 +590,11 @@ void selectWe(const TString conf="we.conf", // input file
 	    delete glep2;
 	    gvec=0; glep1=0; glep2=0;
 	  }
-	  scale1fb = weight;
-          scale1fbUp = weightUp;
-          scale1fbDown = weightDown;
-	  met	   = info->pfMETC;
+	  scale1fb     = weight;
+    scale1fbUp   = weightUp;
+    scale1fbDown = weightDown;
+    
+	  met	     = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
@@ -660,16 +606,13 @@ void selectWe(const TString conf="we.conf", // input file
 	  mvaMetPhi = info->mvaMETphi;
 	  mvaSumEt  = 0;
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-// 	  TVector2 vLepPt(vLep.Px(),vLep.Py());
-// 	  TVector2 vPuppi((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-// 	  TVector2 vpp; vpp=vPuppi-vLepPt;
-      puppiMet   = info->puppET;
-      puppiMetPhi = info->puppETphi;
+    puppiMet   = info->puppET;
+    puppiMetPhi = info->puppETphi;
 	  puppiSumEt  = 0;
 	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodEle->q;
 	  lep      = &vLep;
-      lep_raw = &vLep_raw;
+    lep_raw  = &vLep_raw;
 	  
 	  ///// electron specific /////
 	  sc       = &vSC;

@@ -51,14 +51,13 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectAntiWm(const TString conf="wm.conf", // input file
-              const TString outputDir=".",       // output directory
-	          const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
-              const Bool_t  doPU=0,
-              const Bool_t is13TeV=1, // flag to toggle between 5 and 13 TeV settings
-                const Int_t NSEC = 1,
-                const Int_t ITH = 0
-) {
+void selectAntiWm(const TString  conf       ="wm.conf", // input file
+                  const TString  outputDir  =".",       // output directory
+	                const Bool_t   doScaleCorr=0,   // apply energy scale corrections?
+                  const Bool_t   doPU       =0,
+                  const Bool_t   is13TeV    =1, // flag to toggle between 5 and 13 TeV settings
+                  const Int_t    NSEC       =1,
+                  const Int_t    ITH        =0 ) {
   gBenchmark->Start("selectAntiWm");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -75,8 +74,6 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
   
@@ -145,7 +142,6 @@ void selectAntiWm(const TString conf="wm.conf", // input file
   Float_t d0, dz;
   Float_t muNchi2;
   UInt_t nPixHits, nTkLayers, nValidHits, nMatch, typeBits;
-  vector<Double_t> lheweight(NPDF+NQCD,0);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info  = new baconhep::TEventInfo();
@@ -274,12 +270,8 @@ void selectAntiWm(const TString conf="wm.conf", // input file
     outTree->Branch("nMatch",     &nMatch,     "nMatch/i");	  // number of matched segments of muon	 
     outTree->Branch("nValidHits", &nValidHits, "nValidHits/i");   // number of valid muon hits of muon 
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");     // number of valid muon hits of muon 
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
-    // outTree->Branch("passVeto", &passVeto, "passVeto/B");
     
-    // outTree->Branch("passHLT", &passHLT, "passHLT/b");
-    
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -395,21 +387,18 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
           vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
-          // double eleEcalE = ele->ecalEnergy;
-          double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
-
+          
           if((ele->r9 < 1.)){
-            float eleSmear = 0.;
+            // float eleSmear = 0.;
             float eleScale = 1.;
             float eleAbsEta   = fabs(vEle.Eta());
-            // float eleEt       = ele->ecalEnergy;
-
+            double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
             int runNumber = is13TeV ? info->runNum : 306936 ;
-              eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
+              float eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
               (vEle) *= eleScale;
             }else{//MC
-              eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, 0., 0.);
+              float eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, 0., 0.);
               (vEle) *= 1. + eleSmear * gRandom->Gaus(0,1);
             }
           }
@@ -497,40 +486,15 @@ void selectAntiWm(const TString conf="wm.conf", // input file
 
 
     genMuonPt = 0;
-    if(hasGen){
-      if(isRecoil&&!isSignal&&!isWrongFlavor){
-        
-        
-        genMuonPt = toolbox::getGenLep(genPartArr, vLep);
-        // std::cout <<"Filling the Zxx lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[0];
-        lheweight[1]=gen->lheweight[1];
-        lheweight[2]=gen->lheweight[2];
-        lheweight[3]=gen->lheweight[3];
-        lheweight[4]=gen->lheweight[5];
-        lheweight[5]=gen->lheweight[7];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-      }else{
-        // std::cout << "filling the lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[1];
-        lheweight[1]=gen->lheweight[2];
-        lheweight[2]=gen->lheweight[3];
-        lheweight[3]=gen->lheweight[4];
-        lheweight[4]=gen->lheweight[6];
-        lheweight[5]=gen->lheweight[8];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-      }
-    }
-
+    if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
+     
 	  if(isRecoil && hasGen) {
-            Int_t glepq1=-99;
-            Int_t glepq2=-99;
-	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
-            TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-            TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+      Int_t glepq1=-99;
+      Int_t glepq2=-99;
+      TLorentzVector *gvec =new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+      
 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
         if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
             toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
@@ -545,66 +509,55 @@ void selectAntiWm(const TString conf="wm.conf", // input file
         genVMass = tvec.M();
 
         
-            if (gvec && glep1) {
+      if (gvec && glep1) {
 	      genLep    = new TLorentzVector(0,0,0,0);
-	      if(BOSON_ID*glepq1>0)
-                genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              if(BOSON_ID*glepq2>0)
-                genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-              // genVPt    = gvec->Pt();
-              // genVPhi   = gvec->Phi();
-              // genVy     = gvec->Rapidity();
-              // genVMass  = gvec->M();
-              genLepPt  = genLep->Pt();
-              genLepPhi = genLep->Phi();
-	      
-              TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
-              TVector2 vLepPt(vLep.Px(),vLep.Py());
+	      if(BOSON_ID*glepq1>0) genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+        if(BOSON_ID*glepq2>0) genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+        genLepPt  = genLep->Pt();
+        genLepPhi = genLep->Phi();
+  
+        TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
+        TVector2 vLepPt(vLep.Px(),vLep.Py());
 
-              TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
-              TVector2 vU = -1.0*(vMet+vLepPt);
-              u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-              
-              // TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
-              // TVector2 vUDJ = -1.0*(vMetDJ+vLepPt);
-              // u1DJee = ((vWPt.Px())*(vUDJ.Px()) + (vWPt.Py())*(vUDJ.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              // u2DJee = ((vWPt.Px())*(vUDJ.Py()) - (vWPt.Py())*(vUDJ.Px()))/(genVPt);  // u2 = (pT x u)/|peleProbe	
+        TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+        TVector2 vU = -1.0*(vMet+vLepPt);
+        u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
+        TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
+        TVector2 vTkU = -1.0*(vTkMet+vLepPt);
+        tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 
-              TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
-              TVector2 vTkU = -1.0*(vTkMet+vLepPt);
-              tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-
-              TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-              TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
-              mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-              
-              TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-              TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
-              puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-              puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-	      
-            }
-            id_1      = gen->id_1;
-            id_2      = gen->id_2;
-            x_1       = gen->x_1;
-            x_2       = gen->x_2;
-            xPDF_1    = gen->xPDF_1;
-            xPDF_2    = gen->xPDF_2;
-            scalePDF  = gen->scalePDF;
-            weightPDF = gen->weight;
+        TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+        TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+        mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
+        TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+        TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
+        puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+  
+      }
+      id_1      = gen->id_1;
+      id_2      = gen->id_2;
+      x_1       = gen->x_1;
+      x_2       = gen->x_2;
+      xPDF_1    = gen->xPDF_1;
+      xPDF_2    = gen->xPDF_2;
+      scalePDF  = gen->scalePDF;
+      weightPDF = gen->weight;
 
 
 	    delete gvec;
-            delete glep1;
-            delete glep2;
-            gvec=0; glep1=0; glep2=0;
+      delete glep1;
+      delete glep2;
+      gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-          scale1fbUp = weightUp;
-          scale1fbDown = weightDown;
+    scale1fbUp = weightUp;
+    scale1fbDown = weightDown;
 	  met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;

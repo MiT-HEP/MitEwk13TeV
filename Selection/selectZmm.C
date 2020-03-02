@@ -48,14 +48,13 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectZmm(const TString conf="zmm.conf", // input file
-               const TString outputDir=".",   // output directory
-	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections
-	       const Bool_t  doPU=0,
-         const Bool_t is13TeV=1,
-         const Int_t NSEC = 1,
-         const Int_t ITH = 0
-) {
+void selectZmm(const TString conf       ="zmm.conf", // input file
+               const TString outputDir  =".",   // output directory
+               const Bool_t  doScaleCorr=0,    // apply energy scale corrections
+               const Bool_t  doPU       =0,
+               const Bool_t  is13TeV    =1,
+               const Int_t   NSEC       =1,
+               const Int_t   ITH        =0 ) {
   gBenchmark->Start("selectZmm");
 
 std::cout << "is 13 TeV " << is13TeV << std::endl;
@@ -71,8 +70,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 13;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
 
   // load trigger menu                                                                                                  
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
@@ -152,8 +149,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   	Int_t glepq1=-99;
 	Int_t glepq2=-99;
   
-  vector<Double_t> lheweight(NPDF+NQCD,0);
-  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -296,7 +291,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("typeBits2",   &typeBits2,   "typeBits2/i");     // muon type of probe muon
     outTree->Branch("sta1",        "TLorentzVector", &sta1);         // tag standalone muon 4-vector
     outTree->Branch("sta2",        "TLorentzVector", &sta2);         // probe standalone muon 4-vector
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
@@ -600,37 +594,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             hasGenMatch = kTRUE;
           }
         }
-        // cout << "lkjkjf" << endl;
 	
         if (hasGen) {
           genMuonPt1 = toolbox::getGenLep(genPartArr, vTag);
           genMuonPt2 = toolbox::getGenLep(genPartArr, vProbe);
-          
-          // cout << "aaaaaaaaaaa" << endl;
-          if(isRecoil&&!isSignal&&!isWrongFlavor){
-            // std::cout <<"Filling the Zxx lheweight" << std::endl;
-            // cout << "gen-
-            lheweight[0]=gen->lheweight[0];
-            lheweight[1]=gen->lheweight[1];
-            lheweight[2]=gen->lheweight[2];
-            lheweight[3]=gen->lheweight[3];
-            lheweight[4]=gen->lheweight[5];
-            lheweight[5]=gen->lheweight[7];
-            for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-          }else{
-            // std::cout << "filling the lheweight" << std::endl;
-            lheweight[0]=gen->lheweight[1];
-            lheweight[1]=gen->lheweight[2];
-            lheweight[2]=gen->lheweight[3];
-            lheweight[3]=gen->lheweight[4];
-            lheweight[4]=gen->lheweight[6];
-            lheweight[5]=gen->lheweight[8];
-            for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-            // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-            // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-            // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-          }
-          
           
           id_1      = gen->id_1;
           id_2      = gen->id_2;
@@ -650,7 +617,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           scalePDF  = -999;
           weightPDF = -999;
         }
-        // cout << "bbbbb" << endl;
 	
         //
         // Fill tree

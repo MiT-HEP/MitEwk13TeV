@@ -49,14 +49,13 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectWm(const TString conf="wm.conf", // input file
-              const TString outputDir=".",  // output directory
-	          const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
-              const Bool_t  doPU=0,
-              const Bool_t is13TeV=1,
-                const Int_t NSEC = 1,
-                const Int_t ITH = 0
-) {
+void selectWm(const TString conf       ="wm.conf", // input file
+              const TString outputDir  =".",  // output directory
+	            const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+              const Bool_t  doPU       =0,
+              const Bool_t  is13TeV    =1,
+              const Int_t   NSEC       =1,
+              const Int_t   ITH        =0 ) {
   gBenchmark->Start("selectWm");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -73,9 +72,6 @@ void selectWm(const TString conf="wm.conf", // input file
 
   const Int_t BOSON_ID  = 24;
   const Int_t LEPTON_ID = 13;
-  
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
 
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
@@ -138,7 +134,6 @@ void selectWm(const TString conf="wm.conf", // input file
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
-  vector<Double_t> lheweight(NPDF+NQCD,0);
   ///// muon specific /////
   Float_t trkIso, emIso, hadIso;
   Float_t pfChIso, pfGamIso, pfNeuIso, pfCombIso;
@@ -149,14 +144,14 @@ void selectWm(const TString conf="wm.conf", // input file
   // Bool_t passVeto=kTRUE;
   
   // Data structures to store info from TTrees
-  baconhep::TEventInfo *info  = new baconhep::TEventInfo();
+  baconhep::TEventInfo *info    = new baconhep::TEventInfo();
   baconhep::TGenEventInfo *gen  = new baconhep::TGenEventInfo();
-  TClonesArray *genPartArr = new TClonesArray("baconhep::TGenParticle");
-  TClonesArray *muonArr    = new TClonesArray("baconhep::TMuon");
-  TClonesArray *electronArr    = new TClonesArray("baconhep::TElectron");
-  TClonesArray *vertexArr  = new TClonesArray("baconhep::TVertex");
-  TClonesArray *scArr          = new TClonesArray("baconhep::TPhoton");
-  TClonesArray *jetArr         = new TClonesArray("baconhep::TJet");
+  TClonesArray *genPartArr      = new TClonesArray("baconhep::TGenParticle");
+  TClonesArray *muonArr         = new TClonesArray("baconhep::TMuon");
+  TClonesArray *electronArr     = new TClonesArray("baconhep::TElectron");
+  TClonesArray *vertexArr       = new TClonesArray("baconhep::TVertex");
+  TClonesArray *scArr           = new TClonesArray("baconhep::TPhoton");
+  TClonesArray *jetArr          = new TClonesArray("baconhep::TJet");
   
   TFile *infile=0;
   TTree *eventTree=0;
@@ -175,17 +170,21 @@ void selectWm(const TString conf="wm.conf", // input file
     Bool_t isSignal=false;
     Bool_t isWrongFlavor=false;
     if(is13TeV){
-      isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wm2",TString::kIgnoreCase)==0);
-      isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
+      isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0||
+                  snamev[isam].CompareTo("wm0",TString::kIgnoreCase)==0||
+                  snamev[isam].CompareTo("wm1",TString::kIgnoreCase)==0||
+                  snamev[isam].CompareTo("wm2",TString::kIgnoreCase)==0);
+      isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
     } else {
       isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
       isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
     }
-    // flag to reject W->mnu events when selecting wrong flavor background events
-    // Bool_t isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
-    //flag to save the info for recoil corrections
     Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
     
     CSample* samp = samplev[isam];
 
@@ -265,7 +264,6 @@ void selectWm(const TString conf="wm.conf", // input file
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",        "TLorentzVector", &lep);       // lepton 4-vector
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     outTree->Branch("lepID",      &lepID,      "lepID/I");       // lepton PDG ID
     ///// muon specific /////
     outTree->Branch("trkIso",     &trkIso,     "trkIso/F");       // track isolation of lepton
@@ -423,21 +421,15 @@ void selectWm(const TString conf="wm.conf", // input file
         for(Int_t i=0; i<electronArr->GetEntriesFast(); i++) {
           const baconhep::TElectron *ele = (baconhep::TElectron*)((*electronArr)[i]);
           vEle.SetPtEtaPhiM(ele->pt, ele->eta, ele->phi, ELE_MASS);
-          double eleEcalE = ele->ecalEnergy;
-          double eTregress = eleEcalE/cosh(fabs(ele->eta));
-
           if((ele->r9 < 1.)){
-            float eleSmear = 0.;
-            float eleScale = 1.;
             float eleAbsEta   = fabs(vEle.Eta());
-            float eleEt       = ele->ecalEnergy;
-
+            double eTregress =  ele->ecalEnergy/cosh(fabs(ele->eta));
             if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
               int runNumber = is13TeV ? info->runNum : 306936;
-              eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
+              float eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
               (vEle) *= eleScale;
             } else {//MC
-              eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, 0., 0.);
+              float eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, 0., 0.);
               (vEle) *= 1. + eleSmear * gRandom->Gaus(0,1);
             }
           }
@@ -542,38 +534,7 @@ void selectWm(const TString conf="wm.conf", // input file
     weightPDF = -999;
 
     genMuonPt = 0;
-    if(hasGen){
-      
-      // genMuonMatch
-      // use the function to get the 
-      // std::cout << "---------" << std::endl;
-      genMuonPt = toolbox::getGenLep(genPartArr, vLep);
-      // std::cout << "gen muon pt " << genMuonPt << std::endl;
-      // std::cout << "boson charge " << toolbox::flavor(genPartArr, BOSON_ID) << std::endl;
-      
-      if(isRecoil&&!isSignal&&!isWrongFlavor){
-        // std::cout <<"Filling the Zxx lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[0];
-        lheweight[1]=gen->lheweight[1];
-        lheweight[2]=gen->lheweight[2];
-        lheweight[3]=gen->lheweight[3];
-        lheweight[4]=gen->lheweight[5];
-        lheweight[5]=gen->lheweight[7];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-      }else{
-        // std::cout << "filling the lheweight" << std::endl;
-        lheweight[0]=gen->lheweight[1];
-        lheweight[1]=gen->lheweight[2];
-        lheweight[2]=gen->lheweight[3];
-        lheweight[3]=gen->lheweight[4];
-        lheweight[4]=gen->lheweight[6];
-        lheweight[5]=gen->lheweight[8];
-        for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-        // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-        // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-        // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-      }
-    }
+    if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
 
 	  if(isRecoil && hasGen) {
       Int_t glepq1=-99;
@@ -594,21 +555,14 @@ void selectWm(const TString conf="wm.conf", // input file
       genVy    = tvec.Rapidity();
       genVMass = tvec.M();
       
-      // std::cout << "construct genVPt " << genVPt << std::endl;
-      // std::cout << "from " << glep1->Pt() << " and " << glep2->Pt() << std::endl;
 
       if (gvec && glep1) {
-        //genV      = new TLorentzVector(0,0,0,0);
-        //genV->SetPtEtaPhiM(gvec->Pt(),gvec->Eta(),gvec->Phi(),gvec->M());
-        // std::cout << "boson id "  << BOSON_ID << "  genlepq1 " << glepq1 << " genlepq2 " << glepq2 << std::endl;
         genLep    = new TLorentzVector(0,0,0,0);
         if(toolbox::flavor(genPartArr, BOSON_ID)*glepq1<0){
-          // std::cout << "lep1 ! " << BOSON_ID*glepq1 << std::endl;
           genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
           genNu->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
         }
         if(toolbox::flavor(genPartArr, BOSON_ID)*glepq2<0){
-          // std::cout << "lep2 ! " << BOSON_ID*glepq2 << std::endl;
           genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
           genNu->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
         }
