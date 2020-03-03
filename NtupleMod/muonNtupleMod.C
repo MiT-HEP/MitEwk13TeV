@@ -65,7 +65,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   int nNV = 10;
   // which MET type we use
   bool doPF = true;
-  // bool doNewMET = false;
   
   std::string u1_name; std::string u2_name;
   std::string met_name; std::string metPhi_name;
@@ -83,12 +82,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   const string vWeight[]={"eff","mc","fsr","bkg","tagpt","effstat","pfireu","pfired"};
   int nWeight = sizeof(vWeight)/sizeof(vWeight[0]);
 
-  // if (doNewMET && doPF) {
-    // u1_name = "u1DJee";
-    // u2_name = "u2DJee";
-    // met_name = "metDJee";
-    // metPhi_name = "metPhiDJee";
-  // } else 
   if(doPF){
     u1_name = "u1";
     u2_name = "u2";
@@ -113,7 +106,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
  //   Point to the Efficiency SF
  // -----------------------------------------------------------
   TString effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zmm/";
-  // string effDir = "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/results/Zmm/";
   AppEffSF effs(effDir);
   effs.loadHLT("MuHLTEff_aMCxPythia","Positive","Negative");
   effs.loadSel("MuSITEff_aMCxPythia","Combined","Combined");
@@ -126,12 +118,42 @@ void muonNtupleMod(const TString  outputDir,   // output directory
 
   Bool_t isData = (fileName.CompareTo("data_select.root")==0);
   std::cout << fileName.CompareTo("data_select.root",TString::kIgnoreCase) << std::endl;
-  Bool_t isRecoil = (fileName.CompareTo("wm_select.raw.root")==0||fileName.CompareTo("wm0_select.raw.root")==0||fileName.CompareTo("wm1_select.raw.root")==0||fileName.CompareTo("wm2_select.raw.root")==0||fileName.CompareTo("wx_select.raw.root")==0||fileName.CompareTo("wx0_select.raw.root")==0||fileName.CompareTo("wx1_select.raw.root")==0||fileName.CompareTo("wx2_select.raw.root")==0||fileName.CompareTo("zxx_select.raw.root")==0||fileName.CompareTo("wm_select.root")==0||fileName.CompareTo("wm0_select.root")==0||fileName.CompareTo("wm1_select.root")==0||fileName.CompareTo("wm2_select.root")==0||fileName.CompareTo("wx_select.root")==0||fileName.CompareTo("wx0_select.root")==0||fileName.CompareTo("wx1_select.root")==0||fileName.CompareTo("wx2_select.root")==0||fileName.CompareTo("zxx_select.root")==0);
-  if(inputDir.Contains("Anti") && isRecoil) {doInclusive = true; doKeys = false; doEta = false; doStat = false;}
+  
+  Bool_t isRecoil = (fileName.CompareTo("wm_select.raw.root" )==0||
+                     fileName.CompareTo("wm0_select.raw.root")==0||
+                     fileName.CompareTo("wm1_select.raw.root")==0||
+                     fileName.CompareTo("wm2_select.raw.root")==0||
+                     fileName.CompareTo("wx_select.raw.root" )==0||
+                     fileName.CompareTo("wx0_select.raw.root")==0||
+                     fileName.CompareTo("wx1_select.raw.root")==0||
+                     fileName.CompareTo("wx2_select.raw.root")==0||
+                     fileName.CompareTo("zxx_select.raw.root")==0||
+                     fileName.CompareTo("wm_select.root"     )==0||
+                     fileName.CompareTo("wm0_select.root"    )==0||
+                     fileName.CompareTo("wm1_select.root"    )==0||
+                     fileName.CompareTo("wm2_select.root"    )==0||
+                     fileName.CompareTo("wx_select.root"     )==0||
+                     fileName.CompareTo("wx0_select.root"    )==0||
+                     fileName.CompareTo("wx1_select.root"    )==0||
+                     fileName.CompareTo("wx2_select.root"    )==0||
+                     fileName.CompareTo("zxx_select.root"    )==0);
+                     
+  if(inputDir.Contains("Anti") && isRecoil) {
+    doInclusive = true; 
+    doKeys      = false; 
+    doEta       = false; 
+    doStat      = false;
+  }
+  
   std::cout << "isData " << isData << std::endl;
   std::cout << "isRecoil " << isRecoil << std::endl;
 
-  if(isData||(!isRecoil)) {doInclusive = false; doKeys = false; doEta = false; doStat = false;}
+  if(isData||(!isRecoil)) {
+    doInclusive = false; 
+    doKeys      = false; 
+    doEta       = false; 
+    doStat      = false;
+  }
 
  // ------------------------------------------------------------------------------------------------------------------------------------------
  //   Load the Recoil Correction Files
@@ -154,22 +176,17 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   RecoilCorrector *rcEta1Wp    = new  RecoilCorrector("",""); RecoilCorrector *rcEta1Wm    = new  RecoilCorrector("","");
   // also make sure to add the Wm stuff
   if(doInclusive){
-    // rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
-    // rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     
-    // rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
-    // rcMainWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
   } 
   if (doStat){
     int rec_sig = 1;
     for(int i = 0; i < nNV; i++){
-    // for(int i = 1; i < 2; i++){
       rcStatW[i]->loadRooWorkspacesDiagMCtoCorrect(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()), i, rec_sig);
       rcStatW[i]->loadRooWorkspacesDiagData(Form("%s/ZmmData_PF_%s_2G/",directory.Data(),sqrts.Data()), i, rec_sig);
       rcStatW[i]->loadRooWorkspacesDiagMC(Form("%s/ZmmMC_PF_%s_2G/",directory.Data(),sqrts.Data()), i, rec_sig);
@@ -177,43 +194,35 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     
   } 
   if (doEta){
-    // rcEta05Wp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     
-    // rcEta051Wp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
       
-    // rcEta1Wp->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
 
-    // rcEta05Wm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     rcEta05Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta1/",directory.Data(),sqrts.Data()));
     
-    // rcEta051Wm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     rcEta051Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta2/",directory.Data(),sqrts.Data()));
     
-    // rcEta1Wm->loadRooWorkspacesMCtoCorrect(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
       rcEta1Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
   }
   if (doKeys){
-    // rcKeysWp->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWp->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWp->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     
-    // rcKeysWm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWm->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Keys/",directory.Data(),sqrts.Data()));
     rcKeysWm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
@@ -282,9 +291,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   TH1::AddDirectory(kFALSE);
   // Actually just need to clone the tree: 
   TTree *outTree = intree->CloneTree(0);
-  // Variables for the new branches:
-  // Double_t metVars[no]=0, metVars[cent]=0, metVars[eta]=0,metVars[keys]=0, mtCorr=0;
-  // Double_t metVarsPhi[no]=0, metVarsPhi[cent]=0, metVarsPhi[eta]=0, metVarsPhi[keys]=0;
   Double_t effSFweight=1, relIso=0;
   Double_t evtWeightSysFSR=1,evtWeightSysMC=1,evtWeightSysBkg=1;
   Double_t mtCorr=0;
@@ -304,26 +310,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
   outTree->Branch("metVars",     "vector<Double_t>",  &metVars);            // uncorrected lepton vector
   outTree->Branch("metVarsPhi",  "vector<Double_t>",  &metVarsPhi);         // uncorrected lepton vector
   
-
-  // Double_t mt=-999;
-  
-  
-  UInt_t iterator=15;
-  // UInt_t iterator=1;
-  if(isData)iterator=1;
   //
   // loop over events
   //
   std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
    for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) { 
-   // for(UInt_t ientry=0; ientry<0.33*((uint)intree->GetEntries()); ientry++) {
-    //for(UInt_t ientry=0.33*((uint)intree->GetEntries()); ientry<0.67*((uint)intree->GetEntries()); ientry++) {
-   // for(UInt_t ientry=0.67*((uint)intree->GetEntries()); ientry<intree->GetEntries(); ientry++) {
-  // for(UInt_t ientry=0; ientry<((int)intree->GetEntries())*0.05; ientry+=iterator) {
     intree->GetEntry(ientry);
     if(ientry%10000==0)  cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
-
-  // genMuonPt = 0;
 
     // vector containing raw lepton info for correcting MET
     TVector2 vLepRaw((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
@@ -369,7 +362,6 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       
       if(mu1.Pt()        < PT_CUT)  continue;
       
-      // std::cout << "lepPt " << mu1.Pt() << "  lep->Pt() " << lep->Pt() << "  lep_raw->Pt() " << lep_raw->Pt() << std::endl;
       // corrected (smear/scale) lepton for MET correction
       TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
       TVector2 vLepCoru((mu1u.Pt())*cos(mu1u.Phi()),(mu1u.Pt())*sin(mu1u.Phi()));
@@ -377,13 +369,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       // calculate the corrected MET
       TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));  //move the declaration elsewhere
       Double_t corrMetWithLepton = (vMetCorr + vLepRaw - vLepCor).Mod(); // calculate the MET corrected for lepton scale
-      Double_t corrMetPhiLepton = (vMetCorr + vLepRaw - vLepCor).Phi();// calculate the MET corrected for lepton scale
+      Double_t corrMetPhiLepton  = (vMetCorr + vLepRaw - vLepCor).Phi();// calculate the MET corrected for lepton scale
       mt     = sqrt( 2.0 * (mu1.Pt()) * (corrMetWithLepton) * (1.0-cos(toolbox::deltaPhi(mu1.Phi(),corrMetPhiLepton))) );
       
       Double_t corrMetWithLeptonu = (vMetCorr + vLepRaw - vLepCoru).Mod(); // calculate the MET corrected for lepton scale
-      Double_t corrMetPhiLeptonu = (vMetCorr + vLepRaw - vLepCoru).Phi();// calculate the MET corrected for lepton scale
+      Double_t corrMetPhiLeptonu  = (vMetCorr + vLepRaw - vLepCoru).Phi();// calculate the MET corrected for lepton scale
       Double_t corrMetWithLeptond = (vMetCorr + vLepRaw - vLepCord).Mod(); // calculate the MET corrected for lepton scale
-      Double_t corrMetPhiLeptond = (vMetCorr + vLepRaw - vLepCord).Phi();// calculate the MET corrected for lepton scale
+      Double_t corrMetPhiLeptond  = (vMetCorr + vLepRaw - vLepCord).Phi();// calculate the MET corrected for lepton scale
       
       metVars[no]=corrMetWithLepton;
       metVars[ru]=corrMetWithLeptonu;
@@ -420,17 +412,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       var += effs.statUncSel(&mu1, q, hErr, hErr, 1.0);
       var += effs.statUncHLT(&mu1, q, hErr, hErr, 1.0);
     
-      evtWeight[main]=corr*scale1fb*prefireWeight;
-      evtWeight[fsr]=corrFSR*scale1fb*prefireWeight;
-      evtWeight[mc] =corrMC*scale1fb*prefireWeight;
-      evtWeight[bkg]=corrBkg*scale1fb*prefireWeight;
-      evtWeight[tagpt]=corrTag*scale1fb*prefireWeight;
-      evtWeight[effstat]=var*scale1fb*prefireWeight*scale1fb*prefireWeight;
-      evtWeight[pfireu]=corr*scale1fb*prefireUp;
-      evtWeight[pfired]=corr*scale1fb*prefireDown;
-
-      // if(lep->Pt()>25)cout << var << " " << sqrt(var) << " " <<  mu1.Pt() << " " << fabs(mu1.Eta()) << endl;
-      // cout << "test " << evtWeight[main] << " " << evtWeight[fsr] << " " << evtWeight[mc] << " " << evtWeight[bkg] << " " << evtWeight[tagpt] << " " << evtWeight[effstat] <<" " << evtWeight[pfireu] <<" " << evtWeight[pfired] << endl;
+      evtWeight[main]    =corr    *scale1fb*prefireWeight;
+      evtWeight[fsr]     =corrFSR *scale1fb*prefireWeight;
+      evtWeight[mc]      =corrMC  *scale1fb*prefireWeight;
+      evtWeight[bkg]     =corrBkg *scale1fb*prefireWeight;
+      evtWeight[tagpt]   =corrTag *scale1fb*prefireWeight;
+      evtWeight[effstat] =var     *scale1fb*prefireWeight*scale1fb*prefireWeight;
+      evtWeight[pfireu]  =corr    *scale1fb*prefireUp;
+      evtWeight[pfired]  =corr    *scale1fb*prefireDown;
 
       double rand = gRandom->Uniform(1);
       double mcSF1 = 1;
@@ -440,9 +429,8 @@ void muonNtupleMod(const TString  outputDir,   // output directory
         mcSF1 = rc.kSmearMC(q, mu1.Pt(),  mu1.Eta(), mu1.Phi(), nTkLayers, rand);
       }
       mu1*=mcSF1;
-      (*lep)*=mcSF1; // is this legit lol
+      (*lep)*=mcSF1; 
       
-      // double deltaDtSF = rc.kScaleDTerror(Q, pt, eta, phi);
       double deltaMcSF = 1;
       if(genMuonPt>0){
         deltaMcSF = rc.kSpreadMCerror(q, mu1.Pt(), mu1.Eta(), mu1.Phi(), genMuonPt);
@@ -451,35 +439,28 @@ void muonNtupleMod(const TString  outputDir,   // output directory
       }
       mu1u*=(1+deltaMcSF);
       mu1d*=(1-deltaMcSF);
-      // std::cout << deltaMcSF << std::endl; *=(1+delta)
-      // double deltaMcSF = rc.kSmearMCerror(Q, pt, eta, phi, nl, u);
       
       TVector2 vLepCor((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
       TVector2 vLepCorU((mu1u.Pt())*cos(mu1u.Phi()),(mu1u.Pt())*sin(mu1u.Phi()));
       TVector2 vLepCorD((mu1d.Pt())*cos(mu1d.Phi()),(mu1d.Pt())*sin(mu1d.Phi()));
       Double_t lepPt = vLepCor.Mod();
-      // std::cout << "lepPt " << mu1.Pt() << "  lep->Pt() " << lep->Pt() << "  lep_raw->Pt() " << lep_raw->Pt() << std::endl;
-      // change to have rochester corrected muon and raw lepton with MET corrected same way as electron channel 
     
-            // Double_t corrMet=met, corrMetPhi=metPhi;
       TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-      Double_t corrMet = (vMetCorr + vLepRaw - vLepCor).Mod();
+      Double_t corrMet    = (vMetCorr + vLepRaw - vLepCor).Mod();
       Double_t corrMetPhi = (vMetCorr + vLepRaw - vLepCor).Phi();
       
-      Double_t corrMetU = (vMetCorr + vLepRaw - vLepCorU).Mod();
+      Double_t corrMetU    = (vMetCorr + vLepRaw - vLepCorU).Mod();
       Double_t corrMetPhiU = (vMetCorr + vLepRaw - vLepCorU).Phi();
       
-      Double_t corrMetD = (vMetCorr + vLepRaw - vLepCorD).Mod();
+      Double_t corrMetD    = (vMetCorr + vLepRaw - vLepCorD).Mod();
       Double_t corrMetPhiD = (vMetCorr + vLepRaw - vLepCorD).Phi();
-      // Double_t corrMet
-      metVars[no]=corrMet; metVarsPhi[no]=corrMetPhi;
-      // std::cout << "blah " << std::endl;
-
-      metVars[keys]=corrMet; metVarsPhi[keys]=corrMetPhi;
-      metVars[eta]=corrMet; metVarsPhi[eta]=corrMetPhi;
-      metVars[cent]=corrMet; metVarsPhi[cent]=corrMetPhi;
-      metVars[ru]=corrMetU; metVarsPhi[ru]=corrMetPhiU;
-      metVars[rd]=corrMetD; metVarsPhi[rd]=corrMetPhiD;
+      
+      metVars[no]   =corrMet;  metVarsPhi[no]   =corrMetPhi;
+      metVars[keys] =corrMet;  metVarsPhi[keys] =corrMetPhi;
+      metVars[eta]  =corrMet;  metVarsPhi[eta]  =corrMetPhi;
+      metVars[cent] =corrMet;  metVarsPhi[cent] =corrMetPhi;
+      metVars[ru]   =corrMetU; metVarsPhi[ru]   =corrMetPhiU;
+      metVars[rd]   =corrMetD; metVarsPhi[rd]   =corrMetPhiD;
       for(int i = 0; i < nNV; i++){
         int ofs=i+ns;
         metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
@@ -489,46 +470,33 @@ void muonNtupleMod(const TString  outputDir,   // output directory
         
         if(q>0) {
           if(doKeys) {
-            // std::cout << "keys" << std::endl;
             rcKeysWp->CorrectInvCdf(metVars[keys],metVarsPhi[keys],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kTRUE,kFALSE);
-          
-            // std::cout << "keys done" << std::endl;
           }
           if(doEta) {
-            // std::cout << "eta" << std::endl;
             if(fabs(genVy)<0.5)
               rcEta05Wp->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
               rcEta051Wp->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
             else
               rcEta1Wp->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE); 
-            // std::cout << "eta done" << std::endl;
           }
           if(doInclusive){
-            // std::cout << "inclusive" << std::endl;
             rcMainWp->CorrectInvCdf(metVars[cent],metVarsPhi[cent],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            rcMainWp->CorrectInvCdf(metVars[ru],metVarsPhi[ru],genVPt,genVPhi,mu1u.Pt(),mu1u.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            rcMainWp->CorrectInvCdf(metVars[rd],metVarsPhi[rd],genVPt,genVPhi,mu1d.Pt(),mu1d.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-          
-            // std::cout << "inclusive done" << std::endl;
+            rcMainWp->CorrectInvCdf(metVars[ru],  metVarsPhi[ru],  genVPt,genVPhi,mu1u.Pt(),mu1u.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
+            rcMainWp->CorrectInvCdf(metVars[rd],  metVarsPhi[rd],  genVPt,genVPhi,mu1d.Pt(),mu1d.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
           }
           if(doStat){
             for(int i = 0; i < nNV; i++){
-            // for(int i = 1; i < 2; i++){
               int ofs=i+ns;
-              // std::cout << "filling stat " << i << std::endl;
               rcStatW[i]->CorrectInvCdf(metVars[ofs],metVarsPhi[ofs],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
             }
-            // std::cout << "stat done " << std::endl; 
           }
 
         } else {
           if(doKeys) {
-            // metVars[keys]=corrMet; metVarsPhi[keys]=corrMetPhi;
             rcKeysWm->CorrectInvCdf(metVars[keys],metVarsPhi[keys],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kTRUE,kFALSE);
           }
           if(doEta) {
-            // metVars[eta]=corrMet; metVarsPhi[eta]=corrMetPhi;
             if(fabs(genVy)<0.5)
               rcEta05Wm->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
             else if (fabs(genVy)>=0.5 && fabs(genVy)<1.0)
@@ -537,18 +505,13 @@ void muonNtupleMod(const TString  outputDir,   // output directory
               rcEta1Wm->CorrectInvCdf(metVars[eta],metVarsPhi[eta],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE); 
           }
           if(doInclusive){
-            // metVars[cent]=corrMet; metVarsPhi[cent]=corrMetPhi;
             rcMainWm->CorrectInvCdf(metVars[cent],metVarsPhi[cent],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            // metVars[ru]=corrMetU; metVarsPhi[ru]=corrMetPhiU;
-            rcMainWm->CorrectInvCdf(metVars[ru],metVarsPhi[ru],genVPt,genVPhi,mu1u.Pt(),mu1u.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
-            // metVars[rd]=corrMetD; metVarsPhi[rd]=corrMetPhiD;
-            rcMainWm->CorrectInvCdf(metVars[rd],metVarsPhi[rd],genVPt,genVPhi,mu1d.Pt(),mu1d.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);            
+            rcMainWm->CorrectInvCdf(metVars[ru],  metVarsPhi[ru],  genVPt,genVPhi,mu1u.Pt(),mu1u.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);
+            rcMainWm->CorrectInvCdf(metVars[rd],  metVarsPhi[rd],  genVPt,genVPhi,mu1d.Pt(),mu1d.Phi(),pU1,pU2,0,0,0,kFALSE,kFALSE);            
           }
           if(doStat){
             for(int i =0; i < nNV; i++){
-            // for(int i =1; i < 2; i++){
               int ofs=i+ns;
-              // metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
               rcStatW[i]->CorrectInvCdf(metVars[ofs],metVarsPhi[ofs],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kFALSE,kTRUE);
             }
           }
@@ -561,21 +524,14 @@ void muonNtupleMod(const TString  outputDir,   // output directory
     outTree->Fill(); // add new info per event to the new tree
   }//end of loop over events
   // std::cout << "end loop over events"<< std::endl;
-  delete rcMainWp;
-  delete rcMainWm;
-  delete rcKeysWp;
-  delete rcKeysWm;
+  delete rcMainWp;  delete rcMainWm;
+  delete rcKeysWp;  delete rcKeysWm;
   for(int i = 0; i < nNV; i ++)delete rcStatW[i];
-  delete rcEta05Wp;
-  delete rcEta051Wp;
-  delete rcEta1Wp;
-  delete rcEta05Wm;
-  delete rcEta051Wm;
-  delete rcEta1Wm;
+  delete rcEta05Wp;  delete rcEta051Wp;  delete rcEta1Wp;
+  delete rcEta05Wm;  delete rcEta051Wm;  delete rcEta1Wm;
   // std::cout << "clean up memory" << std::endl;
     
   outFile->cd();
-  // outFile->cd();
   hGenWeights->Write();
   outFile->Write();
   std::cout << "wrote outfile" << std::endl;
