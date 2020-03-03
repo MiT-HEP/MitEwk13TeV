@@ -402,7 +402,7 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
             }
           }
           if(fabs(vEle.Eta()) > VETO_ETA) continue; // loose lepton |eta| cut
-          if(vEle.Pt()     < VETO_PT)  continue; // loose lepton pT cut
+          if(vEle.Pt()        < VETO_PT)  continue; // loose lepton pT cut
           if(passEleLooseID(ele,vEle, info->rhoIso)) nLooseLep++;
           if(nLooseLep>0) {  // extra lepton veto
             passSel=kFALSE;
@@ -515,6 +515,7 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
         genLepPt  = genLep->Pt();
         genLepPhi = genLep->Phi();
   
+        // U are not used anymore, computed directly from MET and MET PHI in other codes, can probably remove
         TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
         TVector2 vLepPt(vLep.Px(),vLep.Py());
 

@@ -343,15 +343,12 @@ void selectWe(const TString  conf        ="we.conf", // input file
       //
       // cout << "n sections " << NSEC << endl;
       double frac = 1.0/NSEC;
-      // cout << "n sections " << NSEC << "  frac " << frac << endl;
-      UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
-      UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
-      // cout << "start, end " << IBEGIN << " " << IEND << endl;
-      // UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.001);
+      UInt_t IBEGIN = frac* ITH   *eventTree->GetEntries();
+      UInt_t IEND   = frac*(ITH+1)*eventTree->GetEntries();
+      
       Double_t nsel=0, nselvar=0;
-      // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      
       for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
-      // for(UInt_t ientry=0; ientry<NTEST; ientry++) {
         infoBr->GetEntry(ientry);
         
         int printIndex = (int)(eventTree->GetEntries()*0.01);
@@ -441,8 +438,8 @@ void selectWe(const TString  conf        ="we.conf", // input file
               float eleSmear = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, ele->r9, 12, sigma, 0.);
               (vEle) *= 1. + eleSmear * eleRamdom;
               
-              float eleSmearEP = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, eleR9Prime, 12, 1., 0.);
-              float eleSmearEM = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta, eleR9Prime, 12, -1., 0.);
+              float eleSmearEP = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta,  ele->r9, 12, 1., 0.);
+              float eleSmearEM = eleCorr.smearingSigma(info->runNum, eTregress, eleAbsEta,  ele->r9, 12, -1., 0.);
               lepError = eleRamdom * std::hypot(eleSmearEP - eleSmear, eleSmearEM - eleSmear);
 
             }

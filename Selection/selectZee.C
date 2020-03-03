@@ -624,7 +624,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
                 (vEleProbe)   *= eleProbeScale   * (1 + sigma*eleProbeError);
                 (vEleProbeSC) *= eleProbeSCScale * (1 + sigma*eleProbeSCError);
   
-              }else{//MC
+              } else {//MC
 
               float eleProbeR9Prime = eleProbe->r9; // no r9 after 2016
 
