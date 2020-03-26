@@ -40,23 +40,21 @@
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
 
-#include "CCorrUser2D.hh"
-
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
+#include "../Utils/PrefiringEfficiency.cc"      // prefiring efficiency functions
 #endif
 
 
 //=== MAIN MACRO ================================================================================================= 
 
-void selectZmm(const TString conf="zmm.conf", // input file
-               const TString outputDir=".",   // output directory
-	       const Bool_t  doScaleCorr=0,    // apply energy scale corrections
-	       const Bool_t  doPU=0,
-         const Bool_t is13TeV=1,
-         const Int_t NSEC = 1,
-         const Int_t ITH = 0
-) {
+void selectZmm(const TString conf       ="zmm.conf", // input file
+               const TString outputDir  =".",   // output directory
+               const Bool_t  doScaleCorr=0,    // apply energy scale corrections
+               const Bool_t  doPU       =0,
+               const Bool_t  is13TeV    =1,
+               const Int_t   NSEC       =1,
+               const Int_t   ITH        =0 ) {
   gBenchmark->Start("selectZmm");
 
 std::cout << "is 13 TeV " << is13TeV << std::endl;
@@ -72,24 +70,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
   const Int_t BOSON_ID  = 23;
   const Int_t LEPTON_ID = 13;
-  const Int_t NPDF = 100;
-  const Int_t NQCD = 6;
 
   // load trigger menu                                                                                                  
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
   
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
-  TFile *prefireFile = new TFile(prefireFileName);
-  CCorrUser2D prefirePhotonCorr, prefireJetCorr;
-  if(!is13TeV){
-    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017G")); // 5 TeV photon prefire
-    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017G")); // 5 TeV jet prefire
-  } else if(is13TeV){
-    prefirePhotonCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_photonpt_2017H")); // 13 TeV photon prefire
-    prefireJetCorr.loadCorr((TH2D*)prefireFile->Get("L1prefiring_jetpt_2017H")); // 13 TeV jet prefire
-  }
+  PrefiringEfficiency pfire( prefireFileName.Data() , (is13TeV ? "2017H" : "2017G"));
   
-
+ 
   // load pileup reweighting file                                                                                       
   TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
 
@@ -141,7 +129,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
   Float_t met, metPhi, sumEt, u1, u2;
-  Float_t metDJee, metPhiDJee, sumEtDJee, u1DJee, u2DJee;
   Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
   Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
   Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
@@ -162,8 +149,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   	Int_t glepq1=-99;
 	Int_t glepq2=-99;
   
-  vector<Double_t> lheweight(NPDF+NQCD,0);
-  // for(int i=0; i < NPDF+NQCD; i++) lheweight.push_back(0);
   
   // Data structures to store info from TTrees
   baconhep::TEventInfo *info   = new baconhep::TEventInfo();
@@ -247,11 +232,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("sumEt",       &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",          &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",          &u2,         "u2/F");          // perpendicular component of recoil
-    outTree->Branch("metDJee",        &metDJee,        "metDJee/F");         // MET
-    outTree->Branch("metPhiDJee",     &metPhiDJee,     "metPhiDJee/F");      // phi(MET)
-    outTree->Branch("sumEtDJee",      &sumEtDJee,      "sumEtDJee/F");       // Sum ET
-    outTree->Branch("u1DJee",         &u1DJee,         "u1DJee/F");          // parallel component of recoil
-    outTree->Branch("u2DJee",         &u2DJee,         "u2DJee/F");          // perpendicular component of recoil
     outTree->Branch("tkMet",       &tkMet,      "tkMet/F");       // MET (track MET)
     outTree->Branch("tkMetPhi",    &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
     outTree->Branch("tkSumEt",     &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
@@ -311,7 +291,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("typeBits2",   &typeBits2,   "typeBits2/i");     // muon type of probe muon
     outTree->Branch("sta1",        "TLorentzVector", &sta1);         // tag standalone muon 4-vector
     outTree->Branch("sta2",        "TLorentzVector", &sta2);         // probe standalone muon 4-vector
-    outTree->Branch("lheweight",  "vector<double>", &lheweight);       // lepton 4-vector
     
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
@@ -356,66 +335,24 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
       // Compute MC event weight per 1/fb
       const Double_t xsec = samp->xsecv[ifile];
-      Double_t totalWeight=0;
-      Double_t totalWeightUp=0;
-      Double_t totalWeightDown=0;
-      Double_t puWeight=0;
-      Double_t puWeightUp=0;
-      Double_t puWeightDown=0;
+      // Double_t totalWeight=0, totalWeightUp=0,  totalWeightDown=0;
+      Double_t puWeight=0, puWeightUp=0,  puWeightDown=0;
+      Double_t nsel=0, nselvar=0;
 
-      // if (hasGen) {
-        
-        // // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
-        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          // if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-          // infoBr->GetEntry(ientry);
-          // genBr->GetEntry(ientry);
-          // puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          // puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          // puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-          // totalWeight+=gen->weight*puWeight;
-          // totalWeightUp+=gen->weight*puWeightUp;
-          // totalWeightDown+=gen->weight*puWeightDown;
-
-        // }
-      // }
-      // else if (not isData){
-        
-        // // for(UInt_t ientry=0; ientry<(uint)(0.05*eventTree->GetEntries()); ientry++) {
-        // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-          // if(ientry%1000000==0) cout << "Pre-Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-          // puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-          // puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-          // puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-          // totalWeight+= 1.0*puWeight;
-          // totalWeightUp+= 1.0*puWeightUp;
-          // totalWeightDown+= 1.0*puWeightDown;
-        // }
-      // }
-   
       //
       // loop over events
       //
-      cout << "n sections " << NSEC << endl;
+
       double frac = 1.0/NSEC;
-      cout << "n sections " << NSEC << "  frac " << frac << endl;
       UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
       UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
-      cout << "start, end " << IBEGIN << " " << IEND << endl;
-      UInt_t NTEST = (UInt_t)(eventTree->GetEntries()*0.001);
-      Double_t nsel=0, nselvar=0;
-      // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      
       for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
         infoBr->GetEntry(ientry);
 
-        if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+        int printIndex = (int)(eventTree->GetEntries()*0.01);
+        if(ientry%printIndex==0) cout << "Processing event " << ientry << ". " << (int)(100*(ientry/(double)eventTree->GetEntries())) << " percent done with this file." << endl;
 
-        // Double_t weight=1;
-        // Double_t weightUp=1;
-        // Double_t weightDown=1;
-        // if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-        // if(xsec>0 && totalWeightUp>0) weightUp = xsec/totalWeightUp;
-        // if(xsec>0 && totalWeightDown>0) weightDown = xsec/totalWeightDown;
         Double_t weight = xsec;
         Double_t weightUp = xsec;
         Double_t weightDown = xsec;
@@ -492,9 +429,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           }
 
           if(!isMuonTriggerObj(triggerMenu, tag->hltMatchBits, isData,is13TeV)) continue;
-
           if(Mu_Pt<tagPt) continue;
-
           tagPt=Mu_Pt;
           itag=i1;
         
@@ -564,7 +499,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           } else {
             vProbe.SetPtEtaPhiM(probe->pt,probe->eta,probe->phi,MUON_MASS);
             if(probe->typeBits & baconhep::EMuType::kStandalone)
-              vProbeSta.SetPtEtaPhiM(probe->staPt,probe->staEta,probe->staPhi,MUON_MASS);
+            vProbeSta.SetPtEtaPhiM(probe->staPt,probe->staEta,probe->staPhi,MUON_MASS);
           }
 
           trkIso2     = probe->trkIso;
@@ -607,88 +542,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         // mass window
         TLorentzVector vDilep = vTag + vProbe;
         if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
-        
         if(icat==0) continue;
-        // cout << "hello1" << endl;
-        // Loop through Jets
-        // set up the met variable, default is PF met
-        metDJee      = info->pfMETC;
-        metPhiDJee   = info->pfMETCphi;
-        sumEtDJee = 0;
-        // if(category==1||category==2||category==3) cout << "Selected! " << endl;
-        if(hasJet){
-        TVector2 vMetEE((info->pfMETC)*cos(info->pfMETCphi),(info->pfMETC)*sin(info->pfMETCphi));
-        for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-// cout << "hellojett" << endl;
-          const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-          if(fabs(jet->eta) < 2.65 || fabs(jet->eta) > 3.139) continue;
-          if(jet->pt > 50) continue;
-          TVector2 vJet((jet->pt)*cos(jet->phi),(jet->pt)*sin(jet->phi));
-          vMetEE += vJet;
-          // cout << "Removing a jet from MET " << jet->pt << " " << jet->eta << " old met " << info->pfMETC << " new met " << vMetEE.Mod() << endl;
-        }
-        metDJee      = vMetEE.Mod();
-        metPhiDJee   = vMetEE.Phi();
-        
-        }
-        // sumEtDJee = 0;
           
         if(!isData){
-          // Loop through the photons to determine the Prefiring scale factor
-          prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
-          for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-            const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-            if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-            prefirePhoton *= 1. - TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 );
-          } 
-          prefirePhotUp = max(prefirePhoton+(1-prefirePhoton)*0.20,1.0);
-          prefirePhotDown = max(prefirePhoton-(1-prefirePhoton)*0.20,1.0);
-          
-        
-          prefireJet=1; prefireJetUp=1; prefireJetDown=1;
-          
-          if(hasJet){
-            for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-              const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);          
-              if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-              prefireJet*= 1. - TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.);
-            }
-          }
-          prefireJetUp = max(prefireJet+(1-prefireJet)*0.20,1.0);
-          prefireJetDown = max(prefireJet-(1-prefireJet)*0.20,1.0);
-          
-          // loop through photons and jets
-          // overlap is anything within deltaR < 0.4.
-          // take max prefire prob for any overlap cases
-          //toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi))<0.4
-          // total prefire probability = product of all (1-prob) for photons,jets, & remove the overlap
-          prefireWeight=prefireJet*prefirePhoton;
-          prefireUp=prefireJetUp*prefirePhotUp;
-          prefireDown=prefireJetDown*prefirePhotDown;
-          if(hasJet){
-            for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
-              const baconhep::TPhoton *photon = (baconhep::TPhoton*)((*scArr)[ip]);
-              if(fabs(photon->eta) < 2 || fabs(photon->eta) > 5) continue;
-              // now loop through jets:
-              double rmP = 1;
-
-              for(Int_t ip=0; ip<jetArr->GetEntriesFast(); ip++) {
-                const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ip]);
-                if(fabs(jet->eta) < 2 || fabs(jet->eta) > 5) continue;
-                // check if the jet and photon overlap: 
-                if(toolbox::deltaR(jet->eta, jet->phi, photon->eta, photon->phi)>0.4) continue;
-                // photon & jet overlap, now get min to divide out 
-                  rmP = min(TMath::Max( (double)prefirePhotonCorr.getCorr(photon->eta, photon->pt) , 0.0 ), TMath::Max((double)prefireJetCorr.getCorr(jet->eta, jet->pt),0.));
-              }
-              // divide out the lesser of the two probabilities
-              if(rmP<1.0)prefireWeight = prefireWeight / (1 - rmP);
-            }
-          }
-          
-          prefireUp = min(prefireWeight+(1-prefireWeight)*0.20,1.0);
-          prefireDown = min(prefireWeight-(1-prefireWeight)*0.20,1.0);
+          pfire.setObjects(scArr,jetArr);
+          pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
+          pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
+          pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
         }
-  // cout << "blah " << endl;
+
         /******** We have a Z candidate! HURRAY! ********/
         nsel+=weight;
         nselvar+=weight*weight;
@@ -732,37 +594,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             hasGenMatch = kTRUE;
           }
         }
-        // cout << "lkjkjf" << endl;
 	
         if (hasGen) {
           genMuonPt1 = toolbox::getGenLep(genPartArr, vTag);
           genMuonPt2 = toolbox::getGenLep(genPartArr, vProbe);
-          
-          // cout << "aaaaaaaaaaa" << endl;
-          if(isRecoil&&!isSignal&&!isWrongFlavor){
-            // std::cout <<"Filling the Zxx lheweight" << std::endl;
-            // cout << "gen-
-            lheweight[0]=gen->lheweight[0];
-            lheweight[1]=gen->lheweight[1];
-            lheweight[2]=gen->lheweight[2];
-            lheweight[3]=gen->lheweight[3];
-            lheweight[4]=gen->lheweight[5];
-            lheweight[5]=gen->lheweight[7];
-            for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf]=gen->lheweight[8+npdf];
-          }else{
-            // std::cout << "filling the lheweight" << std::endl;
-            lheweight[0]=gen->lheweight[1];
-            lheweight[1]=gen->lheweight[2];
-            lheweight[2]=gen->lheweight[3];
-            lheweight[3]=gen->lheweight[4];
-            lheweight[4]=gen->lheweight[6];
-            lheweight[5]=gen->lheweight[8];
-            for(int npdf=0; npdf<NPDF; npdf++) lheweight[npdf+NQCD]=gen->lheweight[9+npdf];
-            // std::cout << lheweight[0] << "  "  << gen->lheweight[1] << std::endl;
-            // std::cout << lheweight[1] << "  "  << gen->lheweight[2] << std::endl;
-            // std::cout << lheweight[6] << "  "  << gen->lheweight[9] << std::endl;
-          }
-          
           
           id_1      = gen->id_1;
           id_2      = gen->id_2;
@@ -782,7 +617,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           scalePDF  = -999;
           weightPDF = -999;
         }
-        // cout << "bbbbb" << endl;
 	
         //
         // Fill tree
@@ -832,12 +666,6 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         TVector2 vU = -1.0*(vMet+vZPt);
         u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
         u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-        // cout << "met? " << endl;
-        TVector2 vMetDJ((metDJee)*cos(metPhiDJee), (metDJee)*sin(metPhiDJee));
-        TVector2 vUDJ = -1.0*(vMetDJ+vZPt);
-        u1DJee = ((vDilep.Px())*(vUDJ.Px()) + (vDilep.Py())*(vUDJ.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-        u2DJee = ((vDilep.Px())*(vUDJ.Py()) - (vDilep.Py())*(vUDJ.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
-        // cout << "met? nnnn " << endl;
         
         TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
         TVector2 vTkU = -1.0*(vTkMet+vZPt);
@@ -859,6 +687,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         delete genlep1;
         delete genlep2;
         genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0, genlep1=0, genlep2=0;
+        // reset everything to 1
+        prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+        prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
+        prefireWeight=1; prefireUp    =1; prefireDown    =1;
       }
       delete infile;
       infile=0, eventTree=0;    

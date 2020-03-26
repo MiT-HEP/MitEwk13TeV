@@ -51,7 +51,7 @@
 #endif
 
 //=== MAIN MACRO ================================================================================================= 
-void computeAccSelZeeBinned_Sys(const TString conf,            // input file
+void computeAccSelZee(const TString conf,            // input file
 			    const TString inputDir,
                             const TString outputDir,        // output directory
           const TString  sqrts, 
@@ -205,7 +205,6 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
     // loop over events
     //
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0.05*eventTree->GetEntries(); ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
     for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry+=15) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
@@ -342,6 +341,8 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
 
           
           corr = effs.fullEfficiencies(&vEle1,q1,&vEle2,q2);
+          // corr = effs.dataOnly(&vEle1,q1,&vEle2,q2);
+          // dataeff = effs.dataOnly(&vEle1,q1,&vEle2,q2);
           vector<double> uncs_gsf = effs.getUncSel(&vEle1,q1,&vEle2,q2);
           
           corrFSR *= uncs_gsf[0]*effs.computeHLTSF(&vEle1,q1,&vEle2,q2); // alternate fsr model
@@ -370,7 +371,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
           nSelCorrVarvMC[ifile]+=weight*weight*corrMC*corrMC;
           nSelCorrVarvBkg[ifile]+=weight*weight*corrBkg*corrBkg;
           nSelCorrVarvTag[ifile]+=weight*weight*corrTag*corrTag;
-          nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+          // nSelCorrVarv[ifile]+=weight*weight*corr*corr;
         }
       }
     }
@@ -453,6 +454,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
     cout << "    *** Acceptance ***" << endl;
     cout << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
     cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
+    cout << "  ==total efficiency==> " <<  setw(4) << accCorrv[ifile]/accv[ifile] << endl;
     cout << "          pct: " << 100*accErrCorrv[ifile] /accCorrv[ifile] << endl;
     cout << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
     cout << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;
@@ -481,6 +483,7 @@ void computeAccSelZeeBinned_Sys(const TString conf,            // input file
     txtfile << endl;
     txtfile << "    *** Acceptance ***" << endl;
     txtfile << "          nominal: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
+    txtfile << "  ==total efficiency==> " <<  setw(4) << accCorrv[ifile]/accv[ifile] << endl;
     txtfile << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
     txtfile << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
     txtfile << "           MC unc: " << accCorrvMC[ifile]  << " +/- " << accErrCorrvMC[ifile]  << endl;

@@ -20,7 +20,6 @@
 #include <TRandom3.h>
 #include <TGaxis.h>
 #include "TLorentzVector.h"           // 4-vector class
-// #include "AppEffSF.hh"
 // helper class to handle efficiency tables
 #include "../Utils/CEffUser1D.hh"
 #include "../Utils/CEffUser2D.hh"
@@ -108,14 +107,10 @@ class AppEffSF {
     // return a vector with each of the uncertainties propagated to final acc values
     vector<double> computeAllUncertainties(basicEff &effs, effUnc &uncs, TLorentzVector *l1, int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
       vector<double> res;
-      // cout << "FSR " << endl;
       res.push_back(computeWithUnc(effs, uncs.fsrPos, uncs.fsrNeg, l1, q1, l2, q2));
       
-      // cout << "mc " << endl;
       res.push_back(computeWithUnc(effs, uncs.mcPos,  uncs.mcNeg,  l1, q1, l2, q2));
-      // cout << "bkg " << endl;
       res.push_back(computeWithUnc(effs, uncs.bkgPos, uncs.bkgNeg, l1, q1, l2, q2));
-      // cout << "tag " << endl;
       res.push_back(computeWithUnc(effs, uncs.tagPos, uncs.tagNeg, l1, q1, l2, q2));
       
       return res;
@@ -123,7 +118,6 @@ class AppEffSF {
     
     double computeWithUnc(basicEff &effs, CEffUser2D &varPos, CEffUser2D &varNeg, TLorentzVector *l1, int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
       double effdata = 1, effmc = 1;
-      // cout << "hello" << endl;
       if(q1>0) {
           effmc   *= effs.mcPos.getEff(l1->Eta(), l1->Pt());
           effdata *= effs.dataPos.getEff(l1->Eta(), l1->Pt()) * varPos.getEff(l1->Eta(), l1->Pt());
@@ -144,26 +138,27 @@ class AppEffSF {
       return effdata/effmc;
     }
     
-    // some functions to load the systmatic uncertainty files
-    // syst unc only applies to the GSF (electrons), and Sta / SIT (muons)
-    void addSystematic(){
-      return;
-    }
-    
     // compute efficiencies
     double fullEfficiencies(TLorentzVector *l1, int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
-      double effmc = 1, effdata = 1;
-      // vector<double>
       // if there is a second lepton we need to calculate twice
       double corr = 1;
       corr *= computeHLTSF(l1, q1, l2, q2);
       corr *= computeSelSF(l1, q1, l2, q2);
       if(isMuon){
-        // cout << "Muon" << endl;
         corr *= computeStaSF(l1, q1, l2, q2);
       }
      
       
+      return corr;
+    }
+    
+    double dataOnly(TLorentzVector *l1, int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
+      double corr = 1;
+      corr *= effHLTData(l1, q1, l2, q2);
+      corr *= effSelData(l1, q1, l2, q2);
+      if(isMuon){
+        corr *= effStaData(l1, q1, l2, q2);
+      }
       return corr;
     }
   
@@ -412,6 +407,82 @@ class AppEffSF {
       return corr;
     }
     
+    double effHLTData(TLorentzVector *l1,  int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
+      double effdata = 1.0; 
+      double effmc = 1.0;
+      double corr = 1.0;
+      
+      if(q1>0) { 
+        effdata *= (1.-hlt.dataPos.getEff((l1->Eta()), l1->Pt())); 
+      } else {
+        effdata *= (1.-hlt.dataNeg.getEff((l1->Eta()), l1->Pt())); 
+      }
+      if(!l2) {
+        effdata = 1.-effdata;
+        corr *= effdata/effmc;
+        return corr;
+      }
+      if(q2>0) {
+        effdata *= (1.-hlt.dataPos.getEff((l2->Eta()), l2->Pt())); 
+      } else {
+        effdata *= (1.-hlt.dataNeg.getEff((l2->Eta()), l2->Pt())); 
+      }
+      effdata = 1.-effdata;
+      corr *= effdata/effmc;
+      return corr;
+    }
+    
+    double effStaData(TLorentzVector *l1,  int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
+      double effdata = 1.0; 
+      double effmc = 1.0;
+      double corr = 1.0;
+      if(q1>0) { 
+        effdata *= sta.dataPos.getEff((l1->Eta()), l1->Pt()); 
+      } else {
+        effdata *= sta.dataNeg.getEff((l1->Eta()), l1->Pt()); 
+      }
+      if(!l2) {
+        effdata = effdata;
+        effmc   = effmc;
+        corr *= effdata/effmc;
+        return corr;
+      }
+      if(q2>0) {
+        effdata *= sta.dataPos.getEff((l2->Eta()), l2->Pt()); 
+      } else {
+        effdata *= sta.dataNeg.getEff((l2->Eta()), l2->Pt()); 
+      }
+      effdata = effdata;
+      effmc   = effmc;
+      corr *= effdata/effmc;
+      return corr;
+    }
+    
+    double effSelData(TLorentzVector *l1,  int q1, TLorentzVector* l2 = nullptr, int q2 = 0){
+      double effdata = 1.0; 
+      double effmc = 1.0;
+      double corr = 1.0;
+      if(q1>0) { 
+        effdata *= sel.dataPos.getEff((l1->Eta()), l1->Pt()); 
+      } else {
+        effdata *= sel.dataNeg.getEff((l1->Eta()), l1->Pt()); 
+      }
+      if(!l2) {
+        effdata = effdata;
+        effmc   = effmc;
+        corr *= effdata/effmc;
+        return corr;
+      }
+      if(q2>0) {
+        effdata *= sel.dataPos.getEff((l2->Eta()), l2->Pt()); 
+      } else {
+        effdata *= sel.dataNeg.getEff((l2->Eta()), l2->Pt()); 
+      }
+      effdata = effdata;
+      effmc   = effmc;
+      corr *= effdata/effmc;
+      return corr;
+    }
   
 };
 

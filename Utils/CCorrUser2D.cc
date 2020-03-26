@@ -24,6 +24,14 @@ Float_t CCorrUser2D::getCorr(const Double_t x, const Double_t y)
   }
   return getValue(hCorr,x,y);
 }
+Float_t CCorrUser2D::getErr(const Double_t x, const Double_t y)
+{
+  if(!hCorr) {
+    cout << "Corrections not loaded! Aborting..." << endl;
+    assert(0);
+  }
+  return getCorrError(hCorr,x,y);
+}
 
 //--------------------------------------------------------------------------------------------------
 Float_t CCorrUser2D::getErrLow(const Double_t x, const Double_t y)
@@ -129,6 +137,34 @@ Float_t CCorrUser2D::getValue(const TH2D* h, const Double_t x, const Double_t y)
   
   if(ix>0 && iy>0)
     return h->GetBinContent(h->GetBin(ix,iy));
+  else 
+    return -1;
+}
+
+
+Float_t CCorrUser2D::getCorrError(const TH2D* h, const Double_t x, const Double_t y)
+{
+  Int_t ix=0;
+  Int_t iy=0;
+  const Int_t nx = h->GetNbinsX();
+  const Int_t ny = h->GetNbinsY();
+  
+  for(Int_t i=1; i<=nx; i++) {
+    if((x >= h->GetXaxis()->GetBinLowEdge(i)) && (x < h->GetXaxis()->GetBinLowEdge(i+1))) {
+      ix=i;
+      break;
+    }
+  }
+  
+  for(Int_t i=1; i<=ny; i++) {
+    if((y >= h->GetYaxis()->GetBinLowEdge(i)) && (y < h->GetYaxis()->GetBinLowEdge(i+1))) {
+      iy=i;
+      break;
+    }
+  }
+  
+  if(ix>0 && iy>0)
+    return h->GetBinError(h->GetBin(ix,iy));
   else 
     return -1;
 }

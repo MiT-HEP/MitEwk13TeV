@@ -24,7 +24,7 @@
   gROOT->Macro("../Utils/CPlot.cc++");
   gROOT->Macro("../Utils/MitStyleRemix.cc++");
   gROOT->Macro("../EleScale/EnergyScaleCorrection.cc++");
-  gROOT->Macro("CCorrUser2D.cc+");
+  gROOT->Macro("../Utils/CCorrUser2D.cc+");
  
 
                

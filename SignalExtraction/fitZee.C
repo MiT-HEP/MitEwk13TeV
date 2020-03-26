@@ -71,21 +71,23 @@ void fitZee(const TString  inputDir,    // input directory
   fnamev.push_back(inputDir + TString("/") + TString("zee_select.root"));   typev.push_back(eZee);
   
   
-    // fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
-  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  // fnamev.push_back(inputDir + TString("/") + TString("dib_select.root"));  typev.push_back(eDib);
-  // fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
-  
-  fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
-  fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
-  fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+  fnamev.push_back(inputDir + TString("/") + TString("wx_select.root"));  typev.push_back(eWx);
   fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
-  fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
   fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
+  fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
   fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
-  fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
-  fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
-  fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
+  fnamev.push_back(inputDir + TString("/") + TString("top_select.root"));  typev.push_back(eTop);
+  
+  // fnamev.push_back(inputDir + TString("/") + TString("wx0_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx1_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("wx2_select.root"));  typev.push_back(eWx);
+  // fnamev.push_back(inputDir + TString("/") + TString("zxx_select.root"));  typev.push_back(eZxx);
+  // fnamev.push_back(inputDir + TString("/") + TString("ww_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("wz_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("zz_select.root"));  typev.push_back(eDib);
+  // fnamev.push_back(inputDir + TString("/") + TString("top1_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("top2_select.root"));  typev.push_back(eTop);
+  // fnamev.push_back(inputDir + TString("/") + TString("top3_select.root"));  typev.push_back(eTop);
  
   //
   // Fit options
@@ -297,10 +299,10 @@ void fitZee(const TString  inputDir,    // input directory
     intree->SetBranchAddress("genVMass",   &genVMass);    // event weight per 1/fb (MC)
     intree->SetBranchAddress("q1",         &q1);	  // charge of tag lepton
     intree->SetBranchAddress("q2",         &q2);	  // charge of probe lepton
-    intree->SetBranchAddress("lep1",       &lep1);        // tag lepton 4-vector
-    intree->SetBranchAddress("lep2",       &lep2);        // probe lepton 4-vector
-    intree->SetBranchAddress("lep1_raw",       &lep1_raw);        // tag lepton 4-vector
-    intree->SetBranchAddress("lep2_raw",       &lep2_raw);        // probe lepton 4-vector
+    intree->SetBranchAddress("lep1_raw",       &lep1);        // tag lepton 4-vector
+    intree->SetBranchAddress("lep2_raw",       &lep2);        // probe lepton 4-vector
+    // intree->SetBranchAddress("lep1_raw",       &lep1_raw);        // tag lepton 4-vector
+    // intree->SetBranchAddress("lep2_raw",       &lep2_raw);        // probe lepton 4-vector
     intree->SetBranchAddress("sc1",       &sc1);        // sc1 4-vector
     intree->SetBranchAddress("sc2",       &sc2);        // sc2 4-vector
     intree->SetBranchAddress("dilep",     &dilep);        // sc2 4-vector
@@ -337,8 +339,11 @@ void fitZee(const TString  inputDir,    // input directory
       if(lep1->Pt()        < PT_CUT)    continue;
       if(lep2->Pt()       < PT_CUT)    continue;
       
-      // if(lep1->Pt()        > 30)    continue;
-      // if(lep2->Pt()        > 30)    continue;
+      if(isnan(prefireUp) || isnan(prefireDown)){
+        prefireUp   = prefireWeight;
+        prefireDown = prefireWeight;
+      }
+      
       
       hCompareElePtEcalE->Fill(lep1->Pt(),sc1->Pt());
       if(fabs(lep1->Eta())>=ECAL_GAP_LOW && fabs(lep1->Eta())<=ECAL_GAP_HIGH) continue;
@@ -486,6 +491,8 @@ void fitZee(const TString  inputDir,    // input directory
         double massD=(l1D+l2D).M();
 
         if(typev[ifile]==eZee)  {
+        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
+        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) continue;
         yield_zee += weight*corr;
         yield_zee_up += weight*corrUp;
         yield_zee_dn += weight*corrDown;
@@ -493,7 +500,6 @@ void fitZee(const TString  inputDir,    // input directory
         yield_zee_pfPhoton += scale1fb*lumi*corr*prefirePhoton/totalNorm;
         yield_zee_pfJet += scale1fb*lumi*corr*prefireJet/totalNorm;
         yield_zee_unc += weight*weight*corr*corr;
-        if(genVMass<MASS_LOW || genVMass>MASS_HIGH) yield_wm+= weight*corr;
         
         hZeeUnc[mcUp]->Fill(mass,weight*corrMC);
         hZeeUnc[mcDown]->Fill(mass,weight*(corr+(corr-corrMC)));
@@ -751,7 +757,8 @@ void fitZee(const TString  inputDir,    // input directory
   
   // label for lumi
   char lumitext[100];
-  sprintf(lumitext,"%.1f fb^{-1}  (13 TeV)",lumi/1000);  
+  if(sqrts=="13TeV")sprintf(lumitext,"%.1f pb^{-1}  (13 TeV)",lumi);  
+  else sprintf(lumitext,"%.1f pb^{-1}  (5 TeV)",lumi);  
   
   char normtext[100];
   sprintf(normtext,"MC normalized to data (#times %.2f)",MCscale);  
@@ -816,8 +823,8 @@ void fitZee(const TString  inputDir,    // input directory
   plotZee.Draw(c,kFALSE,format,1);
 
   CPlot plotZeeDiff("zee"+norm,"","M(e^{+}e^{-}) [GeV]","#frac{Data-Pred}{Data}");
-  plotZeeDiff.AddHist1D(massUnc,"E3",kGray,1,1);
-  plotZeeDiff.AddHist1D(massUnc2,"E3",kBlack,1,1);
+  // plotZeeDiff.AddHist1D(massUnc,"E3",kGray,1,1);
+  // plotZeeDiff.AddHist1D(massUnc2,"E3",kBlack,1,1);
   plotZeeDiff.AddHist1D(hZeeDiff,"EX0",ratioColor);
   plotZeeDiff.SetYRange(-0.2,0.2);
   plotZeeDiff.AddLine(MASS_LOW, 0,MASS_HIGH, 0,kBlack,1);

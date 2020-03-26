@@ -32,8 +32,9 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccGenWe_Sys(const TString conf,       // input file
+void computeAccGenWe(const TString conf,       // input file
                      const TString outputDir, // output directory
+                     const TString outputName, // output filename
                      const bool doDressed=0,
 		             const Int_t   charge=0      // 0 = inclusive, +1 = W+, -1 = W-
 ) {
@@ -159,31 +160,36 @@ void computeAccGenWe_Sys(const TString conf,       // input file
 
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) { 
+    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.01*eventTree->GetEntries()); ientry++) { 
     // for(UInt_t ientry=0; ientry<1000; ientry++) {
     // for(UInt_t ientry=0; ientry<10000; ientry++) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+      // if(ientry==1887208) continue;
       // if(ientry%1==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
       
       TLorentzVector *vec=new TLorentzVector(0,0,0,0);
-	  TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-	  TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       Int_t lepq1=-99;
-	  Int_t lepq2=-99;
+      Int_t lepq2=-99;
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       if (charge==-1 && toolbox::flavor(genPartArr, BOSON_ID)!=LEPTON_ID) continue;
       if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       // int mparam = fabs(1-fabs(charge));
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
-      if(charge!=0&&charge!=lepq1) lep1=lep2;
-      if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq2<0){
-        // std::cout << "lep2 ! " << BOSON_ID*glepq2 << std::endl;
-        //genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+      if(charge!=0&&charge!=lepq1) {
+        TLorentzVector *tmp = lep1;
         lep1=lep2;
+        lep2=tmp;
+      }
+      if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq2<0){
+        TLorentzVector *tmp = lep1;
+        lep1=lep2;
+        lep2=tmp;
       }
       
       
@@ -204,9 +210,12 @@ void computeAccGenWe_Sys(const TString conf,       // input file
           }
       }
 
+
+
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
       
+    
       // -------------------------------------------------
       // Clean this up
       // -------------------------------------------------
@@ -240,6 +249,10 @@ void computeAccGenWe_Sys(const TString conf,       // input file
         isBarrel = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
       }
       else continue;
+
+      
+      double mtgen  = sqrt( 2.0 * (lep1->Pt()) * (lep2->Pt()) * (1.0-cos(toolbox::deltaPhi(lep1->Phi(),lep2->Phi()))) );
+      if(mtgen < 40) continue;
       
       nSelv[ifile]+=weight;
       if(isBarrel) nSelBv[ifile]+=weight;
@@ -282,6 +295,24 @@ void computeAccGenWe_Sys(const TString conf,       // input file
   double accTot=0;
   double accNum=0, accDnm=0;
   std::cout << "here" << std::endl;
+  
+  // Print full set for efficiency calculations
+  char masterOutput[600];
+  // just start printing....
+  for(uint ifile = 0; ifile < fnamev.size(); ++ifile){// go through info per file
+    sprintf(masterOutput,"%s/%s_%d.txt",outputDir.Data(),outputName.Data(),ifile);
+    ofstream txtfile;
+    txtfile.open(masterOutput);
+    txtfile << "acc " << nSelv[ifile]/nEvtsv[ifile] << endl;
+    
+    for(int j = 0; j < NPDF; ++j){
+      txtfile << "pdf" << j << " " << nSelv_PDF[ifile][j]/nEvtsv_PDF[ifile][j] << endl;
+    }
+    for(int j = 0; j < NQCD; ++j){
+      txtfile << "qcd" << j << " " << nSelv_QCD[ifile][j]/nEvtsv_QCD[ifile][j] << endl;
+    }
+    txtfile.close();
+  }
   
   
   for(int i=0;i<NPDF;++i) {accv_PDF.push_back(0);}

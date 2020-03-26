@@ -50,7 +50,7 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccSelWe_Sys(const TString conf,            // input file
+void computeAccSelWe(const TString conf,            // input file
 			    const TString inputDir, // efficiency main directory
           const TString outputDir,        // output directory
 		      const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
@@ -212,8 +212,8 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     //
     // loop over events
     //
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
+    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
@@ -338,6 +338,7 @@ void computeAccSelWe_Sys(const TString conf,            // input file
 
           
     corr = effs.fullEfficiencies(&vElefinal,q);
+    // corr = effs.dataOnly(&vElefinal,q);
     vector<double> uncs_gsf = effs.getUncSel(&vElefinal,q);
     
     corrFSR *= uncs_gsf[0]*effs.computeHLTSF(&vElefinal,q); // alternate fsr model
@@ -353,7 +354,7 @@ void computeAccSelWe_Sys(const TString conf,            // input file
   
     nSelv[ifile]+=weight;
     nSelCorrv[ifile]+=weight*corr;
-    nSelCorrVarv[ifile]+=weight*weight*corr*corr;
+    // nSelCorrVarv[ifile]+=weight*weight*corr*corr;
     nSelCorrvFSR[ifile]+=weight*corrFSR;
 	  nSelCorrvMC[ifile]+=weight*corrMC;
 	  nSelCorrvBkg[ifile]+=weight*corrBkg;
@@ -469,6 +470,7 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     cout << "  ==eff corr==> " << accECorrv[ifile] << " +/- " << accErrECorrv[ifile] << endl;
     cout << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     cout << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
+    cout << "  ==total efficiency==> " <<  setw(4) << accCorrv[ifile]/accv[ifile] << endl;
     cout << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
     cout << "          pct: " << 100*accErrCorrv[ifile] /accCorrv[ifile] << endl;
     cout << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
@@ -508,6 +510,7 @@ void computeAccSelWe_Sys(const TString conf,            // input file
     txtfile << "  ==eff corr==> " << accECorrv[ifile] << " +/- " << accErrECorrv[ifile] << endl;
     txtfile << "      total: " << setw(12) << nSelv[ifile]  << " / " << nEvtsv[ifile] << " = " << accv[ifile]  << " +/- " << accErrv[ifile];
     txtfile << "  ==eff corr==> " << accCorrv[ifile]  << " +/- " << accErrCorrv[ifile] << endl;
+    txtfile << "  ==total efficiency==> " <<  setw(4) << accCorrv[ifile]/accv[ifile] << endl;
     txtfile << "     SF corrected: " << accCorrv[ifile]    << " +/- " << accErrCorrv[ifile]    << endl;
     txtfile << "          FSR unc: " << accCorrvFSR[ifile] << " +/- " << accErrCorrvFSR[ifile] << endl;
     txtfile << "  ==pct diff (FSR) ==> " << 100*(accCorrvFSR[ifile]-accCorrv[ifile])/accCorrv[ifile]  << endl;

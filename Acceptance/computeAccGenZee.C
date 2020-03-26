@@ -33,8 +33,9 @@
 
 //=== MAIN MACRO ================================================================================================= 
 
-void computeAccGenZee_Sys(const TString conf,             // input file
+void computeAccGenZee(const TString conf,             // input file
                       const TString outputDir,         // output directory
+                       const TString outputName, // output filename
                       const bool doDressed=0
 ) {
   gBenchmark->Start("computeAccGenZee_Sys");
@@ -105,15 +106,7 @@ void computeAccGenZee_Sys(const TString conf,             // input file
   vector<Double_t> accErrv, accErrBBv, accErrBEv, accErrEEv;
   
   vector<Double_t> nEvtsv_QCD, nSelv_QCD;
-  vector<Double_t> accv_QCD;
-  vector<Double_t> accErrv_QCD;
-  
   vector<Double_t> nEvtsv_PDF, nSelv_PDF;
-  vector<Double_t> accv_PDF;
-  vector<Double_t> accErrv_PDF;
-    
-  double accv_uncPDF = 0, accv_uncPDF_num = 0, accv_uncPDF_dnm = 0;
-  double accv_uncQCD = 0, accv_uncQCD_num = 0, accv_uncQCD_dnm = 0;
     
   //
   // loop through files
@@ -144,7 +137,6 @@ void computeAccGenZee_Sys(const TString conf,             // input file
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
     // for(UInt_t ientry=0; (uint)ientry<(eventTree->GetEntries())*0.01; ientry++) {
-    // for(UInt_t ientry=0; ientry<100; ientry++) {
       if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
@@ -163,14 +155,8 @@ void computeAccGenZee_Sys(const TString conf,             // input file
             const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
             if(fabs(genloop->pdgId)!=22) continue;
             gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep1->Eta(),lep1->Phi())<0.1)
-              {
-            lep1->operator+=(*gph);
-              }
-            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1)
-              {
-            lep2->operator+=(*gph);
-              }
+            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep1->Eta(),lep1->Phi())<0.1) lep1->operator+=(*gph);
+            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1) lep2->operator+=(*gph);
           }
       }
 
@@ -183,25 +169,16 @@ void computeAccGenZee_Sys(const TString conf,             // input file
       // -------------------------------------------------
       
       // standard 13 tev ??
-      // nEvtsv_QCD[0]+=weight*gen->lheweight[0];
-      // nEvtsv_QCD[1]+=weight*gen->lheweight[1];
-      // nEvtsv_QCD[2]+=weight*gen->lheweight[2];
-      // nEvtsv_QCD[3]+=weight*gen->lheweight[3];
-      // nEvtsv_QCD[4]+=weight*gen->lheweight[5];
-      // nEvtsv_QCD[5]+=weight*gen->lheweight[7];
-      // for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
-            
-      // minlo
-      nEvtsv_QCD[0]+=weight*gen->lheweight[1];
-      nEvtsv_QCD[1]+=weight*gen->lheweight[2];
-      nEvtsv_QCD[2]+=weight*gen->lheweight[3];
-      nEvtsv_QCD[3]+=weight*gen->lheweight[4];
-      nEvtsv_QCD[4]+=weight*gen->lheweight[6];
-      nEvtsv_QCD[5]+=weight*gen->lheweight[8];
-      for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
+      nEvtsv_QCD[0]+=weight*gen->lheweight[0];
+      nEvtsv_QCD[1]+=weight*gen->lheweight[1];
+      nEvtsv_QCD[2]+=weight*gen->lheweight[2];
+      nEvtsv_QCD[3]+=weight*gen->lheweight[3];
+      nEvtsv_QCD[4]+=weight*gen->lheweight[5];
+      nEvtsv_QCD[5]+=weight*gen->lheweight[7];
+      for(int npdf=0; npdf<NPDF; npdf++) nEvtsv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
 
-      if(lep1->Pt() < PT_CUT)         continue;
-      if(lep2->Pt() < PT_CUT)         continue;
+      if(lep1->Pt()        < PT_CUT)         continue;
+      if(lep2->Pt()        < PT_CUT)         continue;
       if(fabs(lep1->Eta()) > ETA_CUT) continue;
       if(fabs(lep2->Eta()) > ETA_CUT) continue;
       if(fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
@@ -216,25 +193,17 @@ void computeAccGenZee_Sys(const TString conf,             // input file
       nSelv[ifile]+=weight;
       if(isB1 && isB2)        { nSelBBv[ifile]+=weight; }
       else if(!isB1 && !isB2) { nSelEEv[ifile]+=weight; }
-      else		      { nSelBEv[ifile]+=weight; } 
+      else		                { nSelBEv[ifile]+=weight; } 
       // Get the values with the QCD and PDF weights:
       // QCD first
-      // nSelv_QCD[0]+=weight*gen->lheweight[0];
-      // nSelv_QCD[1]+=weight*gen->lheweight[1];
-      // nSelv_QCD[2]+=weight*gen->lheweight[2];
-      // nSelv_QCD[3]+=weight*gen->lheweight[3];
-      // nSelv_QCD[4]+=weight*gen->lheweight[5];
-      // nSelv_QCD[5]+=weight*gen->lheweight[7];
-      // for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
-      // cout << "weight = " << weight << endl;
-      // cout << gen->lheweight[0]  << " " << gen->lheweight[1]  << " " << gen->lheweight[2]  << " " << gen->lheweight[3]  << " " << gen->lheweight[4]  << " " << gen->lheweight[5]  << " " << gen->lheweight[6]  << " " << gen->lheweight[7]  << " " << gen->lheweight[8]  << " " << endl;
-      nSelv_QCD[0]+=weight*gen->lheweight[1];
-      nSelv_QCD[1]+=weight*gen->lheweight[2];
-      nSelv_QCD[2]+=weight*gen->lheweight[3];
-      nSelv_QCD[3]+=weight*gen->lheweight[4];
-      nSelv_QCD[4]+=weight*gen->lheweight[6];
-      nSelv_QCD[5]+=weight*gen->lheweight[8];
-      for(int npdf=0; npdf<NPDF; npdf++)  nSelv_PDF[npdf]+=weight*gen->lheweight[9+npdf];
+      nSelv_QCD[0]+=weight*gen->lheweight[0];
+      nSelv_QCD[1]+=weight*gen->lheweight[1];
+      nSelv_QCD[2]+=weight*gen->lheweight[2];
+      nSelv_QCD[3]+=weight*gen->lheweight[3];
+      nSelv_QCD[4]+=weight*gen->lheweight[5];
+      nSelv_QCD[5]+=weight*gen->lheweight[7];
+      for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
+
     }
     
     // compute acceptances
@@ -245,68 +214,27 @@ void computeAccGenZee_Sys(const TString conf,             // input file
     
     std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
     
-  char txtfnamePDFs[100];
-  sprintf(txtfnamePDFs,"%s/pdf_vars.txt",outputDir.Data());
-  ofstream txtfile1;
-  txtfile1.open(txtfnamePDFs);
-  txtfile1 << accv[0] << std::endl;
-    
-    double sumCheck=0;
-    double sqCheck = 0;
-    double maxPDF = 0;
-    for(int npdf=0; npdf<NPDF; npdf++){
-        accv_PDF.push_back(nSelv_PDF[npdf]/nEvtsv_PDF[npdf]);     
-        std::cout << "accv _pdf" << npdf << "  = " << accv_PDF[npdf] << std::endl;
-        accErrv_PDF.push_back(sqrt(accv_PDF[npdf]*(1.-accv_PDF[npdf])/nEvtsv_PDF[npdf]));
-        std::cout << "nselvpdf " << nSelv_PDF[npdf] << "  nevtsvpdf " << nEvtsv_PDF[npdf] << " ratio " << nSelv_PDF[npdf]/nEvtsv_PDF[npdf] << std::endl;
-        std::cout << "accv " << accv[ifile] << "  accvpdf " << accv_PDF[npdf] << std::endl;
-        std::cout << "diff " << accv_PDF[npdf]-accv[ifile] << "  pct diff " << 100*(accv_PDF[npdf]-accv[ifile])/accv[ifile] << std::endl;
-        // a = sum(((acc_i-accTot)/accTot)^2)
-        // unc = sqrt(a/NPDF)
-        double pctDiff = (accv_PDF[npdf]-accv[ifile])/accv[ifile];
-        accv_uncPDF+=pctDiff*pctDiff;
-        sumCheck+=fabs(pctDiff);
-        sqCheck+=accv_uncPDF;
-        (fabs(pctDiff)>maxPDF)?maxPDF=fabs(pctDiff):maxPDF=maxPDF;
-        accv_uncPDF_num+=(nSelv_PDF[npdf]-nSelv[ifile])*(nSelv_PDF[npdf]-nSelv[ifile])/(NPDF*nSelv[ifile]*nSelv[ifile]);
-        accv_uncPDF_dnm+=(nEvtsv_PDF[npdf]-nEvtsv[ifile])*(nEvtsv_PDF[npdf]-nEvtsv[ifile])/(NPDF*nEvtsv[ifile]*nEvtsv[ifile]);
-        txtfile1 << accv_PDF[npdf] << std::endl;
-    }
-    txtfile1.close();
-  sprintf(txtfnamePDFs,"%s/qcd_vars.txt",outputDir.Data());
-  ofstream txtfile2;
-  txtfile2.open(txtfnamePDFs);
-  txtfile2 << accv[0] << std::endl;
-    
-    std::cout << "wum check " << sumCheck << std::endl;
-    std::cout << "sq check " << sqCheck << std::endl;
-    std::cout << "maxpdf  " << maxPDF << std::endl;
-    accv_uncPDF=sqrt(accv_uncPDF/NPDF);
-    accv_uncPDF_num=sqrt(accv_uncPDF_num);
-    accv_uncPDF_dnm=sqrt(accv_uncPDF_dnm);
-    for(int nqcd=0; nqcd<NQCD; nqcd++){
-        accv_QCD.push_back(nSelv_QCD[nqcd]/nEvtsv_QCD[nqcd]);
-        // std::cout << "nselvqcd " << nSelv_QCD[nqcd] << "  nevtsvqcd " << nEvtsv_QCD[nqcd] << " ratio " << nSelv_QCD[nqcd]/nEvtsv_QCD[nqcd] << std::endl;
-        // std::cout << "accv " << accv[ifile] << "  accvqcd " << accv_QCD[nqcd] << std::endl;
-        std::cout << "qcd a " << nqcd <<" " << accv_QCD[nqcd] << "  nom " << accv[ifile] << "  pct diff " << 100*fabs(accv_QCD[nqcd]-accv[ifile])/(accv[ifile]) << std::endl;
-        std::cout << "qcd n " << nqcd <<" " << nSelv_QCD[nqcd] << "  nom " << nSelv[ifile] << "  pct diff n " << 100*fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile] << std::endl;
-        std::cout << "qcd d " << nqcd <<" " << nEvtsv_QCD[nqcd] << "  nom " << nEvtsv[ifile] << "  pct diff d " << 100*fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile] << std::endl;
-        accErrv_QCD.push_back(sqrt(accv_QCD[nqcd]*(1.-accv_QCD[nqcd])/nEvtsv_QCD[nqcd]));
-        // a = abs((acc_i-accTot)/accTot)
-        if(fabs(accv_QCD[nqcd]-accv[ifile])/(accv[ifile]) > accv_uncQCD) accv_uncQCD = fabs(accv_QCD[nqcd]-accv[ifile])/(accv[ifile]);
-        if(fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile] > accv_uncQCD_num) accv_uncQCD_num = fabs(nSelv_QCD[nqcd]-nSelv[ifile])/nSelv[ifile];
-        if(fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile] > accv_uncQCD_dnm) accv_uncQCD_dnm = fabs(nEvtsv_QCD[nqcd]-nEvtsv[ifile])/nEvtsv[ifile];
-        txtfile2 << accv_QCD[nqcd] << std::endl;
-    }
-    txtfile2.close();
-    
-    
     delete infile;
     infile=0, eventTree=0;  
   } 
   
   delete gen;
   
+  
+  
+  // Print full set for efficiency calculations
+  char masterOutput[600];
+  // just start printing....
+  for(uint ifile = 0; ifile < fnamev.size(); ++ifile){// go through info per file
+    sprintf(masterOutput,"%s/%s.txt",outputDir.Data(),outputName.Data());
+    ofstream txtfile;
+    txtfile.open(masterOutput);
+    txtfile << "acc " << nSelv[ifile]/nEvtsv[ifile] << endl;
+    
+    for(int j = 0; j < NPDF; ++j) txtfile << "pdf" << j << " " << nSelv_PDF[j]/nEvtsv_PDF[j] << endl;
+    for(int j = 0; j < NQCD; ++j) txtfile << "qcd" << j << " " << nSelv_QCD[j]/nEvtsv_QCD[j] << endl;
+    txtfile.close();
+  }
     
   //--------------------------------------------------------------------------------------------------------------
   // Output
@@ -329,20 +257,14 @@ void computeAccGenZee_Sys(const TString conf,             // input file
     cout << "     File: " << fnamev[ifile] << endl;
     cout << endl;
     cout << "    *** Acceptance ***" << endl;
-    cout << "     barrel-barrel: " << setw(12) << nSelBBv[ifile] << " / " << nEvtsv[ifile] << " = " << accBBv[ifile] << " +/- " << accErrBBv[ifile] << endl;
-    cout << "     barrel-endcap: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
-    cout << "     endcap-endcap: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
-    cout << "             total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    cout << "   qcd uncertainty: " << setw(12) << accv_uncQCD << std::endl;
-    cout << " qcd uncertainty n: " << setw(12) << accv_uncQCD_num << std::endl;
-    cout << " qcd uncertainty d: " << setw(12) << accv_uncQCD_dnm << std::endl;
-    cout << "   pdf uncertainty: " << setw(12) << accv_uncPDF << std::endl;
-    cout << " pdf uncertainty n: " << setw(12) << accv_uncPDF_num << std::endl;
-    cout << " pdf uncertainty d: " << setw(12) << accv_uncPDF_dnm << std::endl;
+    cout << "     b-b: " << setw(12) << nSelBBv[ifile] << " / " << nEvtsv[ifile] << " = " << accBBv[ifile] << " +/- " << accErrBBv[ifile] << endl;
+    cout << "     b-e: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
+    cout << "     e-e: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
+    cout << "   total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile]   << endl;
     cout << endl;
   }
   
-  char txtfname[100];
+  char txtfname[300];
   sprintf(txtfname,"%s/gen.txt",outputDir.Data());
   ofstream txtfile;
   txtfile.open(txtfname);
@@ -363,16 +285,10 @@ void computeAccGenZee_Sys(const TString conf,             // input file
     txtfile << "     File: " << fnamev[ifile] << endl;
     txtfile << endl;
     txtfile << "    *** Acceptance ***" << endl;
-    txtfile << "     barrel-barrel: " << setw(12) << nSelBBv[ifile] << " / " << nEvtsv[ifile] << " = " << accBBv[ifile] << " +/- " << accErrBBv[ifile] << endl;
-    txtfile << "     barrel-endcap: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
-    txtfile << "     endcap-endcap: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
-    txtfile << "             total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile] << endl;
-    txtfile << "   qcd uncertainty: " << setw(12) << accv_uncQCD << std::endl;
-    txtfile << " qcd uncertainty n: " << setw(12) << accv_uncQCD_num << std::endl;
-    txtfile << " qcd uncertainty d: " << setw(12) << accv_uncQCD_dnm << std::endl;
-    txtfile << "   pdf uncertainty: " << setw(12) << accv_uncPDF << std::endl;
-    txtfile << " pdf uncertainty n: " << setw(12) << accv_uncPDF_num << std::endl;
-    txtfile << " pdf uncertainty d: " << setw(12) << accv_uncPDF_dnm << std::endl;
+    txtfile << "     b-b: " << setw(12) << nSelBBv[ifile] << " / " << nEvtsv[ifile] << " = " << accBBv[ifile] << " +/- " << accErrBBv[ifile] << endl;
+    txtfile << "     b-e: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
+    txtfile << "     e-e: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
+    txtfile << "   total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile]   << endl;
     txtfile << endl;
   }
   txtfile.close();
