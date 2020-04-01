@@ -115,9 +115,6 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
   //
   UInt_t  runNum, lumiSec, evtNum;
   UInt_t  npv, npu;
-  UInt_t  id_1, id_2;
-  Double_t x_1, x_2, xPDF_1, xPDF_2;
-  Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0, *genLep=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genLepPt, genLepPhi;
@@ -125,11 +122,8 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
   Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
-  // Float_t prefireWeight, prefireUp, prefireDown;
-  Float_t met, metPhi, sumEt, mt, u1, u2;
-  Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
-  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
-  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
+  Float_t met, metPhi, mt, u1, u2;
+  Float_t puppiMet, puppiMetPhi, puppiMt, puppiU1, puppiU2;
   Int_t   q;
   
   Float_t genMuonPt;
@@ -198,14 +192,6 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
     outTree->Branch("npv",        &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",        &npu,        "npu/i");         // number of in-time PU events (MC)
-    outTree->Branch("id_1",       &id_1,       "id_1/i");        // PDF info -- parton ID for parton 1
-    outTree->Branch("id_2",       &id_2,       "id_2/i");        // PDF info -- parton ID for parton 2
-    outTree->Branch("x_1",        &x_1,        "x_1/d");         // PDF info -- x for parton 1
-    outTree->Branch("x_2",        &x_2,        "x_2/d");         // PDF info -- x for parton 2
-    outTree->Branch("xPDF_1",     &xPDF_1,     "xPDF_1/d");      // PDF info -- x*F for parton 1
-    outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
-    outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
-    outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("genV",       "TLorentzVector", &genV);      // GEN boson 4-vector (signal MC)
     outTree->Branch("genLep",     "TLorentzVector", &genLep);    // GEN lepton 4-vector (signal MC)
     outTree->Branch("genVPt",     &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
@@ -229,25 +215,11 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
-    outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
-    outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
-    outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
-    outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
-    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass (track MET)
-    outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
-    outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
-    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
-    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
-    outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
-    outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");      // transverse mass (MVA MET)
-    outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
-    outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
     outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
     outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
-    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
     outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
@@ -290,8 +262,7 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
         rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
 
-      eventTree = (TTree*)infile->Get("Events");
-      assert(eventTree);  
+      eventTree = (TTree*)infile->Get("Events");  assert(eventTree);  
       Bool_t hasJet = eventTree->GetBranchStatus("AK4");
       eventTree->SetBranchAddress("Info",          &info);        TBranch *infoBr     = eventTree->GetBranch("Info");
       eventTree->SetBranchAddress("Muon",          &muonArr);     TBranch *muonBr     = eventTree->GetBranch("Muon");
@@ -299,8 +270,8 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
       eventTree->SetBranchAddress("Electron",      &electronArr); TBranch *electronBr = eventTree->GetBranch("Electron");
       eventTree->SetBranchAddress("Photon",        &scArr);       TBranch *scBr       = eventTree->GetBranch("Photon");
       if(hasJet)eventTree->SetBranchAddress("AK4", &jetArr);      TBranch *jetBr      = eventTree->GetBranch("AK4");
-      Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       TBranch *genBr=0, *genPartBr=0;
+      Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen);        genBr     = eventTree->GetBranch("GenEvtInfo");
         eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
@@ -433,176 +404,134 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
 
 
 
-	if(passSel) {
-	  /******** We have a W candidate! HURRAY! ********/
-	  nsel+=weight;
-    nselvar+=weight*weight;
+        if(passSel) {
+          /******** We have a W candidate! HURRAY! ********/
+          nsel+=weight;
+          nselvar+=weight*weight;
 
-    if(!isData){
-      pfire.setObjects(scArr,jetArr);
-      pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
-      pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
-      pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
-    }
-  
-	  TLorentzVector vLep; 
-	  vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
-	  
-	  //
-	  // Fill tree
-	  //
-	  runNum    = info->runNum;
-	  lumiSec   = info->lumiSec;
-	  evtNum    = info->evtNum;
-	  
-	  vertexArr->Clear();
-	  vertexBr->GetEntry(ientry);
-
-	  npv       = vertexArr->GetEntries();
-	  npu	    = info->nPUmean;
-	  genV      = new TLorentzVector(0,0,0,0);
-	  genLep    = new TLorentzVector(0,0,0,0);
-	  genVPt    = -999;
-	  genVPhi   = -999;
-	  genVy     = -999;
-	  genVMass  = -999;
-	  genLepPt  = -999;
-	  genLepPhi = -999;
-	  u1        = -999;
-	  u2        = -999;
-	  tkU1      = -999;
-    tkU2      = -999;
-	  mvaU1     = -999;
-    mvaU2     = -999;
-    id_1      = -999;
-    id_2      = -999;
-    x_1       = -999;
-    x_2       = -999;
-    xPDF_1    = -999;
-    xPDF_2    = -999;
-    scalePDF  = -999;
-    weightPDF = -999;
-
-
-    genMuonPt = 0;
-    if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
-     
-	  if(isRecoil && hasGen) {
-      Int_t glepq1=-99;
-      Int_t glepq2=-99;
-      TLorentzVector *gvec =new TLorentzVector(0,0,0,0);
-      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-      
-	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-        if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
-            toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
-	    }
+          if(!isData){
+            pfire.setObjects(scArr,jetArr);
+            pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
+            pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
+            pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
+          }
         
-        TLorentzVector tvec=*glep1+*glep2;
-        genV=new TLorentzVector(0,0,0,0);
-        genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
-        genVPt   = tvec.Pt();
-        genVPhi  = tvec.Phi();
-        genVy    = tvec.Rapidity();
-        genVMass = tvec.M();
+          TLorentzVector vLep; 
+          vLep.SetPtEtaPhiM(goodMuon->pt, goodMuon->eta, goodMuon->phi, MUON_MASS); 
+          
+          //
+          // Fill tree
+          //
+          runNum    = info->runNum;
+          lumiSec   = info->lumiSec;
+          evtNum    = info->evtNum;
+          
+          vertexArr->Clear();
+          vertexBr->GetEntry(ientry);
 
+          npv       = vertexArr->GetEntries();
+          npu	    = info->nPUmean;
+          genV      = new TLorentzVector(0,0,0,0);
+          genLep    = new TLorentzVector(0,0,0,0);
+          genVPt    = -999;
+          genVPhi   = -999;
+          genVy     = -999;
+          genVMass  = -999;
+          genLepPt  = -999;
+          genLepPhi = -999;
+          u1        = -999;
+          u2        = -999;
+
+          genMuonPt = 0;
+          if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
+           
+          if(isRecoil && hasGen) {
+            Int_t glepq1=-99;
+            Int_t glepq2=-99;
+            TLorentzVector *gvec =new TLorentzVector(0,0,0,0);
+            TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+            TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+            
+            toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+            if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
+              toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
+            }
+              
+            TLorentzVector tvec=*glep1+*glep2;
+            genV=new TLorentzVector(0,0,0,0);
+            genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+            genVPt   = tvec.Pt();
+            genVPhi  = tvec.Phi();
+            genVy    = tvec.Rapidity();
+            genVMass = tvec.M();
+
+              
+            if (gvec && glep1) {
+              genLep    = new TLorentzVector(0,0,0,0);
+              if(BOSON_ID*glepq1>0) genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+              if(BOSON_ID*glepq2>0) genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+              genLepPt  = genLep->Pt();
+              genLepPhi = genLep->Phi();
         
-      if (gvec && glep1) {
-	      genLep    = new TLorentzVector(0,0,0,0);
-	      if(BOSON_ID*glepq1>0) genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-        if(BOSON_ID*glepq2>0) genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-        genLepPt  = genLep->Pt();
-        genLepPhi = genLep->Phi();
-  
-        // U are not used anymore, computed directly from MET and MET PHI in other codes, can probably remove
-        TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
-        TVector2 vLepPt(vLep.Px(),vLep.Py());
+              // U are not used anymore, computed directly from MET and MET PHI in other codes, can probably remove
+              TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
+              TVector2 vLepPt(vLep.Px(),vLep.Py());
 
-        TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
-        TVector2 vU = -1.0*(vMet+vLepPt);
-        u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+              TVector2 vU = -1.0*(vMet+vLepPt);
+              u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+              
+              TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+              TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
+              puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+              puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
         
-        TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
-        TVector2 vTkU = -1.0*(vTkMet+vLepPt);
-        tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+            }
 
-        TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-        TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
-        mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-        
-        TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-        TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
-        puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-  
-      }
-      id_1      = gen->id_1;
-      id_2      = gen->id_2;
-      x_1       = gen->x_1;
-      x_2       = gen->x_2;
-      xPDF_1    = gen->xPDF_1;
-      xPDF_2    = gen->xPDF_2;
-      scalePDF  = gen->scalePDF;
-      weightPDF = gen->weight;
-
-
-	    delete gvec;
-      delete glep1;
-      delete glep2;
-      gvec=0; glep1=0; glep2=0;
-	  }
-	  scale1fb = weight;
-    scale1fbUp = weightUp;
-    scale1fbDown = weightDown;
-	  met	   = info->pfMETC;
-	  metPhi   = info->pfMETCphi;
-	  sumEt    = 0;
-	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
-	  tkMet    = info->trkMET;
-	  tkMetPhi = info->trkMETphi;
-	  tkSumEt  = 0;
-	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
-	  mvaMet   = info->mvaMET;
-	  mvaMetPhi = info->mvaMETphi;
-	  mvaSumEt  = 0;
-	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
+            delete gvec;
+            delete glep1;
+            delete glep2;
+            gvec=0; glep1=0; glep2=0;
+          }
+          scale1fb = weight;
+          scale1fbUp = weightUp;
+          scale1fbDown = weightDown;
+          met	   = info->pfMETC;
+          metPhi   = info->pfMETCphi;
+          mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
           puppiMet = info->puppET;
           puppiMetPhi = info->puppETphi;
-	  puppiSumEt  = 0;
-	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
-	  q        = goodMuon->q;
-	  lep      = &vLep;
-	  
-	  ///// muon specific /////
-	  trkIso     = goodMuon->trkIso;
-	  emIso      = goodMuon->ecalIso;
-	  hadIso     = goodMuon->hcalIso;
-	  pfChIso    = goodMuon->chHadIso;
-	  pfGamIso   = goodMuon->gammaIso;
-	  pfNeuIso   = goodMuon->neuHadIso;
-	  pfCombIso  = goodMuon->chHadIso + TMath::Max(goodMuon->neuHadIso + goodMuon->gammaIso -
-						   0.5*(goodMuon->puIso),Double_t(0));
-	  d0         = goodMuon->d0;
-	  dz         = goodMuon->dz;
-	  muNchi2    = goodMuon->muNchi2;
-	  nPixHits   = goodMuon->nPixHits;
-	  nTkLayers  = goodMuon->nTkLayers;
-	  nMatch     = goodMuon->nMatchStn;
-	  nValidHits = goodMuon->nValidHits;
-	  typeBits   = goodMuon->typeBits;
-	  outTree->Fill();
-	  delete genV;
-	  delete genLep;
-	  genV=0, genLep=0, lep=0;
-          // reset everything to 1
-      prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
-      prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
-      prefireWeight=1; prefireUp    =1; prefireDown    =1;
-    // passVeto=kTRUE;
+          puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
+          q        = goodMuon->q;
+          lep      = &vLep;
+          
+          ///// muon specific /////
+          trkIso     = goodMuon->trkIso;
+          emIso      = goodMuon->ecalIso;
+          hadIso     = goodMuon->hcalIso;
+          pfChIso    = goodMuon->chHadIso;
+          pfGamIso   = goodMuon->gammaIso;
+          pfNeuIso   = goodMuon->neuHadIso;
+          pfCombIso  = goodMuon->chHadIso + TMath::Max(goodMuon->neuHadIso + goodMuon->gammaIso -
+                     0.5*(goodMuon->puIso),Double_t(0));
+          d0         = goodMuon->d0;
+          dz         = goodMuon->dz;
+          muNchi2    = goodMuon->muNchi2;
+          nPixHits   = goodMuon->nPixHits;
+          nTkLayers  = goodMuon->nTkLayers;
+          nMatch     = goodMuon->nMatchStn;
+          nValidHits = goodMuon->nValidHits;
+          typeBits   = goodMuon->typeBits;
+          outTree->Fill();
+          delete genV;
+          delete genLep;
+          genV=0, genLep=0, lep=0;
+              // reset everything to 1
+          prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+          prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
+          prefireWeight=1; prefireUp    =1; prefireDown    =1;
+        // passVeto=kTRUE;
         }
       }
       delete infile;
