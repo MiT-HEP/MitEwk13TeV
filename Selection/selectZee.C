@@ -84,7 +84,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
   // load trigger menu
   const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
-  // Set up electron energy scale/smera
+  // Set up electron energy scale/smear
   const TString corrFiles = "../EleScale/Run2017_LowPU_v2";
   EnergyScaleCorrection ec( corrFiles.Data(), EnergyScaleCorrection::ECALELF);
 
@@ -132,9 +132,9 @@ void selectZee(const TString conf        ="zee.conf", // input file
   UInt_t  matchGen;
   UInt_t  category;
   UInt_t  npv, npu;
-  UInt_t  id_1, id_2;
-  Double_t x_1, x_2, xPDF_1, xPDF_2;
-  Double_t scalePDF, weightPDF;
+  // UInt_t  id_1, id_2;
+  // Double_t x_1, x_2, xPDF_1, xPDF_2;
+  // Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0;
   Float_t genVPt, genVPhi, genVy, genVMass;
   Float_t genWeight, PUWeight;
@@ -142,10 +142,10 @@ void selectZee(const TString conf        ="zee.conf", // input file
   Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
-  Float_t met, metPhi, sumEt, u1, u2;
-  Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
-  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
-  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiU1, puppiU2;
+  Float_t met, metPhi, u1, u2;
+  // Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2;
+  // Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2;
+  Float_t puppiMet, puppiMetPhi, puppiU1, puppiU2;
   Int_t   q1, q2;
   Int_t   glepq1 = -99;
   Int_t   glepq2 = -99;
@@ -218,14 +218,14 @@ void selectZee(const TString conf        ="zee.conf", // input file
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
     outTree->Branch("matchGen",   &matchGen,   "matchGen/i");    // event has both leptons matched to MC Z->ll
     outTree->Branch("category",   &category,   "category/i");    // dilepton category
-    outTree->Branch("id_1",       &id_1,       "id_1/i");        // PDF info -- parton ID for parton 1
-    outTree->Branch("id_2",       &id_2,       "id_2/i");        // PDF info -- parton ID for parton 2
-    outTree->Branch("x_1",        &x_1,        "x_1/d");         // PDF info -- x for parton 1
-    outTree->Branch("x_2",        &x_2,        "x_2/d");         // PDF info -- x for parton 2
-    outTree->Branch("xPDF_1",     &xPDF_1,     "xPDF_1/d");      // PDF info -- x*F for parton 1
-    outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
-    outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
-    outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
+    // outTree->Branch("id_1",       &id_1,       "id_1/i");        // PDF info -- parton ID for parton 1
+    // outTree->Branch("id_2",       &id_2,       "id_2/i");        // PDF info -- parton ID for parton 2
+    // outTree->Branch("x_1",        &x_1,        "x_1/d");         // PDF info -- x for parton 1
+    // outTree->Branch("x_2",        &x_2,        "x_2/d");         // PDF info -- x for parton 2
+    // outTree->Branch("xPDF_1",     &xPDF_1,     "xPDF_1/d");      // PDF info -- x*F for parton 1
+    // outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
+    // outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
+    // outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("npv",        &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",        &npu,        "npu/i");         // number of in-time PU events (MC)
     outTree->Branch("genV",      "TLorentzVector",  &genV);      // GEN boson 4-vector
@@ -249,22 +249,22 @@ void selectZee(const TString conf        ="zee.conf", // input file
     outTree->Branch("scale1fbDown",  &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
-    outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
+    // outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
-    outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
-    outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
-    outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
-    outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
-    outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
-    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
-    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
-    outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
-    outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
-    outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
+    // outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
+    // outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
+    // outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
+    // outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
+    // outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
+    // outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    // outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
+    // outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    // outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    // outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
     outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
     outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
-    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
+    // outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
     outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
@@ -707,7 +707,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
         } else { icat=eEleSC; }
       }
 
-      if(q1 == q2)         continue;  // opposite charge requirement
+      // if(q1 == q2)         continue;  // opposite charge requirement
       // mass window
       TLorentzVector vDilep = vTagfinal + vProbefinal;
       TLorentzVector vDilepSC = vTagSCfinal + vProbeSC;
@@ -760,25 +760,25 @@ void selectZee(const TString conf        ="zee.conf", // input file
         if(match1 && match2) hasGenMatch = kTRUE;
       }
       
-      if (hasGen) {
-        id_1      = gen->id_1;
-        id_2      = gen->id_2;
-        x_1       = gen->x_1;
-        x_2       = gen->x_2;
-        xPDF_1    = gen->xPDF_1;
-        xPDF_2    = gen->xPDF_2;
-        scalePDF  = gen->scalePDF;
-        weightPDF = gen->weight;
-      } else {
-        id_1      = -999;
-        id_2      = -999;
-        x_1       = -999;
-        x_2       = -999;
-        xPDF_1    = -999;
-        xPDF_2    = -999;
-        scalePDF  = -999;
-        weightPDF = -999;
-      }
+      // // if (hasGen) {
+        // // // id_1      = gen->id_1;
+        // // // id_2      = gen->id_2;
+        // // // x_1       = gen->x_1;
+        // // // x_2       = gen->x_2;
+        // // // xPDF_1    = gen->xPDF_1;
+        // // // xPDF_2    = gen->xPDF_2;
+        // // // scalePDF  = gen->scalePDF;
+        // // // weightPDF = gen->weight;
+      // // } else {
+        // // // id_1      = -999;
+        // // // id_2      = -999;
+        // // // x_1       = -999;
+        // // // x_2       = -999;
+        // // // xPDF_1    = -999;
+        // // // xPDF_2    = -999;
+        // // // scalePDF  = -999;
+        // // // weightPDF = -999;
+      // // }
       //
       // Fill tree
       //
@@ -804,17 +804,17 @@ void selectZee(const TString conf        ="zee.conf", // input file
       scale1fbDown = weightDown;
       met       = info->pfMETC;
       metPhi    = info->pfMETCphi;
-      sumEt     = 0;
-      tkMet     = info->trkMET;
-      tkMetPhi  = info->trkMETphi;
-      tkSumEt   = 0;
-      mvaMet    = info->mvaMET;
-      mvaMetPhi = info->mvaMETphi; 
-      mvaSumEt  = 0;
+      // sumEt     = 0;
+      // tkMet     = info->trkMET;
+      // tkMetPhi  = info->trkMETphi;
+      // tkSumEt   = 0;
+      // mvaMet    = info->mvaMET;
+      // mvaMetPhi = info->mvaMETphi; 
+      // mvaSumEt  = 0;
       TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
       puppiMet    = info->puppET;
       puppiMetPhi = info->puppETphi;
-      puppiSumEt = 0;
+      // puppiSumEt = 0;
       lep1       = &vTagfinal;
       lep2       = &vProbefinal;
       lep1_raw   = &vTag_raw;
@@ -830,15 +830,15 @@ void selectZee(const TString conf        ="zee.conf", // input file
       u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
       u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
       
-      TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
-      TVector2 vTkU = -1.0*(vTkMet+vZPt);
-      tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-      tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+      // TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));        
+      // TVector2 vTkU = -1.0*(vTkMet+vZPt);
+      // tkU1 = ((vDilep.Px())*(vTkU.Px()) + (vDilep.Py())*(vTkU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+      // tkU2 = ((vDilep.Px())*(vTkU.Py()) - (vDilep.Py())*(vTkU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
       
-      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-      TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
-      mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-      mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+      // TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+      // TVector2 vMvaU = -1.0*(vMvaMet+vZPt);
+      // mvaU1 = ((vDilep.Px())*(vMvaU.Px()) + (vDilep.Py())*(vMvaU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+      // mvaU2 = ((vDilep.Px())*(vMvaU.Py()) - (vDilep.Py())*(vMvaU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
       
       TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
       TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
