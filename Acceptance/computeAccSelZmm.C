@@ -47,6 +47,7 @@
 void computeAccSelZmm(const TString conf,      // input file
 			    const TString inputDir,
                 const TString outputDir,  // output directory
+                const TString outputName,
 			    const Int_t   doPU,
 			    const TString sysFileSIT, // condense these into 1 file per type of eff (pos & neg into 1 file)
 			    const TString sysFileSta,
@@ -194,7 +195,7 @@ void computeAccSelZmm(const TString conf,      // input file
     // loop over events
     //      
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.10*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); genPartBr->GetEntry(ientry);
@@ -397,6 +398,26 @@ void computeAccSelZmm(const TString conf,      // input file
   delete gen;
   delete muonArr;
 
+    
+   // Print full set for efficiency calculations
+  char masterOutput[600];
+  // just start printing....
+  for(uint ifile = 0; ifile < fnamev.size(); ++ifile){// go through info per file
+    sprintf(masterOutput,"%s/%s.txt",outputDir.Data(),outputName.Data());
+    ofstream txtfile;
+    txtfile.open(masterOutput);
+    txtfile << "acc " << accCorrv[ifile] << endl;
+    txtfile << "acc_stat " << accCorrv[ifile]+accErrCorrv[ifile] << endl;
+    txtfile << "sel_fsr" << " " << accCorrvFSR_I[ifile] << endl;
+    txtfile << "sta_fsr" << " " << accCorrvFSR_S[ifile] << endl;
+    txtfile << "sel_mc"  << " " << accCorrvMC_I[ifile] << endl;
+    txtfile << "sta_mc"  << " " << accCorrvMC_S[ifile] << endl;
+    txtfile << "sel_bkg" << " " << accCorrvBkg_I[ifile] << endl;
+    txtfile << "sta_bkg" << " " << accCorrvBkg_S[ifile] << endl;
+    txtfile << "sel_tagpt" << " " << accCorrvTag_I[ifile] << endl;
+    txtfile << "sta_tagpt" << " " << accCorrvTag_S[ifile] << endl;
+    txtfile.close();
+  } 
     
   std::cout << "print output" << std::endl;
   //--------------------------------------------------------------------------------------------------------------
