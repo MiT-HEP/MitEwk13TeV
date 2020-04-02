@@ -167,23 +167,11 @@ void selectAntiWe(const TString conf       ="we.conf", // input file
     if(isam==0 && !hasData) continue;
     else if (isam==0) isData=kTRUE;
     
-    Bool_t isSignal=false, isWrongFlavor=false;
-    if(is13TeV){
-      isSignal = (snamev[isam].CompareTo("we0",TString::kIgnoreCase)==0||
-                  snamev[isam].CompareTo("we1",TString::kIgnoreCase)==0|| 
-                  snamev[isam].CompareTo("we2",TString::kIgnoreCase)==0);
-      isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||
-                       snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||
-                       snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
-    } else {
-      isSignal      = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
-      isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
-    }
-    //flag to save the info for recoil corrections
-    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
-                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
-                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+    Bool_t isSignal        = (snamev[isam].Contains("wm"));
+    Bool_t isWrongFlavor   = (snamev[isam].Contains("wx"));
+
+    Bool_t isRecoil = (snamev[isam].Contains("zxx")||isSignal||isWrongFlavor);
+    Bool_t noGen    = (snamev[isam].Contains("zz")||snamev[isam].Contains("wz")||snamev[isam].Contains("ww"));
     CSample* samp = samplev[isam];
   
     //
@@ -394,7 +382,7 @@ void selectAntiWe(const TString conf       ="we.conf", // input file
             float eleAbsEta   = fabs(vEle.Eta());
             double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
 
-            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+            if(snamev[isam].Contains("data")){//Data
               int runNumber = is13TeV ? info->runNum : 306936;
               float eleScale = eleCorr.scaleCorr      (runNumber, eTregress, eleAbsEta, ele->r9);
               float eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
@@ -479,7 +467,7 @@ void selectAntiWe(const TString conf       ="we.conf", // input file
 	    TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
 	    TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
         toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-		if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
+		if(snamev[isam].Contains("zxx")){ // DY only
 			toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
 	    }
         

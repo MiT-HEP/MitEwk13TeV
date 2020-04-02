@@ -93,12 +93,12 @@ void selectZee(const TString conf        ="zee.conf", // input file
   PrefiringEfficiency pfire( prefireFileName.Data() , (is13TeV ? "2017H" : "2017G"));
   
   // load pileup reweighting file
-  TFile *f_rw = TFile::Open("../Tools/pileup_rw_baconDY.root", "read");
+  TFile *f_rw = TFile::Open("../Tools/puWeights_76x.root", "read");
 
   // for systematics we need 3
-  TH1D *h_rw = (TH1D*) f_rw->Get("h_rw_golden");
-  TH1D *h_rw_up = (TH1D*) f_rw->Get("h_rw_up_golden");
-  TH1D *h_rw_down = (TH1D*) f_rw->Get("h_rw_down_golden");
+  TH1D *h_rw = (TH1D*) f_rw->Get("puWeights");
+  TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
+  TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
   if (h_rw==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
   if (h_rw_up==NULL) cout<<"WARNIG h_rw == NULL"<<endl;
@@ -190,19 +190,11 @@ void selectZee(const TString conf        ="zee.conf", // input file
     if(isam==0 && !hasData) continue;
     else if (isam==0) isData=kTRUE;
     
-    // Assume signal sample is given name "zee" - flag to store GEN Z kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0);  
-    Bool_t isWboson = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0||
-                       snamev[isam].CompareTo("wx",TString::kIgnoreCase)==1);  
-    //flag to save the info for recoil corrections
-    Bool_t isRecoil = (snamev[isam].CompareTo("zee",TString::kIgnoreCase)==0||
-                       snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0||
-                       isWboson);
-    // flag to reject Z->ee events when selecting at wrong-flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0); 
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
-                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
-                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+    Bool_t isSignal        = (snamev[isam].Contains("zee"));
+    Bool_t isWboson        = (snamev[isam].Contains("wx"));
+    Bool_t isWrongFlavor   = (snamev[isam].Contains("zxx"));
+    Bool_t isRecoil = (isWboson||isSignal||isWrongFlavor);
+    Bool_t noGen    = (snamev[isam].Contains("zz")||snamev[isam].Contains("wz")||snamev[isam].Contains("ww"));
     
     CSample* samp = samplev[isam];
   
@@ -218,14 +210,6 @@ void selectZee(const TString conf        ="zee.conf", // input file
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
     outTree->Branch("matchGen",   &matchGen,   "matchGen/i");    // event has both leptons matched to MC Z->ll
     outTree->Branch("category",   &category,   "category/i");    // dilepton category
-    // outTree->Branch("id_1",       &id_1,       "id_1/i");        // PDF info -- parton ID for parton 1
-    // outTree->Branch("id_2",       &id_2,       "id_2/i");        // PDF info -- parton ID for parton 2
-    // outTree->Branch("x_1",        &x_1,        "x_1/d");         // PDF info -- x for parton 1
-    // outTree->Branch("x_2",        &x_2,        "x_2/d");         // PDF info -- x for parton 2
-    // outTree->Branch("xPDF_1",     &xPDF_1,     "xPDF_1/d");      // PDF info -- x*F for parton 1
-    // outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
-    // outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
-    // outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("npv",        &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",        &npu,        "npu/i");         // number of in-time PU events (MC)
     outTree->Branch("genV",      "TLorentzVector",  &genV);      // GEN boson 4-vector
@@ -249,22 +233,10 @@ void selectZee(const TString conf        ="zee.conf", // input file
     outTree->Branch("scale1fbDown",  &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
-    // outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
-    // outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
-    // outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
-    // outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
-    // outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
-    // outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
-    // outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
-    // outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
-    // outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
-    // outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
-    // outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
     outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
     outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
-    // outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
     outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q1",         &q1,         "q1/I");          // charge of tag lepton
@@ -343,7 +315,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
-      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+      if(!samp->jsonv[ifile].Contains("NONE")) { 
         hasJSON = kTRUE;
         rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
@@ -462,7 +434,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
             float tagSCAbsEta   = fabs(vTagSC.Eta());
             float tagSCEt       = vTagSC.E() / cosh(tagSCAbsEta);
 
-            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+            if(snamev[isam].Contains("data")){//Data
               int runNumber = is13TeV ? info->runNum : 306936 ;
               tagScale   = ec.scaleCorr(runNumber, eTregress, tagAbsEta  , tag->r9);
               tagSCScale = ec.scaleCorr(runNumber, tagSCEt  , tagSCAbsEta, tag->r9);
@@ -567,7 +539,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
             float probeEt       = vProbe.E() / cosh(probeAbsEta);
             bool  probeisBarrel = probeAbsEta < 1.4442;
             
-            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+            if(snamev[isam].Contains("data")){//Data
               int runNumber = is13TeV ? info->runNum : 306936 ;
               probeScale   = ec.scaleCorr(runNumber, probeEt, probeAbsEta  , scProbe->r9);
               probeError   = ec.scaleCorrUncert(runNumber, probeEt, probeAbsEta  , scProbe->r9,12,1);
@@ -613,7 +585,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
               float eleProbeSCAbsEta   = fabs(vEleProbeSC.Eta());
               float eleProbeSCEt       = vEleProbeSC.E() / cosh(eleProbeSCAbsEta);
   
-              if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+              if(snamev[isam].Contains("data")==0){//Data
                 int runNumber = is13TeV ? info->runNum : 306936 ;
                 eleProbeScale   = ec.scaleCorr(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9);
                 eleProbeSCScale = ec.scaleCorr(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);
@@ -724,8 +696,8 @@ void selectZee(const TString conf        ="zee.conf", // input file
       }
 
       //******** We have a Z candidate! HURRAY! ********
-      nsel+=weight;
-      nselvar+=weight*weight;
+      nsel+=isData ? 1 : weight;
+      nselvar+=isData ? 1 : weight*weight;
 
       // Perform matching of dileptons to GEN leptons from Z decay
       TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
