@@ -49,84 +49,10 @@ using namespace RooFit;
 using namespace std;
 
 bool doLikelihoodScan=false;
-
-// bool do_keys=false;
-// bool do_5TeV=true;
 bool doLog=false; // true for data; false for MC
 bool doElectron=false;
 
 //=== FUNCTION DECLARATIONS ======================================================================================
-
-// generate web page
-void makeHTML(const TString outDir,  const Int_t nbins, 
-              const Int_t pfu1model, const Int_t pfu2model);
-
-//--------------------------------------------------------------------------------------------------
-
-Double_t sigmaFunc(Double_t *x, Double_t *par) {
-  // par[0]: quadratic coefficient
-  // par[1]: linear coefficient
-  // par[2]: constant term
-  
-  Double_t a  = par[0];
-  Double_t b  = par[1];
-  Double_t c  = par[2];
-  Double_t d  = par[3];
-    
-  return a*x[0]*x[0] + b*x[0] + c;
-  }
-
-//--------------------------------------------------------------------------------------------------
-// function to describe relative fraction in a double Gaussian based on 
-// functions for sigma0, sigma1, and sigma2
-Double_t frac2Func(Double_t *x, Double_t *par) {
-  // par[0..3]:  sigma0
-  // par[4..7]:  sigma1
-  // par[8..11]: sigma2
-  
-  TF1 s0("_s0",sigmaFunc,0,7000,4); s0.SetParameters(par[0],par[1],par[2],par[3]);
-  TF1 s1("_s1",sigmaFunc,0,7000,4); s1.SetParameters(par[4],par[5],par[6],par[7]);
-  TF1 s2("_s2",sigmaFunc,0,7000,4); s2.SetParameters(par[8],par[9],par[10],par[11]);
-  
-  return (s0.Eval(x[0]) - s1.Eval(x[0]))/(s2.Eval(x[0]) - s1.Eval(x[0]));
-}
-
-
-//--------------------------------------------------------------------------------------------------
-Double_t dMean(const TF1 *fcn, const Double_t x, const TFitResultPtr fs) {
-  Double_t df[2];
-  df[0] = 1;
-  df[1] = x;
-  Double_t err2 = df[0]*df[0]*(fs->GetCovarianceMatrix()[0][0]) 
-                  + df[1]*df[1]*(fs->GetCovarianceMatrix()[1][1]) 
-		  + 2.0*df[0]*df[1]*(fs->GetCovarianceMatrix()[0][1]);
-  assert(err2>=0);
-  return sqrt(err2);
-}
-
-//--------------------------------------------------------------------------------------------------
-Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResultPtr fs) {
-  Double_t df[4];
-  Double_t a  = fcn->GetParameter(0);
-  Double_t b  = fcn->GetParameter(1);
-  Double_t c  = fcn->GetParameter(2);
-  
-  df[0] = x*x;
-  df[1] = x;
-  df[2] = 1;
-  
-  Double_t err2=0;
-  for(Int_t i=0; i<3; i++) {
-    err2 += df[i]*df[i]*(fs->GetCovarianceMatrix()[i][i]);
-    for(Int_t j=i+1; j<3; j++) {
-      err2 += 2.0*df[i]*df[j]*(fs->GetCovarianceMatrix()[i][j]);
-    }
-  }
-  assert(err2>=0);
-  return sqrt(err2);
-}
-
-
 //--------------------------------------------------------------------------------------------------
 // perform fit of recoil component
 void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
@@ -146,21 +72,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
                 RooWorkspace *workspace,
 		const char *outputname,
 		int etaBinCategory, bool do_keys);
-                
-void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
-                const Int_t model, const Bool_t sigOnly,
-                TCanvas *c, const char *plabel, const char *xlabel,
-                Double_t *mean1Arr,   Double_t *mean1ErrArr,
-                Double_t *mean2Arr,   Double_t *mean2ErrArr,
-                Double_t *mean3Arr,   Double_t *mean3ErrArr,
-                Double_t *sigma0Arr, Double_t *sigma0ErrArr,
-                Double_t *sigma1Arr, Double_t *sigma1ErrArr,
-                Double_t *sigma2Arr, Double_t *sigma2ErrArr,
-                Double_t *sigma3Arr, Double_t *sigma3ErrArr,
-                Double_t *frac2Arr,  Double_t *frac2ErrArr,
-                Double_t *frac3Arr,  Double_t *frac3ErrArr,
-                RooWorkspace *workspace);
-
 
 //=== MAIN MACRO ================================================================================================= 
 
@@ -188,14 +99,14 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
   gSystem->mkdir(outputDir,kTRUE);
   
   // preserving the fine binning at low pT but the higher-pT bins (>75 GeV have been adjusted to be slightly wider)
-  // Double_t ptbins[] = {0,5.0,25,100,1000}; 
-  Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; 
-
+  Double_t ptbins[] = {0,5.0,25,100,1000}; 
+  // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; 
+  Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
   TString infilename = indir+fname;
 
-  Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
-  Double_t corrbins[] = { 0, 10, 30, 50 };
-  Int_t ncorrbins = sizeof(corrbins)/sizeof(Double_t)-1;
+
+  // Double_t corrbins[] = { 0, 10, 30, 50 };
+  // Int_t ncorrbins = sizeof(corrbins)/sizeof(Double_t)-1;
 
   TString formulaPFu1mean("pol2");
   TString formulaPFu2mean("pol2");
@@ -240,7 +151,7 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
   const Double_t MASS_HIGH = 120;  
   const Double_t PT_CUT    = 25;
   const Double_t ETA_CUT   = 2.4;
-  const Double_t mu_MASS = 0.1057;
+  Double_t mu_MASS = 0.1057;
 
   //Setting up rochester corrections
   RoccoR  rc("../RochesterCorr/RoccoR2017.txt");
@@ -287,72 +198,33 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
 
     sprintf(hname,"hDataSetU1_%i",ibin);  RooDataSet dataSetU1(hname,hname,RooArgSet(u1Var)); lDataSetU1.push_back(dataSetU1);
     sprintf(hname,"hDataSetU2_%i",ibin);  RooDataSet dataSetU2(hname,hname,RooArgSet(u2Var)); lDataSetU2.push_back(dataSetU2);
-
   }
-
-  vector<TH2D*> hPFu1u2v;
-  for(Int_t ibin=0; ibin<ncorrbins; ibin++) {
-    sprintf(hname,"hPFu1u2_%i",ibin);
-    hPFu1u2v.push_back(new TH2D(hname,"",300,-10,10,300,-10,10));
-  }
-  
-
-  TFitResultPtr fitresPFu1mean;   TF1 *fcnPFu1mean   = new TF1("fcnPFu1mean",formulaPFu1mean,0,7000);
-  TFitResultPtr fitresPFu1mean2;  TF1 *fcnPFu1mean2  = new TF1("fcnPFu1mean2",formulaPFu1mean,0,7000);
-  TFitResultPtr fitresPFu1mean3;  TF1 *fcnPFu1mean3  = new TF1("fcnPFu1mean3",formulaPFu1mean,0,7000);
-
-  TFitResultPtr fitresPFu1meanScale;   TF1 *fcnPFu1meanScale   = new TF1("fcnPFu1meanScale",formulaPFu1meanScale,0,7000);
-  TFitResultPtr fitresPFu1mean2Scale;  TF1 *fcnPFu1mean2Scale  = new TF1("fcnPFu1mean2Scale",formulaPFu1meanScale,0,7000);
-  TFitResultPtr fitresPFu1mean3Scale;  TF1 *fcnPFu1mean3Scale  = new TF1("fcnPFu1mean3Scale",formulaPFu1meanScale,0,7000);
 
   TFile *infile = 0;
   TTree *intree = 0;  
 
-  //
-  // Declare output ntuple variables
-  //
-  UInt_t  runNum, lumiSec, evtNum;
-  UInt_t  matchGen;
   UInt_t  category;
-  UInt_t  npv, npu;
   Float_t genVPt, genVPhi, genVy, genVMass;
-  Float_t scale1fb,scale1fbUp,scale1fbDown;
-  Float_t met, metPhi, sumEt, u1, u2; // pf met
-  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaU1, mvaU2; // mva met
-  Float_t ppMet, ppMetPhi, ppSumEt, ppU1, ppU2; // pf type 1
-  Float_t tkMet, tkMetPhi, tkSumEt, tkU1, tkU2; // tk met
+  Float_t scale1fb;
+  Float_t met, metPhi;
   Int_t   q1, q2;
   TLorentzVector *dilep=0, *lep1=0, *lep2=0, *lep1_raw=0, *lep2_raw=0, *genlep1=0, *genlep2=0;
-//   Float_t puWeight;
-  
 
   for(UInt_t ifile=0; ifile<fnamev.size(); ifile++) {
     cout << "Processing " << fnamev[ifile] << "..." << endl;
     infile = new TFile(fnamev[ifile]);
     intree = (TTree*)infile->Get("Events");
   
-    intree->SetBranchAddress("runNum",   &runNum);     // event run number
-    intree->SetBranchAddress("lumiSec",	 &lumiSec);    // event lumi section
-    intree->SetBranchAddress("evtNum",	 &evtNum);     // event number
-    intree->SetBranchAddress("matchGen", &matchGen);   // event has both leptons matched to MC Z->ll
     intree->SetBranchAddress("category", &category);   // dilepton category
-    intree->SetBranchAddress("npv",	 &npv);        // number of primary vertices
-    intree->SetBranchAddress("npu",	 &npu);        // number of in-time PU events (MC)
     intree->SetBranchAddress("genVPt",   &genVPt);     // GEN boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);    // GEN boson phi (signal MC)
     intree->SetBranchAddress("genVy",    &genVy);      // GEN boson rapidity (signal MC)
     intree->SetBranchAddress("genVMass", &genVMass);   // GEN boson mass (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);   // event weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
-    intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
-
     intree->SetBranchAddress(metVar.c_str(),        &met);        // Uncorrected PF MET
     intree->SetBranchAddress(metPhiVar.c_str(),     &metPhi);     // phi(MET)
-    intree->SetBranchAddress("sumEt",               &sumEt);      // Sum ET
-    
     intree->SetBranchAddress("q1",	 &q1);         // charge of tag lepton
     intree->SetBranchAddress("q2",	 &q2);         // charge of probe lepton
-    
     intree->SetBranchAddress("dilep",	 &dilep);      // dilepton 4-vector
     intree->SetBranchAddress("lep1",	 &lep1);       // tag lepton 4-vector
     intree->SetBranchAddress("lep2",	 &lep2);       // probe lepton 4-vector 
@@ -361,15 +233,12 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
     if(doElectron) intree->SetBranchAddress("lep1_raw",         &lep1_raw);       // tag lepton 4-vector
     if(doElectron) intree->SetBranchAddress("lep2_raw",         &lep2_raw);       // probe lepton 4-vector
 
-
     TH1D* hGenWeights;
     double totalNorm = 1.0;
     cout << "Hello " << endl;
     if(!infilename.Contains("data_")) {
-      cout << "get gen weights" << endl;
       hGenWeights = (TH1D*)infile->Get("hGenWeights");
       totalNorm = hGenWeights->Integral();
-      cout << totalNorm << endl;
     }
     //
     // Loop over events
@@ -380,57 +249,37 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
     // for(Int_t ientry=0; ientry<1000; ientry++) {
       intree->GetEntry(ientry);
     
-      //
-      TLorentzVector mu1;
-      TLorentzVector mu2;
+      TLorentzVector mu1, mu2;
+      if(doElectron) mu_MASS=0.000511;
       mu1.SetPtEtaPhiM(lep1->Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
       mu2.SetPtEtaPhiM(lep2->Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
 	  
-      double SF1=1;
-      double SF2=1;
-      
+      double SF1=1, SF2=1;
       if(infilename.Contains("data_")) {
         SF1 = rc.kScaleDT(q1, mu1.Pt(), mu1.Eta(), mu1.Phi());//, s=0, m=0);
         SF2 = rc.kScaleDT(q2, mu2.Pt(), mu2.Eta(), mu2.Phi());//s=0, m=0);
-      } else {
+      } else if (!doElectron) {
         SF1 = rc.kSpreadMC(q1, mu1.Pt(), mu1.Eta(), mu1.Phi(), genlep1->Pt());//, s=0, m=0);
         SF2 = rc.kSpreadMC(q2, mu2.Pt(), mu2.Eta(), mu2.Phi(), genlep2->Pt());//, s=0, m=0);
         if(genlep1->Pt()==0 && genlep2->Pt()==0) {SF1=1; SF2=1;}
-      }
+      } else {SF1=1; SF2=1;}
       
       
       mu1*=SF1;
       mu2*=SF2;
 	  
-      // WHY DO THIS
-      TLorentzVector l1, l2, dl;
-      l1.SetPtEtaPhiM(mu1.Pt(),lep1->Eta(),lep1->Phi(),mu_MASS);
-      l2.SetPtEtaPhiM(mu2.Pt(),lep2->Eta(),lep2->Phi(),mu_MASS);
-	  
-	  
-      dl=l1+l2;
+      TLorentzVector dl;
+      dl=mu1+mu2;
       double mll=dl.M();
       double etall=dl.Rapidity();
       double ptll=dl.Pt();
 	  
-	  
-      if(doElectron) {
-        mll=dilep->M();
-        etall=dilep->Eta();
-        ptll=dilep->Pt();
-      }
-
-
       if(!isBkgv[ifile]) {
         if(category!=1 && category!=2 && category != 3)                continue;
         if(mll < MASS_LOW || mll > MASS_HIGH)            continue;
       }
-      if(doElectron) {
-        if(lep1->Pt()        < PT_CUT  || lep2->Pt()        < PT_CUT)  continue;
-      } else {
-        if(l1.Pt()          < PT_CUT  || l2.Pt()          < PT_CUT)  continue;
-      }
-      if(fabs(lep1->Eta()) > ETA_CUT || fabs(lep2->Eta()) > ETA_CUT) continue;
+      if(mu1.Pt()          < PT_CUT  || mu2.Pt()          < PT_CUT)  continue;
+      if(fabs(mu1.Eta()) > ETA_CUT || fabs(mu2.Eta()) > ETA_CUT) continue;
 
       if(!isBkgv[ifile]) {
         if(!infilename.Contains("data_")) {
@@ -453,46 +302,30 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
       /////////
       /// RECO filling the Zee or the Zmm
       //
-      double pU1=u1;
-      double pU2=u2;
+      double pU1=0.;
+      double pU2=0.;
 
+      TVector2 vLepRaw1, vLepRaw2;
       if(doElectron) {
-        TVector2 vLepRaw1((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
-        TVector2 vLepRaw2((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
-
-        TVector2 vLepCor1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
-        TVector2 vLepCor2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
-
-        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-        Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
-        Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
-        double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dilep->Pt()*cos(dilep->Phi());
-        double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dilep->Pt()*sin(dilep->Phi());
-        double pU   = sqrt(pUX*pUX+pUY*pUY);
-        double pCos = - (pUX*cos(dilep->Phi()) + pUY*sin(dilep->Phi()))/pU;
-        double pSin =   (pUX*sin(dilep->Phi()) - pUY*cos(dilep->Phi()))/pU;
-        pU1   = pU*pCos; // U1 in data
-        pU2   = pU*pSin; // U2 in data
-        // pU1   /= dilep->Pt();
+        vLepRaw1.Set((lep1_raw->Pt())*cos(lep1_raw->Phi()),(lep1_raw->Pt())*sin(lep1_raw->Phi()));
+        vLepRaw2.Set((lep2_raw->Pt())*cos(lep2_raw->Phi()),(lep2_raw->Pt())*sin(lep2_raw->Phi()));
       } else {
-        TVector2 vLepRaw1((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
-        TVector2 vLepRaw2((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
-
-        TVector2 vLepCor1((l1.Pt())*cos(l1.Phi()),(l1.Pt())*sin(l1.Phi()));
-        TVector2 vLepCor2((l2.Pt())*cos(l2.Phi()),(l2.Pt())*sin(l2.Phi()));
-
-        TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-        Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
-        Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
-        double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dl.Pt()*cos(dl.Phi());
-        double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dl.Pt()*sin(dl.Phi());
-        double pU   = sqrt(pUX*pUX+pUY*pUY);
-        double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
-        double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
-        pU1   = pU*pCos; // U1 in data
-        pU2   = pU*pSin; // U2 in data
-        // pU1   /= dilep->Pt();
+        vLepRaw1.Set((lep1->Pt())*cos(lep1->Phi()),(lep1->Pt())*sin(lep1->Phi()));
+        vLepRaw2.Set((lep2->Pt())*cos(lep2->Phi()),(lep2->Pt())*sin(lep2->Phi()));
       }
+      TVector2 vLepCor1((mu1.Pt())*cos(mu1.Phi()),(mu1.Pt())*sin(mu1.Phi()));
+      TVector2 vLepCor2((mu2.Pt())*cos(mu2.Phi()),(mu2.Pt())*sin(mu2.Phi()));
+
+      TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+      Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Mod();
+      Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 + vLepRaw2 - vLepCor1 - vLepCor2).Phi();
+      double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + dl.Pt()*cos(dl.Phi());
+      double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + dl.Pt()*sin(dl.Phi());
+      double pU   = sqrt(pUX*pUX+pUY*pUY);
+      double pCos = - (pUX*cos(dl.Phi()) + pUY*sin(dl.Phi()))/pU;
+      double pSin =   (pUX*sin(dl.Phi()) - pUY*cos(dl.Phi()))/pU;
+      pU1   = pU*pCos; // U1 in data
+      pU2   = pU*pSin; // U2 in data
 	  
       if(isBkgv[ifile]) {
         hPFu1Bkgv[ipt]->Fill(pU1,scale1fb*lumi/totalNorm);
@@ -537,30 +370,30 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
   //
   // Arrays and graphs to store fit results
   //
-  TGraphErrors *grPFu1mean=0;   Double_t pfu1Mean[nbins],   pfu1MeanErr[nbins];
-  TGraphErrors *grPFu1mean2=0;  Double_t pfu1Mean2[nbins],  pfu1Mean2Err[nbins];
-  TGraphErrors *grPFu1mean3=0;  Double_t pfu1Mean3[nbins],  pfu1Mean3Err[nbins];
-  TGraphErrors *grPFu1meanScale=0;   Double_t pfu1MeanScale[nbins],   pfu1MeanErrScale[nbins];
-  TGraphErrors *grPFu1mean2Scale=0;  Double_t pfu1Mean2Scale[nbins],  pfu1Mean2ErrScale[nbins];
-  TGraphErrors *grPFu1mean3Scale=0;  Double_t pfu1Mean3Scale[nbins],  pfu1Mean3ErrScale[nbins];
-  TGraphErrors *grPFu1sigma0=0; Double_t pfu1Sigma0[nbins], pfu1Sigma0Err[nbins];
-  TGraphErrors *grPFu1sigma1=0; Double_t pfu1Sigma1[nbins], pfu1Sigma1Err[nbins];
-  TGraphErrors *grPFu1sigma2=0; Double_t pfu1Sigma2[nbins], pfu1Sigma2Err[nbins];
-  TGraphErrors *grPFu1sigma3=0; Double_t pfu1Sigma3[nbins], pfu1Sigma3Err[nbins];
-  TGraphErrors *grPFu1frac2=0;  Double_t pfu1Frac2[nbins],  pfu1Frac2Err[nbins];  
-  TGraphErrors *grPFu1frac3=0;  Double_t pfu1Frac3[nbins],  pfu1Frac3Err[nbins];
-  TGraphErrors *grPFu1chi2=0;   Double_t pfu1chi2[nbins],   pfu1chi2Err[nbins];;
+  Double_t pfu1Mean[nbins],   pfu1MeanErr[nbins];
+  Double_t pfu1Mean2[nbins],  pfu1Mean2Err[nbins];
+  Double_t pfu1Mean3[nbins],  pfu1Mean3Err[nbins];
+  Double_t pfu1MeanScale[nbins],   pfu1MeanErrScale[nbins];
+  Double_t pfu1Mean2Scale[nbins],  pfu1Mean2ErrScale[nbins];
+  Double_t pfu1Mean3Scale[nbins],  pfu1Mean3ErrScale[nbins];
+  Double_t pfu1Sigma0[nbins], pfu1Sigma0Err[nbins];
+  Double_t pfu1Sigma1[nbins], pfu1Sigma1Err[nbins];
+  Double_t pfu1Sigma2[nbins], pfu1Sigma2Err[nbins];
+  Double_t pfu1Sigma3[nbins], pfu1Sigma3Err[nbins];
+  Double_t pfu1Frac2[nbins],  pfu1Frac2Err[nbins];  
+  Double_t pfu1Frac3[nbins],  pfu1Frac3Err[nbins];
+  Double_t pfu1chi2[nbins],   pfu1chi2Err[nbins];;
 
-  TGraphErrors *grPFu2mean=0;   Double_t pfu2Mean[nbins],   pfu2MeanErr[nbins];
-  TGraphErrors *grPFu2mean2=0;  Double_t pfu2Mean2[nbins],  pfu2Mean2Err[nbins];
-  TGraphErrors *grPFu2mean3=0;  Double_t pfu2Mean3[nbins],  pfu2Mean3Err[nbins];
-  TGraphErrors *grPFu2sigma0=0; Double_t pfu2Sigma0[nbins], pfu2Sigma0Err[nbins];
-  TGraphErrors *grPFu2sigma1=0; Double_t pfu2Sigma1[nbins], pfu2Sigma1Err[nbins];
-  TGraphErrors *grPFu2sigma2=0; Double_t pfu2Sigma2[nbins], pfu2Sigma2Err[nbins];
-  TGraphErrors *grPFu2sigma3=0; Double_t pfu2Sigma3[nbins], pfu2Sigma3Err[nbins];
-  TGraphErrors *grPFu2frac2=0;  Double_t pfu2Frac2[nbins],  pfu2Frac2Err[nbins];  
-  TGraphErrors *grPFu2frac3=0;  Double_t pfu2Frac3[nbins],  pfu2Frac3Err[nbins];
-  TGraphErrors *grPFu2chi2=0;   Double_t pfu2chi2[nbins],   pfu2chi2Err[nbins];
+  Double_t pfu2Mean[nbins],   pfu2MeanErr[nbins];
+  Double_t pfu2Mean2[nbins],  pfu2Mean2Err[nbins];
+  Double_t pfu2Mean3[nbins],  pfu2Mean3Err[nbins];
+  Double_t pfu2Sigma0[nbins], pfu2Sigma0Err[nbins];
+  Double_t pfu2Sigma1[nbins], pfu2Sigma1Err[nbins];
+  Double_t pfu2Sigma2[nbins], pfu2Sigma2Err[nbins];
+  Double_t pfu2Sigma3[nbins], pfu2Sigma3Err[nbins];
+  Double_t pfu2Frac2[nbins],  pfu2Frac2Err[nbins];  
+  Double_t pfu2Frac3[nbins],  pfu2Frac3Err[nbins];
+  Double_t pfu2chi2[nbins],   pfu2chi2Err[nbins];
   
   
   TCanvas *c = MakeCanvas("c","c",800,800);
@@ -610,614 +443,11 @@ void fitRecoilZmm(TString indir="/eos/cms/store/user/sabrandt/StandardModel/Ntup
 
   pdfsU2.writeToFile(outpdfname,kFALSE);
 
-  //--------------------------------------------------------------------------------------------------------------
-  // Make plots 
-  //==============================================================================================================  
-
-
-  TString label = "";
-  if(infilename.Contains("data")) label="Z DATA";
-  if(!infilename.Contains("data")) label="Z MC";
-  TLatex latexLabel;
-  latexLabel.SetTextSize(0.04);
-  latexLabel.SetNDC();
-
-  char fitparam[100];
-  char chi2ndf[50]; 
-    
-//  TGraphErrors *errBand = new TGraphErrors(nbins+2);
-  
-  //
-  // Plotting PF-MET u1 vs. dilepton pT
-  //
-  grPFu1mean = new TGraphErrors(nbins,xval,pfu1Mean,xerr,pfu1MeanErr);
-  grPFu1mean->GetYaxis()->SetRangeUser(-350., 20.);
-  if(do_5TeV) grPFu1mean->GetYaxis()->SetRangeUser(-200., 20.);
-  grPFu1mean->SetName("grPFu1mean");
-  fitresPFu1mean = grPFu1mean->Fit("fcnPFu1mean","QMRN0FBSE");
-  sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1mean->GetChisquare())/(fcnPFu1mean->GetNDF()));
-  CPlot plotPFu1mean("pfu1mean","","p_{T}(ll) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-  plotPFu1mean.AddGraph(grPFu1mean,"",kBlack,kOpenCircle);
-  plotPFu1mean.AddFcn(fcnPFu1mean,kRed);
-  plotPFu1mean.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-  sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(0),fcnPFu1mean->GetParError(0)); plotPFu1mean.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(1),fcnPFu1mean->GetParError(1)); plotPFu1mean.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
-  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1mean->GetParameter(2),fcnPFu1mean->GetParError(2)); plotPFu1mean.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
-  latexLabel.DrawLatex(0.20, 0.2, label);
-  plotPFu1mean.Draw(c,kTRUE,"png");
-  plotPFu1mean.Draw(c,kTRUE,"pdf");
-
-  for(Int_t ibin=0; ibin<nbins; ibin++) {
-    pfu1MeanScale[ibin]=fabs(pfu1Mean[ibin])/xval[ibin];
-    pfu1Mean2Scale[ibin]=fabs(pfu1Mean2[ibin])/xval[ibin];
-    pfu1Mean3Scale[ibin]=fabs(pfu1Mean3[ibin])/xval[ibin];
-    pfu1MeanErrScale[ibin]=pfu1MeanErr[ibin]/xval[ibin];
-    pfu1Mean2ErrScale[ibin]=pfu1Mean2Err[ibin]/xval[ibin];
-    pfu1Mean3ErrScale[ibin]=pfu1Mean3Err[ibin]/xval[ibin];
-  }
-
-  grPFu1meanScale = new TGraphErrors(nbins,xval,pfu1MeanScale,xerr,pfu1MeanErrScale);
-  grPFu1meanScale->GetYaxis()->SetRangeUser(0., 1.25);
-  if(do_5TeV) grPFu1meanScale->GetYaxis()->SetRangeUser(0., 1.25);
-  grPFu1meanScale->SetName("grPFu1meanScale");
-  //  fitresPFu1meanScale = grPFu1meanScale->Fit("fcnPFu1meanScale","QMRN0FBSE");
-  //  sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1meanScale->GetChisquare())/(fcnPFu1mean->GetNDF()));
-  CPlot plotPFu1meanScale("pfu1meanScale","","p_{T}(ll) [GeV/c]","#mu(u_{#parallel})/p_{T}(ll) [GeV]");
-  plotPFu1meanScale.AddGraph(grPFu1meanScale,"",kBlack,kOpenCircle);
-  //  plotPFu1meanScale.AddFcn(fcnPFu1meanScale,kRed);
-  //  plotPFu1meanScale.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-  //  sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1meanScale->GetParameter(0),fcnPFu1meanScale->GetParError(0)); plotPFu1meanScale.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-  //  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1meanScale->GetParameter(1),fcnPFu1meanScale->GetParError(1)); plotPFu1meanScale.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
-  //  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1meanScale->GetParameter(2),fcnPFu1meanScale->GetParError(2)); plotPFu1meanScale.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
-  latexLabel.DrawLatex(0.20, 0.2, label);
-  plotPFu1meanScale.Draw(c,kTRUE,"png");
-  plotPFu1meanScale.Draw(c,kTRUE,"pdf");
-  
-  grPFu1sigma1 = new TGraphErrors(nbins,xval,pfu1Sigma1,xerr,pfu1Sigma1Err);  
-  grPFu1sigma1->GetYaxis()->SetRangeUser(0., 50.);
-  grPFu1sigma1->SetName("grPFu1sigma1");
-  CPlot plotPFu1sigma1("pfu1sigma1","","p_{T}(ll) [GeV/c]","#sigma_{1}(u_{#parallel}) [GeV]");
-  plotPFu1sigma1.AddGraph(grPFu1sigma1,"",kBlack,kOpenCircle);
-  //  plotPFu1sigma1.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-  latexLabel.DrawLatex(0.20, 0.8, label);
-  plotPFu1sigma1.Draw(c,kTRUE,"png");
-  plotPFu1sigma1.Draw(c,kTRUE,"pdf");
-  
-  if(pfu1model>=2) {
-    
-    grPFu1mean2 = new TGraphErrors(nbins,xval,pfu1Mean2,xerr,pfu1Mean2Err);
-    grPFu1mean2->GetYaxis()->SetRangeUser(-350., 20.);
-    if(do_5TeV) grPFu1mean2->GetYaxis()->SetRangeUser(-200., 20.);
-    grPFu1mean2->SetName("grPFu1mean2");
-    fitresPFu1mean2 = grPFu1mean2->Fit("fcnPFu1mean2","QMRN0FBSE");
-    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1mean2->GetChisquare())/(fcnPFu1mean2->GetNDF()));
-    CPlot plotPFu1mean2("pfu1mean2","","p_{T}(ll) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-    plotPFu1mean2.AddGraph(grPFu1mean2,"",kBlack,kOpenCircle);
-    plotPFu1mean2.AddFcn(fcnPFu1mean,kRed);
-    plotPFu1mean2.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-    sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean2->GetParameter(0),fcnPFu1mean2->GetParError(0)); plotPFu1mean2.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean2->GetParameter(1),fcnPFu1mean2->GetParError(1)); plotPFu1mean2.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
-    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1mean2->GetParameter(2),fcnPFu1mean2->GetParError(2)); plotPFu1mean2.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.2, label);
-    plotPFu1mean2.Draw(c,kTRUE,"png");
-    plotPFu1mean2.Draw(c,kTRUE,"pdf");
-
-    grPFu1mean2Scale = new TGraphErrors(nbins,xval,pfu1Mean2Scale,xerr,pfu1Mean2ErrScale);
-    grPFu1mean2Scale->GetYaxis()->SetRangeUser(0., 1.25);
-    if(do_5TeV) grPFu1mean2Scale->GetYaxis()->SetRangeUser(0., 1.25);
-    grPFu1mean2Scale->SetName("grPFu1mean2Scale");
-    //    fitresPFu1mean2Scale = grPFu1mean2Scale->Fit("fcnPFu1mean2Scale","QMRN0FBSE");
-    //    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1mean2Scale->GetChisquare())/(fcnPFu1mean2Scale->GetNDF()));
-    CPlot plotPFu1mean2Scale("pfu1mean2Scale","","p_{T}(ll) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-    plotPFu1mean2Scale.AddGraph(grPFu1mean2Scale,"",kBlack,kOpenCircle);
-    //    plotPFu1mean2Scale.AddFcn(fcnPFu1meanScale,kRed);
-    //    plotPFu1mean2Scale.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean2Scale->GetParameter(0),fcnPFu1mean2Scale->GetParError(0)); plotPFu1mean2Scale.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean2Scale->GetParameter(1),fcnPFu1mean2Scale->GetParError(1)); plotPFu1mean2Scale.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1mean2Scale->GetParameter(2),fcnPFu1mean2Scale->GetParError(2)); plotPFu1mean2Scale.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.2, label);
-    plotPFu1mean2Scale.Draw(c,kTRUE,"png");
-    plotPFu1mean2Scale.Draw(c,kTRUE,"pdf");
-    
-    grPFu1sigma2 = new TGraphErrors(nbins,xval,pfu1Sigma2,xerr,pfu1Sigma2Err);    
-    grPFu1sigma2->GetYaxis()->SetRangeUser(0., 50.);
-    grPFu1sigma2->SetName("grPFu1sigma2");
-    CPlot plotPFu1sigma2("pfu1sigma2","","p_{T}(ll) [GeV/c]","#sigma_{2}(u_{#parallel}) [GeV]");
-    plotPFu1sigma2.AddGraph(grPFu1sigma2,"",kBlack,kOpenCircle);
-    //    plotPFu1sigma2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.8, label);
-    plotPFu1sigma2.Draw(c,kTRUE,"png");
-    plotPFu1sigma2.Draw(c,kTRUE,"pdf");
-
-
-    grPFu1sigma0 = new TGraphErrors(nbins,xval,pfu1Sigma0,xerr,pfu1Sigma0Err);    
-    grPFu1sigma0->SetName("grPFu1sigma0");
-    CPlot plotPFu1sigma0("pfu1sigma0","","p_{T}(ll) [GeV/c]","#sigma(u_{#parallel}) [GeV]");
-    plotPFu1sigma0.AddGraph(grPFu1sigma0,"",kBlack,kOpenCircle);
-    //    plotPFu1sigma0.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    plotPFu1sigma0.Draw(c,kTRUE,"png");
-    plotPFu1sigma0.Draw(c,kTRUE,"pdf");
-    
-    grPFu1frac2 = new TGraphErrors(nbins,xval,pfu1Frac2, xerr,pfu1Frac2Err);
-    grPFu1frac2->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu1frac2->SetName("grPFu1frac2");
-    CPlot plotPFu1frac2("pfu1frac2","","p_{T}(ll) [GeV/c]","f_{2}");
-    plotPFu1frac2.AddGraph(grPFu1frac2,"",kBlack,kOpenCircle);
-    plotPFu1frac2.Draw(c,kTRUE,"png");
-    plotPFu1frac2.Draw(c,kTRUE,"pdf");
-  }
-  
-  if(pfu1model>=3) { 
-    grPFu1mean3 = new TGraphErrors(nbins,xval,pfu1Mean3,xerr,pfu1Mean3Err);
-    grPFu1mean3->GetYaxis()->SetRangeUser(-350., 20.);
-    if(do_5TeV) grPFu1mean3->GetYaxis()->SetRangeUser(-200., 20.);
-    grPFu1mean3->SetName("grPFu1mean3");
-    fitresPFu1mean3 = grPFu1mean3->Fit("fcnPFu1mean3","QMRN0FBSE");
-    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1mean3->GetChisquare())/(fcnPFu1mean3->GetNDF()));
-    CPlot plotPFu1mean3("pfu1mean3","","p_{T}(ll) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-    plotPFu1mean3.AddGraph(grPFu1mean3,"",kBlack,kOpenCircle);
-    plotPFu1mean3.AddFcn(fcnPFu1mean3,kRed);
-    plotPFu1mean3.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-    sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean3->GetParameter(0),fcnPFu1mean3->GetParError(0)); plotPFu1mean3.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean3->GetParameter(1),fcnPFu1mean3->GetParError(1)); plotPFu1mean3.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
-    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1mean3->GetParameter(2),fcnPFu1mean3->GetParError(2)); plotPFu1mean3.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.8, label);
-    plotPFu1mean3.Draw(c,kTRUE,"png");
-    plotPFu1mean3.Draw(c,kTRUE,"pdf");
-
-
-    grPFu1mean3Scale = new TGraphErrors(nbins,xval,pfu1Mean3Scale,xerr,pfu1Mean3ErrScale);
-    grPFu1mean3Scale->GetYaxis()->SetRangeUser(0., 1.25);
-    if(do_5TeV) grPFu1mean3Scale->GetYaxis()->SetRangeUser(0., 1.25);
-    //    grPFu1mean3->GetYaxis()->SetRangeUser(0., 2.);
-    grPFu1mean3Scale->SetName("grPFu1mean3Scale");
-    //    fitresPFu1mean3Scale = grPFu1mean3Scale->Fit("fcnPFu1mean3Scale","QMRN0FBSE");
-    //    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu1mean3Scale->GetChisquare())/(fcnPFu1mean3Scale->GetNDF()));
-    CPlot plotPFu1mean3Scale("pfu1mean3Scale","","p_{T}(ll) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-    plotPFu1mean3Scale.AddGraph(grPFu1mean3Scale,"",kBlack,kOpenCircle);
-    //    plotPFu1mean3Scale.AddFcn(fcnPFu1mean3Scale,kRed);
-    plotPFu1mean3Scale.AddTextBox(chi2ndf,0.65,0.87,0.95,0.82,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{0} = %.3f #pm %.3f",fcnPFu1mean3Scale->GetParameter(0),fcnPFu1mean3Scale->GetParError(0)); plotPFu1mean3Scale.AddTextBox(fitparam,0.65,0.80,0.95,0.75,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu1mean3Scale->GetParameter(1),fcnPFu1mean3Scale->GetParError(1)); plotPFu1mean3Scale.AddTextBox(fitparam,0.65,0.75,0.95,0.70,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu1mean3Scale->GetParameter(2),fcnPFu1mean3Scale->GetParError(2)); plotPFu1mean3Scale.AddTextBox(fitparam,0.65,0.70,0.95,0.65,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.8, label);
-    plotPFu1mean3Scale.Draw(c,kTRUE,"png");
-    plotPFu1mean3Scale.Draw(c,kTRUE,"pdf");
-    
-    grPFu1sigma3 = new TGraphErrors(nbins,xval,pfu1Sigma3,xerr,pfu1Sigma3Err);
-    grPFu1sigma3->GetYaxis()->SetRangeUser(0., 150.);
-    grPFu1sigma3->SetName("grPFu1sigma3");
-    CPlot plotPFu1sigma3("pfu1sigma3","","p_{T}(ll) [GeV/c]","#sigma_{3}(u_{#parallel}) [GeV]");
-    plotPFu1sigma3.AddGraph(grPFu1sigma3,"",kBlack,kOpenCircle);
-    latexLabel.DrawLatex(0.20, 0.2, label);
-    plotPFu1sigma3.Draw(c,kTRUE,"png");
-    plotPFu1sigma3.Draw(c,kTRUE,"pdf");
-  
-    grPFu1frac3 = new TGraphErrors(nbins,xval,pfu1Frac3, xerr,pfu1Frac3Err);
-    grPFu1frac3->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu1frac3->SetName("grPFu1frac3");
-    CPlot plotPFu1frac3("pfu1frac3","","p_{T}(ll) [GeV/c]","f_{3}");
-    plotPFu1frac3.AddGraph(grPFu1frac3,"",kBlack,kOpenCircle);
-    plotPFu1frac3.Draw(c,kTRUE,"png");
-    plotPFu1frac3.Draw(c,kTRUE,"pdf");
-  }
-
-  // adding chi2
-  grPFu1chi2 = new TGraphErrors(nbins,xval,pfu1chi2,xerr,pfu1chi2Err);
-  grPFu1chi2 ->GetYaxis()->SetRangeUser(0., 10.);
-  grPFu1chi2 ->SetName("grPFu1chi2");
-  CPlot plotPFu1chi2("pfu1chi2","","p_{T}(ll) [GeV/c]","#chi^{2}(u_{#parallel})");
-  plotPFu1chi2.AddGraph(grPFu1chi2,"",kBlack,kOpenCircle);
-  latexLabel.DrawLatex(0.20, 0.8, label);
-  plotPFu1chi2.Draw(c,kTRUE,"png");
-  plotPFu1chi2.Draw(c,kTRUE,"pdf");
-
-  //
-  // Plotting PF-MET u2 vs. dilepton pT
-  //
-  grPFu2mean = new TGraphErrors(nbins,xval,pfu2Mean,xerr,pfu2MeanErr);
-  grPFu2mean->GetYaxis()->SetRangeUser(-20, 20.);
-  grPFu2mean->SetName("grPFu2mean");
-  CPlot plotPFu2mean("pfu2mean","","p_{T}(ll) [GeV/c]","#mu(u_{#perp})");
-  plotPFu2mean.AddGraph(grPFu2mean,"",kBlack,kOpenCircle);
-  //  plotPFu2mean.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-  plotPFu2mean.Draw(c,kTRUE,"png");
-  plotPFu2mean.Draw(c,kTRUE,"pdf");
-
-  
-  grPFu2sigma1 = new TGraphErrors(nbins,xval,pfu2Sigma1,xerr,pfu2Sigma1Err);
-  grPFu2sigma1->GetYaxis()->SetRangeUser(0., 30.);
-  grPFu2sigma1->SetName("grPFu2sigma1");
-  //  fitresPFu2sigma1 = grPFu2sigma1->Fit("fcnPFu2sigma1","QMRN0SE");
-  //  sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma1->GetChisquare())/(fcnPFu2sigma1->GetNDF()));
-  CPlot plotPFu2sigma1("pfu2sigma1","","p_{T}(ll) [GeV/c]","#sigma_{1}(u_{#perp}  ) [GeV]");
-  plotPFu2sigma1.AddGraph(grPFu2sigma1,"",kBlack,kOpenCircle);
-  //  plotPFu2sigma1.AddFcn(fcnPFu2sigma1,kRed);
-  //  sprintf(fitparam,"p_{0} = %.1f #pm %.1f",fcnPFu2sigma1->GetParameter(0),fcnPFu2sigma1->GetParError(0)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-  //  sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(1),fcnPFu2sigma1->GetParError(1)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-  //  sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma1->GetParameter(2),fcnPFu2sigma1->GetParError(2)); plotPFu2sigma1.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
-  //  plotPFu2sigma1.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-  latexLabel.DrawLatex(0.20, 0.2, label);
-  plotPFu2sigma1.Draw(c,kTRUE,"png");
-  plotPFu2sigma1.Draw(c,kTRUE,"pdf");
-
-
-  if(pfu2model>=2) {
-    
-    grPFu2mean2 = new TGraphErrors(nbins,xval,pfu2Mean2,xerr,pfu2Mean2Err);
-    grPFu2mean2->GetYaxis()->SetRangeUser(-20, 20.);
-    grPFu2mean2->SetName("grPFu2mean2");
-    CPlot plotPFu2mean2("pfu2mean2","","p_{T}(ll) [GeV/c]","#mu(u_{#perp}  ) [GeV]");
-    plotPFu2mean2.AddGraph(grPFu2mean2,"",kBlack,kOpenCircle);
-    plotPFu2mean2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    plotPFu2mean2.Draw(c,kTRUE,"png");
-    plotPFu2mean2.Draw(c,kTRUE,"pdf");
-    
-    grPFu2sigma2 = new TGraphErrors(nbins,xval,pfu2Sigma2,xerr,pfu2Sigma2Err);
-    grPFu2sigma2->GetYaxis()->SetRangeUser(0., 30.);
-    grPFu2sigma2->SetName("grPFu2sigma2");
-    //    fitresPFu2sigma2 = grPFu2sigma2->Fit("fcnPFu2sigma1","QMRN0SE");
-    //    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma2->GetChisquare())/(fcnPFu2sigma2->GetNDF()));
-    CPlot plotPFu2sigma2("pfu2sigma2","","p_{T}(ll) [GeV/c]","#sigma_{2}(u_{#perp}  ) [GeV]");
-    plotPFu2sigma2.AddGraph(grPFu2sigma2,"",kBlack,kOpenCircle);
-    //    plotPFu2sigma2.AddFcn(fcnPFu2sigma2,kRed);
-    //    sprintf(fitparam,"p_{0} = %.1f #pm %.1f",fcnPFu2sigma2->GetParameter(0),fcnPFu2sigma2->GetParError(0)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(1),fcnPFu2sigma2->GetParError(1)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma2->GetParameter(2),fcnPFu2sigma2->GetParError(2)); plotPFu2sigma2.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
-    //    plotPFu2sigma2.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.2, label);
-    plotPFu2sigma2.Draw(c,kTRUE,"png");
-    plotPFu2sigma2.Draw(c,kTRUE,"pdf");
-
-
-    grPFu2sigma0 = new TGraphErrors(nbins,xval,pfu2Sigma0,xerr,pfu2Sigma0Err);
-    grPFu2sigma0->SetName("grPFu2sigma0");
-    CPlot plotPFu2sigma0("pfu2sigma0","","p_{T}(ll) [GeV/c]","#sigma(u_{#perp}  ) [GeV]");
-    plotPFu2sigma0.AddGraph(grPFu2sigma0,"",kBlack,kOpenCircle);
-    //    plotPFu2sigma0.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    plotPFu2sigma0.Draw(c,kTRUE,"png");
-    plotPFu2sigma0.Draw(c,kTRUE,"pdf");
-
-    
-    grPFu2frac2 = new TGraphErrors(nbins,xval,pfu2Frac2, xerr,pfu2Frac2Err);
-    grPFu2frac2->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu2frac2->SetName("grPFu2frac2");
-    CPlot plotPFu2frac2("pfu2frac2","","p_{T}(ll) [GeV/c]","f_{2}");
-    plotPFu2frac2.AddGraph(grPFu2frac2,"",kBlack,kOpenCircle);
-    plotPFu2frac2.Draw(c,kTRUE,"png");
-    plotPFu2frac2.Draw(c,kTRUE,"pdf");
-  }
-  
-  if(pfu2model>=3) {  
-    
-    grPFu2mean3 = new TGraphErrors(nbins,xval,pfu2Mean3,xerr,pfu2Mean3Err);
-    grPFu2mean3->GetYaxis()->SetRangeUser(-20, 20.);
-    grPFu2mean3->SetName("grPFu2mean3");
-    CPlot plotPFu2mean3("pfu2mean3","","p_{T}(ll) [GeV/c]","#mu(u_{#perp}  ) [GeV]");
-    plotPFu2mean3.AddGraph(grPFu2mean3,"",kBlack,kOpenCircle);
-    plotPFu2mean3.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    plotPFu2mean3.Draw(c,kTRUE,"png");
-    plotPFu2mean3.Draw(c,kTRUE,"pdf");
-    
-    grPFu2sigma3 = new TGraphErrors(nbins,xval,pfu2Sigma3,xerr,pfu2Sigma3Err);
-    grPFu2sigma3->GetYaxis()->SetRangeUser(0., 150.);
-    grPFu2sigma3->SetName("grPFu2sigma3");
-    //    fitresPFu2sigma3 = grPFu2sigma3->Fit("fcnPFu2sigma1","QMRN0SE");
-    //    sprintf(chi2ndf,"#chi^{2}/ndf = %.2f",(fcnPFu2sigma3->GetChisquare())/(fcnPFu2sigma3->GetNDF()));
-    CPlot plotPFu2sigma3("pfu2sigma3","","p_{T}(ll) [GeV/c]","#sigma_{3} (u_{#perp}  ) [GeV]");
-    plotPFu2sigma3.AddGraph(grPFu2sigma3,"",kBlack,kOpenCircle);
-    //    plotPFu2sigma3.AddFcn(fcnPFu2sigma3,kRed);
-    //    sprintf(fitparam,"p_{0} = (%.1f #pm %.1f) #times 10^{-5}",fcnPFu2sigma3->GetParameter(0),fcnPFu2sigma3->GetParError(0)); plotPFu2sigma3.AddTextBox(fitparam,0.21,0.80,0.51,0.75,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{1} = %.3f #pm %.3f",fcnPFu2sigma3->GetParameter(1),fcnPFu2sigma3->GetParError(1)); plotPFu2sigma3.AddTextBox(fitparam,0.21,0.75,0.51,0.70,0,kBlack,-1);
-    //    sprintf(fitparam,"p_{2} = %.3f #pm %.3f",fcnPFu2sigma3->GetParameter(2),fcnPFu2sigma3->GetParError(2)); plotPFu2sigma3.AddTextBox(fitparam,0.21,0.70,0.51,0.65,0,kBlack,-1);
-    //    plotPFu2sigma3.AddTextBox(chi2ndf,0.21,0.87,0.41,0.82,0,kBlack,-1);
-    latexLabel.DrawLatex(0.20, 0.2, label);
-    plotPFu2sigma3.Draw(c,kTRUE,"png");
-    plotPFu2sigma3.Draw(c,kTRUE,"pdf");
-  
-    grPFu2frac3 = new TGraphErrors(nbins,xval,pfu2Frac3, xerr,pfu2Frac3Err);
-    grPFu2frac3->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu2frac3->SetName("grPFu2frac3");
-    CPlot plotPFu2frac3("pfu2frac3","","p_{T}(ll) [GeV/c]","f_{3}");
-    plotPFu2frac3.AddGraph(grPFu2frac3,"",kBlack,kOpenCircle);
-    plotPFu2frac3.Draw(c,kTRUE,"png");
-    plotPFu2frac3.Draw(c,kTRUE,"pdf");
-  }
-
-  // adding chi2
-  grPFu2chi2 = new TGraphErrors(nbins,xval,pfu2chi2,xerr,pfu2chi2Err);
-  grPFu2chi2 ->GetYaxis()->SetRangeUser(0., 10.);
-  grPFu2chi2 ->SetName("grPFu2chi2");
-  CPlot plotPFu2chi2("pfu2chi2","","p_{T}(ll) [GeV/c]","#chi^{2}(u_{#perp} ) [GeV]");
-  plotPFu2chi2.AddGraph(grPFu2chi2,"",kBlack,kOpenCircle);
-  latexLabel.DrawLatex(0.20, 0.8, label);
-  plotPFu2chi2.Draw(c,kTRUE,"png");
-  plotPFu2chi2.Draw(c,kTRUE,"pdf");
-
-  delete infile;
-  infile=0, intree=0;
-
-  TH1D *hCorrPFu1u2 = new TH1D("hCorrPFu1u2","",ncorrbins,corrbins);
-  for(Int_t ibin=0; ibin<ncorrbins; ibin++) { hCorrPFu1u2->SetBinContent(ibin+1,hPFu1u2v[ibin]->GetCorrelationFactor()); }
-  CPlot plotCorrPFu1u2("corrpfu1u2","","p_{T}(ll) [GeV/c]","corr(PF u_{#parallel}, PF u_{#perp})");
-  plotCorrPFu1u2.AddHist1D(hCorrPFu1u2,"");
-  plotCorrPFu1u2.Draw(c,kTRUE,"png");
-  plotCorrPFu1u2.Draw(c,kTRUE,"pdf");
-  
-
-  //--------------------------------------------------------------------------------------------------------------
-  // Output
-  //==============================================================================================================
-
-  char outfname[100];
-  sprintf(outfname,"%s/fits_%s.root",outputDir.Data(),metName.c_str());
-  TFile *outfile = new TFile(outfname,"RECREATE");
-  
-  if(grPFu1mean)    grPFu1mean->Write();
-  if(grPFu1mean2)   grPFu1mean2->Write();
-  if(grPFu1mean3)   grPFu1mean3->Write();
-  if(grPFu1meanScale)   grPFu1meanScale->Write();
-  if(grPFu1mean2Scale)   grPFu1mean2Scale->Write();
-  if(grPFu1mean3Scale)   grPFu1mean3Scale->Write();
-  if(grPFu1sigma0)  grPFu1sigma0->Write();
-  if(grPFu1sigma1)  grPFu1sigma1->Write();
-  if(grPFu1sigma2)  grPFu1sigma2->Write();
-  if(grPFu1sigma3)  grPFu1sigma3->Write();
-  if(grPFu1frac2)   grPFu1frac2->Write();
-  if(grPFu1frac3)   grPFu1frac3->Write();
-  if(grPFu1chi2)    grPFu1chi2->Write();
-
-  if(grPFu2mean)    grPFu2mean->Write();
-  if(grPFu2mean2)   grPFu2mean2->Write();
-  if(grPFu2mean3)   grPFu2mean3->Write();
-  if(grPFu2sigma0)  grPFu2sigma0->Write();
-  if(grPFu2sigma1)  grPFu2sigma1->Write();
-  if(grPFu2sigma2)  grPFu2sigma2->Write();
-  if(grPFu2sigma3)  grPFu2sigma3->Write();
-  if(grPFu2frac2)   grPFu2frac2->Write();
-  if(grPFu2frac3)   grPFu2frac3->Write();
-  if(grPFu2chi2)    grPFu2chi2->Write();
-  
-  hCorrPFu1u2->Write();
-    
-  outfile->Close();
-  delete outfile;
-  
-  makeHTML(outputDir,nbins,pfu1model,pfu2model);
-  
   cout << endl;
   cout << "  <> Output saved in " << outputDir << "/" << endl;    
   cout << endl;
 
   return;
-}
-
-
-//=== FUNCTION DEFINITIONS ======================================================================================
-
-//--------------------------------------------------------------------------------------------------
-void makeHTML(const TString outDir,  const Int_t nbins,
-              const Int_t pfu1model, const Int_t pfu2model)
-{
-  ofstream htmlfile;
-  char htmlfname[100];
-  sprintf(htmlfname,"%s/plots.html",outDir.Data());
-  htmlfile.open(htmlfname);
-  htmlfile << "<!DOCTYPE html" << endl;
-  htmlfile << "    PUBLIC \"-//W3C//DTD HTML 3.2//EN\">" << endl;
-  htmlfile << "<html>" << endl;
-  htmlfile << "<head><title>Recoil Fits</title></head>" << endl;
-  htmlfile << "<body bgcolor=\"EEEEEE\">" << endl;
-
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl;  
-  if(pfu1model==1) {
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1mean.png\"><img src=\"plots/pfu1mean.png\" alt=\"plots/pfu1mean.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma1.png\"><img src=\"plots/pfu1sigma1.png\" alt=\"plots/pfu1sigma1.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "</tr>" << endl;
-  
-  } else if(pfu1model==2) {
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1mean.png\"><img src=\"plots/pfu1mean.png\" alt=\"plots/pfu1mean.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1mean2.png\"><img src=\"plots/pfu1mean2.png\" alt=\"plots/pfu1mean2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma0.png\"><img src=\"plots/pfu1sigma0.png\" alt=\"plots/pfu1sigma0.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma1.png\"><img src=\"plots/pfu1sigma1.png\" alt=\"plots/pfu1sigma1.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma2.png\"><img src=\"plots/pfu1sigma2.png\" alt=\"plots/pfu1sigma2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1frac2.png\"><img src=\"plots/pfu1frac2.png\" alt=\"plots/pfu1frac2.png\" width=\"100%\"></a></td>" << endl;    
-    htmlfile << "</tr>" << endl;
-    
-  } else if(pfu1model==3) {
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1mean.png\"><img src=\"plots/pfu1mean.png\" alt=\"plots/pfu1mean.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1mean2.png\"><img src=\"plots/pfu1mean2.png\" alt=\"plots/pfu1mean2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1mean3.png\"><img src=\"plots/pfu1mean3.png\" alt=\"plots/pfu1mean3.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma0.png\"><img src=\"plots/pfu1sigma0.png\" alt=\"plots/pfu1sigma0.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "</tr>" << endl;
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma1.png\"><img src=\"plots/pfu1sigma1.png\" alt=\"plots/pfu1sigma1.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma2.png\"><img src=\"plots/pfu1sigma2.png\" alt=\"plots/pfu1sigma2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1frac2.png\"><img src=\"plots/pfu1frac2.png\" alt=\"plots/pfu1frac2.png\" width=\"100%\"></a></td>" << endl;      
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1sigma3.png\"><img src=\"plots/pfu1sigma3.png\" alt=\"plots/pfu1sigma3.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1frac3.png\"><img src=\"plots/pfu1frac3.png\" alt=\"plots/pfu1frac3.png\" width=\"100%\"></a></td>" << endl;      
-    htmlfile << "</tr>" << endl;
-  }
-  htmlfile << "</table>" << endl;
-  htmlfile << "PF u1 fits:";
-  htmlfile << " <a target=\"_blank\" href=\"pfu1fits.html\">[linear scale]</a>";
-  htmlfile << " <a target=\"_blank\" href=\"pfu1fitslog.html\">[log scale]</a>" << endl;
-  htmlfile << "<hr />" << endl;
-  
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl;  
-  if(pfu2model==1) {
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2mean.png\"><img src=\"plots/pfu2mean.png\" alt=\"plots/pfu2mean.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma1.png\"><img src=\"plots/pfu2sigma1.png\" alt=\"plots/pfu2sigma1.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "</tr>" << endl;
-  
-  } else if(pfu2model==2) {
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2mean.png\"><img src=\"plots/pfu2mean.png\" alt=\"plots/pfu2mean.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2mean2.png\"><img src=\"plots/pfu2mean2.png\" alt=\"plots/pfu2mean2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma0.png\"><img src=\"plots/pfu2sigma0.png\" alt=\"plots/pfu2sigma0.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma1.png\"><img src=\"plots/pfu2sigma1.png\" alt=\"plots/pfu2sigma1.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma2.png\"><img src=\"plots/pfu2sigma2.png\" alt=\"plots/pfu2sigma2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2frac2.png\"><img src=\"plots/pfu2frac2.png\" alt=\"plots/pfu2frac2.png\" width=\"100%\"></a></td>" << endl;    
-    htmlfile << "</tr>" << endl;
-    
-  } else if(pfu2model==3) {
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2mean.png\"><img src=\"plots/pfu2mean.png\" alt=\"plots/pfu2mean.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2mean2.png\"><img src=\"plots/pfu2mean2.png\" alt=\"plots/pfu2mean2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2mean3.png\"><img src=\"plots/pfu2mean3.png\" alt=\"plots/pfu2mean3.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma0.png\"><img src=\"plots/pfu2sigma0.png\" alt=\"plots/pfu2sigma0.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "<td width=\"20%\"></td>" << endl;
-    htmlfile << "</tr>" << endl;
-    htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma1.png\"><img src=\"plots/pfu2sigma1.png\" alt=\"plots/pfu2sigma1.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma2.png\"><img src=\"plots/pfu2sigma2.png\" alt=\"plots/pfu2sigma2.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2frac2.png\"><img src=\"plots/pfu2frac2.png\" alt=\"plots/pfu2frac2.png\" width=\"100%\"></a></td>" << endl;      
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2sigma3.png\"><img src=\"plots/pfu2sigma3.png\" alt=\"plots/pfu2sigma3.png\" width=\"100%\"></a></td>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2frac3.png\"><img src=\"plots/pfu2frac3.png\" alt=\"plots/pfu2frac3.png\" width=\"100%\"></a></td>" << endl;      
-    htmlfile << "</tr>" << endl;
-  }
-  htmlfile << "</table>" << endl;
-  htmlfile << "PF u2 fits:";
-  htmlfile << " <a target=\"_blank\" href=\"pfu2fits.html\">[linear scale]</a>";
-  htmlfile << " <a target=\"_blank\" href=\"pfu2fitslog.html\">[log scale]</a>" << endl;
-  htmlfile << "<hr />" << endl;
-
-        
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl;
-  htmlfile << "<tr>" << endl;
-  htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/corrpfu1u2.png\"><img src=\"plots/corrpfu1u2.png\" alt=\"plots/corrpfu1u2.png\" width=\"100%\"></a></td>" << endl;
-  htmlfile << "<td width=\"20%\"></td>" << endl;
-  htmlfile << "<td width=\"20%\"></td>" << endl;
-  htmlfile << "<td width=\"20%\"></td>" << endl;
-  htmlfile << "<td width=\"20%\"></td>" << endl;
-  htmlfile << "</tr>" << endl;
-  htmlfile << "</table>" << endl;
-  
-  htmlfile << "</body>" << endl;
-  htmlfile << "</html>" << endl;
-  htmlfile.close();
-  
-  Int_t ibin=0;
-  
-  //
-  // PF u1 fits page
-  //
-  sprintf(htmlfname,"%s/pfu1fits.html",outDir.Data());
-  htmlfile.open(htmlfname);
-  htmlfile << "<!DOCTYPE html" << endl;
-  htmlfile << "    PUBLIC \"-//W3C//DTD HTML 3.2//EN\">" << endl;
-  htmlfile << "<html>" << endl;
-  htmlfile << "<body bgcolor=\"EEEEEE\">" << endl;
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl;   
-  for(ibin=0; ibin<nbins; ibin++) {
-    if(ibin%5 == 0) htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1fit_" << ibin << ".png\"><img src=\"plots/pfu1fit_" << ibin << ".png\" alt=\"plots/pfu1fit_" << ibin << ".png\" width=\"100%\"></a></td>" << endl;
-    if(ibin%5 == 4) htmlfile << "</tr>" << endl;
-  }
-  if(ibin%5 != 4) {
-    while(ibin%5 != 4) {
-      htmlfile << "<td width=\"20%\"></td>" << endl;
-      ibin++;
-    }
-    htmlfile << "</tr>" << endl;
-  }
-  htmlfile << "</table>" << endl;
-  htmlfile << "</body>" << endl;
-  htmlfile << "</html>" << endl;
-  htmlfile.close();  
-
-  sprintf(htmlfname,"%s/pfu1fitslog.html",outDir.Data());
-  htmlfile.open(htmlfname);
-  htmlfile << "<!DOCTYPE html" << endl;
-  htmlfile << "    PUBLIC \"-//W3C//DTD HTML 3.2//EN\">" << endl;
-  htmlfile << "<html>" << endl;
-  htmlfile << "<body bgcolor=\"EEEEEE\">" << endl;
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl;   
-  for(ibin=0; ibin<nbins; ibin++) {
-    if(ibin%5 == 0) htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu1fitlog_" << ibin << ".png\"><img src=\"plots/pfu1fitlog_" << ibin << ".png\"alt=\"plots/pfu1fitlog_" << ibin << ".png\" width=\"100%\"></a></td>" << endl;
-    if(ibin%5 == 4) htmlfile << "</tr>" << endl;
-  }
-  if(ibin%5 != 4) {
-    while(ibin%5 != 4) {
-      htmlfile << "<td width=\"20%\"></td>" << endl;
-      ibin++;
-    }
-    htmlfile << "</tr>" << endl;
-  }
-  htmlfile << "</table>" << endl;
-  htmlfile << "</body>" << endl;
-  htmlfile << "</html>" << endl;
-  htmlfile.close(); 
-  
-  //
-  // PF u2 fits page
-  //
-  sprintf(htmlfname,"%s/pfu2fits.html",outDir.Data());
-  htmlfile.open(htmlfname);
-  htmlfile << "<!DOCTYPE html" << endl;
-  htmlfile << "    PUBLIC \"-//W3C//DTD HTML 3.2//EN\">" << endl;
-  htmlfile << "<html>" << endl;
-  htmlfile << "<body bgcolor=\"EEEEEE\">" << endl;
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl; 
-  for(ibin=0; ibin<nbins; ibin++) {
-    if(ibin%5 == 0) htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plots/pfu2fit_" << ibin << ".png\"><img src=\"plots/pfu2fit_" << ibin << ".png\"alt=\"plots/pfu2fit_" << ibin << ".png\" width=\"100%\"></a></td>" << endl;
-    if(ibin%5 == 4) htmlfile << "</tr>" << endl;
-  }
-  if(ibin%5 != 4) {
-    while(ibin%5 != 4) {
-      htmlfile << "<td width=\"20%\"></td>" << endl;
-      ibin++;
-    }
-    htmlfile << "</tr>" << endl;
-  }
-  htmlfile << "</table>" << endl;
-  htmlfile << "</body>" << endl;
-  htmlfile << "</html>" << endl;
-  htmlfile.close(); 
-
-  sprintf(htmlfname,"%s/pfu2fitslog.html",outDir.Data());
-  htmlfile.open(htmlfname);
-  htmlfile << "<!DOCTYPE html" << endl;
-  htmlfile << "    PUBLIC \"-//W3C//DTD HTML 3.2//EN\">" << endl;
-  htmlfile << "<html>" << endl;
-  htmlfile << "<body bgcolor=\"EEEEEE\">" << endl;
-  htmlfile << "<table border=\"0\" cellspacing=\"5\" width=\"100%\">" << endl; 
-  for(ibin=0; ibin<nbins; ibin++) {
-    if(ibin%5 == 0) htmlfile << "<tr>" << endl;
-    htmlfile << "<td width=\"20%\"><a target=\"_blank\" href=\"plotslog/pfu2fit_" << ibin << ".png\"><img src=\"plots/pfu2fitlog_" << ibin << ".png\"alt=\"plots/pfu2fitlog_" << ibin << ".png\" width=\"100%\"></a></td>" << endl;
-    if(ibin%5 == 4) htmlfile << "</tr>" << endl;
-  }
-  if(ibin%5 != 4) {
-    while(ibin%5 != 4) {
-      htmlfile << "<td width=\"20%\"></td>" << endl;
-      ibin++;
-    }
-    htmlfile << "</tr>" << endl;
-  }
-  htmlfile << "</table>" << endl;
-  htmlfile << "</body>" << endl;
-  htmlfile << "</html>" << endl;
-  htmlfile.close(); 
-
-  return;
-
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1254,24 +484,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
   char sig1text[50];
   char sig2text[50];
   char sig3text[50];
-  
-  /*
-  const double ydiv = 0.25;
-  TPad *pad1 = new TPad("pad1", "",0.05,ydiv,1,1);
-  pad1->SetTickx(1);
-  pad1->SetTicky(1);
-  pad1->SetBottomMargin(0);
-  pad1->SetTopMargin(0.075);
-  pad1->Draw();
-
-  TPad *pad2 = new TPad("pad2", "",0.05,0,1,ydiv);
-  //  pad2->SetLogx(logx);
-  pad2->SetTickx(1);
-  pad2->SetTicky(1);
-  pad2->SetTopMargin(0);
-  pad2->SetBottomMargin(0.35);
-  pad2->Draw();
-  */
 
 
   double frac2_ini=0;
@@ -1420,31 +632,15 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     RooRealVar *lAbkgFrac =new RooRealVar("AbkgFrac","AbkgFrac",(hv[ibin]->Integral()/(hv[ibin]->Integral()+hbkgv[ibin]->Integral())),0.9,1.0);
 
     if(sigOnly) {
-      yields.add(nsig);
-      nbkg.setVal(0);
-
+      yields.add(nsig);  nbkg.setVal(0);
     } else {
       RooFormulaVar * sigbkgFrac= new RooFormulaVar("bkgfrac","@0",RooArgSet(*lAbkgFrac));
       yields.add(*sigbkgFrac);
     }
 
-    
+
     name.str("");  name << "modelpdf_" << ibin << std::endl;
     RooAddPdf modelpdf(name.str().c_str(),name.str().c_str(),parts,yields);name.str("");
-    
-    // // // std::cout << "name = " << name.str().c_str() << std::endl;
-    
-    // // // std::cout << "on bin # " << ibin << std::endl;
-    // // // if(sigOnly) std::cout << "signal evts = " << nsig.getVal() << std::endl;
-    // // // std::cout << "total events = " << hv[ibin]->Integral() << std::endl;
-    // // // std::cout << "sigma1 = " << sigma1.getVal() << std::endl;
-    // // // std::cout << "sigma2 = " << sigma2.getVal() << std::endl;
-
-    // // // if(ibin>0) std::cout << "sigma max = " << 1.5*hv[ibin-1]->GetRMS() << " " << 1.8*hv[ibin-1]->GetRMS() << std::endl;
-
-    //
-    // Perform fit
-    //
 
     RooFitResult *fitResultLOG=0;
     if(doLog) {
@@ -1483,7 +679,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
                  
         // nTries++;
 
-      fitResult = modelpdf.fitTo(dataHist,
+        fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
 				 //				 Minimizer("Minuit2","minimize"),
 				 Minimizer("Minuit2","migrad"),
@@ -1492,7 +688,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 				 RooFit::Hesse(),
 				 RooFit::Strategy(2),
 				 RooFit::Save());
-       fitResult = modelpdf.fitTo(dataHist,
+         fitResult = modelpdf.fitTo(dataHist,
 				 NumCPU(4),
 				 //				 Minimizer("Minuit2","minimize"),
 				 Minimizer("Minuit2","improve"),
@@ -1502,7 +698,7 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 				 RooFit::Strategy(2),
 				 RooFit::Save());
 				 
-	fitResult = modelpdf.fitTo(dataHist,
+         fitResult = modelpdf.fitTo(dataHist,
 			       NumCPU(4),
 			       Minimizer("Minuit2","minimize"),
 			       ExternalConstraints(constGauss1),ExternalConstraints(constGauss2),ExternalConstraints(constGauss3),
@@ -1636,9 +832,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     c->SetFillColor(kWhite);
     if(fitResult->status()>0) c->SetFillColor(kYellow);
 
-    //    if(frac2.getVal() + frac3.getVal() > 1.0) std::cout << "WRONG NORMALIZATION??? " << std::endl;
-    //    if(frac2.getVal() + frac3.getVal() > 1.0) std::cout << "WRONG NORMALIZATION??? " << std::endl;
-
     wksp->import(u);
     wksp->import(modelpdf);
     wksp->import(sig);
@@ -1654,17 +847,17 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     mean1Arr[ibin]      = mean1.getVal();
     mean1ErrArr[ibin]   = mean1.getError();
-    sigma1Arr[ibin]    = sigma1.getVal();
-    sigma1ErrArr[ibin] = sigma1.getError();
+    sigma1Arr[ibin]     = sigma1.getVal();
+    sigma1ErrArr[ibin]  = sigma1.getError();
     if(model>=2) {
       mean2Arr[ibin]      = mean2.getVal();
       mean2ErrArr[ibin]   = mean2.getError();
-      sigma0Arr[ibin]    = sigma0.getVal();
-      sigma0ErrArr[ibin] = sigma0.getPropagatedError(*fitResult);
-      sigma2Arr[ibin]    = sigma2.getVal();
-      sigma2ErrArr[ibin] = sigma2.getError();
-      frac2Arr[ibin]     = frac2.getVal();
-      frac2ErrArr[ibin]  = frac2.getError();
+      sigma0Arr[ibin]     = sigma0.getVal();
+      sigma0ErrArr[ibin]  = sigma0.getPropagatedError(*fitResult);
+      sigma2Arr[ibin]     = sigma2.getVal();
+      sigma2ErrArr[ibin]  = sigma2.getError();
+      frac2Arr[ibin]      = frac2.getVal();
+      frac2ErrArr[ibin]   = frac2.getError();
     }
     if(model>=3) {    
       mean3Arr[ibin]      = mean3.getVal();
@@ -1681,8 +874,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     //
     RooPlot *frame = u.frame(Bins(100));
     dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
-    //    if(doLog) dataHistLog.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
-    //    if(!doLog) dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
     modelpdf.plotOn(frame);
 
     if(!doLog) name.str(""); name << "bkg_" << ibin ;
@@ -1705,8 +896,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     
     // redraw the data
     dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
-    //    if(!doLog) dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
-    //    if(doLog) dataHistLog.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
 
     if(do_keys) {
 
@@ -1741,11 +930,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     int sizeParam=0;
     if(string(plabel)==string("pfu1")) sizeParam=8; // 3 means + 3 sigma + 2 frac
     if(string(plabel)==string("pfu2")) sizeParam=5; // 0 means + 3 sigma + 2 frac
-    //    frame->Print();
-    /*
-    frame_u_11_674e5e0[u_11] = (RooHist::h_dataHist,RooCurve::modelpdf_11
-    _Norm[u_11],RooCurve::sig_11_Norm[u_11]_Comp[gauss1_11],RooCurve::sig_11_Norm[u_11]_Comp[gauss2_11],RooCurve::sig_11_Norm[u_11]_Comp[gauss3_11],RooCurve::sig_11_Norm[u_11]_errorband_Comp[sig_11],RooCurve::sig_11_Norm[u_11],RooHist::h_dataHist)
-    */
 
     TString nameRooHist=Form("h_%s",dataHist.GetName());
     TString nameRooCurve=Form("sig_%d_Norm[u_%d]",ibin,ibin);
@@ -1862,12 +1046,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     plot.Draw(cLin,kTRUE,"png",1);
     plot.Draw(cLin,kTRUE,"pdf",1);
 
-    /////////// Draw log
-    ///////////
-    ///////////
-    ///////////
-    ///////////
-
     TCanvas *c1 = MakeCanvas("c1","c1",800,800);
     c1->Divide(1,2,0,0);
     c1->cd(1)->SetPad(0,0.3,1.0,1.0);
@@ -1887,8 +1065,6 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
     sprintf(pname,"%sfitlog_%i",plabel,ibin);
     plot.SetYRange(0.1,10*hv[ibin]->GetMaximum());
-    //    if(!doLog) plot.SetYRange(0.1,10*hv[ibin]->GetMaximum());
-    //    if(doLog) plot.SetYRange(0.1,10*hvLOG->GetMaximum());
     plot.SetName(pname);
     plot.SetLogy();
     plot.Draw(c1,kFALSE,"png",1);
@@ -1902,13 +1078,10 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
     hist_pull->SetLineColor(kAzure);
     hist_pull->SetFillColor(kAzure);
     hist_pull->Draw("A3 L ");
-    //    TLine *lineZero = new TLine(-100., 0,  100., 0);
     lineZero->SetLineColor(kBlack);
     lineZero->Draw("same");
-    //    TLine *lineZero1SigmaM = new TLine(-100., -1,  100., -1);
     lineZero1SigmaM->SetLineColor(11);
     lineZero1SigmaM->Draw("same");
-    //    TLine *lineZero1SigmaP = new TLine(-100., 1,  100., 1);
     lineZero1SigmaP->SetLineColor(11);
     lineZero1SigmaP->Draw("same");
     plot.Draw(c1,kTRUE,"png",1);
@@ -1921,293 +1094,4 @@ void performFit(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_
 
   return;
 
-}
-
-void performFitFM(const vector<TH1D*> hv, const vector<TH1D*> hbkgv, const Double_t *ptbins, const Int_t nbins,
-                const Int_t model, const Bool_t sigOnly,
-                TCanvas *c, const char *plabel, const char *xlabel,
-        Double_t *mean1Arr,   Double_t *mean1ErrArr,
-        Double_t *mean2Arr,   Double_t *mean2ErrArr,
-        Double_t *mean3Arr,   Double_t *mean3ErrArr,
-        Double_t *sigma0Arr, Double_t *sigma0ErrArr,
-        Double_t *sigma1Arr, Double_t *sigma1ErrArr,
-        Double_t *sigma2Arr, Double_t *sigma2ErrArr,
-        Double_t *sigma3Arr, Double_t *sigma3ErrArr,
-        Double_t *frac2Arr,  Double_t *frac2ErrArr,
-        Double_t *frac3Arr,  Double_t *frac3ErrArr,
-        RooWorkspace *wksp
-) {
-  char pname[50];
-  char ylabel[50];
-  char binlabel[50];
-  char nsigtext[50];
-  char nbkgtext[50];
-  
-  char mean1text[50];
-  char mean2text[50];
-  char mean3text[50];
-  char sig0text[50];
-  char sig1text[50];
-  char sig2text[50];
-  char sig3text[50];
-  
-  for(Int_t ibin=0; ibin<nbins; ibin++) {
-    
-    std::stringstream name;
-    RooRealVar u("u","u",hv[ibin]->GetXaxis()->GetXmin(),hv[ibin]->GetXaxis()->GetXmax());name.str(""); 
-    u.setBins(100);
-    RooDataHist dataHist("dataHist","dataHist",RooArgSet(u),hv[ibin]);
-
-    //
-    // Set up background histogram templates
-    //
-    RooDataHist bkgHist("bkgHist","bkgHist",RooArgSet(u),hbkgv[ibin]);
-    RooHistPdf bkg("bkg","bkg",u,bkgHist,0);
-
-    //
-    // Set up fit parameters
-    //
-    RooRealVar mean1("mean1","mean1",
-                    hv[ibin]->GetMean()*0.95,
-                    hv[ibin]->GetXaxis()->GetXmin(),
-                    hv[ibin]->GetXaxis()->GetXmax());
-    RooRealVar mean2("mean2","mean2",
-                    hv[ibin]->GetMean(),
-                    hv[ibin]->GetXaxis()->GetXmin(),
-                    hv[ibin]->GetXaxis()->GetXmax());
-    RooRealVar mean3("mean3","mean3",
-                    hv[ibin]->GetMean()*1.05,
-                    hv[ibin]->GetXaxis()->GetXmin(),
-                    hv[ibin]->GetXaxis()->GetXmax());
-    RooRealVar sigma1("sigma1","sigma1",0.5*(hv[ibin]->GetRMS()),0,1.5*(hv[ibin]->GetRMS()));
-    RooRealVar sigma2("sigma2","sigma2",1.0*(hv[ibin]->GetRMS()),0,2.0*(hv[ibin]->GetRMS()));
-    RooRealVar sigma3("sigma3","sigma3",2*(hv[ibin]->GetRMS()),0,10*(hv[ibin]->GetRMS())); 
-    RooRealVar frac2("frac2","frac2",0.5,0.1,0.9);
-    RooRealVar frac3("frac3","frac3",0.05,0,0.1);
-    
-    name << "gauss1_" << ibin;
-    RooGaussian gauss1("gauss1","gauss1",u,mean1,sigma1);name.str(""); 
-    name << "gauss2_" << ibin;
-    RooGaussian gauss2("gauss2","gauss2",u,mean1,sigma2);name.str(""); 
-    name << "gauss3_" << ibin;
-    RooGaussian gauss3("gauss3","gauss3",u,mean1,sigma3);name.str(""); 
-
-    if(ibin>0) {
-      mean1.setVal(mean1Arr[ibin-1]);
-//       mean2.setVal(mean2Arr[ibin-1]);
-//       mean3.setVal(mean3Arr[ibin-1]);
-//       sigma1.setMin(0);
-//       sigma1.setMax(1.5*(hv[ibin-1]->GetRMS()));
-      sigma1.setVal(0.8*(hv[ibin-1]->GetRMS()));
-//       sigma2.setMin(0);
-//       sigma2.setMax(1.8*(hv[ibin-1]->GetRMS()));
-      sigma2.setVal(1.8*(hv[ibin-1]->GetRMS()));
-      sigma3.setVal(3*(hv[ibin-1]->GetRMS()));
-      
-//             mean.setVal(meanArr[ibin-1]);
-//       sigma1.setMin(0.1*(sigma0Arr[ibin-1]));
-//       sigma1.setMax(1.5*(sigma0Arr[ibin-1]));
-//       sigma1.setVal(0.65*(sigma0Arr[ibin-1]));
-//       sigma2.setMin(0.1*(sigma0Arr[ibin-1]));
-//       sigma2.setMax(1.8*(sigma0Arr[ibin-1]));
-//       sigma2.setVal(1.2*(sigma0Arr[ibin-1]));
-      
-    
-      if(ibin == 4 || ibin == 50 || ibin ==14 || ibin == 30|| ibin == 6 || ibin == 23||ibin == 2 || ibin == 10 || ibin == 24 || ibin==12 || ibin == 8 || ibin==48 || ibin ==55 || ibin==28){
-        mean1.setVal(hv[ibin]->GetMean());
-        mean2.setVal(hv[ibin]->GetMean());
-        mean3.setVal(hv[ibin]->GetMean());
-
-        sigma1.setMin(0.0*(hv[ibin]->GetRMS()));
-        sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-        sigma1.setVal(0.8*(hv[ibin-1]->GetRMS()));
-        sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-        sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-        sigma2.setVal(2.0*(hv[ibin-1]->GetRMS()));
-        sigma3.setMin(1.8*(hv[ibin]->GetRMS()));
-        sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-        sigma3.setVal(3.5*(hv[ibin-1]->GetRMS()));
-      }
-      
-      
-      if(ibin == 5|| ibin==12 ){
-        mean1.setVal(hv[ibin]->GetMean());
-        mean2.setVal(hv[ibin]->GetMean());
-        mean3.setVal(hv[ibin]->GetMean());
-
-        sigma1.setMin(0.0*(hv[ibin]->GetRMS()));
-        sigma1.setMax(1.5*(hv[ibin]->GetRMS()));
-        sigma1.setVal(0.9*(hv[ibin-1]->GetRMS()));
-        sigma2.setMin(0.0*(hv[ibin]->GetRMS()));
-        sigma2.setMax(1.8*(hv[ibin]->GetRMS()));
-        sigma2.setVal(2.1*(hv[ibin-1]->GetRMS()));
-        sigma3.setMin(1.8*(hv[ibin]->GetRMS()));
-        sigma3.setMax(5.0*(hv[ibin]->GetRMS()));
-        sigma3.setVal(3.8*(hv[ibin-1]->GetRMS()));
-      }
-      
-    }
-    
-    //
-    // Define formula for overall width (sigma0)
-    //
-    char formula[100];
-    RooArgList params;
-    if(model==1) {
-      sprintf(formula,"sigma1");
-    
-    } else if(model==2) {
-      sprintf(formula,"(1.-frac2)*sigma1 + frac2*sigma2");
-      params.add(frac2);
-      params.add(sigma1);
-      params.add(sigma2);
-
-    } else if(model==3) {
-      sprintf(formula,"(1.-frac2-frac3)*sigma1 + frac2*sigma2 + frac3*sigma3");
-      params.add(frac2);
-      params.add(frac3);
-      params.add(sigma1);
-      params.add(sigma2);
-      params.add(sigma3);
-    }       
-    RooFormulaVar sigma0("sigma0",formula,params);
-    
-    //
-    // Construct fit model
-    //
-    RooArgList shapes;
-    if(model>=3) shapes.add(gauss3);
-    if(model>=2) shapes.add(gauss2);
-    shapes.add(gauss1);
-  
-    RooArgList fracs;
-    if(model>=3) fracs.add(frac3);
-    if(model>=2) fracs.add(frac2);
-    
-    // sig pdfsU1
-    name << "sig_" << ibin;
-    RooAddPdf sig("sig","sig",shapes,fracs); name.str(""); 
-    
-    RooArgList parts;
-    parts.add(sig);
-    if(!sigOnly) parts.add(bkg);
-    
-    RooArgList yields;
-    RooRealVar nsig("nsig","nsig",0.98*(hv[ibin]->Integral()),0.,hv[ibin]->Integral());
-    yields.add(nsig);
-    RooRealVar nbkg("nbkg","nbkg",(hbkgv[ibin]->Integral()),0.,2.0*(hbkgv[ibin]->Integral()));
-    if(!sigOnly) yields.add(nbkg);
-    else         nbkg.setVal(0);
-    nbkg.setConstant(kTRUE);
-    
-//     std::stringstream name;
-    name << "modelpdf_" << ibin << std::endl;
-    RooAddPdf modelpdf("modelpdf","modelpdf",parts,yields);name.str(""); 
-    
-    std::cout << "name = " << name.str().c_str() << std::endl;
-    
-    std::cout << "on bin # " << ibin << std::endl;
-    std::cout << "signal evts = " << nsig.getVal() << std::endl;
-    std::cout << "total events = " << hv[ibin]->Integral() << std::endl;
-    std::cout << "sigma1 = " << sigma1.getVal() << std::endl;
-    std::cout << "sigma2 = " << sigma2.getVal() << std::endl;
-    if(ibin>0)std::cout << "sigma max = " << 1.5*hv[ibin-1]->GetRMS() << " " << 1.8*hv[ibin-1]->GetRMS() << std::endl;
-
-    //
-    // Perform fit
-    //
-    RooFitResult *fitResult=0;
-    fitResult = modelpdf.fitTo(dataHist,
-			       NumCPU(4),
-                               //RooFit::Minos(),
-			       RooFit::Strategy(2),
-			       RooFit::Save());
-    
-    if(sigma1.getVal() > sigma2.getVal()) {
-      Double_t wide = sigma1.getVal();
-      Double_t thin = sigma2.getVal();
-      sigma1.setVal(thin);
-      sigma2.setVal(wide);
-      frac2.setVal(1.0-frac2.getVal());
-      fitResult = modelpdf.fitTo(dataHist,
-				 NumCPU(4),
-                                 //RooFit::Minos(),
-				 RooFit::Strategy(2),
-				 RooFit::Save());
-    }
-    
-    mean1Arr[ibin]      = mean1.getVal();
-    mean1ErrArr[ibin]   = mean1.getError();
-    sigma1Arr[ibin]    = sigma1.getVal();
-    sigma1ErrArr[ibin] = sigma1.getError();
-    if(model>=2) {
-      mean2Arr[ibin]      = mean2.getVal();
-      mean2ErrArr[ibin]   = mean2.getError();
-      sigma0Arr[ibin]    = sigma0.getVal();
-      sigma0ErrArr[ibin] = sigma0.getPropagatedError(*fitResult);
-      sigma2Arr[ibin]    = sigma2.getVal();
-      sigma2ErrArr[ibin] = sigma2.getError();
-      frac2Arr[ibin]     = frac2.getVal();
-      frac2ErrArr[ibin]  = frac2.getError();
-    }
-    if(model>=3) {    
-      mean3Arr[ibin]      = mean3.getVal();
-      mean3ErrArr[ibin]   = mean3.getError();
-      sigma3Arr[ibin]    = sigma3.getVal();
-      sigma3ErrArr[ibin] = sigma3.getError();
-      frac3Arr[ibin]     = frac3.getVal();
-      frac3ErrArr[ibin]  = frac3.getError();
-    }
-    
-    //
-    // Plot fit results
-    //
-    RooPlot *frame = u.frame(Bins(100));
-    dataHist.plotOn(frame,MarkerStyle(kFullCircle),MarkerSize(0.8),DrawOption("ZP"));
-    modelpdf.plotOn(frame);
-    if(!sigOnly) modelpdf.plotOn(frame,Components("bkg"),LineStyle(kDotted),LineColor(kMagenta+2));
-    if(model>=2) sig.plotOn(frame,Components("gauss1"),LineStyle(kDashed),LineColor(kRed));
-    if(model>=2) sig.plotOn(frame,Components("gauss2"),LineStyle(kDashed),LineColor(kCyan+2));
-    if(model>=3) sig.plotOn(frame,Components("gauss3"),LineStyle(kDashed),LineColor(kGreen+2));
-
-    sprintf(pname,"%sfit_%i",plabel,ibin);
-    sprintf(ylabel,"Events / %.1f GeV",hv[ibin]->GetBinWidth(1));
-    sprintf(binlabel,"%i < p_{T} < %i",(Int_t)ptbins[ibin],(Int_t)ptbins[ibin+1]);    
-    if(sigOnly) {
-      sprintf(nsigtext,"N_{evts} = %i",(Int_t)hv[ibin]->Integral());
-    } else {
-      sprintf(nsigtext,"N_{sig} = %.1f #pm %.1f",nsig.getVal(),nsig.getError());
-      sprintf(nbkgtext,"N_{bkg} = %.1f #pm %.1f",nbkg.getVal(),nbkg.getError());
-    }
-    sprintf(mean1text,"#mu_{1} = %.1f #pm %.1f",mean1Arr[ibin],mean1ErrArr[ibin]);
-    sprintf(sig1text,"#sigma = %.1f #pm %.1f",sigma1Arr[ibin],sigma1ErrArr[ibin]);
-    if(model>=2) {
-      sprintf(mean2text,"#mu_{2} = %.1f #pm %.1f",mean2Arr[ibin],mean2ErrArr[ibin]);
-      sprintf(sig0text,"#sigma = %.1f #pm %.1f",sigma0Arr[ibin],sigma0ErrArr[ibin]);
-      sprintf(sig1text,"#sigma_{1} = %.1f #pm %.1f",sigma1Arr[ibin],sigma1ErrArr[ibin]);          
-      sprintf(sig2text,"#sigma_{2} = %.1f #pm %.1f",sigma2Arr[ibin],sigma2ErrArr[ibin]);
-    }
-    if(model>3){
-      sprintf(mean3text,"#mu_{3} = %.1f #pm %.1f",mean3Arr[ibin],mean3ErrArr[ibin]);
-      sprintf(sig3text,"#sigma_{3} = %.1f #pm %.1f",sigma3Arr[ibin],sigma3ErrArr[ibin]);
-    }
-    
-    CPlot plot(pname,frame,"",xlabel,ylabel);
-    plot.AddTextBox(binlabel,0.21,0.80,0.51,0.85,0,kBlack,-1);
-    if(sigOnly) plot.AddTextBox(nsigtext,0.21,0.78,0.51,0.73,0,kBlack,-1);
-    else        plot.AddTextBox(0.21,0.78,0.51,0.68,0,kBlack,-1,2,nsigtext,nbkgtext);
-    if(model==1)      plot.AddTextBox(0.70,0.90,0.95,0.80,0,kBlack,-1,2,mean1text,sig1text);
-    else if(model==2) plot.AddTextBox(0.70,0.90,0.95,0.70,0,kBlack,-1,5,mean1text,mean2text,sig0text,sig1text,sig2text);
-    else if(model==3) plot.AddTextBox(0.70,0.90,0.95,0.65,0,kBlack,-1,7,mean1text,mean2text,mean3text,sig0text,sig1text,sig2text,sig3text);
-    if(fitResult->status()>1) plot.AddTextBox(Form("status=%d",fitResult->status()),0.21,0.5,0.51,0.58,0,kRed,-1);
-    plot.Draw(c,kTRUE,"png");
-    plot.Draw(c,kTRUE,"pdf");
-    
-    sprintf(pname,"%sfitlog_%i",plabel,ibin);
-    plot.SetName(pname);
-    plot.SetLogy();
-    if(fitResult->status()>1) plot.AddTextBox(Form("status=%d",fitResult->status()),0.21,0.5,0.51,0.58,0,kRed,-1);
-    plot.Draw(c,kTRUE,"png");        
-    plot.Draw(c,kTRUE,"pdf");        
-  }
 }
