@@ -101,14 +101,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   // preserving the fine binning at low pT but the higher-pT bins (>75 GeV have been adjusted to be slightly wider)
    // Double_t ptbins[] = {0,1.0,2.0,3.0,4.0,5.0,6.0,7.5,10,12.5,15,17.5,20,22.5,25,27.5,30,32.5,35,37.5,40,42.5,45,47.5,50,52.5,55,57.5,60,65,70,75,80,90,100,125,150,1000}; 
    Double_t ptbins[] = {0,25,50,75,100,125,150,1000}; 
-
-  Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
-
-  // Double_t corrbins[] = { 0, 10, 30, 50 };
-  // Int_t ncorrbins = sizeof(corrbins)/sizeof(Double_t)-1;
-
-  TString formulaPFu1mean("pol2");
-  TString formulaPFu2mean("pol2");
+   Int_t nbins = sizeof(ptbins)/sizeof(Double_t)-1;
 
   vector<TString> fnamev;
   vector<Bool_t> isBkgv;
@@ -188,11 +181,11 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   // Declare output ntuple variables
   //
   UInt_t  runNum, lumiSec, evtNum;
-  UInt_t  npv, npu;
+  // UInt_t  npv, npu;
   Float_t genVPt, genVPhi, genVy;
   Float_t genMuonPt;
   Float_t scale1fb, puWeight;//, scale1fbUp, scale1fbDown;
-  Float_t met, metPhi, mt, u1, u2;
+  Float_t met, metPhi;//, mt, u1, u2;
   Int_t   q;
   UInt_t nTkLayers; // for roch corr
   TLorentzVector *lep=0, *lep_raw=0, *genV = 0, *genLep =0;
@@ -205,27 +198,15 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     infile = new TFile(fnamev[ifile]);
     intree = (TTree*)infile->Get("Events");
 
-    // intree->SetBranchAddress("runNum",   &runNum);    // event run number
-    // intree->SetBranchAddress("lumiSec",  &lumiSec);   // event lumi section
-    // intree->SetBranchAddress("evtNum",   &evtNum);    // event number
-    // intree->SetBranchAddress("npv",      &npv);       // number of primary vertices
-    // intree->SetBranchAddress("npu",      &npu);       // number of in-time PU events (MC)
     intree->SetBranchAddress("genMuonPt",   &genMuonPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
     intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)   
     intree->SetBranchAddress("genVy",    &genVy);     // GEN W boson rapidity (signal MC)
     intree->SetBranchAddress("scale1fb", &scale1fb);  // event weight per 1/fb (MC)
-    // intree->SetBranchAddress("scale1fbUp", &scale1fbUp);  // event weight per 1/fb (MC)
-    // intree->SetBranchAddress("scale1fbDown", &scale1fbDown);  // event weight per 1/fb (MC)
     intree->SetBranchAddress(metVar.c_str(),        &met);        // Uncorrected PF MET
     intree->SetBranchAddress(metPhiVar.c_str(),     &metPhi);     // phi(MET)
-    // intree->SetBranchAddress("sumEt",               &sumEt);      // Sum ET
-    // intree->SetBranchAddress("mt",       &mt);        // transverse mass
     intree->SetBranchAddress("q",        &q);         // lepton charge
     intree->SetBranchAddress("lep",      &lep);       // lepton 4-vector 
-    intree->SetBranchAddress("genLep",      &genLep);       // gen lepton 4-vector 
-    intree->SetBranchAddress("genV",      &genV);       // lepton 4-vector 
-    // intree->SetBranchAddress("puWeight",     &puWeight);  // commented out b/c unnecessary for low PU
     intree->SetBranchAddress("nTkLayers",   &nTkLayers);       // lepton 4-vector
 	  if(doElectron) intree->SetBranchAddress("lep_raw",         &lep_raw);       // probe lepton 4-vector
     
@@ -242,30 +223,20 @@ void fitRecoilWm(TString infoldername,  // input ntuple
       intree->GetEntry(ientry);
 
       // apply rochester correction
-      TLorentzVector mu;
-      mu.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
-      double rand = gRandom->Uniform(1);
+      TLorentzVector mu;  mu.SetPtEtaPhiM(lep->Pt(),lep->Eta(),lep->Phi(),mu_MASS);
       double SF1=1;
       if(infoldername.Contains("data_")) {
         SF1 = rc.kScaleDT(q, mu.Pt(), mu.Eta(), mu.Phi());
       } else if (!doElectron) {
-        if(genMuonPt > 0){
-          SF1 = rc.kSpreadMC(q, mu.Pt(), mu.Eta(), mu.Phi(), genMuonPt);
-        } else {
-          SF1 = rc.kSmearMC(q, mu.Pt(),  mu.Eta(), mu.Phi(), nTkLayers, rand);
-        }
-      } else {
-        SF1 = 1;
-      }
+        if(genMuonPt > 0) SF1 = rc.kSpreadMC(q, mu.Pt(), mu.Eta(), mu.Phi(), genMuonPt);
+        else SF1 = rc.kSmearMC(q, mu.Pt(),  mu.Eta(), mu.Phi(), nTkLayers, gRandom->Uniform(1));
+      } else { SF1 = 1; } // set to 1 if electrons
+      
       mu*=SF1;
 
       if(charge== 1 && q<0) continue;
       if(charge==-1 && q>0) continue;
-     // if(doElectron){
-       // if(lep->Pt()        < PT_CUT)  continue;  
-     // } else {
-        if(mu.Pt()        < PT_CUT)  continue;  
-     // }
+      if(mu.Pt()          < PT_CUT)  continue;  
       if(fabs(lep->Eta()) > ETA_CUT) continue;
       
       // 0 is inclusive, 1 is fabs(eta)<=0.5,  2 is fabs(eta)=[0.5,1], 3 is fabs(eta)>=1
@@ -280,47 +251,32 @@ void fitRecoilWm(TString infoldername,  // input ntuple
       }
       if(ipt<0) continue;
 
-      double pU1=u1;
-      double pU2=u2;
-       // this is kind of pointless but OK
+    double pU1=0.;
+    double pU2=0.;
     TVector2 vLepRaw1;
 	  if(doElectron){
 		  vLepRaw1.Set((lep_raw->Pt())*cos(lep_raw->Phi()),(lep_raw->Pt())*sin(lep_raw->Phi()));
-		  // TVector2 vLepCor1((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
-
-		  // TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-		  // Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 - vLepCor1).Mod();
-		  // Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 - vLepCor1).Phi();
-		  // // corrMetWithLepton and mu corrected for rochCorr 
-		  // double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + lep->Pt()*cos(lep->Phi());
-		  // double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + lep->Pt()*sin(lep->Phi());
-		  // double pU   = sqrt(pUX*pUX+pUY*pUY);
-		  // // projected on the corrected W 
-		  // double pCos = - (pUX*cos(genVPhi) + pUY*sin(genVPhi))/pU;
-		  // double pSin =   (pUX*sin(genVPhi) - pUY*cos(genVPhi))/pU;
-		  // pU1   = pU*pCos; // U1 in data
-		  // pU2   = pU*pSin; // U2 in data
 	  } else {
 		  vLepRaw1.Set((lep->Pt())*cos(lep->Phi()),(lep->Pt())*sin(lep->Phi()));
 	  }		  
-      TVector2 vLepCor1((mu.Pt())*cos(lep->Phi()),(mu.Pt())*sin(lep->Phi()));
+    TVector2 vLepCor1((mu.Pt())*cos(lep->Phi()),(mu.Pt())*sin(lep->Phi()));
 
-		  TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
-		  Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 - vLepCor1).Mod();
-		  Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 - vLepCor1).Phi();
-		  double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + mu.Pt()*cos(lep->Phi());
-		  double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + mu.Pt()*sin(lep->Phi());
-		  double pU   = sqrt(pUX*pUX+pUY*pUY);
-		  // projected on the corrected W 
-		  double pCos = - (pUX*cos(genVPhi) + pUY*sin(genVPhi))/pU;
-		  double pSin =   (pUX*sin(genVPhi) - pUY*cos(genVPhi))/pU;
-		  pU1   = pU*pCos; // U1 in data
-		  pU2   = pU*pSin; // U2 in data
+    TVector2 vMetCorr((met)*cos(metPhi),(met)*sin(metPhi));
+    Double_t corrMetWithLepton = (vMetCorr + vLepRaw1 - vLepCor1).Mod();
+    Double_t corrMetWithLeptonPhi = (vMetCorr + vLepRaw1 - vLepCor1).Phi();
+    double pUX  = corrMetWithLepton*cos(corrMetWithLeptonPhi) + mu.Pt()*cos(lep->Phi());
+    double pUY  = corrMetWithLepton*sin(corrMetWithLeptonPhi) + mu.Pt()*sin(lep->Phi());
+    double pU   = sqrt(pUX*pUX+pUY*pUY);
+    // projected on the corrected W 
+    double pCos = - (pUX*cos(genVPhi) + pUY*sin(genVPhi))/pU;
+    double pSin =   (pUX*sin(genVPhi) - pUY*cos(genVPhi))/pU;
+    pU1   = pU*pCos; // U1 in data
+    pU2   = pU*pSin; // U2 in data
 
-      vu1Var[ipt].setVal(pU1);
-      vu2Var[ipt].setVal(pU2);
-      lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
-      lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
+    vu1Var[ipt].setVal(pU1);
+    vu2Var[ipt].setVal(pU2);
+    lDataSetU1[ipt].add(RooArgSet(vu1Var[ipt])); // need to add the weights
+    lDataSetU2[ipt].add(RooArgSet(vu2Var[ipt]));
 
       if(isBkgv[ifile]) {
         hPFu1Bkgv[ipt]->Fill(pU1,scale1fb*lumi/totalNorm);
@@ -341,18 +297,7 @@ void fitRecoilWm(TString infoldername,  // input ntuple
     xerr[ibin] = 0.5*(ptbins[ibin+1]-ptbins[ibin]);
   }
   
-  //
-  // Arrays and graphs to store fit results
-  //
-  TGraphErrors *grPFu1mean=0;   
-  TGraphErrors *grPFu1mean2=0;  
-  TGraphErrors *grPFu1mean3=0;  
-  TGraphErrors *grPFu1sigma0=0; 
-  TGraphErrors *grPFu1sigma1=0; 
-  TGraphErrors *grPFu1sigma3=0; 
-  TGraphErrors *grPFu1sigma2=0; 
-  TGraphErrors *grPFu1frac2=0;  
-  TGraphErrors *grPFu1frac3=0;  
+
   Double_t pfu1Mean[nbins],   pfu1MeanErr[nbins];
   Double_t pfu1Mean2[nbins],  pfu1Mean2Err[nbins];
   Double_t pfu1Mean3[nbins],  pfu1Mean3Err[nbins];
@@ -363,15 +308,6 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   Double_t pfu1Frac2[nbins],  pfu1Frac2Err[nbins];  
   Double_t pfu1Frac3[nbins],  pfu1Frac3Err[nbins];
 
-  TGraphErrors *grPFu2mean=0;   
-  TGraphErrors *grPFu2mean2=0;  
-  TGraphErrors *grPFu2mean3=0;  
-  TGraphErrors *grPFu2sigma0=0; 
-  TGraphErrors *grPFu2sigma1=0; 
-  TGraphErrors *grPFu2sigma2=0; 
-  TGraphErrors *grPFu2sigma3=0; 
-  TGraphErrors *grPFu2frac2=0;  
-  TGraphErrors *grPFu2frac3=0;  
   Double_t pfu2Mean[nbins],   pfu2MeanErr[nbins];
   Double_t pfu2Mean2[nbins],  pfu2Mean2Err[nbins];
   Double_t pfu2Mean3[nbins],  pfu2Mean3Err[nbins];
@@ -427,193 +363,6 @@ void fitRecoilWm(TString infoldername,  // input ntuple
   sprintf(outpdfname,"%s/%s.root",outputDir.Data(),"pdfsU2");
   pdfsU2.writeToFile(outpdfname);
 
- 
-  //--------------------------------------------------------------------------------------------------------------
-  // Make plots 
-  //==============================================================================================================  
-   
-  char fitparam[100];
-  char chi2ndf[50]; 
-    
-//  TGraphErrors *errBand = new TGraphErrors(nbins+2);
-  
-  //
-  // Plotting PF-MET u1 vs. dilepton pT
-  //
-  grPFu1mean = new TGraphErrors(nbins,xval,pfu1Mean,xerr,pfu1MeanErr);
-  grPFu1mean->GetYaxis()->SetRangeUser(-350., 20.);
-  grPFu1mean->SetName("grPFu1mean");
-  CPlot plotPFu1mean("pfu1mean","","p_{T}(W) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-  plotPFu1mean.AddGraph(grPFu1mean,"");
-  plotPFu1mean.AddGraph(grPFu1mean,"",kBlack,kOpenCircle);
-  plotPFu1mean.Draw(c,kTRUE,"png");
-  plotPFu1mean.Draw(c,kTRUE,"pdf");
-  
-  grPFu1sigma1 = new TGraphErrors(nbins,xval,pfu1Sigma1,xerr,pfu1Sigma1Err);  
-  grPFu1sigma1->GetYaxis()->SetRangeUser(0., 50.);
-  grPFu1sigma1->SetName("grPFu1sigma1");
-  CPlot plotPFu1sigma1("pfu1sigma1","","p_{T}(W) [GeV/c]","#sigma_{1}(u_{#parallel}) [GeV]");
-  plotPFu1sigma1.AddGraph(grPFu1sigma1,"");
-  plotPFu1sigma1.AddGraph(grPFu1sigma1,"",kBlack,kOpenCircle);
-  plotPFu1sigma1.Draw(c,kTRUE,"png");
-  plotPFu1sigma1.Draw(c,kTRUE,"pdf");
-  
-  if(pfu1model>=2) {
-    
-    grPFu1mean2 = new TGraphErrors(nbins,xval,pfu1Mean2,xerr,pfu1Mean2Err);
-    grPFu1mean2->GetYaxis()->SetRangeUser(-350., 20.);
-    grPFu1mean2->SetName("grPFu1mean2");
-    CPlot plotPFu1mean2("pfu1mean2","","p_{T}(W) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-    plotPFu1mean2.AddGraph(grPFu1mean2,"");
-    plotPFu1mean2.AddGraph(grPFu1mean2,"",kBlack,kOpenCircle);
-    plotPFu1mean2.Draw(c,kTRUE,"png");
-    plotPFu1mean2.Draw(c,kTRUE,"pdf");
-    
-    
-    grPFu1sigma2 = new TGraphErrors(nbins,xval,pfu1Sigma2,xerr,pfu1Sigma2Err);    
-    grPFu1sigma2->GetYaxis()->SetRangeUser(0., 50.);
-    grPFu1sigma2->SetName("grPFu1sigma2");
-    CPlot plotPFu1sigma2("pfu1sigma2","","p_{T}(W) [GeV/c]","#sigma_{2}(u_{#parallel}) [GeV]");
-    plotPFu1sigma2.AddGraph(grPFu1sigma2,"");
-    plotPFu1sigma2.AddGraph(grPFu1sigma2,"",kBlack,kOpenCircle);
-    plotPFu1sigma2.Draw(c,kTRUE,"png");
-    plotPFu1sigma2.Draw(c,kTRUE,"pdf");
-
-
-    grPFu1sigma0 = new TGraphErrors(nbins,xval,pfu1Sigma0,xerr,pfu1Sigma0Err);    
-    grPFu1sigma0->SetName("grPFu1sigma0");
-    CPlot plotPFu1sigma0("pfu1sigma0","","p_{T}(W) [GeV/c]","#sigma(u_{#parallel}) [GeV]");
-    plotPFu1sigma0.AddGraph(grPFu1sigma0,"");
-    plotPFu1sigma0.AddGraph(grPFu1sigma0,"",kBlack,kOpenCircle);
-    plotPFu1sigma0.Draw(c,kTRUE,"png");
-    plotPFu1sigma0.Draw(c,kTRUE,"pdf");
-    
-    grPFu1frac2 = new TGraphErrors(nbins,xval,pfu1Frac2, xerr,pfu1Frac2Err);
-    grPFu1frac2->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu1frac2->SetName("grPFu1frac2");
-    CPlot plotPFu1frac2("pfu1frac2","","p_{T}(W) [GeV/c]","f_{2}");
-    plotPFu1frac2.AddGraph(grPFu1frac2,"",kBlack,kOpenCircle);
-    plotPFu1frac2.Draw(c,kTRUE,"png");
-    plotPFu1frac2.Draw(c,kTRUE,"pdf");
-  }
-  
-  if(pfu1model>=3) { 
-    grPFu1mean3 = new TGraphErrors(nbins,xval,pfu1Mean3,xerr,pfu1Mean3Err);
-    grPFu1mean3->GetYaxis()->SetRangeUser(-350., 20.);
-    grPFu1mean3->SetName("grPFu1mean3");
-    CPlot plotPFu1mean3("pfu1mean3","","p_{T}(W) [GeV/c]","#mu(u_{#parallel}) [GeV]");
-    plotPFu1mean3.AddGraph(grPFu1mean3,"");
-    plotPFu1mean3.AddGraph(grPFu1mean3,"",kBlack,kOpenCircle);
-    plotPFu1mean3.Draw(c,kTRUE,"png");
-    plotPFu1mean3.Draw(c,kTRUE,"pdf");
-    
-    grPFu1sigma3 = new TGraphErrors(nbins,xval,pfu1Sigma3,xerr,pfu1Sigma3Err);
-    grPFu1sigma3->GetYaxis()->SetRangeUser(0., 150.);
-    grPFu1sigma3->SetName("grPFu1sigma3");
-    CPlot plotPFu1sigma3("pfu1sigma3","","p_{T}(W) [GeV/c]","#sigma_{3}(u_{#parallel}) [GeV]");
-    plotPFu1sigma3.AddGraph(grPFu1sigma3,"",kBlack,kOpenCircle);
-    plotPFu1sigma3.Draw(c,kTRUE,"png");
-    plotPFu1sigma3.Draw(c,kTRUE,"pdf");
-  
-    grPFu1frac3 = new TGraphErrors(nbins,xval,pfu1Frac3, xerr,pfu1Frac3Err);
-    grPFu1frac3->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu1frac3->SetName("grPFu1frac3");
-    CPlot plotPFu1frac3("pfu1frac3","","p_{T}(W) [GeV/c]","f_{3}");
-    plotPFu1frac3.AddGraph(grPFu1frac3,"",kBlack,kOpenCircle);
-    plotPFu1frac3.Draw(c,kTRUE,"png");
-    plotPFu1frac3.Draw(c,kTRUE,"pdf");
-  }
-
-  //
-  // Plotting PF-MET u2 vs. dilepton pT
-  //
-  grPFu2mean = new TGraphErrors(nbins,xval,pfu2Mean,xerr,pfu2MeanErr);
-  grPFu2mean->GetYaxis()->SetRangeUser(-20, 20.);
-  grPFu2mean->SetName("grPFu2mean");
-  CPlot plotPFu2mean("pfu2mean","","p_{T}(W) [GeV/c]","#mu(u_{#perp}  ) [GeV]");
-  plotPFu2mean.AddGraph(grPFu2mean,"");
-  plotPFu2mean.AddGraph(grPFu2mean,"",kBlack,kOpenCircle);
-  plotPFu2mean.Draw(c,kTRUE,"png");
-  plotPFu2mean.Draw(c,kTRUE,"pdf");
-
-  
-  grPFu2sigma1 = new TGraphErrors(nbins,xval,pfu2Sigma1,xerr,pfu2Sigma1Err);
-  grPFu2sigma1->GetYaxis()->SetRangeUser(0., 30.);
-  grPFu2sigma1->SetName("grPFu2sigma1");
-  CPlot plotPFu2sigma1("pfu2sigma1","","p_{T}(W) [GeV/c]","#sigma_{1}(u_{#perp}  ) [GeV]");
-  plotPFu2sigma1.AddGraph(grPFu2sigma1,"");
-  plotPFu2sigma1.AddGraph(grPFu2sigma1,"",kBlack,kOpenCircle);
-  plotPFu2sigma1.Draw(c,kTRUE,"png");
-  plotPFu2sigma1.Draw(c,kTRUE,"pdf");
-
-  if(pfu2model>=2) {
-    
-    grPFu2mean2 = new TGraphErrors(nbins,xval,pfu2Mean2,xerr,pfu2Mean2Err);
-    grPFu2mean2->GetYaxis()->SetRangeUser(-20, 20.);
-    grPFu2mean2->SetName("grPFu2mean2");
-    CPlot plotPFu2mean2("pfu2mean2","","p_{T}(W) [GeV/c]","#mu(u_{#perp}  ) [GeV]");
-    plotPFu2mean2.AddGraph(grPFu2mean2,"");
-    plotPFu2mean2.AddGraph(grPFu2mean2,"",kBlack,kOpenCircle);
-    plotPFu2mean2.Draw(c,kTRUE,"png");
-    plotPFu2mean2.Draw(c,kTRUE,"pdf");
-    
-    grPFu2sigma2 = new TGraphErrors(nbins,xval,pfu2Sigma2,xerr,pfu2Sigma2Err);
-    grPFu2sigma2->GetYaxis()->SetRangeUser(0., 30.);
-    grPFu2sigma2->SetName("grPFu2sigma2");
-    CPlot plotPFu2sigma2("pfu2sigma2","","p_{T}(W) [GeV/c]","#sigma_{2}(u_{#perp}  ) [GeV]");
-    plotPFu2sigma2.AddGraph(grPFu2sigma2,"");
-    plotPFu2sigma2.AddGraph(grPFu2sigma2,"",kBlack,kOpenCircle);
-    plotPFu2sigma2.Draw(c,kTRUE,"png");
-    plotPFu2sigma2.Draw(c,kTRUE,"pdf");
-
-
-    grPFu2sigma0 = new TGraphErrors(nbins,xval,pfu2Sigma0,xerr,pfu2Sigma0Err);
-    grPFu2sigma0->SetName("grPFu2sigma0");
-    CPlot plotPFu2sigma0("pfu2sigma0","","p_{T}(W) [GeV/c]","#sigma(u_{#perp}  ) [GeV]");
-    plotPFu2sigma0.AddGraph(grPFu2sigma0,"");
-    plotPFu2sigma0.AddGraph(grPFu2sigma0,"",kBlack,kOpenCircle);
-    plotPFu2sigma0.Draw(c,kTRUE,"png");
-    plotPFu2sigma0.Draw(c,kTRUE,"pdf");
-
-    
-    grPFu2frac2 = new TGraphErrors(nbins,xval,pfu2Frac2, xerr,pfu2Frac2Err);
-    grPFu2frac2->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu2frac2->SetName("grPFu2frac2");
-    CPlot plotPFu2frac2("pfu2frac2","","p_{T}(W) [GeV/c]","f_{2}");
-    plotPFu2frac2.AddGraph(grPFu2frac2,"",kBlack,kOpenCircle);
-    plotPFu2frac2.Draw(c,kTRUE,"png");
-    plotPFu2frac2.Draw(c,kTRUE,"pdf");
-  }
-  
-  if(pfu2model>=3) {  
-    
-    grPFu2mean3 = new TGraphErrors(nbins,xval,pfu2Mean3,xerr,pfu2Mean3Err);
-    grPFu2mean3->GetYaxis()->SetRangeUser(-20, 20.);
-    grPFu2mean3->SetName("grPFu2mean3");
-    CPlot plotPFu2mean3("pfu2mean3","","p_{T}(W) [GeV/c]","#mu(u_{#perp}  ) [GeV]");
-    plotPFu2mean3.AddGraph(grPFu2mean3,"");
-    plotPFu2mean3.AddGraph(grPFu2mean3,"",kBlack,kOpenCircle);
-    plotPFu2mean3.Draw(c,kTRUE,"png");
-    plotPFu2mean3.Draw(c,kTRUE,"pdf");
-    
-    grPFu2sigma3 = new TGraphErrors(nbins,xval,pfu2Sigma3,xerr,pfu2Sigma3Err);
-    grPFu2sigma3->GetYaxis()->SetRangeUser(0., 150.);
-    grPFu2sigma3->SetName("grPFu2sigma3");
-    CPlot plotPFu2sigma3("pfu2sigma3","","p_{T}(W) [GeV/c]","#sigma_{3}(u_{#perp}  ) [GeV]");
-    plotPFu2sigma3.AddGraph(grPFu2sigma3,"",kBlack,kOpenCircle);
-    plotPFu2sigma3.Draw(c,kTRUE,"png");
-    plotPFu2sigma3.Draw(c,kTRUE,"pdf");
-  
-    grPFu2frac3 = new TGraphErrors(nbins,xval,pfu2Frac3, xerr,pfu2Frac3Err);
-    grPFu2frac3->GetYaxis()->SetRangeUser(0., 1.);
-    grPFu2frac3->SetName("grPFu2frac3");
-    CPlot plotPFu2frac3("pfu2frac3","","p_{T}(W) [GeV/c]","f_{3}");
-    plotPFu2frac3.AddGraph(grPFu2frac3,"",kBlack,kOpenCircle);
-    plotPFu2frac3.Draw(c,kTRUE,"png");
-    plotPFu2frac3.Draw(c,kTRUE,"pdf");
-
-    return;
-  }
   delete infile;
   infile=0, intree=0;
 
