@@ -85,10 +85,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   TH1D *h_rw_up = (TH1D*) f_rw->Get("puWeightsUp");
   TH1D *h_rw_down = (TH1D*) f_rw->Get("puWeightsDown");
 
-
-  if (h_rw==NULL) cout<<"WARNING h_rw == NULL"<<endl;
-  if (h_rw_up==NULL) cout<<"WARNING h_rw == NULL"<<endl;
-  if (h_rw_down==NULL) cout<<"WARNING h_rw == NULL"<<endl;
+  if (h_rw==NULL || h_rw_up==NULL || h_rw_down==NULL) cout<<"WARNING h_rw == NULL"<<endl;
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -141,7 +138,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   UInt_t nValidHits1, nMatch1, nValidHits2, nMatch2;
   UInt_t typeBits1, typeBits2;
   TLorentzVector *sta1=0, *sta2=0;
-  	Int_t glepq1=-99;
+  Int_t glepq1=-99;
 	Int_t glepq2=-99;
   
   
@@ -167,15 +164,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
     else if (isam==0) isData=kTRUE;
-    
-    // Assume signal sample is given name "zmm" - flag to store GEN Z kinematics
-    Bool_t isSignal = (snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0);
-    Bool_t isWboson = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);  
-    //flag to save the info for recoil corrections
-    Bool_t isRecoil = ((snamev[isam].CompareTo("zmm",TString::kIgnoreCase)==0)||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWboson);
-    // flag to reject Z->mm events when selecting at wrong-flavor background events
-    Bool_t isWrongFlavor = (snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0);
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+
+    Bool_t isSignal        = (snamev[isam].Contains("zmm"));
+    Bool_t isWboson        = (snamev[isam].Contains("wx"));
+    Bool_t isWrongFlavor   = (snamev[isam].Contains("zxx"));
+    Bool_t isRecoil = (isWboson||isSignal||isWrongFlavor);
+    Bool_t noGen    = (snamev[isam].Contains("zz")||snamev[isam].Contains("wz")||snamev[isam].Contains("ww"));
     cout << "isREcoil " << isRecoil << endl;
     
     CSample* samp = samplev[isam];
@@ -287,7 +281,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
-      if(samp->jsonv[ifile].CompareTo("NONE")!=0) { 
+      if(samp->jsonv[ifile].Contains("NONE")!=0) { 
         hasJSON = kTRUE;
         rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
@@ -384,7 +378,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
           // apply scale and resolution corrections to MC
           Double_t tagpt_corr = tag->pt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0){
+          if(doScaleCorr && !snamev[isam].Contains("data")){
             tagpt_corr = gRandom->Gaus(tag->pt*getMuScaleCorr(tag->eta,0),getMuResCorr(tag->eta,0));
           }
 	
@@ -409,7 +403,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           itag=i1;
         
           // apply scale and resolution corrections to MC
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+          if(doScaleCorr && !snamev[isam].Contains("data")) {
             vTag.SetPtEtaPhiM(tagpt_corr,tag->eta,tag->phi,MUON_MASS);
             vTagSta.SetPtEtaPhiM(gRandom->Gaus(tag->staPt*getMuScaleCorr(tag->eta,0),getMuResCorr(tag->eta,0)),tag->staEta,tag->staPhi,MUON_MASS);
           } else {
@@ -450,7 +444,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
           // apply scale and resolution corrections to MC
           Double_t probept_corr = probe->pt;
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+          if(doScaleCorr && !snamev[isam].Contains("data"))
             probept_corr = gRandom->Gaus(probe->pt*getMuScaleCorr(probe->eta,0),getMuResCorr(probe->eta,0));
 
           if(probept_corr     < PT_CUT)  continue;  // lepton pT cut
@@ -467,7 +461,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           probePt=Mu_Pt;
 
           // apply scale and resolution corrections to MC
-          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0) {
+          if(doScaleCorr && !snamev[isam].Contains("data")) {
             vProbe.SetPtEtaPhiM(probept_corr,probe->eta,probe->phi,MUON_MASS);
             if(probe->typeBits & baconhep::EMuType::kStandalone)
               vProbeSta.SetPtEtaPhiM(gRandom->Gaus(probe->staPt*getMuScaleCorr(probe->eta,0),getMuResCorr(probe->eta,0)),probe->staEta,probe->staPhi,MUON_MASS);
@@ -527,8 +521,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         }
 
         /******** We have a Z candidate! HURRAY! ********/
-        nsel+=weight;
-        nselvar+=weight*weight;
+        nsel+=isData ? 1 : weight;
+        nselvar+=isData ? 1 : weight*weight;
         // Int_t glepq1=-99;
         // Int_t glepq2=-99;
         TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
