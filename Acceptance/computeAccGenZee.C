@@ -105,9 +105,15 @@ void computeAccGenZee(const TString conf,             // input file
   vector<Double_t> accv, accBBv, accBEv, accEEv;
   vector<Double_t> accErrv, accErrBBv, accErrBEv, accErrEEv;
   
+  vector<Double_t> nEvtsv_pT, nSelv_pT, accv_pT;
+  
   vector<Double_t> nEvtsv_QCD, nSelv_QCD;
   vector<Double_t> nEvtsv_PDF, nSelv_PDF;
     
+  TString sqrts = "13TeV";
+  if(conf.Contains("5")) sqrts = "5TeV";
+  TFile *rf = new TFile("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction/Z_pT/zPt_Normal"+sqrts+".root");
+  TH1D *hh_diff = (TH1D*)rf->Get("hZptRatio");
   //
   // loop through files
   //
@@ -129,6 +135,9 @@ void computeAccGenZee(const TString conf,             // input file
     nSelBEv.push_back(0);
     nSelEEv.push_back(0);
     
+    nEvtsv_pT.push_back(0);
+    nSelv_pT.push_back(0);
+    
     for(int i=0;i<NQCD;++i) {nSelv_QCD.push_back(0);nEvtsv_QCD.push_back(0);}
     for(int i=0;i<NPDF;++i) {nSelv_PDF.push_back(0);nEvtsv_PDF.push_back(0);}
     
@@ -136,18 +145,24 @@ void computeAccGenZee(const TString conf,             // input file
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; (uint)ientry<(eventTree->GetEntries())*0.01; ientry++) {
+    // for(UInt_t ientry=0; (uint)ientry<(eventTree->GetEntries())*0.05; ientry++) {
       if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
-      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *vec =new TLorentzVector(0,0,0,0);
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       Int_t lepq1=-99;
       Int_t lepq2=-99;
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
+      
+      double ptWeight = 1;
+      for(int i = 0; i <= hh_diff->GetNbinsX();++i){
+        if(vec->Pt() > hh_diff->GetBinLowEdge(i) && vec->Pt() < hh_diff->GetBinLowEdge(i+1)){ ptWeight = hh_diff->GetBinContent(i); break;}
+      }
+      
       
       TLorentzVector *gph=new TLorentzVector(0,0,0,0);
       if(doDressed){
@@ -162,7 +177,10 @@ void computeAccGenZee(const TString conf,             // input file
 
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
       Double_t weight=gen->weight;
-      nEvtsv[ifile]+=weight; //std::cout << weight << std::endl;
+      
+      nEvtsv[ifile]+=weight; 
+      // nEvtsv[ifile]+=weight*ptWeight; 
+      nEvtsv_pT[ifile]+=weight*ptWeight;
       
       // -------------------------------------------------
       // I'm not sure which indexing is correct for Z's 
@@ -191,6 +209,8 @@ void computeAccGenZee(const TString conf,             // input file
       Bool_t isB2 = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
       
       nSelv[ifile]+=weight;
+      // nSelv[ifile]+=weight*ptWeight;
+      nSelv_pT[ifile]+=weight*ptWeight;
       if(isB1 && isB2)        { nSelBBv[ifile]+=weight; }
       else if(!isB1 && !isB2) { nSelEEv[ifile]+=weight; }
       else		                { nSelBEv[ifile]+=weight; } 
@@ -211,7 +231,7 @@ void computeAccGenZee(const TString conf,             // input file
     accBBv.push_back(nSelBBv[ifile]/nEvtsv[ifile]); accErrBBv.push_back(sqrt(accBBv[ifile]*(1.-accBBv[ifile])/nEvtsv[ifile]));
     accBEv.push_back(nSelBEv[ifile]/nEvtsv[ifile]); accErrBEv.push_back(sqrt(accBEv[ifile]*(1.-accBEv[ifile])/nEvtsv[ifile]));
     accEEv.push_back(nSelEEv[ifile]/nEvtsv[ifile]); accErrEEv.push_back(sqrt(accEEv[ifile]*(1.-accEEv[ifile])/nEvtsv[ifile]));
-    
+    accv_pT.push_back  (nSelv_pT[ifile]  /nEvtsv_pT[ifile]);
     std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
     
     delete infile;
@@ -261,6 +281,8 @@ void computeAccGenZee(const TString conf,             // input file
     cout << "     b-e: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
     cout << "     e-e: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
     cout << "   total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile]   << endl;
+    cout << " with pt: " << setw(12) << accv_pT[ifile] << endl;
+    cout << " pt diff: " << setw(12) << 100*fabs(accv[ifile]/accv_pT[ifile] - 1 ) << endl;
     cout << endl;
   }
   
@@ -289,6 +311,8 @@ void computeAccGenZee(const TString conf,             // input file
     txtfile << "     b-e: " << setw(12) << nSelBEv[ifile] << " / " << nEvtsv[ifile] << " = " << accBEv[ifile] << " +/- " << accErrBEv[ifile] << endl;
     txtfile << "     e-e: " << setw(12) << nSelEEv[ifile] << " / " << nEvtsv[ifile] << " = " << accEEv[ifile] << " +/- " << accErrEEv[ifile] << endl;
     txtfile << "   total: " << setw(12) << nSelv[ifile]   << " / " << nEvtsv[ifile] << " = " << accv[ifile]   << " +/- " << accErrv[ifile]   << endl;
+    txtfile << " with pt: " << setw(12) << accv_pT[ifile] << endl;
+    txtfile << " pt diff: " << setw(12) << 100*fabs(accv[ifile]/accv_pT[ifile] - 1 ) << endl;
     txtfile << endl;
   }
   txtfile.close();
