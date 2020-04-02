@@ -15,8 +15,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "CPlot.hh"	     // helper class for plots
-#include "MitStyleRemix.hh"  // style settings for drawing
+#include "../../Utils/CPlot.hh"	     // helper class for plots
+#include "../../Utils/MitStyleRemix.hh"  // style settings for drawing
 #endif
 
 void plotDataMC_singleEtabins(const TString outdir   = "Data/extra",
@@ -69,10 +69,11 @@ void plotDataMC_singleEtabins(const TString outdir   = "Data/extra",
   //============================================================================================================== 
 
   CPlot::sOutDir = outdir;
-  TString format = "png";
+  TString format = "pdf";
 
   char lumitext[100]; // lumi label
-  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  if(lumi < 250) sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  else  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 5 TeV",lumi);     
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -212,6 +213,7 @@ void plotDataMC_singleEtabins(const TString outdir   = "Data/extra",
   TPaveText *lumitb = new TPaveText(0.63,0.92,0.95,0.99,"NDC");
   lumitb->SetBorderSize(0);
   lumitb->SetFillColor(0);
+  lumitb->SetFillStyle(0);
   lumitb->AddText(lumitext);
 
   TPaveText *cmstb = new TPaveText(0.60,0.79,0.93,0.87,"NDC");
