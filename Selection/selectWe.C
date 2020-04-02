@@ -178,25 +178,11 @@ void selectWe(const TString  conf        ="we.conf", // input file
     else if (isam==0) isData=kTRUE;
     cout << "hello, doing file" << " " << snamev[isam] << endl;
 
-    Bool_t isSignal=false, isWrongFlavor=false;
-    if(is13TeV){
-      isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase) ==0||
-                  snamev[isam].CompareTo("we0",TString::kIgnoreCase)==0||
-                  snamev[isam].CompareTo("we1",TString::kIgnoreCase)==0||
-                  snamev[isam].CompareTo("we2",TString::kIgnoreCase)==0);
-      isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||
-                       snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||
-                       snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
-    } else {
-      isSignal = (snamev[isam].CompareTo("we",TString::kIgnoreCase)==0);
-      isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
-    }
-    //flag to save the info for recoil corrections
-    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
-    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
-                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
-                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
-    
+    Bool_t isSignal        = (snamev[isam].Contains("wm"));
+    Bool_t isWrongFlavor   = (snamev[isam].Contains("wx"));
+
+    Bool_t isRecoil = (snamev[isam].Contains("zxx")||isSignal||isWrongFlavor);
+    Bool_t noGen    = (snamev[isam].Contains("zz")||snamev[isam].Contains("wz")||snamev[isam].Contains("ww"));
     CSample* samp = samplev[isam];
 
     //
@@ -212,14 +198,6 @@ void selectWe(const TString  conf        ="we.conf", // input file
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
     outTree->Branch("npv",        &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",        &npu,        "npu/i");         // number of in-time PU events (MC)
-    // outTree->Branch("id_1",       &id_1,       "id_1/i");        // PDF info -- parton ID for parton 1
-    // outTree->Branch("id_2",       &id_2,       "id_2/i");        // PDF info -- parton ID for parton 2
-    // outTree->Branch("x_1",        &x_1,        "x_1/d");         // PDF info -- x for parton 1
-    // outTree->Branch("x_2",        &x_2,        "x_2/d");         // PDF info -- x for parton 2
-    // outTree->Branch("xPDF_1",     &xPDF_1,     "xPDF_1/d");      // PDF info -- x*F for parton 1
-    // outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
-    // outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
-    // outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("genV",       "TLorentzVector", &genV);      // GEN boson 4-vector (signal MC)
     outTree->Branch("genLep",     "TLorentzVector", &genLep);    // GEN lepton 4-vector (signal MC)
     outTree->Branch("genVPt",     &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
@@ -413,7 +391,7 @@ void selectWe(const TString  conf        ="we.conf", // input file
           if(doScaleCorr && (ele->r9 < 1.)){
             float eleAbsEta   = fabs(vEle.Eta());
             double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
-            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
+            if(snamev[isam].Contains("data")){//Data
               int runNumber = is13TeV ? info->runNum : 306936 ;
               float eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
               float eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
@@ -510,7 +488,7 @@ void selectWe(const TString  conf        ="we.conf", // input file
 	    TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
 	    TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
       toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-      if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
+      if(snamev[isam].Contains("zxx")){ // DY only
         toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
 	    }
 
