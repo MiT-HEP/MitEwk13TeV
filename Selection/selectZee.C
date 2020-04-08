@@ -585,7 +585,7 @@ void selectZee(const TString conf        ="zee.conf", // input file
               float eleProbeSCAbsEta   = fabs(vEleProbeSC.Eta());
               float eleProbeSCEt       = vEleProbeSC.E() / cosh(eleProbeSCAbsEta);
   
-              if(snamev[isam].Contains("data")==0){//Data
+              if(snamev[isam].Contains("data")){//Data
                 int runNumber = is13TeV ? info->runNum : 306936 ;
                 eleProbeScale   = ec.scaleCorr(runNumber, eTregress   , eleProbeAbsEta  , eleProbe->r9);
                 eleProbeSCScale = ec.scaleCorr(runNumber, eleProbeSCEt, eleProbeSCAbsEta, eleProbe->r9);

@@ -281,7 +281,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
 
       Bool_t hasJSON = kFALSE;
       baconhep::RunLumiRangeMap rlrm;
-      if(samp->jsonv[ifile].Contains("NONE")!=0) { 
+      if(!samp->jsonv[ifile].Contains("NONE")) { 
         hasJSON = kTRUE;
         rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
@@ -565,8 +565,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         }
 	
         if (hasGen) {
-          genMuonPt1 = toolbox::getGenLep(genPartArr, vTag);
-          genMuonPt2 = toolbox::getGenLep(genPartArr, vProbe);
+          genMuonPt1 = (toolbox::getGenLep(genPartArr, vTag, 13))->Pt();
+          genMuonPt2 = (toolbox::getGenLep(genPartArr, vProbe, 13))->Pt();
         }
 	
         //
