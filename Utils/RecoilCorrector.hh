@@ -57,6 +57,7 @@ public:
   RecoilCorrector(string iNameZDat, int iSeed=0xDEADBEEF);
   RecoilCorrector(string iNameZDat1, string iPrefix, int iSeed=0xDEADBEEF);
     // these are used
+    // can these be condensed into something less awful
   void loadRooWorkspacesMCtoCorrectKeys(string iNameFile);
   void loadRooWorkspacesMCtoCorrect(string iNameFile);
   void loadRooWorkspacesMC(string iNameFile);
@@ -67,71 +68,31 @@ public:
   
   void CorrectInvCdf(double &pfmet, double &pfmetphi,double iGenPt,double iGenPhi,double iLepPt,double iLepPhi,double &iU1,double &iU2,double iFluc,double iScale=0,int njet=0, bool dokeys=false, bool doDiago=false);
 
-  Double_t dMean(const TF1 *fcn, const Double_t x, const TFitResult  *fs);
-  Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResult *fs);
+  // Double_t dMean(const TF1 *fcn, const Double_t x, const TFitResult  *fs);
+  // Double_t dSigma(const TF1 *fcn, const Double_t x, const TFitResult *fs);
   
   // Set up the diagonalized PDF
   void runDiago(RooWorkspace *w, RooFitResult *result,int i, RooAbsReal *&pdfUiCdf, int iPar, int sigma);
   
-  // delete?
-  void statUnc50nsStyle(RooWorkspace *w,  int i, RooAbsReal *&pdfUiCdf, int sigma);
+  // // delete?
+  // // void statUnc50nsStyle(RooWorkspace *w,  int i, RooAbsReal *&pdfUiCdf, int sigma);
   
 protected:
-  enum Recoil {  // delete?
-    PFU1,
-    PFU2,
-    PFMSU1,
-    PFMSU2,
-    PFS1U1,
-    PFS2U1,
-    PFS1U2,
-    PFS2U2,
-    TKU1,
-    TKU2,
-    TKMSU1,
-    TKMSU2,
-    TKS1U1,
-    TKS2U1,
-    TKS1U2,
-    TKS2U2
-  };
-  
+
   void metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                 double iLepPt,double iLepPhi,
                 double &iU1, double &iU2,double iFluc=0,double iScale=0);
-                
-  Double_t calcErrorGraph(const TGraphErrors *graph, const Double_t x, const Double_t bins[], const Int_t bin);
 
-  double diGausPVal    (double iVal, double iFrac,double iSimga1,double iSigma2);
-  double triGausPVal    (double iVal, double iFrac2,double iFrac3,double iSimga1,double iSigma2,double iSigma3);
-  double diGausPInverse(double iPVal,double iFrac,double iSigma1,double iSigma2);
-  
-  // rename this b/c it's a stupid name
-  double invertCDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbsReal *pdfDATAcdf, RooAbsPdf *wMC, RooAbsPdf *wDATA, RooRealVar *varDat, RooRealVar *varMC, int bin,double max);
+  double invertCDF(double p, RooAbsReal *cdfMC, RooAbsReal *cdfData, RooRealVar *xd, RooRealVar *xm);
   
   double calculate(int iMet,double iEPt,double iEPhi,double iWPhi,double iU1,double iU2);
-  double getCorError2(double iVal,TF1 *iFit);
-  double mag(double iV0,double iV1,double iV2,double iV3);
-  double correlatedSeed(double iVal, double iCorr1,double iCorr2,double iCorr3,double iSeed0,double iSeed1,double iSeed2,double iSeed3);
-  double deCorrelate   (double iVal, double iCorr1,double iCorr2,double iCorr3,double iSeed0,double iSeed1,double iSeed2,double iSeed3);
-  TF1*   getFunc(bool iMC, Recoil iType);
-  double CorrVal(double iPt,double iVal,Recoil iType);
-  
-  double getError(double iVal,TF1 *iFit,Recoil iType);
-  double getError2(double iVal,TF1 *iFit);
-  double getErrorSigma(double iVal,TF1 *iFit,Recoil iType);
-  double getErrorMean(double iVal,TF1 *iFit,Recoil iType);
 
   
   TCanvas *iC = new TCanvas("C1","C1",800,600); 
   
-  RooWorkspace* rooWData[2];
-  RooWorkspace* rooWMC[2];
-  RooWorkspace* rooWMCtoCorr[2];
-  RooWorkspace* rooWDataDiag[2];
-  RooWorkspace* rooWMCDiag[2];
-  RooWorkspace* rooWMCtoCorrDiag[2];
-  int fId; int fJet;
+  RooWorkspace* rooWData[2],  rooWMC[2], rooWMCtoCorr[2], rooWDataDiag[2], rooWMCDiag[2], rooWMCtoCorrDiag[2];
+
+  // int fId; int fJet;
   bool dokeys; bool doDiago;
   
   // Binning for the 2017G and 2017H runs
@@ -370,23 +331,23 @@ void RecoilCorrector::loadRooWorkspacesMCtoCorrectKeys(std::string iFName){
 void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet, bool useKeys, bool diago) {
   dokeys=useKeys;
   doDiago=diago;
-  fJet = njet; if(njet > 2) fJet = 2;
+  // fJet = njet; if(njet > 2) fJet = 2;
   metDistributionInvCdf(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2,iFluc,iScale);
 }
 
 // this could be cleaned up a bit... i think some of the PDFs are unnecessary
-double RecoilCorrector::invertCDF(double iPVal, double Zpt, RooAbsReal *pdfMCcdf, RooAbsReal *pdfDATAcdf, RooAbsPdf *wMC, RooAbsPdf *wDATA, RooRealVar *myXd, RooRealVar *myXm, int bin, double max) {
+double RecoilCorrector::invertCDF(double p, RooAbsReal *cdfMC, RooAbsReal *cdfData, RooRealVar *xd, RooRealVar *xm) {
 
-  if(iPVal< myXm->getMin()) return iPVal;
-  if(iPVal> myXm->getMax()) return iPVal;
-  myXm->setVal(iPVal);
-  myXd->setVal(iPVal);
-  pdfDATAcdf->getVal(); // do not delete this line, for some reason is necessary when using the diagonalized cdfs for the statistical uncertainty
-  double pVal=pdfDATAcdf->findRoot(*myXd,myXd->getMin(),myXd->getMax(),pdfMCcdf->getVal());
-  
-  myXd->setVal(pVal);
+  if(p < xm->getMin()) return p;
+  if(p > xm->getMax()) return p;
+  xm->setVal(p);
+  xd->setVal(p);
+  cdfData->getVal();
+  double pVal=cdfData->findRoot(*xd,xd->getMin(),xd->getMax(),cdfMC->getVal());
+  xd->setVal(pVal);
   return pVal;
 }
+
 // The one we actually use, clean it up a bit
 void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iGenPt,double iGenPhi,
                        double iLepPt,double iLepPhi,
@@ -510,6 +471,10 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
 
   }
 
+
+
+  
+
 // cout << "getVar " << endl;
   std::stringstream varName;
   varName.str("");varName << "u_"<<iBin;
@@ -529,6 +494,25 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
      myXmU2 =  (RooRealVar*) rooWMCDiag[1]->var(varName.str().c_str());
      myXmcU2 =  (RooRealVar*) rooWMCtoCorrDiag[1]->var(varName.str().c_str());
   }
+  
+  
+  // cout << "plot" << endl;
+  // TCanvas *c = new TCanvas("c","c",800,800);
+  // RooPlot *plot3 = myXdU1->frame();
+  // // thisPdfMCU1toCorr->plotOn(plot3,MarkerStyle(kFullCircle),MarkerSize(0.9),DrawOption("ZP"),RooFit::Name("a"));
+  // thisPdfDataU1->plotOn(plot3,LineColor(kBlue));
+  // thisPdfMCU1->plotOn(plot3,LineColor(kGreen));
+  // plot3->Draw();
+  // name<<"test_u1_"<<iBin<<".png";
+  // c->SaveAs(name.str().c_str());  name.str(""); 
+
+  // thisPdfDataU2->plotOn(plot3,LineColor(kRed));
+  // thisPdfMCU2->plotOn(plot3,LineColor(kBlack));
+  // plot3->Draw();
+  // name<<"test_"<<iBin<<".png";
+  // c->SaveAs(name.str().c_str());name.str(""); 
+  // cout << "done" << endl;
+  
 // thisPdfMCU1toCorr->Print();
 // thisPdfDataU1->Print();
 // thisPdfMCU1->Print();
@@ -546,13 +530,14 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
 
 // cout <<" inversion " << endl;
   // for the closure on Z events: this step should give pU1ValMzlike=pU1
-  double pU1ValMzlike = invertCDF(pU1,iGenPt,thisCdfMCU1toCorr,thisCdfMCU1,thisPdfMCU1toCorr,thisPdfMCU1,myXmU1,myXmcU1,iBin,0);
-  double pU2ValMzlike = invertCDF(pU2,iGenPt,thisCdfMCU2toCorr,thisCdfMCU2,thisPdfMCU2toCorr,thisPdfMCU2,myXmU2,myXmcU2,iBin,0);
+  // invertCDF(double p, RooAbsReal *cdfMC, RooAbsReal *cdfData, RooRealVar *xd, RooRealVar *xm)
+  double pU1ValMzlike = invertCDF(pU1,thisCdfMCU1toCorr,thisCdfMCU1,myXmU1,myXmcU1);
+  double pU2ValMzlike = invertCDF(pU2,thisCdfMCU2toCorr,thisCdfMCU2,myXmU2,myXmcU2);
 
 
   // invert the target MC (Z) to the (ZDATA)
-  double pU2ValDzlike = invertCDF(pU2ValMzlike,iGenPt,thisCdfMCU2,thisCdfDataU2,thisPdfMCU2,thisPdfDataU2,myXdU2,myXmU2,iBin,0);
-  double pU1ValDzlike = invertCDF(pU1ValMzlike,iGenPt,thisCdfMCU1,thisCdfDataU1,thisPdfMCU1,thisPdfDataU1,myXdU1,myXmU1,iBin,0);
+  double pU2ValDzlike = invertCDF(pU2ValMzlike,thisCdfMCU2,thisCdfDataU2,myXdU2,myXmU2);
+  double pU1ValDzlike = invertCDF(pU1ValMzlike,thisCdfMCU1,thisCdfDataU1,myXdU1,myXmU1);
   
 // cout << "done both inversion" << endl;
   // have the newW recoil as WrecoilMC + Difference in Zdata/MC
@@ -581,117 +566,6 @@ double RecoilCorrector::calculate(int iMet,double iEPt,double iEPhi,double iWPhi
   return lMY;
 }
 
-//-----------------------------------------------------------------------------------------------------------------------------------------
-double RecoilCorrector::getCorError2(double iVal,TF1 *iFit) { 
-  double lE = sqrt(iFit->GetParError(0))  + iVal*sqrt(iFit->GetParError(2));
-  if(fabs(iFit->GetParError(4)) > 0) lE += iVal*iVal*sqrt(iFit->GetParError(4));
-  return lE*lE;
-}
-
-//-----------------------------------------------------------------------------------------------------------------------------------------
-double RecoilCorrector::mag(double iV0,double iV1,double iV2,double iV3) { 
-  return sqrt(iV0+iV1*iV1+2*iV1*0.88 + iV2*iV2+2.*iV2*0.88+ iV3*iV3+2.*iV3*0.88);//
-}
-
-//-----------------------------------------------------------------------------------------------------------------------------------------
-double RecoilCorrector::correlatedSeed(double iVal, double iCorr1,double iCorr2,double iCorr3,double iSeed0,double iSeed1,double iSeed2,double iSeed3) { 
-  double lMag = mag(1.,iCorr1,iCorr2,iCorr3); 
-  double lVal = ((1./lMag) + (iCorr1/lMag)*(iSeed1) + (iCorr2/lMag)*fabs(iSeed2) + (iCorr3/lMag)*fabs(iSeed3))*iVal;
-  lVal*=iSeed0;
-  return lVal;
-}
-double RecoilCorrector::deCorrelate(double iVal, double iCorr1,double iCorr2,double iCorr3,double iSeed0,double iSeed1,double iSeed2,double iSeed3) { 
-  double lMag = mag(1.,iCorr1,iCorr2,iCorr3); 
-  double lVal =  (1 - iCorr1*fabs(iSeed1) - iCorr2*fabs(iSeed2) - iCorr3*fabs(iSeed3))*lMag;
-  return lVal*iVal*iSeed0;
-}
-
-Double_t RecoilCorrector::dSigma(const TF1 *fcn, const Double_t x, const TFitResult *fs) {
-  Double_t df[3];
-  Double_t a  = fcn->GetParameter(0);
-  Double_t b  = fcn->GetParameter(1);
-  Double_t c  = fcn->GetParameter(2);
-  
-  df[0] = x*x;
-  df[1] = x;
-  df[2] = 1;
-  
-  Double_t err2=0;
-  for(Int_t i=0; i<3; i++) {
-    err2 += df[i]*df[i]*(fs->GetCovarianceMatrix()[i][i]);
-    for(Int_t j=i+1; j<3; j++) {
-      err2 += 2.0*df[i]*df[j]*(fs->GetCovarianceMatrix()[i][j]);
-    }
-  }
-  assert(err2>=0);
-  return sqrt(err2);
-}
-
-Double_t RecoilCorrector::dMean(const TF1 *fcn, const Double_t x, const TFitResult *fs) {
-  Double_t df[2];
-  df[0] = 1;
-  df[1] = x;
-  Double_t err2 = df[0]*df[0]*(fs->GetCovarianceMatrix()[0][0]) 
-                  + df[1]*df[1]*(fs->GetCovarianceMatrix()[1][1]) 
-          + 2.0*df[0]*df[1]*(fs->GetCovarianceMatrix()[0][1]);
-  assert(err2>=0);
-  return sqrt(err2);
-}
-
-Double_t RecoilCorrector::calcErrorGraph(const TGraphErrors *graph, const Double_t x, const Double_t bins[], const Int_t bin) {
-  Double_t diff = (graph->GetErrorY(bin)*(bins[bin+1]-x) + graph->GetErrorY(bin+1)*(x - bins[bin]));
-  Double_t avg = diff/((bins[bin+1]-bins[bin]));
-  return sqrt(avg);
-}
-
-
-double RecoilCorrector::getError2(double iVal,TF1 *iFit) { 
-  return iFit->GetParError(0);
-  double lE2 = iFit->GetParError(0) + iVal*iFit->GetParError(1) + iVal*iVal*iFit->GetParError(2);
-  if(fabs(iFit->GetParError(3)) > 0) lE2 += iVal*iVal*iVal*     iFit->GetParError(3);
-  if(fabs(iFit->GetParError(4)) > 0) lE2 += iVal*iVal*iVal*iVal*iFit->GetParError(4);
-  if(fabs(iFit->GetParError(5)) > 0 && iFit->GetParameter(3) == 0) lE2 += iVal*iVal*               iFit->GetParError(5);
-  if(fabs(iFit->GetParError(5)) > 0 && iFit->GetParameter(3) != 0) lE2 += iVal*iVal*iVal*iVal*iVal*iFit->GetParError(5);
-  if(fabs(iFit->GetParError(6)) > 0) lE2 += iVal*iVal*iVal*iVal*iVal*iVal*iFit->GetParError(6);
-  return lE2;
-}
-
-double RecoilCorrector::getError(double iVal,TF1 *iFit,Recoil iType) {
-  if(fId == 0) return sqrt(getError2(iVal,iFit));
-  if(fId != 2) return sqrt(getError2(iVal,iFit)); 
-  double lEW2  = getError2(iVal,iFit);
-  double lEZD2 = getError2(iVal,getFunc(true ,iType));
-  double lEZM2 = getError2(iVal,getFunc(false,iType));
-  double lZDat = getFunc(true ,iType)->Eval(iVal);
-  double lZMC  = getFunc(false,iType)->Eval(iVal);
-  double lWMC  = iFit                ->Eval(iVal);
-  double lR    = lZDat/lZMC;
-  double lER   = lR*lR/lZDat/lZDat*lEZD2 + lR*lR/lZMC/lZMC*lEZM2;
-  double lVal  = lR*lR*lEW2 + lWMC*lWMC*lER;
-  return sqrt(lVal);
-}
-
-double RecoilCorrector::getErrorMean(double iVal,TF1 *iFit,Recoil iType) {
-  Double_t df[2];
-  df[0] = iVal;
-  df[1] = 1;
-  
-  double lE2 = df[0]*df[0]*iFit->GetParError(0) + 2*df[0]*df[1]*iFit->GetParError(1) + df[1]*df[1]*iFit->GetParError(2);
-  return sqrt(lE2);
-}
-
-double RecoilCorrector::getErrorSigma(double iVal,TF1 *iFit,Recoil iType) {
-  Double_t df[3];
-  df[0] = 1;
-  df[1] = iVal;
-  df[2] = iVal*iVal;
-  
-  double diag = df[0]*df[0]*iFit->GetParError(0) + df[1]*df[1]*iFit->GetParError(2) + df[2]*df[2]*iFit->GetParError(4);
-  double offD = 2*(df[0]*df[1]*iFit->GetParError(1) + df[0]*df[2]*iFit->GetParError(5) + df[1]*df[2]*iFit->GetParError(3));
-  return sqrt(diag+offD);
-}
-
-// ---------------------------------------------------------------------------------------------------------------------------
 // -------------- Setup for the diagonalization steps for the statistical uncertainty ----------------------------------------
 void RecoilCorrector::runDiago(RooWorkspace *w, RooFitResult *result, int i, RooAbsReal *&pdfUiCdf, int iPar, int sigma) {
   // std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;

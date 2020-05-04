@@ -66,7 +66,7 @@ class PrefiringEfficiency {
         if(!etaCut(jet->eta)) continue;
         float eff = mapJets.getCorr(jet->eta, jet->pt);
         float unc = max(mapJets.getErr(jet->eta, jet->pt), (float)(eff*0.2));
-        
+        if( oob( eff ) ) continue;
         main   *= 1 - eff;
         uncTot += unc*unc;
       } 
@@ -84,7 +84,7 @@ class PrefiringEfficiency {
         
         float eff = mapPhot.getCorr(photon->eta, photon->pt);
         float unc = max(mapPhot.getErr(photon->eta, photon->pt), (float)(eff*0.2));
-        
+        if( oob( eff ) ) continue;
         main   *= 1 - eff;
         uncTot += unc*unc;
       } 
@@ -109,9 +109,9 @@ class PrefiringEfficiency {
         if(!etaCut(jet->eta)) continue;
         float effJet = mapJets.getCorr(jet->eta, jet->pt);
         float uncJet = max(mapJets.getErr( jet->eta, jet->pt), (float)(effJet*0.2) );
+        if( oob( effJet ) ) continue;
         float effObj = effJet;
         float uncObj = uncJet;
-        if(effJet < 0 || effJet > 1) cout << "what?? " << endl;
         
         // check photons: 
         for(Int_t ip=0; ip<scArr->GetEntriesFast(); ip++) {
@@ -123,7 +123,7 @@ class PrefiringEfficiency {
           // get the efficiency & uncertainty for this photon
           float effPho = mapPhot.getCorr(photon->eta, photon->pt);
           float uncPho = max(mapPhot.getErr( photon->eta, photon->pt), (float)(effPho*0.2) );
-          
+          if( oob( effPho ) ) continue;
           // if we have an overlapping photon & jet, take the maximum of the jetcorr & photoncorr
           if(effPho > effJet){
             effObj = effPho;
@@ -150,6 +150,11 @@ class PrefiringEfficiency {
     bool etaCut(double eta){
       if(fabs(eta) < 2 || fabs(eta) > 3) return false;
       return true;
+    }
+    
+    bool oob(double eff){
+      if(eff < 0 || eff > 1) return true;
+      return false;
     }
   
 };
