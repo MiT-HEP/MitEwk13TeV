@@ -116,8 +116,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
   UInt_t  category;
   UInt_t  npv, npu;
   TLorentzVector *genV=0;
-  Float_t genVPt, genVPhi, genVy, genVMass;
-  Float_t genWeight, PUWeight;
+  // Float_t genVPt, genVPhi, genVy, genVMass;
+  // Float_t genWeight, PUWeight;
   Float_t scale1fb,scale1fbUp,scale1fbDown;
   Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
@@ -190,12 +190,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     outTree->Branch("npv",         &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",         &npu,        "npu/i");         // number of in-time PU events (MC)
     outTree->Branch("genV",        "TLorentzVector",  &genV);     // GEN boson 4-vector (signal MC)
-    outTree->Branch("genVPt",      &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
-    outTree->Branch("genVPhi",     &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
-    outTree->Branch("genVy",       &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
-    outTree->Branch("genVMass",    &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
-    outTree->Branch("genWeight",   &genWeight,  "genWeight/F");
-    outTree->Branch("PUWeight",    &PUWeight,   "PUWeight/F");
+    // outTree->Branch("genVPt",      &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
+    // outTree->Branch("genVPhi",     &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
+    // outTree->Branch("genVy",       &genVy,      "genVy/F");       // GEN boson rapidity (signal MC)
+    // outTree->Branch("genVMass",    &genVMass,   "genVMass/F");    // GEN boson mass (signal MC)
+    // outTree->Branch("genWeight",   &genWeight,  "genWeight/F");
+    // outTree->Branch("PUWeight",    &PUWeight,   "PUWeight/F");
     outTree->Branch("scale1fb",    &scale1fb,   "scale1fb/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbUp",    &scale1fbUp,   "scale1fbUp/F");    // event weight per 1/fb (MC)
     outTree->Branch("scale1fbDown",    &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
@@ -230,16 +230,16 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
     ///// muon specific /////
     outTree->Branch("trkIso1",     &trkIso1,     "trkIso1/F");       // track isolation of tag lepton
     outTree->Branch("trkIso2",     &trkIso2,     "trkIso2/F");       // track isolation of probe lepton
-    outTree->Branch("emIso1",      &emIso1,      "emIso1/F");        // ECAL isolation of tag lepton
-    outTree->Branch("emIso2",      &emIso2,      "emIso2/F");        // ECAL isolation of probe lepton
-    outTree->Branch("hadIso1",     &hadIso1,     "hadIso1/F");       // HCAL isolation of tag lepton
-    outTree->Branch("hadIso2",     &hadIso2,     "hadIso2/F");       // HCAL isolation of probe lepton
-    outTree->Branch("pfChIso1",    &pfChIso1,    "pfChIso1/F");      // PF charged hadron isolation of tag lepton
-    outTree->Branch("pfChIso2",    &pfChIso2,    "pfChIso2/F");      // PF charged hadron isolation of probe lepton
-    outTree->Branch("pfGamIso1",   &pfGamIso1,   "pfGamIso1/F");     // PF photon isolation of tag lepton
-    outTree->Branch("pfGamIso2",   &pfGamIso2,   "pfGamIso2/F");     // PF photon isolation of probe lepton
-    outTree->Branch("pfNeuIso1",   &pfNeuIso1,   "pfNeuIso1/F");     // PF neutral hadron isolation of tag lepton
-    outTree->Branch("pfNeuIso2",   &pfNeuIso2,   "pfNeuIso2/F");     // PF neutral hadron isolation of probe lepton
+    // outTree->Branch("emIso1",      &emIso1,      "emIso1/F");        // ECAL isolation of tag lepton
+    // outTree->Branch("emIso2",      &emIso2,      "emIso2/F");        // ECAL isolation of probe lepton
+    // outTree->Branch("hadIso1",     &hadIso1,     "hadIso1/F");       // HCAL isolation of tag lepton
+    // outTree->Branch("hadIso2",     &hadIso2,     "hadIso2/F");       // HCAL isolation of probe lepton
+    // outTree->Branch("pfChIso1",    &pfChIso1,    "pfChIso1/F");      // PF charged hadron isolation of tag lepton
+    // outTree->Branch("pfChIso2",    &pfChIso2,    "pfChIso2/F");      // PF charged hadron isolation of probe lepton
+    // outTree->Branch("pfGamIso1",   &pfGamIso1,   "pfGamIso1/F");     // PF photon isolation of tag lepton
+    // outTree->Branch("pfGamIso2",   &pfGamIso2,   "pfGamIso2/F");     // PF photon isolation of probe lepton
+    // outTree->Branch("pfNeuIso1",   &pfNeuIso1,   "pfNeuIso1/F");     // PF neutral hadron isolation of tag lepton
+    // outTree->Branch("pfNeuIso2",   &pfNeuIso2,   "pfNeuIso2/F");     // PF neutral hadron isolation of probe lepton
     outTree->Branch("pfCombIso1",  &pfCombIso1,  "pfCombIso1/F");    // PF combined isolation of tag lepton
     outTree->Branch("pfCombIso2",  &pfCombIso2,  "pfCombIso2/F");    // PF combined isolation of probe lepton    
     outTree->Branch("d01",         &d01,         "d01/F");           // transverse impact parameter of tag lepton
@@ -316,12 +316,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
       UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
       
-      for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
+      // for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
+      for(UInt_t ientry=697726; ientry < 697726+10; ientry++) {
         infoBr->GetEntry(ientry);
-
+        cout << ientry << endl;
         int printIndex = (int)(eventTree->GetEntries()*0.01);
         if(ientry%printIndex==0) cout << "Processing event " << ientry << ". " << (int)(100*(ientry/(double)eventTree->GetEntries())) << " percent done with this file." << endl;
-
+        
+        // cout << "begin " << endl;
+        
         Double_t weight = xsec;
         Double_t weightUp = xsec;
         Double_t weightDown = xsec;
@@ -340,22 +343,22 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           hGenWeights->Fill(0.0,1.0);
         }
           
-
+        // cout << "filled weights, start cuts " << endl;
         // cout << "hello" << endl;
         // veto z -> xx decays for signal and z -> mm for bacground samples (needed for inclusive DYToLL sample)
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
         else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
-     
+     // cout << "test a" << endl;
         // check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;
-
+// cout << "test b" << endl;
         // trigger requirement               
         if (!isMuonTrigger(triggerMenu, info->triggerBits,isData,is13TeV)) continue;
-
+// cout << "test c" << endl;
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
-        
+        // cout << "test d" << endl;
 
 
         muonArr->Clear();
@@ -374,17 +377,21 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         Int_t itag=-1;
 	
         for(Int_t i1=0; i1<muonArr->GetEntriesFast(); i1++) {
+          // cout << "first in mu loop..." << i1 << " of " << muonArr->GetEntriesFast() - 1 << endl;
           const baconhep::TMuon *tag = (baconhep::TMuon*)((*muonArr)[i1]);
-
+          // cout << "in muon loop..." << i1 << " of " << muonArr->GetEntriesFast() - 1 << endl;
           // apply scale and resolution corrections to MC
           Double_t tagpt_corr = tag->pt;
           if(doScaleCorr && !snamev[isam].Contains("data")){
             tagpt_corr = gRandom->Gaus(tag->pt*getMuScaleCorr(tag->eta,0),getMuResCorr(tag->eta,0));
           }
-	
+          // cout << "test e1" << endl;
           if(tagpt_corr     < PT_CUT)        continue;  // lepton pT cut
+          // cout << "test e2" << endl;
           if(fabs(tag->eta) > ETA_CUT)       continue;  // lepton |eta| cut
+          // cout << "test e3" << endl;
           if(!passMuonID(tag))               continue;  // lepton selection
+          // cout << "test f" << endl;
 
           double Mu_Pt=0;
           if(doScaleCorr) Mu_Pt=gRandom->Gaus(tag->pt*getMuScaleCorr(tag->eta,0),getMuResCorr(tag->eta,0));
@@ -401,6 +408,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           if(Mu_Pt<tagPt) continue;
           tagPt=Mu_Pt;
           itag=i1;
+          // cout << "test g" << endl;
         
           // apply scale and resolution corrections to MC
           if(doScaleCorr && !snamev[isam].Contains("data")) {
@@ -429,14 +437,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           typeBits1   = tag->typeBits;
           q1 = tag->q;
         }
-
+        
+        // cout << "test A " << endl;
         if(tagPt<Pt2) continue;
 
         TLorentzVector vProbe(0,0,0,0); TLorentzVector vProbeSta(0,0,0,0);
         Double_t probePt=0;
         Int_t passID=false;
         UInt_t icat=0;
-
+        // cout << "test B " << endl;
         for(Int_t i2=0; i2<muonArr->GetEntriesFast(); i2++) {
           if(itag==i2) continue;
           const baconhep::TMuon *probe = (baconhep::TMuon*)((*muonArr)[i2]);
@@ -506,13 +515,15 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           else if(probe->nTkLayers>=6 && probe->nPixHits>=1)        { icat=eMuTrk; }
         }
         
+        // cout << "test C " << endl;
+        
         if(q1 == q2)         continue;  // opposite charge requirement
             
         // mass window
         TLorentzVector vDilep = vTag + vProbe;
         if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
         if(icat==0) continue;
-          
+        // cout << "test D " << endl;
         if(!isData){
           pfire.setObjects(scArr,jetArr);
           pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
@@ -520,6 +531,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
         }
 
+        // cout << "test E " << endl;
         /******** We have a Z candidate! HURRAY! ********/
         nsel+=isData ? 1 : weight;
         nselvar+=isData ? 1 : weight*weight;
@@ -530,6 +542,7 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
         TLorentzVector *gph=new TLorentzVector(0,0,0,0);
         Bool_t hasGenMatch = kFALSE;
+        // cout << "test F" << endl;
         if(isRecoil && hasGen) {
           // cout << "what" << endl;
           toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
@@ -545,10 +558,10 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           TLorentzVector tvec=*glep1+*glep2;
           genV=new TLorentzVector(0,0,0,0);
           genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
-          genVPt   = tvec.Pt();
-          genVPhi  = tvec.Phi();
-          genVy    = tvec.Rapidity();
-          genVMass = tvec.M();
+          // genVPt   = tvec.Pt();
+          // genVPhi  = tvec.Phi();
+          // genVy    = tvec.Rapidity();
+          // genVMass = tvec.M();
           genlep1=new TLorentzVector(0,0,0,0);
           genlep2=new TLorentzVector(0,0,0,0);
           genlep1->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
@@ -563,19 +576,19 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
             hasGenMatch = kTRUE;
           }
         }
-	
+        // cout << "testG " << endl;
         if (hasGen) {
-          genMuonPt1 = (toolbox::getGenLep(genPartArr, vTag, 13))->Pt();
-          genMuonPt2 = (toolbox::getGenLep(genPartArr, vProbe, 13))->Pt();
+          genMuonPt1 = toolbox::getGenLep(genPartArr, vTag);
+          genMuonPt2 = toolbox::getGenLep(genPartArr, vProbe);
         }
-	
+        // cout <<" testH " << endl;
         //
         // Fill tree
         //
         runNum   = info->runNum;
         lumiSec  = info->lumiSec;
         evtNum   = info->evtNum;
-        
+        // cout << "test h" << endl;
         if (hasGenMatch) matchGen=1;
         else matchGen=0;
         
@@ -586,8 +599,8 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         
         npv      = vertexArr->GetEntries();
         npu      = info->nPUmean;
-        genWeight= hasGen ? gen->weight: 1.;
-        PUWeight = puWeight;
+        // genWeight= hasGen ? gen->weight: 1.;
+        // PUWeight = puWeight;
         scale1fb = weight;
         scale1fbUp = weightUp;
         scale1fbDown = weightDown;
@@ -616,12 +629,13 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
         puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
         puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-	
+	// cout << "test i" << endl;
         outTree->Fill();
         delete genV;
         delete genlep1;
         delete genlep2;
         genV=0, dilep=0, lep1=0, lep2=0, sta1=0, sta2=0, genlep1=0, genlep2=0;
+        // cout << "test j" << endl;
         // reset everything to 1
         prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
         prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
