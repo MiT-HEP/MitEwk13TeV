@@ -90,9 +90,13 @@ protected:
   
   TCanvas *iC = new TCanvas("C1","C1",800,600); 
   
-  RooWorkspace* rooWData[2],  rooWMC[2], rooWMCtoCorr[2], rooWDataDiag[2], rooWMCDiag[2], rooWMCtoCorrDiag[2];
-
-  // int fId; int fJet;
+  // RooWorkspace* rooWData[2],  rooWMC[2], rooWMCtoCorr[2], rooWDataDiag[2], rooWMCDiag[2], rooWMCtoCorrDiag[2];
+  RooWorkspace* rooWData[2];
+  RooWorkspace* rooWMC[2];
+  RooWorkspace* rooWMCtoCorr[2];
+  RooWorkspace* rooWDataDiag[2];
+  RooWorkspace* rooWMCDiag[2];
+  RooWorkspace* rooWMCtoCorrDiag[2];
   bool dokeys; bool doDiago;
   
   // Binning for the 2017G and 2017H runs
@@ -331,7 +335,6 @@ void RecoilCorrector::loadRooWorkspacesMCtoCorrectKeys(std::string iFName){
 void RecoilCorrector::CorrectInvCdf(double &met, double &metphi, double lGenPt, double lGenPhi, double lepPt, double lepPhi,double &iU1,double &iU2,double iFluc,double iScale,int njet, bool useKeys, bool diago) {
   dokeys=useKeys;
   doDiago=diago;
-  // fJet = njet; if(njet > 2) fJet = 2;
   metDistributionInvCdf(met,metphi,lGenPt,lGenPhi,lepPt,lepPhi, iU1,iU2,iFluc,iScale);
 }
 

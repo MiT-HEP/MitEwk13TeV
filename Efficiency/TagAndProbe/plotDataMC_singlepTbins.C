@@ -15,8 +15,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "CPlot.hh"	     // helper class for plots
-#include "MitStyleRemix.hh"  // style settings for drawing
+#include "../../Utils/CPlot.hh"	     // helper class for plots
+#include "../../Utils/MitStyleRemix.hh"  // style settings for drawing
 #endif
 
 void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
@@ -69,10 +69,11 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
   // Settings 
   //============================================================================================================== 
 
-  TString format = "png";
+  TString format = "pdf";
 
   char lumitext[300]; // lumi label
-  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  if(lumi < 250) sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 13 TeV",lumi);    
+  else  sprintf(lumitext,"%.0f pb^{-1}  at  #sqrt{s} = 5 TeV",lumi);    
 
   //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
@@ -214,6 +215,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
   TPaveText *lumitb = new TPaveText(0.62,0.92,0.94,0.99,"NDC");
   lumitb->SetBorderSize(0);
   lumitb->SetFillColor(0);
+  lumitb->SetFillStyle(0);
   lumitb->AddText(lumitext);
 
   TPaveText *cmstb = new TPaveText(0.19,0.83,0.54,0.89,"NDC");
@@ -368,7 +370,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
     vector<double> sf_errv;
     for(UInt_t w=0; w<scale_vs_pt_per_etav.size(); w++) {
       TGraphAsymmErrors* g = (TGraphAsymmErrors*)scale_vs_pt_per_etav[w];
-      for(UInt_t d=0; d<g->GetN(); d++) {
+      for(Int_t d=0; d<g->GetN(); d++) {
         double pt, sf;
         g->GetPoint(d,pt,sf);
         sfv.push_back(sf);
@@ -386,7 +388,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
     latexfile0.open(latexfname0);
     assert(latexfile0.is_open());
 
-    for(int a=0; a<etaBinEdgesv.size()-1; a++) {
+    for(UInt_t a=0; a<etaBinEdgesv.size()-1; a++) {
       if(a==0) latexfile0 << "& ";
       latexfile0 << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
     }
@@ -451,7 +453,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
       //cout<<"pt bin "<<ptBinEdgesv[b]<<" to "<<ptBinEdgesv[b+1]<<endl;
       latexfile << "$" << ptBinEdgesv[b] << "<p_{T}<" << ptBinEdgesv[b+1] << "$ ";
       // Get scale factors for each bin in eta
-      for(UInt_t c=0; c<binEdgeLimit; c++) {
+      for(Int_t c=0; c<binEdgeLimit; c++) {
         //cout<<"---eta bin "<<etaBinEdgesv[c]<<" to "<<etaBinEdgesv[c+1]<<": b = "<<sfv[b+c*(ptBinEdgesv.size()-1)]<<" ± "<<sf_errv[b+c*(ptBinEdgesv.size()-1)]<<endl;
         ios_base::fmtflags flags = latexfile.flags();
 	    latexfile.precision(3);
@@ -461,7 +463,7 @@ void plotDataMC_singlepTbins(const TString outdir   = "./DataMC",
       latexfile << " \\\\" << endl;
     }
     latexfile << "\\hline" << std::endl;
-    for(int a=binEdgeLimit; a<etaBinEdgesv.size()-1; a++) {
+    for(UInt_t a=binEdgeLimit; a<etaBinEdgesv.size()-1; a++) {
       // if(a==0) latexfile << "& ";
       latexfile << "& $" << etaBinEdgesv[a] << "< \\eta<" << etaBinEdgesv[a+1] << "$ ";
     }

@@ -113,6 +113,9 @@ void selectWm(const TString conf       ="wm.conf", // input file
   //
   UInt_t  runNum, lumiSec, evtNum;
   UInt_t  npv, npu;
+  UInt_t  id_1, id_2;
+  Double_t x_1, x_2, xPDF_1, xPDF_2;
+  Double_t scalePDF, weightPDF;
   TLorentzVector *genV=0, *genLep=0, *genNu = 0;//, *genMuonMatch=0;
   Float_t genMuonPt;
   Float_t genVPt, genVPhi, genVy, genVMass;
@@ -122,8 +125,10 @@ void selectWm(const TString conf       ="wm.conf", // input file
   Float_t prefireWeight=1, prefireUp=1,    prefireDown=1;
   Float_t prefirePhoton=1, prefirePhotUp=1, prefirePhotDown=1;
   Float_t prefireJet=1,    prefireJetUp=1,  prefireJetDown=1;
-  Float_t met, metPhi, mt, u1, u2;
-  Float_t puppiMet, puppiMetPhi, puppiMt, puppiU1, puppiU2;
+  Float_t met, metPhi, sumEt, mt, u1, u2;
+  Float_t tkMet, tkMetPhi, tkSumEt, tkMt, tkU1, tkU2;
+  Float_t mvaMet, mvaMetPhi, mvaSumEt, mvaMt, mvaU1, mvaU2;
+  Float_t puppiMet, puppiMetPhi, puppiSumEt, puppiMt, puppiU1, puppiU2;
   Int_t   q;
   TLorentzVector *lep=0;
   Int_t lepID;
@@ -160,10 +165,25 @@ void selectWm(const TString conf       ="wm.conf", // input file
     if(isam==0 && !hasData) continue;
     else if (isam==0) isData=kTRUE;
 
-    Bool_t isSignal        = (snamev[isam].Contains("wm"));
-    Bool_t isWrongFlavor   = (snamev[isam].Contains("wx"));
-    Bool_t isRecoil = (snamev[isam].Contains("zxx")||isSignal||isWrongFlavor);
-    Bool_t noGen    = (snamev[isam].Contains("zz")||snamev[isam].Contains("wz")||snamev[isam].Contains("ww"));
+    Bool_t isSignal=false;
+    Bool_t isWrongFlavor=false;
+    if(is13TeV){
+      isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0||
+                  snamev[isam].CompareTo("wm0",TString::kIgnoreCase)==0||
+                  snamev[isam].CompareTo("wm1",TString::kIgnoreCase)==0||
+                  snamev[isam].CompareTo("wm2",TString::kIgnoreCase)==0);
+      isWrongFlavor = (snamev[isam].CompareTo("wx0",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("wx1",TString::kIgnoreCase)==0||
+                       snamev[isam].CompareTo("wx2",TString::kIgnoreCase)==0);
+    } else {
+      isSignal = (snamev[isam].CompareTo("wm",TString::kIgnoreCase)==0);
+      isWrongFlavor = (snamev[isam].CompareTo("wx",TString::kIgnoreCase)==0);
+    }
+    Bool_t isRecoil = (isSignal||(snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)||isWrongFlavor);
+    Bool_t noGen = (snamev[isam].CompareTo("zz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("wz",TString::kIgnoreCase)==0||
+                    snamev[isam].CompareTo("ww",TString::kIgnoreCase)==0);
+    
     CSample* samp = samplev[isam];
 
     //
@@ -179,9 +199,18 @@ void selectWm(const TString conf       ="wm.conf", // input file
     outTree->Branch("evtNum",     &evtNum,     "evtNum/i");      // event number
     outTree->Branch("npv",        &npv,        "npv/i");         // number of primary vertices
     outTree->Branch("npu",        &npu,        "npu/i");         // number of in-time PU events (MC)
+    outTree->Branch("id_1",       &id_1,       "id_1/i");        // PDF info -- parton ID for parton 1
+    outTree->Branch("id_2",       &id_2,       "id_2/i");        // PDF info -- parton ID for parton 2
+    outTree->Branch("x_1",        &x_1,        "x_1/d");         // PDF info -- x for parton 1
+    outTree->Branch("x_2",        &x_2,        "x_2/d");         // PDF info -- x for parton 2
+    outTree->Branch("xPDF_1",     &xPDF_1,     "xPDF_1/d");      // PDF info -- x*F for parton 1
+    outTree->Branch("xPDF_2",     &xPDF_2,     "xPDF_2/d");      // PDF info -- x*F for parton 2
+    outTree->Branch("scalePDF",   &scalePDF,   "scalePDF/d");    // PDF info -- energy scale of parton interaction
+    outTree->Branch("weightPDF",  &weightPDF,  "weightPDF/d");   // PDF info -- PDF weight
     outTree->Branch("genV",       "TLorentzVector", &genV);      // GEN boson 4-vector (signal MC)
     outTree->Branch("genLep",     "TLorentzVector", &genLep);    // GEN lepton 4-vector (signal MC)
     outTree->Branch("genNu",      "TLorentzVector", &genNu);    // GEN lepton 4-vector (signal MC)
+    // outTree->Branch("genMuonMatch","TLorentzVector", &genMuonMatch);    // GEN lepton 4-vector (signal MC)
     outTree->Branch("genMuonPt",  &genMuonPt,     "genMuonPt/F");      // GEN boson pT (signal MC)
     outTree->Branch("genVPt",     &genVPt,     "genVPt/F");      // GEN boson pT (signal MC)
     outTree->Branch("genVPhi",    &genVPhi,    "genVPhi/F");     // GEN boson phi (signal MC)
@@ -205,11 +234,25 @@ void selectWm(const TString conf       ="wm.conf", // input file
     outTree->Branch("scale1fbDown",   &scale1fbDown,   "scale1fbDown/F");    // event weight per 1/fb (MC)
     outTree->Branch("met",        &met,        "met/F");         // MET
     outTree->Branch("metPhi",     &metPhi,     "metPhi/F");      // phi(MET)
+    outTree->Branch("sumEt",      &sumEt,      "sumEt/F");       // Sum ET
     outTree->Branch("mt",         &mt,         "mt/F");          // transverse mass
     outTree->Branch("u1",         &u1,         "u1/F");          // parallel component of recoil
     outTree->Branch("u2",         &u2,         "u2/F");          // perpendicular component of recoil
+    outTree->Branch("tkMet",      &tkMet,      "tkMet/F");       // MET (track MET)
+    outTree->Branch("tkMetPhi",   &tkMetPhi,   "tkMetPhi/F");    // phi(MET) (track MET)
+    outTree->Branch("tkSumEt",    &tkSumEt,    "tkSumEt/F");     // Sum ET (track MET)
+    outTree->Branch("tkMt",       &tkMt,       "tkMt/F");        // transverse mass (track MET)
+    outTree->Branch("tkU1",       &tkU1,       "tkU1/F");        // parallel component of recoil (track MET)
+    outTree->Branch("tkU2",       &tkU2,       "tkU2/F");        // perpendicular component of recoil (track MET)
+    outTree->Branch("mvaMet",     &mvaMet,     "mvaMet/F");      // MVA MET
+    outTree->Branch("mvaMetPhi",  &mvaMetPhi,  "mvaMetPhi/F");   // phi(MVA MET)
+    outTree->Branch("mvaSumEt",   &mvaSumEt,   "mvaSumEt/F");    // Sum ET (mva MET)
+    outTree->Branch("mvaMt",      &mvaMt,      "mvaMt/F");      // transverse mass (MVA MET)
+    outTree->Branch("mvaU1",      &mvaU1,      "mvaU1/F");       // parallel component of recoil (mva MET)
+    outTree->Branch("mvaU2",      &mvaU2,      "mvaU2/F");       // perpendicular component of recoil (mva MET)
     outTree->Branch("puppiMet",    &puppiMet,   "puppiMet/F");      // Puppi MET
     outTree->Branch("puppiMetPhi", &puppiMetPhi,"puppiMetPhi/F");   // phi(Puppi MET)
+    outTree->Branch("puppiSumEt",  &puppiSumEt, "puppiSumEt/F");    // Sum ET (Puppi MET)
     outTree->Branch("puppiU1",     &puppiU1,    "puppiU1/F");       // parallel component of recoil (Puppi MET)
     outTree->Branch("puppiU2",     &puppiU2,    "puppiU2/F");       // perpendicular component of recoil (Puppi MET)
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
@@ -263,8 +306,8 @@ void selectWm(const TString conf       ="wm.conf", // input file
       eventTree->SetBranchAddress("Photon",   &scArr);        TBranch *scBr       = eventTree->GetBranch("Photon");
       if(hasJet) eventTree->SetBranchAddress("AK4", &jetArr); TBranch *jetBr      = eventTree->GetBranch("AK4");
       
-      TBranch *genBr=0, *genPartBr=0;
       Bool_t hasGen = (eventTree->GetBranchStatus("GenEvtInfo")&&!noGen);
+      TBranch *genBr=0, *genPartBr=0;
       if(hasGen) {
         eventTree->SetBranchAddress("GenEvtInfo", &gen);        genBr     = eventTree->GetBranch("GenEvtInfo");
         eventTree->SetBranchAddress("GenParticle",&genPartArr); genPartBr = eventTree->GetBranch("GenParticle");
@@ -318,21 +361,39 @@ void selectWm(const TString conf       ="wm.conf", // input file
         }
         scArr->Clear();
         scBr->GetEntry(ientry);
-
+        
+       /* Double_t weight=1;
+        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+	if(hasGen) {
+	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
+          genPartBr->GetEntry(ientry);
+	  weight*=gen->weight;
+	}*/
+        
 	    // veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
+        // std::cout << "isWrongFlavor " << isWrongFlavor << " isSignal " << isSignal << " hasGen " << hasGen << " flav " <<  fabs(toolbox::flavor(genPartArr, BOSON_ID)) << std::endl;
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
         else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
-        // check for certified lumi (if applicable)
+        // std::cout << "veto1" << std::endl;
+	    // check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
+         // std::cout << "veto2" << std::endl;
         // trigger requirement               
         if (!isMuonTrigger(triggerMenu, info->triggerBits,isData,is13TeV)) continue;
+      // std::cout << "veto3" << std::endl;
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
+        // std::cout << "veto4" << std::endl;
+           
+        //
+	// SELECTION PROCEDURE:
+	//  (1) Look for 1 good muon matched to trigger
+	//  (2) Reject event if another muon is present passing looser cuts
+  
+
         
-        // SELECTION PROCEDURE:
-        //  (1) Look for 1 good muon matched to trigger
-        //  (2) Reject event if another lepton is present passing looser cuts
         muonArr->Clear();
         muonBr->GetEntry(ientry);
         
@@ -356,7 +417,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
           if((ele->r9 < 1.)){
             float eleAbsEta   = fabs(vEle.Eta());
             double eTregress =  ele->ecalEnergy/cosh(fabs(ele->eta));
-            if(snamev[isam].Contains("data")){//Data
+            if(snamev[isam].CompareTo("data",TString::kIgnoreCase)==0){//Data
               int runNumber = is13TeV ? info->runNum : 306936;
               float eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
               (vEle) *= eleScale;
@@ -380,16 +441,18 @@ void selectWm(const TString conf       ="wm.conf", // input file
 
           // apply scale and resolution corrections to MC
           Double_t mupt_corr = mu->pt;
-          if(doScaleCorr && !snamev[isam].Contains("data"))
+          if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
             mupt_corr = gRandom->Gaus(mu->pt*getMuScaleCorr(mu->eta,0),getMuResCorr(mu->eta,0));
 
           if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
           if(mupt_corr     < VETO_PT)  continue; // loose lepton pT cut
+          // std::cout << "veto5" << std::endl;
           if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
           if(nLooseLep>1) {  // extra lepton veto
             passSel=kFALSE;
             break;
           }
+          // std::cout << "veto6" << std::endl;
           
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
           if(mupt_corr     < PT_CUT)          continue;  // lepton pT cut   
@@ -418,7 +481,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
 
     // apply scale and resolution corrections to MC
     Double_t goodMuonpt_corr = goodMuon->pt;
-    if(doScaleCorr && !snamev[isam].Contains("data"))
+    if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
     goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
 
 	  TLorentzVector vLep; 
@@ -450,9 +513,21 @@ void selectWm(const TString conf       ="wm.conf", // input file
 	  genNuPhi = -999;
 	  u1        = -999;
 	  u2        = -999;
+	  tkU1      = -999;
+    tkU2      = -999;
+	  mvaU1     = -999;
+    mvaU2     = -999;
+    id_1      = -999;
+    id_2      = -999;
+    x_1       = -999;
+    x_2       = -999;
+    xPDF_1    = -999;
+    xPDF_2    = -999;
+    scalePDF  = -999;
+    weightPDF = -999;
 
     genMuonPt = 0;
-    if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
+    // if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
 
 	  if(isRecoil && hasGen) {
       Int_t glepq1=-99;
@@ -461,7 +536,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
       TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
       TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
 	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-      if(snamev[isam].Contains("zxx")){ // DY only
+      if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
           toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
       }
    
@@ -498,13 +573,31 @@ void selectWm(const TString conf       ="wm.conf", // input file
         TVector2 vU = -1.0*(vMet+vLepPt);
         u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
         u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
+        TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
+        TVector2 vTkU = -1.0*(vTkMet+vLepPt);
+        tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
 
+        TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+        TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+        mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+        mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
         TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
         TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
         puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
         puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
   
       }
+      id_1      = gen->id_1;
+      id_2      = gen->id_2;
+      x_1       = gen->x_1;
+      x_2       = gen->x_2;
+      xPDF_1    = gen->xPDF_1;
+      xPDF_2    = gen->xPDF_2;
+      scalePDF  = gen->scalePDF;
+      weightPDF = gen->weight;
 
       // Clean up
       delete gvec;
@@ -517,9 +610,19 @@ void selectWm(const TString conf       ="wm.conf", // input file
     scale1fbDown = weightDown;
     met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
+	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
+	  tkMet    = info->trkMET;
+	  tkMetPhi = info->trkMETphi;
+	  tkSumEt  = 0;
+	  tkMt     = sqrt( 2.0 * (vLep.Pt()) * (info->trkMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->trkMETphi))) );
+	  mvaMet   = info->mvaMET;
+	  mvaMetPhi = info->mvaMETphi;
+	  mvaSumEt  = 0;
+	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
     puppiMet = info->puppET;
     puppiMetPhi = info->puppETphi;
+	  puppiSumEt  = 0;
 	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodMuon->q;
 	  lep      = &vLep;

@@ -45,6 +45,7 @@
 void computeAccSelWm(const TString conf,       // input file
           const TString inputDir,
           const TString outputDir,  // output directory
+          const TString outputName,
 		     const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 		     const Int_t   doPU,
 			    const TString sysFileSIT, // condense these into 1 file per type of eff (pos & neg into 1 file)
@@ -200,7 +201,7 @@ void computeAccSelWm(const TString conf,       // input file
     nSelCorrvTag_I.push_back(0);  nSelCorrvTag_S.push_back(0);
     
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(0.01)*((uint)eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<(0.25)*((uint)eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0)   cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
     //for(UInt_t ientry=0; ientry<1000000; ientry++) {
       genBr->GetEntry(ientry);
@@ -212,6 +213,7 @@ void computeAccSelWm(const TString conf,       // input file
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       
       
+      // cout << "-- out 1 " << endl;
       
       /*TLorentzVector *vec=new TLorentzVector(0,0,0,0);
       TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
@@ -235,7 +237,7 @@ void computeAccSelWm(const TString conf,       // input file
       // if(mtgen > 40) continue;
       if(mtgen < 40) continue;
      // cout << "mass " << genVMass <<  "   mt " << mt << endl;
-      
+      // cout << "-- out 2 " << endl;
       vertexArr->Clear();
       vertexBr->GetEntry(ientry);
       double npv  = vertexArr->GetEntries();
@@ -251,6 +253,7 @@ void computeAccSelWm(const TString conf,       // input file
    
       // good vertex requirement
       if(!(info->hasGoodPV)) continue;
+      // cout << "-- out 3 " << endl;
     
       muonArr->Clear();
       muonBr->GetEntry(ientry);
@@ -262,6 +265,7 @@ void computeAccSelWm(const TString conf,       // input file
 
         if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
         if(mu->pt	 < VETO_PT)  continue; // loose lepton pT cut
+        // cout << "-- out 3 " << endl;
         if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection
         if(nLooseLep>1) {  // extra lepton veto
           passSel=kFALSE;
@@ -272,13 +276,16 @@ void computeAccSelWm(const TString conf,       // input file
         if(mu->pt < PT_CUT)		    continue;  // lepton pT cut	
         if(!passMuonID(mu))		    continue;  // lepton selection
         if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits, kFALSE,is13TeV)) continue;
+        // cout << "-- out 4 " << endl;
 	
         if(charge!=0 && mu->q!=charge) continue;  // check charge (if necessary)
+          // cout << "-- out 5 " << endl;
 	
         double mtreco  = sqrt( 2.0 * (mu->pt) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(mu->phi,info->pfMETCphi))) );
         
         if(mtreco < 40) continue;
         // if(mtreco > 40 && mtreco < 140) continue;
+        // cout << "-- out 6 " << endl;
         passSel=kTRUE;
         goodMuon=mu;
         vMu.SetPtEtaPhiM(mu->pt, mu->eta, mu->phi, mu_MASS);
@@ -439,6 +446,26 @@ void computeAccSelWm(const TString conf,       // input file
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
+   
+  // Print full set for efficiency calculations
+  char masterOutput[600];
+  // just start printing....
+  for(uint ifile = 0; ifile < fnamev.size(); ++ifile){// go through info per file
+    sprintf(masterOutput,"%s/%s.txt",outputDir.Data(),outputName.Data());
+    ofstream txtfile;
+    txtfile.open(masterOutput);
+    txtfile << "acc " << accCorrv[ifile] << endl;
+    txtfile << "acc_stat " << accCorrv[ifile]+accErrCorrv[ifile] << endl;
+    txtfile << "sel_fsr" << " " << accCorrvFSR_I[ifile] << endl;
+    txtfile << "sta_fsr" << " " << accCorrvFSR_S[ifile] << endl;
+    txtfile << "sel_mc"  << " " << accCorrvMC_I[ifile] << endl;
+    txtfile << "sta_mc"  << " " << accCorrvMC_S[ifile] << endl;
+    txtfile << "sel_bkg" << " " << accCorrvBkg_I[ifile] << endl;
+    txtfile << "sta_bkg" << " " << accCorrvBkg_S[ifile] << endl;
+    txtfile << "sel_tagpt" << " " << accCorrvTag_I[ifile] << endl;
+    txtfile << "sta_tagpt" << " " << accCorrvTag_S[ifile] << endl;
+    txtfile.close();
+  }
    
   cout << "*" << endl;
   cout << "* SUMMARY" << endl;
