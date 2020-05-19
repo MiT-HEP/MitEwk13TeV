@@ -40,7 +40,6 @@
 
 // lumi section selection with JSON files
 #include "BaconAna/Utils/interface/RunLumiRangeMap.hh"
-// for prefire correction factors
 
 #include "ConfParse.hh"             // input conf file parser
 #include "../Utils/CSample.hh"      // helper class to handle samples
@@ -286,10 +285,10 @@ void selectAntiWe(const TString conf       ="we.conf", // input file
         TLorentzVector vEle(0,0,0,0);
         TLorentzVector vGoodEle(0,0,0,0);
         Bool_t passSel=kFALSE;
+        double eleRamdom = gRandom->Gaus(0,1);
 
         for(Int_t i=0; i<muonArr->GetEntriesFast(); i++) {
           const baconhep::TMuon *mu = (baconhep::TMuon*)((*muonArr)[i]);
-
           if(fabs(mu->eta) > VETO_ETA) continue; // loose lepton |eta| cut
           if(mu->pt        < VETO_PT ) continue; // loose lepton pT cut
           if(passMuonLooseID(mu)) nLooseLep++;   // loose lepton selection

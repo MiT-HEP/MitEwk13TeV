@@ -45,7 +45,6 @@
 #include "../Utils/CSample.hh"      // helper class to handle samples
 #include "../Utils/LeptonCorr.hh"   // electron scale and resolution corrections
 #include "../EleScale/EnergyScaleCorrection.h" //EGMSmear
-
 #include "../Utils/LeptonIDCuts.hh" // helper functions for lepton ID selection
 #include "../Utils/MyTools.hh"      // various helper functions
 #include "../Utils/PrefiringEfficiency.cc"      // prefiring efficiency functions
@@ -309,7 +308,7 @@ const Int_t    ITH         =0 ) {
             float eleAbsEta   = fabs(vEle.Eta());
             double eTregress = ele->ecalEnergy/cosh(fabs(ele->eta));
             if(snamev[isam].Contains("data")) {//Data
-              int runNumber = is13TeV ? info->runNum : 306936 ;
+              int runNumber = is13TeV ? info->runNum : 306936;
               float eleScale = eleCorr.scaleCorr(runNumber, eTregress, eleAbsEta, ele->r9);
               float eleError = eleCorr.scaleCorrUncert(runNumber, eTregress, eleAbsEta, ele->r9);
               (vEle) *= eleScale * (1 + sigma*eleError);

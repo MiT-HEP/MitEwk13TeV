@@ -121,6 +121,7 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
   Float_t met, metPhi;//, mt, u1, u2;
   Float_t puppiMet, puppiMetPhi;//, puppiMt, puppiU1, puppiU2;
   Int_t   q;
+  UInt_t nTkLayers;
   TLorentzVector *lep=0;
   Float_t pfCombIso;
 
@@ -190,6 +191,7 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
     outTree->Branch("q",          &q,          "q/I");           // lepton charge
     outTree->Branch("lep",        "TLorentzVector", &lep);       // lepton 4-vector
     outTree->Branch("pfCombIso",  &pfCombIso,  "pfCombIso/F");    // PF combined isolation of lepton
+    outTree->Branch("nTkLayers",  &nTkLayers,  "nTkLayers/i");    // number of tracker layers
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
@@ -321,7 +323,7 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
 
           if(fabs(mu->eta) > ETA_CUT)         continue;  // lepton |eta| cut
           if(mu->pt < PT_CUT)                 continue;  // lepton pT cut   
-          if(!passAntiMuonID(mu))             continue;  // lepton anti-selection
+          if(!passAntiMuonID(mu))             continue;  // lep anti-selection
           if(!isMuonTriggerObj(triggerMenu, mu->hltMatchBits,isData,is13TeV)) continue;
           passSel=kTRUE;
           goodMuon = mu;
@@ -357,6 +359,8 @@ void selectAntiWm(const TString  conf       ="wm.conf", // input file
           genV      = new TLorentzVector(0,0,0,0);
           genLep    = new TLorentzVector(0,0,0,0);
           genNu    = new TLorentzVector(0,0,0,0);
+          
+          nTkLayers = goodMuon->nTkLayers;
 
           if(isRecoil && hasGen) {
             Int_t glepq1=-99;
