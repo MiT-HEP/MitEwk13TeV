@@ -36,9 +36,10 @@
 void computeAccGenZee(const TString conf,             // input file
                       const TString outputDir,         // output directory
                        const TString outputName, // output filename
-                      const bool doDressed=0
+                      const bool doDressed=0,
+		      const bool doborn=0
 ) {
-  gBenchmark->Start("computeAccGenZee_Sys");
+  gBenchmark->Start("computeAccGenZee");
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
@@ -140,41 +141,43 @@ void computeAccGenZee(const TString conf,             // input file
     
     for(int i=0;i<NQCD;++i) {nSelv_QCD.push_back(0);nEvtsv_QCD.push_back(0);}
     for(int i=0;i<NPDF;++i) {nSelv_PDF.push_back(0);nEvtsv_PDF.push_back(0);}
+
+    TLorentzVector *vec  =new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep1 =new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep2 =new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep3 =new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep4 =new TLorentzVector(0,0,0,0);
+    TLorentzVector *gph  =new TLorentzVector(0,0,0,0);
     
     //
     // loop over events
     //
     for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; (uint)ientry<(eventTree->GetEntries())*0.05; ientry++) {
       if(ientry%1000000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
+      
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
-      TLorentzVector *vec =new TLorentzVector(0,0,0,0);
-      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       Int_t lepq1=-99;
       Int_t lepq2=-99;
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
-      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
-      
+      toolbox::fillGenBorn(genPartArr, BOSON_ID, vec, lep1, lep2, lep3, lep4);
+           
       double ptWeight = 1;
       for(int i = 0; i <= hh_diff->GetNbinsX();++i){
         if(vec->Pt() > hh_diff->GetBinLowEdge(i) && vec->Pt() < hh_diff->GetBinLowEdge(i+1)){ ptWeight = hh_diff->GetBinContent(i); break;}
       }
       
-      
-      TLorentzVector *gph=new TLorentzVector(0,0,0,0);
       if(doDressed){
-          for(Int_t i=0; i<genPartArr->GetEntriesFast(); i++) {
-            const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
-            if(fabs(genloop->pdgId)!=22) continue;
-            gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep1->Eta(),lep1->Phi())<0.1) lep1->operator+=(*gph);
-            if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1) lep2->operator+=(*gph);
-          }
+        for(Int_t i=0; i<genPartArr->GetEntriesFast(); i++) {
+          const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
+          if(fabs(genloop->pdgId)!=22) continue;
+          gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+          if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep3->Eta(),lep3->Phi())<0.1)  lep3->operator+=(*gph);
+          if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep4->Eta(),lep4->Phi())<0.1)  lep4->operator+=(*gph);
+        }
       }
-
+  
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
       Double_t weight=gen->weight;
       
@@ -202,7 +205,12 @@ void computeAccGenZee(const TString conf,             // input file
       if(fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
       if(fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
 
-      TLorentzVector dilep=(*lep1)+(*lep2);
+      TLorentzVector dilep;
+      
+      if(doborn)
+	dilep=(*lep1)+(*lep2);
+      else
+	dilep=(*lep3)+(*lep4);
 
       if(dilep.M()<MASS_LOW || dilep.M()>MASS_HIGH) continue;
       Bool_t isB1 = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
@@ -225,6 +233,14 @@ void computeAccGenZee(const TString conf,             // input file
       for(int npdf=0; npdf<NPDF; npdf++) nSelv_PDF[npdf]+=weight*gen->lheweight[8+npdf];
 
     }
+
+    delete vec;
+    delete lep1;
+    delete lep2;
+    delete lep3;
+    delete lep4;
+    delete gph;
+    
     
     // compute acceptances
     accv.push_back(nSelv[ifile]/nEvtsv[ifile]);     accErrv.push_back(sqrt(accv[ifile]*(1.-accv[ifile])/nEvtsv[ifile]));

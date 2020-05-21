@@ -35,11 +35,11 @@
 
 void computeAccGenWm(const TString conf,             // input file
                      const TString outputDir,        // output directory
-                      const TString outputName, // output filename
+		     const TString outputName, // output filename
                      const bool doDressed=0,
-		     const Int_t   charge =0,
-		     const bool doborn=0// 0 = inclusive, +1 = W+, -1 = W-
-) {
+		     const Int_t   charge =0, // 0 = inclusive, +1 = W+, -1 = W-
+		     const bool doborn=0
+		     ) {
   gBenchmark->Start("computeAccGenWm");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -187,15 +187,15 @@ void computeAccGenWm(const TString conf,             // input file
       }
       
       if(doDressed){
-          for(Int_t i=0; i<genPartArr->GetEntriesFast(); i++) {
-            const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
-            if(fabs(genloop->pdgId)!=22) continue;
-            gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
-	    if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep3->Eta(),lep3->Phi())<0.1)
-              {
-                lep3->operator+=(*gph);
-              }
-          }
+	for(Int_t i=0; i<genPartArr->GetEntriesFast(); i++) {
+	  const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
+	  if(fabs(genloop->pdgId)!=22) continue;
+	  gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
+	  if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep3->Eta(),lep3->Phi())<0.1)
+	    {
+	      lep3->operator+=(*gph);
+	    }
+	}
       }
 
       Double_t weight=gen->weight;
@@ -264,10 +264,10 @@ void computeAccGenWm(const TString conf,             // input file
     
     accv_pT.push_back  (nSelv_pT[ifile]  /nEvtsv_pT[ifile]);
     
-   std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
+    std::cout << "nselv " << nSelv[ifile] << "  nevtsv " << nEvtsv[ifile] << std::endl;
     
-   delete infile;
-   infile=0, eventTree=0;  
+    delete infile;
+    infile=0, eventTree=0;  
   }
   
     

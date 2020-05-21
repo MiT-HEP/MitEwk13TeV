@@ -37,7 +37,7 @@ void computeAccGenZmm(const TString conf      , // input file
                       const TString outputName, // output filename
                       const bool    doDressed=0, // do dressed
                       const bool    doborn=0 ) {
-  gBenchmark->Start("computeAccGenZmm_Sys");
+  gBenchmark->Start("computeAccGenZmm");
 
   //--------------------------------------------------------------------------------------------------------------
   // Settings 
