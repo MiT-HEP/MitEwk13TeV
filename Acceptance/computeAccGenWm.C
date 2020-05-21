@@ -37,7 +37,8 @@ void computeAccGenWm(const TString conf,             // input file
                      const TString outputDir,        // output directory
                       const TString outputName, // output filename
                      const bool doDressed=0,
-		     const Int_t   charge =0           // 0 = inclusive, +1 = W+, -1 = W-
+		     const Int_t   charge =0,
+		     const bool doborn=0// 0 = inclusive, +1 = W+, -1 = W-
 ) {
   gBenchmark->Start("computeAccGenWm_Sys");
 
@@ -150,25 +151,24 @@ void computeAccGenWm(const TString conf,             // input file
     
     for(int i=0;i<NQCD;++i) {tempQCD_Selv.push_back(0);tempQCD_Evtsv.push_back(0);}
     for(int i=0;i<NPDF;++i) {tempPDF_Selv.push_back(0);tempPDF_Evtsv.push_back(0);}
-    
+
+    TLorentzVector *vec=new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep3 =new TLorentzVector(0,0,0,0);
+    TLorentzVector *lep4 =new TLorentzVector(0,0,0,0);
+    TLorentzVector *gph  =new TLorentzVector(0,0,0,0);
     //
     // loop over events
     //    
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.01*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+      //for(UInt_t ientry=0; ientry<(uint)(0.01*eventTree->GetEntries()); ientry++) {
     // for(UInt_t ientry=1888000; ientry<(uint)(100000+0.371901*eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0)  cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
-      // if(ientry==1887208 || ientry==1887209) {
-      // if(ientry==1887208 || ientry==1887209) {
-        // cout << "bad event??" << endl;
-        // continue;
-      // }
+     
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
 
-      TLorentzVector *vec=new TLorentzVector(0,0,0,0);
-      TLorentzVector *lep1=new TLorentzVector(0,0,0,0);
-      TLorentzVector *lep2=new TLorentzVector(0,0,0,0);
       Int_t lepq1=-99;
       Int_t lepq2=-99;
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
@@ -176,32 +176,23 @@ void computeAccGenWm(const TString conf,             // input file
       if (charge==1 && toolbox::flavor(genPartArr, BOSON_ID)!=-LEPTON_ID) continue;
       if (charge==0 && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
       // int mparam = fabs(1-fabs(charge));
-      toolbox::fillGen(genPartArr, BOSON_ID, vec, lep1, lep2,&lepq1,&lepq2,1);
-      // std::cout << "---------------" << std::endl;
-     // std::cout << "evtnum " << ientry <<  " lep1 " << lep1->Pt() << "  lepq1 " << lepq1 << std::endl;
-     // std::cout << "evtnum " << ientry << " lep2 " << lep2->Pt() << "  lepq2 " << lepq2 << std::endl;
-      
-      if(charge!=0&&charge!=lepq1) {
+      toolbox::fillGenBorn(genPartArr, BOSON_ID, vec, lep1, lep2, lep3, lep4);
+ 
+      if(charge==1) {
         TLorentzVector *tmp = lep1;
         lep1=lep2;
         lep2=tmp;
+	tmp=lep3;
+	lep3=lep4;
+	lep4=tmp;
       }
-      // if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq1<0){
-        // std::cout << "lep1 ! " << BOSON_ID*glepq1 << std::endl;
-        // genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-      // }
-      if(charge==0&&toolbox::flavor(genPartArr, BOSON_ID)*lepq2<0){
-        // std::cout << "lep2 ! " << BOSON_ID*glepq2 << std::endl;
-        //genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-        TLorentzVector *tmp = lep1;
-        lep1=lep2;
-        lep2=tmp;
-      }
-      // cout << "hi" << endl;
-      //if(charge==0&&charge==lepq1) lep1=lep2;
      
-      
-      TLorentzVector *gph=new TLorentzVector(0,0,0,0);
+      //if(charge==-1){
+      //TLorentzVector *tmp = lep1;
+      //lep1=lep2;
+      //lep2=tmp;
+      //}
+   
       if(doDressed){
           for(Int_t i=0; i<genPartArr->GetEntriesFast(); i++) {
             const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
@@ -209,14 +200,14 @@ void computeAccGenWm(const TString conf,             // input file
             gph->SetPtEtaPhiM(genloop->pt, genloop->eta, genloop->phi, genloop->mass);
             if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep1->Eta(),lep1->Phi())<0.1)
               {
-                lep1->operator+=(*gph);
-              } else if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1)
-              {
-                lep2->operator+=(*gph);
-              }
+                lep3->operator+=(*gph);
+              } //else if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep2->Eta(),lep2->Phi())<0.1)
+	    //{
+	    //   lep2->operator+=(*gph);
+            //  }
           }
       }
-      delete lep2;
+      //delete lep2;
 
     // cout << "dressed" << endl;
 
@@ -232,20 +223,32 @@ void computeAccGenWm(const TString conf,             // input file
       for(int npdf=0; npdf<NPDF; npdf++) tempPDF_Evtsv[npdf]+=weight*gen->lheweight[9+npdf];
     
       Bool_t isBarrel=kTRUE;
-      if (lep1) {
-        if (fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
-        if (lep1->Pt()        < PT_CUT ) continue;
-        if (fabs(lep1->Eta()) > ETA_CUT) continue;
-        isBarrel = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
-      } else if (lep2) {
-        if (fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
-        if (lep2->Pt()        < PT_CUT ) continue;
-        if (fabs(lep2->Eta()) > ETA_CUT) continue;
-        isBarrel = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
-      }
-      else continue;
-             // cout << "asdf" << endl;
-      double mtgen  = sqrt( 2.0 * (lep1->Pt()) * (lep2->Pt()) * (1.0-cos(toolbox::deltaPhi(lep1->Phi(),lep2->Phi()))) );
+      if (doborn) 
+	{
+	  //if (fabs(lep1->Eta())>ETA_BARREL && fabs(lep1->Eta())<ETA_ENDCAP) continue;
+	  if (lep1->Pt()        < PT_CUT ) continue;
+	  if (fabs(lep1->Eta()) > ETA_CUT) continue;
+	  isBarrel = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+	}
+      else 
+	{
+	  //if (fabs(lep3->Eta())>ETA_BARREL && fabs(lep3->Eta())<ETA_ENDCAP) continue;
+	  if (lep3->Pt()        < PT_CUT ) continue;
+	  if (fabs(lep3->Eta()) > ETA_CUT) continue;
+	  isBarrel = (fabs(lep3->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+	}
+	//} else if (lep2) {
+      //if (fabs(lep2->Eta())>ETA_BARREL && fabs(lep2->Eta())<ETA_ENDCAP) continue;
+      //if (lep2->Pt()        < PT_CUT ) continue;
+      //if (fabs(lep2->Eta()) > ETA_CUT) continue;
+      // isBarrel = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
+      //  }
+      //else continue;
+      double mtgen=0;
+      if(doborn)
+	mtgen  = sqrt( 2.0 * (lep1->Pt()) * (lep2->Pt()) * (1.0-cos(toolbox::deltaPhi(lep1->Phi(),lep2->Phi()))) );
+      else
+	mtgen  = sqrt( 2.0 * (lep3->Pt()) * (lep4->Pt()) * (1.0-cos(toolbox::deltaPhi(lep3->Phi(),lep4->Phi()))) );
       if(mtgen < 40) continue;
 
       nSelv[ifile]+=weight;
