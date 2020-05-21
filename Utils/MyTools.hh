@@ -216,6 +216,8 @@ void toolbox::fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec,
 //------------------------------------------------------------------------------------------------------------------------
 void toolbox::fillGenBorn(TClonesArray *genPartArr, Int_t vid, TLorentzVector* vec, TLorentzVector* lep1, TLorentzVector* lep2, TLorentzVector* lep3, TLorentzVector* lep4) 
 {
+  //lep1, lep3 are the paricles, lep2 and lep4 are the anti-particles
+  //lep1,lep2->pre-fsr. lep3,lep4->post-fsr
   Int_t iv=-1, iv1=-1, iv2=-1;
   for (Int_t i=0; i<genPartArr->GetEntries(); i++) {
     const baconhep::TGenParticle* genloop = (baconhep::TGenParticle*) ((*genPartArr)[i]);
