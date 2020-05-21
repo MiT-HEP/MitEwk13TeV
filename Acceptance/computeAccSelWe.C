@@ -53,6 +53,7 @@
 void computeAccSelWe(const TString conf,            // input file
 			    const TString inputDir, // efficiency main directory
           const TString outputDir,        // output directory
+          const TString outputName,
 		      const Int_t   charge,      // 0 = inclusive, +1 = W+, -1 = W-
 			    const Int_t   doPU,
 			    const Int_t   doScaleCorr,
@@ -213,7 +214,7 @@ void computeAccSelWe(const TString conf,            // input file
     // loop over events
     //
     // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    for(UInt_t ientry=0; ientry<(uint)(0.1*eventTree->GetEntries()); ientry++) {
+    for(UInt_t ientry=0; ientry<(uint)(0.25*eventTree->GetEntries()); ientry++) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       infoBr->GetEntry(ientry);
       genBr->GetEntry(ientry);      
@@ -445,7 +446,21 @@ void computeAccSelWe(const TString conf,            // input file
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
-   
+  // Print full set for efficiency calculations
+  char masterOutput[600];
+  // just start printing....
+  for(uint ifile = 0; ifile < fnamev.size(); ++ifile){// go through info per file
+    sprintf(masterOutput,"%s/%s.txt",outputDir.Data(),outputName.Data());
+    ofstream txtfile;
+    txtfile.open(masterOutput);
+    txtfile << "acc " << accCorrv[ifile] << endl;
+    txtfile << "acc_stat " << accCorrv[ifile]+accErrCorrv[ifile] << endl;
+    txtfile << "sel_fsr" << " " << accCorrvFSR[ifile] << endl;
+    txtfile << "sel_mc"  << " " << accCorrvMC[ifile] << endl;
+    txtfile << "sel_bkg" << " " << accCorrvBkg[ifile] << endl;
+    txtfile << "sel_tagpt" << " " << accCorrvTag[ifile] << endl;
+    txtfile.close();
+  }
   cout << "*" << endl;
   cout << "* SUMMARY" << endl;
   cout << "*--------------------------------------------------" << endl;

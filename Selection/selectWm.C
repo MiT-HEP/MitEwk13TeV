@@ -527,7 +527,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
     weightPDF = -999;
 
     genMuonPt = 0;
-    if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
+    // if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
 
 	  if(isRecoil && hasGen) {
       Int_t glepq1=-99;

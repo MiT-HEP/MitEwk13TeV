@@ -13,6 +13,8 @@ namespace toolbox
   
   Int_t roundToInt(const Double_t x);
   
+  TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
+  
   Int_t flavor(TClonesArray *genPartArr, Int_t vid);
   
   void fillGen(TClonesArray *genPartArr, Int_t vid, TLorentzVector* &vec, TLorentzVector* &lep1, TLorentzVector* &lep2, Int_t* lep1q, Int_t* lep2q, Int_t absM);
@@ -55,6 +57,38 @@ Int_t toolbox::roundToInt(Double_t x)
     return ((x-floor(x)) < (ceil(x)-x)) ? (Int_t)floor(x) : (Int_t)ceil(x);
   else
     return ((x-floor(x)) < (ceil(x)-x)) ? (Int_t)ceil(x) : (Int_t)floor(x);
+}
+
+
+TH1D* toolbox::makeDiffHist(TH1D* hData, TH1D* hFit, const TString name)
+{
+  TH1D *hDiff = (TH1D*)hData->Clone("hDiff");
+  hDiff->SetName(name);
+  for(Int_t ibin=1; ibin<=hData->GetNbinsX(); ibin++) {
+    
+    Double_t diff0 = (hData->GetBinContent(ibin)-hFit->GetBinContent(ibin));
+    Double_t diff=0;
+    Double_t err=0;
+    if(hData->GetBinContent(ibin)!=0)
+      {
+	diff = diff0/hData->GetBinContent(ibin);
+	err = (hFit->GetBinContent(ibin)/hData->GetBinContent(ibin))*sqrt((1.0/hFit->GetBinContent(ibin))+(1.0/hData->GetBinContent(ibin)));
+      }
+    hDiff->SetBinContent(ibin,diff);
+    hDiff->SetBinError(ibin,err);   
+  }
+  
+  hDiff->GetYaxis()->SetTitleOffset(0.42);
+  hDiff->GetYaxis()->SetTitleSize(0.13);
+  hDiff->GetYaxis()->SetLabelSize(0.10);
+  hDiff->GetYaxis()->SetNdivisions(104);
+  hDiff->GetYaxis()->CenterTitle();
+  hDiff->GetXaxis()->SetTitleOffset(1.2);
+  hDiff->GetXaxis()->SetTitleSize(0.13);
+  hDiff->GetXaxis()->SetLabelSize(0.12);
+  hDiff->GetXaxis()->CenterTitle();
+  
+  return hDiff;
 }
 
 //------------------------------------------------------------------------------------------------------------------------

@@ -54,6 +54,7 @@
 void computeAccSelZee(const TString conf,            // input file
 			    const TString inputDir,
                             const TString outputDir,        // output directory
+                            const TString outputName,
           const TString  sqrts, 
 			    const Int_t   doPU,
 			    const Int_t   doScaleCorr,
@@ -436,6 +437,22 @@ void computeAccSelZee(const TString conf,            // input file
   //--------------------------------------------------------------------------------------------------------------
   // Output
   //==============================================================================================================
+   
+ // Print full set for efficiency calculations
+  char masterOutput[600];
+  // just start printing....
+  for(uint ifile = 0; ifile < fnamev.size(); ++ifile){// go through info per file
+    sprintf(masterOutput,"%s/%s.txt",outputDir.Data(),outputName.Data());
+    ofstream txtfile;
+    txtfile.open(masterOutput);
+    txtfile << "acc " << accCorrv[ifile] << endl;
+    txtfile << "acc_stat " << accCorrv[ifile]+accErrCorrv[ifile] << endl;
+    txtfile << "sel_fsr" << " " << accCorrvFSR[ifile] << endl;
+    txtfile << "sel_mc"  << " " << accCorrvMC[ifile] << endl;
+    txtfile << "sel_bkg" << " " << accCorrvBkg[ifile] << endl;
+    txtfile << "sel_tagpt" << " " << accCorrvTag[ifile] << endl;
+    txtfile.close();
+  }
    
   cout << "*" << endl;
   cout << "* SUMMARY" << endl;
