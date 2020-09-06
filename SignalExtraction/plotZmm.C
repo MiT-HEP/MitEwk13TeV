@@ -26,8 +26,8 @@
 #include "../Utils/LeptonCorr.hh"         // Scale and resolution corrections
 
 // helper class to handle efficiency tables
-#include "../Utils/CEffUser1D.hh"
-#include "../Utils/CEffUser2D.hh"
+//#include "../Utils/CEffUser1D.hh"
+//#include "../Utils/CEffUser2D.hh"
 
 //helper class to handle rochester corrections
 #include <../RochesterCorr/RoccoR.cc>
@@ -447,7 +447,8 @@ void plotZmm(const TString  inputDir,    // input directory
       }  
       
       // fill Z events passing selection
-      if(!(category==eMuMu2HLT) && !(category==eMuMu1HLT) && !(category==eMuMu1HLT1mu1)) continue;
+      //if(!(category==eMuMu2HLT) && !(category==eMuMu1HLT) && !(category==eMuMu1HLT1mu1)) continue;
+      if(!(category==eMuMu2HLT) && !(category==eMuMu1HLT)) continue;
       if(typev[ifile]==eData) { 
 
         TLorentzVector mu1;

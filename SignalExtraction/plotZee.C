@@ -47,7 +47,7 @@ TH1D* makeDiffHist(TH1D* hData, TH1D* hFit, const TString name);
 
 void plotZee(const TString  inputDir,    // input directory
 	     const TString  outputDir,   // output directory
-       const TString sqrts,
+             const TString sqrts,
              const Double_t lumi,        // integrated luminosity (/fb)
 	     const Bool_t   normToData=0 // draw MC normalized to data
 ) {
