@@ -29,23 +29,23 @@ void xsecSummary_muon5()
   double rand = 1.057972;
   //--------------------------------------------------------------------------------------------------------------
 
-  const Double_t theo_wp = 4395;   const Double_t theo_wp_unc = 48;
-  const Double_t theo_wm = 2886;   const Double_t theo_wm_unc = 31;
-  const Double_t theo_w  = 7280;   const Double_t theo_w_unc  = 78;
-  const Double_t theo_z  = 683;   const Double_t theo_z_unc  = 9.4;
-  const Double_t theo_wr = 1.52291;   const Double_t theo_wr_unc = 0.00160863;
-  const Double_t theo_wpr= 6.43613;   const Double_t theo_wpr_unc= 0.0599;
-  const Double_t theo_wmr= 4.22625;   const Double_t theo_wmr_unc= 0.04899;
-  const Double_t theo_wz = 10.66238;  const Double_t theo_wz_unc = 0.07738;
+  const Double_t theo_wp = 4394;   const Double_t theo_wp_unc = 66;
+  const Double_t theo_wm = 2884;   const Double_t theo_wm_unc = 44;
+  const Double_t theo_w  = 7279;   const Double_t theo_w_unc  = 110;
+  const Double_t theo_z  = 667;   const Double_t theo_z_unc  = 13;
+  const Double_t theo_wr = 1.523;   const Double_t theo_wr_unc = 0.004;
+  const Double_t theo_wpr= 6.58;   const Double_t theo_wpr_unc= 0.08;
+  const Double_t theo_wmr= 4.32;   const Double_t theo_wmr_unc= 0.06;
+  const Double_t theo_wz = 10.9;  const Double_t theo_wz_unc = 0.14;
 
-  const Double_t th_wp = 4395*0.0042;   
-  const Double_t th_wm = 2886*0.0095;  
-  const Double_t th_w  = 7280*0.0051;  
-  const Double_t th_z  = 683*0.0048;   
-  const Double_t th_wr = 1.52291*0.013;  
-  const Double_t th_wpr= 6.43613*0.0086;  
-  const Double_t th_wmr= 4.22625*0.0079;   
-  const Double_t th_wz = 10.66238*0.0050;
+  const Double_t th_wp = 4394*0.0042;   
+  const Double_t th_wm = 2884*0.0095;  
+  const Double_t th_w  = 7279*0.0051;  
+  const Double_t th_z  = 667*0.0048;   
+  const Double_t th_wr = 1.523*0.013;  
+  const Double_t th_wpr= 6.68*0.0086;  
+  const Double_t th_wmr= 4.32*0.0079;   
+  const Double_t th_wz = 10.9*0.0050;
 
   // input parameter
   double blind=1;

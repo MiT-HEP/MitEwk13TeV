@@ -31,23 +31,23 @@ void xsecSummary_muon()
   //--------------------------------------------------------------------------------------------------------------
  
   
-  const Double_t theo_wp = 11571;   const Double_t theo_wp_unc = 28;
-  const Double_t theo_wm = 8550;   const Double_t theo_wm_unc = 20;
-  const Double_t theo_w  = 20121;   const Double_t theo_w_unc  = 47;
-  const Double_t theo_z  = 1944;   const Double_t theo_z_unc  = 14;
-  const Double_t theo_wr = 1.35322;   const Double_t theo_wr_unc = 0.001;
-  const Double_t theo_wpr= 5.95535;   const Double_t theo_wpr_unc= 0.005;
-  const Double_t theo_wmr= 4.4006;   const Double_t theo_wmr_unc= 0.0033;
-  const Double_t theo_wz = 10.35541;  const Double_t theo_wz_unc = 0.006;
+  const Double_t theo_wp = 11603;   const Double_t theo_wp_unc = 199;
+  const Double_t theo_wm = 8549;   const Double_t theo_wm_unc = 144;
+  const Double_t theo_w  = 20152;   const Double_t theo_w_unc  = 341;
+  const Double_t theo_z  = 1933;   const Double_t theo_z_unc  = 35;
+  const Double_t theo_wr = 1.357;   const Double_t theo_wr_unc = 0.007;
+  const Double_t theo_wpr= 6.00;   const Double_t theo_wpr_unc= 0.04;
+  const Double_t theo_wmr= 4.42;   const Double_t theo_wmr_unc= 0.03;
+  const Double_t theo_wz = 10.43;  const Double_t theo_wz_unc = 0.07;
 
-  const Double_t th_wp = 11571*0.0063;  
-  const Double_t th_wm = 8550*0.0058;  
-  const Double_t th_w  = 20121*0.0061;  
-  const Double_t th_z  = 1944*0.0049;  
-  const Double_t th_wr = 1.35322*0.0028;  
-  const Double_t th_wpr= 5.95535*0.0057;  
-  const Double_t th_wmr= 4.4006*0.0060; 
-  const Double_t th_wz = 10.35541*0.0057; 
+  const Double_t th_wp = 11601*0.0063;  
+  const Double_t th_wm = 8549*0.0058;  
+  const Double_t th_w  = 20152*0.0061;  
+  const Double_t th_z  = 1933*0.0049;  
+  const Double_t th_wr = 1.357*0.0028;  
+  const Double_t th_wpr= 6.00*0.0057;  
+  const Double_t th_wmr= 4.42*0.0060; 
+  const Double_t th_wz = 10.43*0.0057; 
 
   // input parameter
   double blind=1;
