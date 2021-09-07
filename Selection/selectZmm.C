@@ -308,6 +308,14 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       Double_t puWeight=0, puWeightUp=0,  puWeightDown=0;
       Double_t nsel=0, nselvar=0;
 
+      TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep3 =new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep4 =new TLorentzVector(0,0,0,0);
+      TLorentzVector *gph=new TLorentzVector(0,0,0,0);
+      
+
       //
       // loop over events
       //
@@ -316,10 +324,9 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
       UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
       UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
       
-      // for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
-      for(UInt_t ientry=697726; ientry < 697726+10; ientry++) {
+      for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
         infoBr->GetEntry(ientry);
-        cout << ientry << endl;
+        //cout << ientry << endl;
         int printIndex = (int)(eventTree->GetEntries()*0.01);
         if(ientry%printIndex==0) cout << "Processing event " << ientry << ". " << (int)(100*(ientry/(double)eventTree->GetEntries())) << " percent done with this file." << endl;
         
@@ -537,17 +544,12 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
         nselvar+=isData ? 1 : weight*weight;
         // Int_t glepq1=-99;
         // Int_t glepq2=-99;
-        TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
-        TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-        TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-        TLorentzVector *gph=new TLorentzVector(0,0,0,0);
         Bool_t hasGenMatch = kFALSE;
-        // cout << "test F" << endl;
         if(isRecoil && hasGen) {
-          // cout << "what" << endl;
-          toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+	  toolbox::fillGenBorn(genPartArr, BOSON_ID, gvec, glep3, glep4, glep1, glep2);
+
           // Test this mass cut
-          if(gvec->M()<MASS_LOW || gvec->M()>MASS_HIGH) continue;
+          //if(gvec->M()<MASS_LOW || gvec->M()>MASS_HIGH) continue;
           
           Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTag.Eta(), vTag.Phi(), glep1->Eta(), glep1->Phi())<0.5) ||
                 ((glep2) && toolbox::deltaR(vTag.Eta(), vTag.Phi(), glep2->Eta(), glep2->Phi())<0.5) );
@@ -565,18 +567,11 @@ std::cout << "is 13 TeV " << is13TeV << std::endl;
           genlep1=new TLorentzVector(0,0,0,0);
           genlep2=new TLorentzVector(0,0,0,0);
           genlep1->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-          genlep2->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-
-          delete gvec;
-          // delete glep1;
-          // delete glep2;
-          // glep1=0; glep2=0; gvec=0;
-          
+          genlep2->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());        
           if(match1 && match2) {
             hasGenMatch = kTRUE;
           }
         }
-        // cout << "testG " << endl;
         if (hasGen) {
           genMuonPt1 = toolbox::getGenLep(genPartArr, vTag);
           genMuonPt2 = toolbox::getGenLep(genPartArr, vProbe);

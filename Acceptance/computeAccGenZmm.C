@@ -111,8 +111,8 @@ void computeAccGenZmm(const TString conf      , // input file
   
   TString sqrts = "13TeV";
   if(conf.Contains("5")) sqrts = "5TeV";
-  TFile *rf = new TFile("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction/Z_pT/zPt_Normal"+sqrts+".root");
-  TH1D *hh_diff = (TH1D*)rf->Get("hZptRatio");
+  //TFile *rf = new TFile("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/SignalExtraction/Z_pT/zPt_Normal"+sqrts+".root");
+  //TH1D *hh_diff = (TH1D*)rf->Get("hZptRatio");
   //
   // loop through files
   //
@@ -148,21 +148,21 @@ void computeAccGenZmm(const TString conf      , // input file
     //
     // loop over events
     //      
-    for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    //for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+    for(UInt_t ientry=0; ientry<4000000; ientry++) {
       if(ientry%100000==0) cout << "Processing event " << ientry << ". " << (double)ientry/(double)eventTree->GetEntries()*100 << " percent done with this file." << endl;
       
       genBr->GetEntry(ientry);
       genPartArr->Clear(); partBr->GetEntry(ientry);
           
       Int_t lepq1=-99, lepq2=-99;
-      
       if (fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue; 
       toolbox::fillGenBorn(genPartArr, BOSON_ID, vec, lep1, lep2, lep3, lep4);
-      
+
       double ptWeight = 1;
-      for(int i = 0; i <= hh_diff->GetNbinsX();++i){
-        if(vec->Pt() > hh_diff->GetBinLowEdge(i) && vec->Pt() < hh_diff->GetBinLowEdge(i+1)){ ptWeight = hh_diff->GetBinContent(i); break;}
-      }
+      //for(int i = 0; i <= hh_diff->GetNbinsX();++i){
+      //  if(vec->Pt() > hh_diff->GetBinLowEdge(i) && vec->Pt() < hh_diff->GetBinLowEdge(i+1)){ ptWeight = hh_diff->GetBinContent(i); break;}
+      //}
       
       if(doDressed){
         for(Int_t i=0; i<genPartArr->GetEntriesFast(); i++) {
@@ -173,9 +173,9 @@ void computeAccGenZmm(const TString conf      , // input file
           if(toolbox::deltaR(gph->Eta(),gph->Phi(),lep4->Eta(),lep4->Phi())<0.1)  lep4->operator+=(*gph);
         }
       }
-      
+
       if(vec->M()<MASS_LOW || vec->M()>MASS_HIGH) continue;
-    
+      
       Double_t weight=gen->weight;
       nEvtsv[ifile]+=weight;
       // nEvtsv[ifile]+=weight*ptWeight;
@@ -207,7 +207,7 @@ void computeAccGenZmm(const TString conf      , // input file
 
       if(dilep.M()<MASS_LOW || dilep.M()>MASS_HIGH) continue;
       //std::cout << dilep.M() << " " << vec->M() << std::endl;
-      
+      //if(dilep.Pt()>25 || dilep.Pt()<2.0) continue;
       Bool_t isB1 = (fabs(lep1->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
       Bool_t isB2 = (fabs(lep2->Eta())<ETA_BARREL) ? kTRUE : kFALSE;
       

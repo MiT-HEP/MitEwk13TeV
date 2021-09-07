@@ -51,7 +51,7 @@
 
 void selectWm(const TString conf       ="wm.conf", // input file
               const TString outputDir  =".",  // output directory
-	            const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
+	      const Bool_t  doScaleCorr=0,   // apply energy scale corrections?
               const Bool_t  doPU       =0,
               const Bool_t  is13TeV    =1,
               const Int_t   NSEC       =1,
@@ -65,8 +65,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
   const Double_t PT_CUT    = 20;
   const Double_t ETA_CUT   = 2.4;
   const Double_t MUON_MASS = 0.105658369;
-  const Double_t ELE_MASS  = 0.000511;
-
+  const Double_t ELE_MASS  = 0.00051;
   const Double_t VETO_PT   = 10;
   const Double_t VETO_ETA  = 2.4;
 
@@ -79,7 +78,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
   PrefiringEfficiency pfire( prefireFileName.Data() , (is13TeV ? "2017H" : "2017G"));
 
-  const TString corrFiles = "/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/MitEwk13TeV/EleScale/Run2017_LowPU_v2";
+  const TString corrFiles = "/afs/cern.ch/work/a/arapyan/Run2/test/CMSSW_10_2_13/src/MitEwk13TeV/EleScale/Run2017_LowPU_v2";
   EnergyScaleCorrection eleCorr( corrFiles.Data(), EnergyScaleCorrection::ECALELF); 
   
   // load pileup reweighting file
@@ -275,7 +274,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
     outTree->Branch("nValidHits", &nValidHits, "nValidHits/i");   // number of valid muon hits of muon 
     outTree->Branch("typeBits",   &typeBits,   "typeBits/i");     // number of valid muon hits of muon 
     
-  TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
+    TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
@@ -328,13 +327,13 @@ void selectWm(const TString conf       ="wm.conf", // input file
       UInt_t IBEGIN = frac*ITH*eventTree->GetEntries();
       UInt_t IEND = frac*(ITH+1)*eventTree->GetEntries();
       cout << "start, end " << IBEGIN << " " << IEND << endl;
-    //
-    // loop over events
-    //
-    Double_t nsel=0, nselvar=0;
-    for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
-    // for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
-    // for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
+      //
+      // loop over events
+      //
+      Double_t nsel=0, nselvar=0;
+      for(UInt_t ientry=IBEGIN; ientry < IEND; ientry++) {
+	// for(UInt_t ientry=0; ientry<eventTree->GetEntries(); ientry++) {
+	// for(UInt_t ientry=0; ientry<(uint)(0.001*eventTree->GetEntries()); ientry++) {
         infoBr->GetEntry(ientry);
         
         int printIndex = (int)(eventTree->GetEntries()*0.01);
@@ -345,44 +344,44 @@ void selectWm(const TString conf       ="wm.conf", // input file
         Double_t weightDown=xsec;
 
         if(hasGen) {
-           genPartArr->Clear();
-           genBr->GetEntry(ientry);
-           genPartBr->GetEntry(ientry);
+	  genPartArr->Clear();
+	  genBr->GetEntry(ientry);
+	  genPartBr->GetEntry(ientry);
            
-           puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
-           puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
-           puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
-           hGenWeights->Fill(0.0,gen->weight);
-           weight*=gen->weight*puWeight;
-           weightUp*=gen->weight*puWeightUp;
-           weightDown*=gen->weight*puWeightDown;
+	  puWeight = doPU ? h_rw->GetBinContent(h_rw->FindBin(info->nPUmean)) : 1.;
+	  puWeightUp = doPU ? h_rw_up->GetBinContent(h_rw_up->FindBin(info->nPUmean)) : 1.;
+	  puWeightDown = doPU ? h_rw_down->GetBinContent(h_rw_down->FindBin(info->nPUmean)) : 1.;
+	  hGenWeights->Fill(0.0,gen->weight);
+	  weight*=gen->weight*puWeight;
+	  weightUp*=gen->weight*puWeightUp;
+	  weightDown*=gen->weight*puWeightDown;
         }else {
           hGenWeights->Fill(0.0,1.0);
         }
         scArr->Clear();
         scBr->GetEntry(ientry);
         
-       /* Double_t weight=1;
-        if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
-	if(hasGen) {
-	  genPartArr->Clear();
-	  genBr->GetEntry(ientry);
-          genPartBr->GetEntry(ientry);
-	  weight*=gen->weight;
-	}*/
+	/* Double_t weight=1;
+	   if(xsec>0 && totalWeight>0) weight = xsec/totalWeight;
+	   if(hasGen) {
+	   genPartArr->Clear();
+	   genBr->GetEntry(ientry);
+	   genPartBr->GetEntry(ientry);
+	   weight*=gen->weight;
+	   }*/
         
-	    // veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
+	// veto w -> xv decays for signal and w -> mv for bacground samples (needed for inclusive WToLNu sample)
         // std::cout << "isWrongFlavor " << isWrongFlavor << " isSignal " << isSignal << " hasGen " << hasGen << " flav " <<  fabs(toolbox::flavor(genPartArr, BOSON_ID)) << std::endl;
         if (isWrongFlavor && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))==LEPTON_ID) continue;
         else if (isSignal && hasGen && fabs(toolbox::flavor(genPartArr, BOSON_ID))!=LEPTON_ID) continue;
         // std::cout << "veto1" << std::endl;
-	    // check for certified lumi (if applicable)
+	// check for certified lumi (if applicable)
         baconhep::RunLumiRangeMap::RunLumiPairType rl(info->runNum, info->lumiSec);      
         if(hasJSON && !rlrm.hasRunLumi(rl)) continue;  
-         // std::cout << "veto2" << std::endl;
+	// std::cout << "veto2" << std::endl;
         // trigger requirement               
         if (!isMuonTrigger(triggerMenu, info->triggerBits,isData,is13TeV)) continue;
-      // std::cout << "veto3" << std::endl;
+	// std::cout << "veto3" << std::endl;
         // good vertex requirement
         if(!(info->hasGoodPV)) continue;
         // std::cout << "veto4" << std::endl;
@@ -470,19 +469,19 @@ void selectWm(const TString conf       ="wm.conf", // input file
 	if(passSel) {
 	  /******** We have a W candidate! HURRAY! ********/
 	  nsel+=weight;
-    nselvar+=weight*weight;
+	  nselvar+=weight*weight;
         
-    if(!isData){
-      pfire.setObjects(scArr,jetArr);
-      pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
-      pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
-      pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
-    }
+	  if(!isData){
+	    pfire.setObjects(scArr,jetArr);
+	    pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
+	    pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
+	    pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
+	  }
 
-    // apply scale and resolution corrections to MC
-    Double_t goodMuonpt_corr = goodMuon->pt;
-    if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
-    goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
+	  // apply scale and resolution corrections to MC
+	  Double_t goodMuonpt_corr = goodMuon->pt;
+	  if(doScaleCorr && snamev[isam].CompareTo("data",TString::kIgnoreCase)!=0)
+	    goodMuonpt_corr = gRandom->Gaus(goodMuon->pt*getMuScaleCorr(goodMuon->eta,0),getMuResCorr(goodMuon->eta,0));
 
 	  TLorentzVector vLep; 
 	  vLep.SetPtEtaPhiM(goodMuonpt_corr, goodMuon->eta, goodMuon->phi, MUON_MASS); 
@@ -514,101 +513,99 @@ void selectWm(const TString conf       ="wm.conf", // input file
 	  u1        = -999;
 	  u2        = -999;
 	  tkU1      = -999;
-    tkU2      = -999;
+	  tkU2      = -999;
 	  mvaU1     = -999;
-    mvaU2     = -999;
-    id_1      = -999;
-    id_2      = -999;
-    x_1       = -999;
-    x_2       = -999;
-    xPDF_1    = -999;
-    xPDF_2    = -999;
-    scalePDF  = -999;
-    weightPDF = -999;
+	  mvaU2     = -999;
+	  id_1      = -999;
+	  id_2      = -999;
+	  x_1       = -999;
+	  x_2       = -999;
+	  xPDF_1    = -999;
+	  xPDF_2    = -999;
+	  scalePDF  = -999;
+	  weightPDF = -999;
 
-    genMuonPt = 0;
-    // if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
+	  genMuonPt = 0;
+	  // if(hasGen) genMuonPt = toolbox::getGenLep(genPartArr, vLep);
 
 	  if(isRecoil && hasGen) {
-      Int_t glepq1=-99;
-      Int_t glepq2=-99;
+	    Int_t glepq1=-99;
+	    Int_t glepq2=-99;
 	    TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
-      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-	    toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-      if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)){ // DY only
-          toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
-      }
-   
-      TLorentzVector tvec=*glep1+*glep2;
-      genV=new TLorentzVector(0,0,0,0);
-      genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
-      genVPt   = tvec.Pt();
-      genVPhi  = tvec.Phi();
-      genVy    = tvec.Rapidity();
-      genVMass = tvec.M();
-      
-
-      if (gvec && glep1) {
-        genLep    = new TLorentzVector(0,0,0,0);
-        if(toolbox::flavor(genPartArr, BOSON_ID)*glepq1<0){
-          genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-          genNu->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-        }
-        if(toolbox::flavor(genPartArr, BOSON_ID)*glepq2<0){
-          genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-          genNu->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-        }
-        genLepPt  = genLep->Pt();
-        genLepPhi = genLep->Phi();
+	    TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *glepB1=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *glepB2=new TLorentzVector(0,0,0,0);
+	    if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)) // DY only
+	      toolbox::fillGenBorn(genPartArr, 23, gvec, glepB1, glepB2,glep1,glep2);
+	    else
+	      toolbox::fillGenBorn(genPartArr, BOSON_ID, gvec, glepB1, glepB2,glep1,glep2);
+	     
+	    TLorentzVector tvec=*glep1+*glep2;
+	    genV=new TLorentzVector(0,0,0,0);
+	    genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+	    genVPt   = tvec.Pt();
+	    genVPhi  = tvec.Phi();
+	    genVy    = tvec.Rapidity();
+	    genVMass = tvec.M();
+	    if (gvec && glep1) {
+	      if(toolbox::flavor(genPartArr, BOSON_ID)<0){//means it's a W+ and charged lepton is anti-particle
+		genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+		genNu->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+	      }
+	      if(toolbox::flavor(genPartArr, BOSON_ID)>0){ //means it's a W- and charged lepton is particle
+		genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+		genNu->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+	      }
+	      genLepPt  = genLep->Pt();
+	      genLepPhi = genLep->Phi();
         
-        genNuPt  = genNu->Pt();
-        genNuPhi = genNu->Phi();
+	      genNuPt  = genNu->Pt();
+	      genNuPhi = genNu->Phi();
 
+  	      TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
+	      TVector2 vLepPt(vLep.Px(),vLep.Py());
+
+	      TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+	      TVector2 vU = -1.0*(vMet+vLepPt);
+	      u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+	      u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
+	      TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
+	      TVector2 vTkU = -1.0*(vTkMet+vLepPt);
+	      tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+	      tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+
+	      TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
+	      TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
+	      mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+	      mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
+        
+	      TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	      TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
+	      puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
+	      puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
   
-        TVector2 vWPt((genVPt)*cos(genVPhi),(genVPt)*sin(genVPhi));
-        TVector2 vLepPt(vLep.Px(),vLep.Py());
+	    }
+	    id_1      = gen->id_1;
+	    id_2      = gen->id_2;
+	    x_1       = gen->x_1;
+	    x_2       = gen->x_2;
+	    xPDF_1    = gen->xPDF_1;
+	    xPDF_2    = gen->xPDF_2;
+	    scalePDF  = gen->scalePDF;
+	    weightPDF = gen->weight;
 
-        TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
-        TVector2 vU = -1.0*(vMet+vLepPt);
-        u1 = ((vWPt.Px())*(vU.Px()) + (vWPt.Py())*(vU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        u2 = ((vWPt.Px())*(vU.Py()) - (vWPt.Py())*(vU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-        
-        TVector2 vTkMet((info->trkMET)*cos(info->trkMETphi), (info->trkMET)*sin(info->trkMETphi));
-        TVector2 vTkU = -1.0*(vTkMet+vLepPt);
-        tkU1 = ((vWPt.Px())*(vTkU.Px()) + (vWPt.Py())*(vTkU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        tkU2 = ((vWPt.Px())*(vTkU.Py()) - (vWPt.Py())*(vTkU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-
-        TVector2 vMvaMet((info->mvaMET)*cos(info->mvaMETphi), (info->mvaMET)*sin(info->mvaMETphi));
-        TVector2 vMvaU = -1.0*(vMvaMet+vLepPt);
-        mvaU1 = ((vWPt.Px())*(vMvaU.Px()) + (vWPt.Py())*(vMvaU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        mvaU2 = ((vWPt.Px())*(vMvaU.Py()) - (vWPt.Py())*(vMvaU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-        
-        TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-        TVector2 vPuppiU = -1.0*(vPuppiMet+vLepPt);
-        puppiU1 = ((vWPt.Px())*(vPuppiU.Px()) + (vWPt.Py())*(vPuppiU.Py()))/(genVPt);  // u1 = (pT . u)/|pT|
-        puppiU2 = ((vWPt.Px())*(vPuppiU.Py()) - (vWPt.Py())*(vPuppiU.Px()))/(genVPt);  // u2 = (pT x u)/|pT|
-  
-      }
-      id_1      = gen->id_1;
-      id_2      = gen->id_2;
-      x_1       = gen->x_1;
-      x_2       = gen->x_2;
-      xPDF_1    = gen->xPDF_1;
-      xPDF_2    = gen->xPDF_2;
-      scalePDF  = gen->scalePDF;
-      weightPDF = gen->weight;
-
-      // Clean up
-      delete gvec;
-      delete glep1;
-      delete glep2;
-      gvec=0; glep1=0; glep2=0;
+	    // Clean up
+	    delete gvec;
+	    delete glep1;
+	    delete glep2;
+	    gvec=0; glep1=0; glep2=0;
 	  }
 	  scale1fb = weight;
-    scale1fbUp = weightUp;
-    scale1fbDown = weightDown;
-    met	   = info->pfMETC;
+	  scale1fbUp = weightUp;
+	  scale1fbDown = weightDown;
+	  met	   = info->pfMETC;
 	  metPhi   = info->pfMETCphi;
 	  sumEt    = 0;
 	  mt       = sqrt( 2.0 * (vLep.Pt()) * (info->pfMETC) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->pfMETCphi))) );
@@ -620,8 +617,8 @@ void selectWm(const TString conf       ="wm.conf", // input file
 	  mvaMetPhi = info->mvaMETphi;
 	  mvaSumEt  = 0;
 	  mvaMt     = sqrt( 2.0 * (vLep.Pt()) * (info->mvaMET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->mvaMETphi))) );
-    puppiMet = info->puppET;
-    puppiMetPhi = info->puppETphi;
+	  puppiMet = info->puppET;
+	  puppiMetPhi = info->puppETphi;
 	  puppiSumEt  = 0;
 	  puppiMt     = sqrt( 2.0 * (vLep.Pt()) * (info->puppET) * (1.0-cos(toolbox::deltaPhi(vLep.Phi(),info->puppETphi))) );
 	  q        = goodMuon->q;
@@ -635,7 +632,7 @@ void selectWm(const TString conf       ="wm.conf", // input file
 	  pfGamIso   = goodMuon->gammaIso;
 	  pfNeuIso   = goodMuon->neuHadIso;
 	  pfCombIso  = goodMuon->chHadIso + TMath::Max(goodMuon->neuHadIso + goodMuon->gammaIso -
-						   0.5*(goodMuon->puIso),Double_t(0));
+						       0.5*(goodMuon->puIso),Double_t(0));
 	  d0         = goodMuon->d0;
 	  dz         = goodMuon->dz;
 	  muNchi2    = goodMuon->muNchi2;
@@ -649,9 +646,9 @@ void selectWm(const TString conf       ="wm.conf", // input file
 	  delete genLep;
 	  genV=0, genLep=0, lep=0;
           // reset everything to 1
-      prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
-      prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
-      prefireWeight=1; prefireUp    =1; prefireDown    =1;
+	  prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+	  prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
+	  prefireWeight=1; prefireUp    =1; prefireDown    =1;
         }
       }
       delete infile;

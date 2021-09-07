@@ -54,13 +54,13 @@
 //=== MAIN MACRO ================================================================================================= 
 
 void selectWe(const TString  conf        ="we.conf", // input file
-const TString  outputDir   =".",  // output directory
-const Bool_t   doScaleCorr =0,   // apply energy scale corrections?
-const Int_t    sigma       =0,
-const Bool_t   doPU        =0,
-const Bool_t   is13TeV     =1,
-const Int_t    NSEC        =1,
-const Int_t    ITH         =0 ) {
+	      const TString  outputDir   =".",  // output directory
+	      const Bool_t   doScaleCorr =0,   // apply energy scale corrections?
+	      const Int_t    sigma       =0,
+	      const Bool_t   doPU        =0,
+	      const Bool_t   is13TeV     =1,
+	      const Int_t    NSEC        =1,
+	      const Int_t    ITH         =0 ) {
   gBenchmark->Start("selectWe");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ const Int_t    ITH         =0 ) {
   const Int_t LEPTON_ID = 11;
 
   // load trigger menu
-  const baconhep::TTrigger triggerMenu("/afs/cern.ch/work/s/sabrandt/public/SM/LowPU/CMSSW_9_4_12/src/BaconAna/DataFormats/data/HLT_50nsGRun");
+  const baconhep::TTrigger triggerMenu("../../BaconAna/DataFormats/data/HLT_50nsGRun");
 
   const TString prefireFileName = "../Utils/All2017Gand2017HPrefiringMaps.root";
   PrefiringEfficiency pfire( prefireFileName.Data() , (is13TeV ? "2017H" : "2017G"));
@@ -143,6 +143,7 @@ const Int_t    ITH         =0 ) {
   for(UInt_t isam=0; isam<samplev.size(); isam++) {
     // Assume data sample is first sample in .conf file
     // If sample is empty (i.e. contains no ntuple files), skip to next sample
+
     Bool_t isData=kFALSE;
     if(isam==0 && !hasData) continue;
     else if (isam==0) isData=kTRUE;
@@ -191,10 +192,12 @@ const Int_t    ITH         =0 ) {
     outTree->Branch("pfCombIso",  &pfCombIso,  "pfCombIso/F");   // PF combined isolation of electron
     outTree->Branch("sc",        "TLorentzVector", &sc);         // supercluster 4-vector
 
+
     TH1D* hGenWeights = new TH1D("hGenWeights","hGenWeights",10,-10.,10.);
     //
     // loop through files
     //
+
     const UInt_t nfiles = samp->fnamev.size();
     for(UInt_t ifile=0; ifile<nfiles; ifile++) {
       // Read input file and get the TTrees
@@ -208,7 +211,7 @@ const Int_t    ITH         =0 ) {
         hasJSON = kTRUE;
         rlrm.addJSONFile(samp->jsonv[ifile].Data()); 
       }
-
+    
       eventTree = (TTree*)infile->Get("Events");
       assert(eventTree);
       Bool_t hasJet = eventTree->GetBranchStatus("AK4");
@@ -377,25 +380,27 @@ const Int_t    ITH         =0 ) {
             TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
             TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-            toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
-            if(snamev[isam].Contains("zxx")){ // DY only
-              toolbox::fillGen(genPartArr, 23, gvec, glep1, glep2,&glepq1,&glepq2,1);
-            }
-
+	    TLorentzVector *glepB1=new TLorentzVector(0,0,0,0);
+	    TLorentzVector *glepB2=new TLorentzVector(0,0,0,0);
+	    if((snamev[isam].CompareTo("zxx",TString::kIgnoreCase)==0)) // DY only
+	      toolbox::fillGenBorn(genPartArr, 23, gvec, glepB1, glepB2,glep1,glep2);
+	    else
+	      toolbox::fillGenBorn(genPartArr, BOSON_ID, gvec, glepB1, glepB2,glep1,glep2);
+	   
             TLorentzVector tvec=*glep1+*glep2;
             genV=new TLorentzVector(0,0,0,0);
             genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
             if (gvec && glep1) {
-              genLep    = new TLorentzVector(0,0,0,0);
-              if(toolbox::flavor(genPartArr, BOSON_ID)*glepq1<0){
-                genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-                genNu->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-              }
-              if(toolbox::flavor(genPartArr, BOSON_ID)*glepq2<0){
-                genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-                genNu->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-              }
-            }
+	      if(toolbox::flavor(genPartArr, BOSON_ID)<0){//means it's a W+ and charged lepton is anti-particle
+		genLep->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+		genNu->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+	      }
+	      if(toolbox::flavor(genPartArr, BOSON_ID)>0){ //means it's a W- and charged lepton is particle
+		genLep->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+		genNu->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
+	      }
+	      
+	    }
 
             delete gvec;
             delete glep1;
@@ -417,13 +422,13 @@ const Int_t    ITH         =0 ) {
           ///// electron specific /////
           sc       = &vSC;
           pfCombIso = goodEle->chHadIso + TMath::Max(goodEle->neuHadIso + goodEle->gammaIso - 
-          (info->rhoIso)*getEffAreaEl(goodEle->eta), 0.);
+						     (info->rhoIso)*getEffAreaEl(goodEle->eta), 0.);
 
           outTree->Fill();
           delete genV; 
           delete genLep;
           delete genNu;
-          genV=0, genLep=0, lep=0, genNu=0, sc=0;
+          genV=0, genLep=0, lep=0, lep_raw=0,  genNu=0, sc=0;
           prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
           prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
           prefireWeight=1; prefireUp    =1; prefireDown    =1;
@@ -462,7 +467,7 @@ const Int_t    ITH         =0 ) {
   cout << "  pT > " << PT_CUT << endl;
   cout << "  |eta| < " << ETA_CUT << endl;
   if(doScaleCorr)
-  cout << "  *** Scale corrections applied ***" << endl;
+    cout << "  *** Scale corrections applied ***" << endl;
   cout << endl;
 
   cout << endl;

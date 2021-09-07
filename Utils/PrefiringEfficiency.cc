@@ -64,6 +64,7 @@ public:
     for(Int_t ij=0; ij<jetArr->GetEntriesFast(); ij++) {
       const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ij]);
       if(!etaCut(jet->eta)) continue;
+      if(!((1-jet->chEmFrac - jet->neuEmFrac - jet->chHadFrac - jet->neuHadFrac)<0.50)) continue;
       float eff = mapJets.getCorr(jet->eta, jet->pt);
       float unc = max(mapJets.getErr(jet->eta, jet->pt), (float)(eff*0.2));
       if( oob( eff ) ) continue;
@@ -107,6 +108,7 @@ public:
     for(int ij=0; ij < njets; ij++) {
       const baconhep::TJet *jet = (baconhep::TJet*)((*jetArr)[ij]);
       if(!etaCut(jet->eta)) continue;
+      if(!((1-jet->chEmFrac - jet->neuEmFrac - jet->chHadFrac - jet->neuHadFrac)<0.50)) continue;
       float effJet = mapJets.getCorr(jet->eta, jet->pt);
       float uncJet = max(mapJets.getErr( jet->eta, jet->pt), (float)(effJet*0.2) );
       if( oob( effJet ) ) continue;

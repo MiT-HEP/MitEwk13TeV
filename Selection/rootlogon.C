@@ -14,7 +14,7 @@
     
     gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libBaconAnaDataFormats.so");
     
-    gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C+");
+    gROOT->Macro("$CMSSW_BASE/src/BaconAna/macros/setRootEnv.C++");
     // gSystem->SetMakeSharedLib(cmd);
     //#endif
   

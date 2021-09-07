@@ -275,6 +275,14 @@ void selectZee(const TString conf        ="zee.conf", // input file
       const Double_t xsec = samp->xsecv[ifile];
       Double_t puWeight=0, puWeightUp=0, puWeightDown=0;
       
+      TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep3 =new TLorentzVector(0,0,0,0);
+      TLorentzVector *glep4 =new TLorentzVector(0,0,0,0);
+      TLorentzVector *gph=new TLorentzVector(0,0,0,0);
+
+      
       //
       // loop over events
       //
@@ -402,11 +410,11 @@ void selectZee(const TString conf        ="zee.conf", // input file
           El_Pt = vTag.Pt();
 
           if( El_Pt > Pt1 ) {
-              Pt2=Pt1;
-              Pt1=El_Pt;
-            } else if ( El_Pt > Pt2 && El_Pt < Pt1 ) {
-              Pt2=El_Pt;
-            }
+	    Pt2=Pt1;
+	    Pt1=El_Pt;
+	  } else if ( El_Pt > Pt2 && El_Pt < Pt1 ) {
+	    Pt2=El_Pt;
+	  }
 
           if(!isEleTriggerObj(triggerMenu, tag->hltMatchBits, kFALSE, isData, is13TeV)) continue;
           if(El_Pt<tagPt) continue;
@@ -516,173 +524,165 @@ void selectZee(const TString conf        ="zee.conf", // input file
   
               } else {//MC
 
-              float eleProbeR9Prime = eleProbe->r9; // no r9 after 2016
+		float eleProbeR9Prime = eleProbe->r9; // no r9 after 2016
 
-              eleProbeSmear   = ec.smearingSigma(info->runNum, eTregress   , eleProbeAbsEta  , eleProbeR9Prime, 12, sigma, 0.);
-              eleProbeSCSmear = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, sigma, 0.);
+		eleProbeSmear   = ec.smearingSigma(info->runNum, eTregress   , eleProbeAbsEta  , eleProbeR9Prime, 12, sigma, 0.);
+		eleProbeSCSmear = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, sigma, 0.);
               
-              float eleProbeSmearEP = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, 1., 0.);
-              float eleProbeSmearEM = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, -1., 0.);
+		float eleProbeSmearEP = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, 1., 0.);
+		float eleProbeSmearEM = ec.smearingSigma(info->runNum, eTregress, eleProbeAbsEta, eleProbeR9Prime, 12, -1., 0.);
 
-              float eleProbeSCSmearEP = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, 1., 0.);
-              float eleProbeSCSmearEM = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, -1., 0.);
+		float eleProbeSCSmearEP = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, 1., 0.);
+		float eleProbeSCSmearEM = ec.smearingSigma(info->runNum, eleProbeSCEt, eleProbeSCAbsEta, eleProbeR9Prime, 12, -1., 0.);
 
-              (vEleProbe) *= (1.+ eleProbeSmear*eleProbeRandom);
-              (vEleProbeSC) *= 1. + eleProbeSCSmear * eleProbeSCRandom;
+		(vEleProbe) *= (1.+ eleProbeSmear*eleProbeRandom);
+		(vEleProbeSC) *= 1. + eleProbeSCSmear * eleProbeSCRandom;
 
-              eleProbeError = eleProbeRandom * std::hypot(eleProbeSmearEP - eleProbeSmear, eleProbeSmearEM - eleProbeSmear);
-              eleProbeSCError = eleProbeSCRandom * std::hypot(eleProbeSCSmearEP - eleProbeSCSmear, eleProbeSCSmearEM - eleProbeSCSmear);
-            }
-          }
-          probeEcalEnergy_tmp = probeEcalE;
-          El_Pt = vEleProbe.Pt();
-          probeErrorfinal = eleProbeError;
-          probeSCErrorfinal = eleProbeSCError;
-        }else{
-          El_Pt = vProbe.Pt();
-          // if(fabs(vProbe.Eta())>=ECAL_GAP_LOW && fabs(vProbe.Eta())<=ECAL_GAP_HIGH) continue;
-          probeErrorfinal = probeError;
-          probeSCErrorfinal = probeError;
-        }
-        if(El_Pt < PT_CUT) continue;
-        if(passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-        if(passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) continue;
-        if(passID&&!eleProbe) continue;
-        if(!passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
-        if(!passID&&!eleProbe&&El_Pt<probePt) continue;
-        if(!passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
+		eleProbeError = eleProbeRandom * std::hypot(eleProbeSmearEP - eleProbeSmear, eleProbeSmearEM - eleProbeSmear);
+		eleProbeSCError = eleProbeSCRandom * std::hypot(eleProbeSCSmearEP - eleProbeSCSmear, eleProbeSCSmearEM - eleProbeSCSmear);
+	      }
+	    }
+	    probeEcalEnergy_tmp = probeEcalE;
+	    El_Pt = vEleProbe.Pt();
+	    probeErrorfinal = eleProbeError;
+	    probeSCErrorfinal = eleProbeSCError;
+	  }else{
+	    El_Pt = vProbe.Pt();
+	    // if(fabs(vProbe.Eta())>=ECAL_GAP_LOW && fabs(vProbe.Eta())<=ECAL_GAP_HIGH) continue;
+	    probeErrorfinal = probeError;
+	    probeSCErrorfinal = probeError;
+	  }
+	  if(El_Pt < PT_CUT) continue;
+	  if(passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) continue;
+	  if(passID&&!eleProbe) continue;
+	  if(!passID&&eleProbe&&!passEleMediumID(eleProbe,vEleProbe,info->rhoIso)&&El_Pt<probePt) continue;
+	  if(!passID&&!eleProbe&&El_Pt<probePt) continue;
+	  if(!passID&&eleProbe&&passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) passID=true;
 
-        probePt=El_Pt;
-        vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
-        if(eleProbe) vProbe_raw.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
-        vProbeSC = (eleProbe) ? vEleProbeSC : vProbe ;
-        // lep2EcalE = probeEcalEnergy_tmp;
+	  probePt=El_Pt;
+	  vProbefinal = (eleProbe) ?  vEleProbe : vProbe ;
+	  if(eleProbe) vProbe_raw.SetPtEtaPhiM(eleProbe->pt, eleProbe->eta, eleProbe->phi, ELE_MASS);
+	  vProbeSC = (eleProbe) ? vEleProbeSC : vProbe ;
+	  // lep2EcalE = probeEcalEnergy_tmp;
 
-        trkIso2    = (eleProbe) ? eleProbe->trkIso        : -1;
-        pfCombIso2 = (eleProbe) ? 
-        eleProbe->chHadIso + TMath::Max(eleProbe->neuHadIso + eleProbe->gammaIso - 
-                  (info->rhoIso)*getEffAreaEl(vEleProbe.Eta()), 0.) :  -1;
-        q2         = (eleProbe) ? eleProbe->q : -q1;
-        lep2error  = probeErrorfinal;
-        // sc2error   = probeSCErrorfinal;
+	  trkIso2    = (eleProbe) ? eleProbe->trkIso        : -1;
+	  pfCombIso2 = (eleProbe) ? 
+	    eleProbe->chHadIso + TMath::Max(eleProbe->neuHadIso + eleProbe->gammaIso - 
+					    (info->rhoIso)*getEffAreaEl(vEleProbe.Eta()), 0.) :  -1;
+	  q2         = (eleProbe) ? eleProbe->q : -q1;
+	  lep2error  = probeErrorfinal;
+	  // sc2error   = probeSCErrorfinal;
 
 
-        // determine event category
-        if(eleProbe) {
-          if(passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) {
-            if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
-              icat=eEleEle2HLT;
-            } else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
-              icat=eEleEle1HLT1L1; // does this ever get used
-            } else { icat=eEleEle1HLT; }
-          } else { icat=eEleEleNoSel; }
-        } else { icat=eEleSC; }
-      }
+	  // determine event category
+	  if(eleProbe) {
+	    if(passEleMediumID(eleProbe,vEleProbe,info->rhoIso)) {
+	      if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
+		icat=eEleEle2HLT;
+	      } else if(isEleTriggerObj(triggerMenu, eleProbe->hltMatchBits, kFALSE, isData, is13TeV)) {
+		icat=eEleEle1HLT1L1; // does this ever get used
+	      } else { icat=eEleEle1HLT; }
+	    } else { icat=eEleEleNoSel; }
+	  } else { icat=eEleSC; }
+	}
 
-      // if(q1 == q2)         continue;  // opposite charge requirement
-      // mass window
-      TLorentzVector vDilep = vTagfinal + vProbefinal;
-      // TLorentzVector vDilepSC = vTagSCfinal + vProbeSC;
-      if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
-      if(icat==0) continue;
+	// if(q1 == q2)         continue;  // opposite charge requirement
+	// mass window
+	TLorentzVector vDilep = vTagfinal + vProbefinal;
+	// TLorentzVector vDilepSC = vTagSCfinal + vProbeSC;
+	if((vDilep.M()<MASS_LOW) || (vDilep.M()>MASS_HIGH)) continue;
+	if(icat==0) continue;
       
       
-      // do the prefiring weights
-      if(!isData){
-        pfire.setObjects(scArr,jetArr);
-        pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
-        pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
-        pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
-      }
+	// do the prefiring weights
+	if(!isData){
+	  pfire.setObjects(scArr,jetArr);
+	  pfire.computePhotonsOnly(prefirePhoton, prefirePhotUp, prefirePhotDown);
+	  pfire.computeJetsOnly   (prefireJet   , prefireJetUp , prefireJetDown );
+	  pfire.computeFullPrefire(prefireWeight, prefireUp    , prefireDown    );
+	}
 
-      //******** We have a Z candidate! HURRAY! ********
-      nsel+=isData ? 1 : weight;
-      nselvar+=isData ? 1 : weight*weight;
+	//******** We have a Z candidate! HURRAY! ********
+	nsel+=isData ? 1 : weight;
+	nselvar+=isData ? 1 : weight*weight;
 
-      // Perform matching of dileptons to GEN leptons from Z decay
-      TLorentzVector *gvec=new TLorentzVector(0,0,0,0);
-      TLorentzVector *glep1=new TLorentzVector(0,0,0,0);
-      TLorentzVector *glep2=new TLorentzVector(0,0,0,0);
-      TLorentzVector *gph=new TLorentzVector(0,0,0,0);
-      Bool_t hasGenMatch = kFALSE;
-      if(isRecoil && hasGen) {
-        toolbox::fillGen(genPartArr, BOSON_ID, gvec, glep1, glep2,&glepq1,&glepq2,1);
+	// Perform matching of dileptons to GEN leptons from Z decay
+	Bool_t hasGenMatch = kFALSE;
+	if(isRecoil && hasGen) {
+	  toolbox::fillGenBorn(genPartArr, BOSON_ID, gvec, glep3, glep4, glep1, glep2);
         
-        Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
-              ((glep2) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+	  Bool_t match1 = ( ((glep1) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
+			    ((glep2) && toolbox::deltaR(vTagfinal.Eta(), vTagfinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
         
-        Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
-              ((glep2) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
-        TLorentzVector tvec=*glep1+*glep2;
-        genV=new TLorentzVector(0,0,0,0);
-        genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
-        genlep1=new TLorentzVector(0,0,0,0);
-        genlep2=new TLorentzVector(0,0,0,0);
-        genlep1->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
-        genlep2->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
-        delete gvec;
-        delete glep1;
-        delete glep2;
-        glep1=0; glep2=0; gvec=0;
+	  Bool_t match2 = ( ((glep1) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep1->Eta(), glep1->Phi())<0.3) || 
+			    ((glep2) && toolbox::deltaR(vProbefinal.Eta(), vProbefinal.Phi(), glep2->Eta(), glep2->Phi())<0.3) );
+	  TLorentzVector tvec=*glep1+*glep2;
+	  genV=new TLorentzVector(0,0,0,0);
+	  genV->SetPtEtaPhiM(tvec.Pt(), tvec.Eta(), tvec.Phi(), tvec.M());
+	  genlep1=new TLorentzVector(0,0,0,0);
+	  genlep2=new TLorentzVector(0,0,0,0);
+	  genlep1->SetPtEtaPhiM(glep1->Pt(),glep1->Eta(),glep1->Phi(),glep1->M());
+	  genlep2->SetPtEtaPhiM(glep2->Pt(),glep2->Eta(),glep2->Phi(),glep2->M());
         
-        if(match1 && match2) hasGenMatch = kTRUE;
-      }
+	  if(match1 && match2) hasGenMatch = kTRUE;
+	}
       
-      //
-      // Fill tree
-      //
-      runNum   = info->runNum;
-      lumiSec  = info->lumiSec;
-      evtNum   = info->evtNum;
+	//
+	// Fill tree
+	//
+	runNum   = info->runNum;
+	lumiSec  = info->lumiSec;
+	evtNum   = info->evtNum;
 
-      if (hasGenMatch) matchGen=1;
-      else matchGen=0;
+	if (hasGenMatch) matchGen=1;
+	else matchGen=0;
 
 
-      category = icat;
+	category = icat;
 
-      vertexArr->Clear();
-      vertexBr->GetEntry(ientry);
+	vertexArr->Clear();
+	vertexBr->GetEntry(ientry);
 
-      npv      = vertexArr->GetEntries();
-      npu      = info->nPUmean;
-      scale1fb = weight;
-      scale1fbUp   = weightUp;
-      scale1fbDown = weightDown;
-      met       = info->pfMETC;
-      metPhi    = info->pfMETCphi;
+	npv      = vertexArr->GetEntries();
+	npu      = info->nPUmean;
+	scale1fb = weight;
+	scale1fbUp   = weightUp;
+	scale1fbDown = weightDown;
+	met       = info->pfMETC;
+	metPhi    = info->pfMETCphi;
       
-      puppiMet    = info->puppET;
-      puppiMetPhi = info->puppETphi;
-      // puppiSumEt = 0;
-      lep1       = &vTagfinal;
-      lep2       = &vProbefinal;
-      lep1_raw   = &vTag_raw;
-      lep2_raw   = &vProbe_raw;
+	puppiMet    = info->puppET;
+	puppiMetPhi = info->puppETphi;
+	// puppiSumEt = 0;
+	lep1       = &vTagfinal;
+	lep2       = &vProbefinal;
+	lep1_raw   = &vTag_raw;
+	lep2_raw   = &vProbe_raw;
 
-      dilep      = &vDilep;
-      sc1        = &vTagSCfinal;
-      sc2        = &vProbeSC;
-      TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
-      TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
-      TVector2 vU = -1.0*(vMet+vZPt);
-      u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-      u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
+	dilep      = &vDilep;
+	sc1        = &vTagSCfinal;
+	sc2        = &vProbeSC;
+	TVector2 vZPt((vDilep.Pt())*cos(vDilep.Phi()),(vDilep.Pt())*sin(vDilep.Phi()));
+	TVector2 vMet((info->pfMETC)*cos(info->pfMETCphi), (info->pfMETC)*sin(info->pfMETCphi));
+	TVector2 vU = -1.0*(vMet+vZPt);
+	u1 = ((vDilep.Px())*(vU.Px()) + (vDilep.Py())*(vU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+	u2 = ((vDilep.Px())*(vU.Py()) - (vDilep.Py())*(vU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|peleProbe	
       
-      TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
-      TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
-      puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
-      puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
-      outTree->Fill();
+	TVector2 vPuppiMet((info->puppET)*cos(info->puppETphi), (info->puppET)*sin(info->puppETphi));
+	TVector2 vPuppiU = -1.0*(vPuppiMet+vZPt);
+	puppiU1 = ((vDilep.Px())*(vPuppiU.Px()) + (vDilep.Py())*(vPuppiU.Py()))/(vDilep.Pt());  // u1 = (pT . u)/|pT|
+	puppiU2 = ((vDilep.Px())*(vPuppiU.Py()) - (vDilep.Py())*(vPuppiU.Px()))/(vDilep.Pt());  // u2 = (pT x u)/|pT|
+	outTree->Fill();
       
-      ////   -------         RESET EVERYTHING     -------------
-      delete genV;
-      delete genlep1;
-      delete genlep2;
-      genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0, lep1_raw=0, lep2_raw=0, genlep1=0, genlep2=0;
-      prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
-      prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
-      prefireWeight=1; prefireUp    =1; prefireDown    =1;
+	////   -------         RESET EVERYTHING     -------------
+	delete genV;
+	delete genlep1;
+	delete genlep2;
+	genV=0, dilep=0, lep1=0, lep2=0, sc1=0, sc2=0, lep1_raw=0, lep2_raw=0, genlep1=0, genlep2=0;
+	prefirePhoton=1; prefirePhotUp=1; prefirePhotDown=1;
+	prefireJet   =1; prefireJetUp =1; prefireJetDown =1;
+	prefireWeight=1; prefireUp    =1; prefireDown    =1;
       }
       delete infile;
       infile=0, eventTree=0;    

@@ -358,7 +358,7 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
   double iGenPt2 = 0; // literally never used, also delete this variable
   Int_t nbinsPt = vZPtBins.size()-1;
   int iBin = -1;
-  for(int i = 0; i < nbinsPt-1; ++i){
+  for(int i = 0; i < nbinsPt; ++i){
     if(iGenPt > vZPtBins[nbinsPt]){
       iBin = nbinsPt-1;
       iGenPt2 = (vZPtBins[nbinsPt-1]+vZPtBins[nbinsPt-2])*0.5;
@@ -366,7 +366,7 @@ void RecoilCorrector::metDistributionInvCdf(double &iMet,double &iMPhi,double iG
     }
     if(vZPtBins[i+1] < iGenPt) continue;
     if(vZPtBins[i] > iGenPt ) continue;
-    if(iGenPt < vZPtBins[i+1] && vZPtBins[i] < iGenPt){
+    if(iGenPt < vZPtBins[i+1] && vZPtBins[i] <= iGenPt){
       iBin = i; 
       iGenPt2 = (vZPtBins[i+1]+vZPtBins[i])*0.5;
       break;

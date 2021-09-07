@@ -25,10 +25,8 @@
 #include "TLorentzVector.h"           // 4-vector class
 
 #include "../Utils/MyTools.hh"            // various helper functions
-#include "../Utils/MitStyleRemix.hh"      // style settings for drawing
-#include "../Utils/RecoilCorrector_asym2.hh"
+#include "../Utils/RecoilCorrector.hh"
 // helper class to handle efficiency tables
-#include "../Utils/CEffUser1D.hh"
 #include "../Utils/CEffUser2D.hh"
 
 #include "../Utils/AppEffSF.cc"
@@ -42,7 +40,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
                   const TString  sqrts,      // 13 or 5 TeV string specifier
                   const TString  fileName,    // both the input and output final file name i.e. data_select.root
                   const TString  SysFileGSFSel // constains the uncertainty info for eleGSF+ID efficiency
-) {
+		  ) {
   gBenchmark->Start("fitWm");
 
   //--------------------------------------------------------------------------------------------------------------
@@ -58,7 +56,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   
   std::string u1_name; std::string u2_name;
   std::string met_name; std::string metPhi_name;
-//   std::string recoilType;
+  //   std::string recoilType;
 
 
   // Control the types of uncertainties
@@ -92,7 +90,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   const Double_t ELE_MASS   = 0.000511;
  
  
-  TString effDir =  "/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_"+sqrts+"/results/Zee/";
+  TString effDir =  "/afs/cern.ch/work/a/arapyan/Run2/test/CMSSW_10_2_13/src/MitEwk13TeV/data/Efficiency/lowpu_"+sqrts+"/results/Zee/";
   AppEffSF effs(effDir);
   effs.loadHLT("EleHLTEff_aMCxPythia","Positive","Negative");
   effs.loadSel("EleGSFSelEff_aMCxPythia","Combined","Combined");
@@ -126,11 +124,11 @@ void eleNtupleMod(const TString  outputDir,   // output directory
     doStat      = false;
   }
 
- // ------------------------------------------------------------------------------------------------------------------------------------------
- //   Load the Recoil Correction Files
- // ------------------------------------------------------------------------------------------------------------------------------------------
+  // ------------------------------------------------------------------------------------------------------------------------------------------
+  //   Load the Recoil Correction Files
+  // ------------------------------------------------------------------------------------------------------------------------------------------
   // ===================== Recoil correction files ============================
-  const TString directory("/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Recoil");
+  const TString directory("/afs/cern.ch/work/a/arapyan/Run2/test/CMSSW_10_2_13/src/MitEwk13TeV/data/Recoil");
   
   // New Recoil Correctors for everything
   RecoilCorrector *rcMainWp    = new  RecoilCorrector("",""); RecoilCorrector *rcMainWm    = new  RecoilCorrector("","");
@@ -144,7 +142,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   RecoilCorrector *rcEta05Wp   = new  RecoilCorrector("",""); RecoilCorrector *rcEta05Wm   = new  RecoilCorrector("","");
   RecoilCorrector *rcEta051Wp  = new  RecoilCorrector("",""); RecoilCorrector *rcEta051Wm  = new  RecoilCorrector("","");
   RecoilCorrector *rcEta1Wp    = new  RecoilCorrector("",""); RecoilCorrector *rcEta1Wm    = new  RecoilCorrector("","");
-   // also make sure to add the Wm stuff
+  // also make sure to add the Wm stuff
   if(doInclusive){
     rcMainWp->loadRooWorkspacesMCtoCorrect(Form("%s/WmpMC_PF_%s_2G/",directory.Data(),sqrts.Data()));
     rcMainWp->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_2G_bkg_fixRoch/",directory.Data(),sqrts.Data()));
@@ -186,7 +184,7 @@ void eleNtupleMod(const TString  outputDir,   // output directory
     
     rcEta1Wm->loadRooWorkspacesMCtoCorrect(Form("%s/WmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
     rcEta1Wm->loadRooWorkspacesData(Form("%s/ZmmData_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
-      rcEta1Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
+    rcEta1Wm->loadRooWorkspacesMC(Form("%s/ZmmMC_PF_%s_Eta3/",directory.Data(),sqrts.Data()));
   }
   if (doKeys){
     rcKeysWp->loadRooWorkspacesMCtoCorrectKeys(Form("%s/WmpMC_PF_%s_Keys/",directory.Data(),sqrts.Data()));
@@ -200,15 +198,14 @@ void eleNtupleMod(const TString  outputDir,   // output directory
 
  
 
- //--------------------------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------------
   // Main analysis code 
   //==============================================================================================================  
   
   // Create output directory
   gSystem->mkdir(outputDir,kTRUE);
-  // CPlot::sOutDir = outputDir;  
   
- // ----------------------------------------------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------------------------------------------
  
   TFile *infile=0;
   TTree *intree=0;
@@ -231,9 +228,9 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   Float_t pfCombIso;
   Float_t lepError;//, lep2error;
   
-  intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
-  intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)
-  intree->SetBranchAddress("genVy",    &genVy);   // GEN W boson phi (signal MC)
+  //intree->SetBranchAddress("genVPt",   &genVPt);    // GEN W boson pT (signal MC)
+  //intree->SetBranchAddress("genVPhi",  &genVPhi);   // GEN W boson phi (signal MC)
+  //intree->SetBranchAddress("genVy",    &genVy);   // GEN W boson phi (signal MC)
   intree->SetBranchAddress("genLepPt",   &genLepPt);    // GEN lepton pT (signal MC)
   intree->SetBranchAddress("genLepPhi",  &genLepPhi);   // GEN lepton phi (signal MC)
   intree->SetBranchAddress("prefireWeight", &prefireWeight);  // event weight per 1/fb (MC)
@@ -290,8 +287,8 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   //
   // loop over events
   //
- std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
- for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) { 
+  std::cout << "Number of Events = " << intree->GetEntries() << std::endl;
+  for(UInt_t ientry=0; ientry<intree->GetEntries(); ientry++) { 
     intree->GetEntry(ientry);
     if(ientry%10000==0) cout << "Event " << ientry << ". " << (double)ientry/(double)intree->GetEntries()*100 << " % done with this file." << endl;
 
@@ -382,8 +379,11 @@ void eleNtupleMod(const TString  outputDir,   // output directory
         int ofs=i+ns;
         metVars[ofs]=corrMet; metVarsPhi[ofs]=corrMetPhi;
       }
-        
+      
       if(isRecoil) {
+	genVPt   = genV->Pt();
+	genVPhi  = genV->Phi();
+	genVy    = genV->Rapidity();
         if(q>0) {
           if(doKeys) {
             rcKeysWp->CorrectInvCdf(metVars[keys],metVarsPhi[keys],genVPt,genVPhi,lep->Pt(),lep->Phi(),pU1,pU2,0,0,0,kTRUE,kFALSE);
@@ -459,5 +459,4 @@ void eleNtupleMod(const TString  outputDir,   // output directory
   
   delete intree;
   delete infile;
-  return;
 } // end of function

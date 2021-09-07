@@ -1,29 +1,23 @@
 #! /bin/bash
 
-
 # integrated luminosity for data
-# LUMI=213.1 # Low PU 13 TeV 2017
 LUMI13=199.270 # Low PU 13 TeV 2017
 LUMI5=294.4 # Low PU 5 TeV 2017 ele trigger
-# LUMI5=291.1 # Low PU 5 TeV 2017 muon trigger
 
-# # LUMI2=199.270 # not used in Low PU atm
-# INPUTDIR=/afs/cern.ch/user/s/sabrandt/work/public/LowPU2017ID_13TeV_LHE/Wmunu/ntuples/
-INPUTDIR=/eos/cms/store/user/sabrandt/StandardModel/Ntuples2017GH/LowPU2017ID_13TeV_wGM/Wmunu/ntuples
-# INPUTDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV/Wmunu_testGen/ntuples/
-OUTPUTDIR=/afs/cern.ch/work/s/sabrandt/public/FilesSM2017GH/LowPU2017ID_13TeV_wGM/Wmunu/ntuples/
+INPUTDIR=/tmp/arapyan/Wmunu/ntuples
+OUTPUTDIR=/afs/cern.ch/work/a/arapyan/FilesSM2017/ntuples_new_mu/
 # S="5TeV"
 S="13TeV"
 
-EFFDIR=/afs/cern.ch/user/s/sabrandt/work/public/FilesSM2017GH/Efficiency/LowPU2017ID_13TeV/Systematics
+EFFDIR=/afs/cern.ch/work/a/arapyan/Run2/test/CMSSW_10_2_13/src/MitEwk13TeV/data
 FSIT=${EFFDIR}/SysUnc_MuSITEff_FINAL.root
 FSTA=${EFFDIR}/SysUnc_MuStaEff_FINAL.root
 # FSTA2=${EFFDIR}/_v2_MuSta_Direct/SysUnc_MuStaEff.root
 
 # root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"data_select.root\",\"${FSIT}\",\"${FSTA}\"\);
-# root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wm0_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
-# root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wm1_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
-# root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wm2_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
+root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wm0_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
+root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wm1_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
+root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wm2_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
  # root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"wx_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
  root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"zxx_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
 # root -l -q muonNtupleMod.C+\(\"${OUTPUTDIR}\",\"${INPUTDIR}\",\"${S}\",\"zz_select.raw.root\",\"${FSIT}\",\"${FSTA}\"\);
